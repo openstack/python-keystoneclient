@@ -1,0 +1,11 @@
+.coverage
+.keystoneclient-venv
+*,cover
+cover
+*.pyc
+.idea
+*.swp
+*~
+build
+dist
+python_keystoneclient.egg-info
