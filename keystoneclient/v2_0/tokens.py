@@ -9,13 +9,12 @@ class Token(base.Resource):
         return self._info['token']['id']
 
     @property
-    def username(self):
-        return self._info['user'].get('username', None)
+    def expires(self):
+        return self._info['token']['expires']
 
     @property
-    def tenant_id(self):
-        return self._info['user'].get('tenantId', None)
-
+    def tenant(self):
+        return self._info['token'].get('tenant', None)
 
 class TokenManager(base.ManagerWithFind):
     resource_class = Token
