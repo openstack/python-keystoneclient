@@ -38,7 +38,7 @@ Command-line API
 
 .. attention:: COMING SOON
 
-    The API is not yet implemented, but will follow the pattern laid
+    The CLI is not yet implemented, but will follow the pattern laid
     out below.
 
 Installing this package gets you a shell command, ``keystone``, that you
