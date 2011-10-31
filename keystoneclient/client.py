@@ -44,7 +44,7 @@ class HTTPClient(httplib2.Http):
         super(HTTPClient, self).__init__(timeout=timeout)
         self.user = username
         self.password = password
-        self.project_id = project_id
+        self.project_id = unicode(project_id)
         self.auth_url = auth_url
         self.version = 'v2.0'
         self.region_name = region_name
