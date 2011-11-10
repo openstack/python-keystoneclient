@@ -38,16 +38,20 @@ class Client(client.HTTPClient):
     :param string auth_url: Keystone service endpoint for authorization.
     :param string region_name: Name of a region to select when choosing an
                                endpoint from the service catalog.
-    :param string endpoint: A user-supplied endpoint URL for the keystone service.
-                            Lazy-authentication is possible for API service calls
-                            if endpoint is set at instantiation.(optional)
+    :param string endpoint: A user-supplied endpoint URL for the keystone
+                            service.  Lazy-authentication is possible for API
+                            service calls if endpoint is set at
+                            instantiation.(optional)
     :param integer timeout: Allows customization of the timeout for client
                             http requests. (optional)
 
     Example::
 
         >>> from keystoneclient.v2_0 import client
-        >>> keystone = client.Client(username=USER, password=PASS, project_id=TENANT, auth_url=KEYSTONE_URL)
+        >>> keystone = client.Client(username=USER,
+                                     password=PASS,
+                                     project_id=TENANT,
+                                     auth_url=KEYSTONE_URL)
         >>> keystone.tenants.list()
         ...
         >>> user = keystone.users.get(USER_ID)
@@ -94,7 +98,8 @@ class Client(client.HTTPClient):
             raise
         except Exception, e:
             _logger.exception("Authorization Failed.")
-            raise exceptions.AuthorizationFailure("Authorization Failed: %s" % e)
+            raise exceptions.AuthorizationFailure("Authorization Failed: "
+                                                  "%s" % e)
 
     def _extract_service_catalog(self, url, body):
         """ Set the client's service catalog from the response data. """
