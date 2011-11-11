@@ -77,5 +77,5 @@ class TestCase(unittest.TestCase):
     def tearDown(self):
         time.time = self._original_time
         super(TestCase, self).tearDown()
-        self.mox.UnsetStubs()
         self.mox.VerifyAll()
+        self.mox.UnsetStubs()

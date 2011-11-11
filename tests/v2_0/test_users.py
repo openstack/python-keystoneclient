@@ -69,7 +69,6 @@ class UserTests(utils.TestCase):
         self.assertEqual(user.id, 3)
         self.assertEqual(user.name, "gabriel")
         self.assertEqual(user.email, "test@example.com")
-        self.mox.VerifyAll()
 
     def test_delete(self):
         resp = httplib2.Response({
@@ -83,7 +82,6 @@ class UserTests(utils.TestCase):
         self.mox.ReplayAll()
 
         self.client.users.delete(1)
-        self.mox.VerifyAll()
 
     def test_get(self):
         resp = httplib2.Response({
@@ -101,7 +99,6 @@ class UserTests(utils.TestCase):
         self.assertTrue(isinstance(u, users.User))
         self.assertEqual(u.id, 1)
         self.assertEqual(u.name, 'admin')
-        self.mox.VerifyAll()
 
     def test_list(self):
         resp = httplib2.Response({
@@ -118,7 +115,6 @@ class UserTests(utils.TestCase):
 
         user_list = self.client.users.list()
         [self.assertTrue(isinstance(u, users.User)) for u in user_list]
-        self.mox.VerifyAll()
 
     def test_update(self):
         req_1 = {"user": {"password": "swordfish", "id": 2}}
@@ -160,5 +156,3 @@ class UserTests(utils.TestCase):
         user = self.client.users.update_email(2, 'gabriel@example.com')
         user = self.client.users.update_tenant(2, 1)
         user = self.client.users.update_enabled(2, False)
-
-        self.mox.VerifyAll()
