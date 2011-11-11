@@ -12,11 +12,11 @@ class UserTests(utils.TestCase):
         super(UserTests, self).setUp()
         self.TEST_REQUEST_HEADERS = {'X-Auth-Project-Id': '1',
                                      'X-Auth-Token': 'aToken',
-                                     'User-Agent': 'python-keystoneclient',}
+                                     'User-Agent': 'python-keystoneclient'}
         self.TEST_POST_HEADERS = {'X-Auth-Project-Id': '1',
                                   'Content-Type': 'application/json',
                                   'X-Auth-Token': 'aToken',
-                                  'User-Agent': 'python-keystoneclient',}
+                                  'User-Agent': 'python-keystoneclient'}
         self.TEST_USERS = {
                             "users": {
                                 "values": [
@@ -41,7 +41,7 @@ class UserTests(utils.TestCase):
                              "password": "test",
                              "tenantId": 2,
                              "email": "test@example.com",
-                             "enabled": True,}}
+                             "enabled": True}}
         resp_body = {"user": {"name": "gabriel",
                               "enabled": True,
                               "tenantId": 2,
@@ -69,6 +69,7 @@ class UserTests(utils.TestCase):
         self.assertEqual(user.id, 3)
         self.assertEqual(user.name, "gabriel")
         self.assertEqual(user.email, "test@example.com")
+        self.mox.VerifyAll()
 
     def test_delete(self):
         resp = httplib2.Response({
@@ -82,13 +83,15 @@ class UserTests(utils.TestCase):
         self.mox.ReplayAll()
 
         self.client.users.delete(1)
+        self.mox.VerifyAll()
 
     def test_get(self):
         resp = httplib2.Response({
             "status": 200,
-            "body": json.dumps({'user':self.TEST_USERS['users']['values'][0]}),
+            "body": json.dumps({'user': self.TEST_USERS['users']['values'][0]})
             })
-        httplib2.Http.request(urlparse.urljoin(self.TEST_URL, 'v2.0/users/1?fresh=1234'),
+        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
+                              'v2.0/users/1?fresh=1234'),
                               'GET',
                               headers=self.TEST_REQUEST_HEADERS) \
                               .AndReturn((resp, resp['body']))
@@ -98,6 +101,7 @@ class UserTests(utils.TestCase):
         self.assertTrue(isinstance(u, users.User))
         self.assertEqual(u.id, 1)
         self.assertEqual(u.name, 'admin')
+        self.mox.VerifyAll()
 
     def test_list(self):
         resp = httplib2.Response({
@@ -105,7 +109,8 @@ class UserTests(utils.TestCase):
             "body": json.dumps(self.TEST_USERS),
             })
 
-        httplib2.Http.request(urlparse.urljoin(self.TEST_URL, 'v2.0/users?fresh=1234'),
+        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
+                              'v2.0/users?fresh=1234'),
                               'GET',
                               headers=self.TEST_REQUEST_HEADERS) \
                               .AndReturn((resp, resp['body']))
@@ -113,6 +118,7 @@ class UserTests(utils.TestCase):
 
         user_list = self.client.users.list()
         [self.assertTrue(isinstance(u, users.User)) for u in user_list]
+        self.mox.VerifyAll()
 
     def test_update(self):
         req_1 = {"user": {"password": "swordfish", "id": 2}}
@@ -120,12 +126,13 @@ class UserTests(utils.TestCase):
         req_3 = {"user": {"tenantId": 1, "id": 2}}
         req_4 = {"user": {"enabled": False, "id": 2}}
         # Keystone basically echoes these back... including the password :-/
-        resp_1 = httplib2.Response({"status": 200, "body": json.dumps(req_1),})
-        resp_2 = httplib2.Response({"status": 200, "body": json.dumps(req_2),})
-        resp_3 = httplib2.Response({"status": 200, "body": json.dumps(req_3),})
-        resp_4 = httplib2.Response({"status": 200, "body": json.dumps(req_3),})
+        resp_1 = httplib2.Response({"status": 200, "body": json.dumps(req_1)})
+        resp_2 = httplib2.Response({"status": 200, "body": json.dumps(req_2)})
+        resp_3 = httplib2.Response({"status": 200, "body": json.dumps(req_3)})
+        resp_4 = httplib2.Response({"status": 200, "body": json.dumps(req_3)})
 
-        httplib2.Http.request(urlparse.urljoin(self.TEST_URL, 'v2.0/users/2/password'),
+        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
+                              'v2.0/users/2/password'),
                               'PUT',
                               body=json.dumps(req_1),
                               headers=self.TEST_POST_HEADERS) \
@@ -135,12 +142,14 @@ class UserTests(utils.TestCase):
                               body=json.dumps(req_2),
                               headers=self.TEST_POST_HEADERS) \
                               .AndReturn((resp_2, resp_2['body']))
-        httplib2.Http.request(urlparse.urljoin(self.TEST_URL, 'v2.0/users/2/tenant'),
+        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
+                              'v2.0/users/2/tenant'),
                               'PUT',
                               body=json.dumps(req_3),
                               headers=self.TEST_POST_HEADERS) \
                               .AndReturn((resp_3, resp_3['body']))
-        httplib2.Http.request(urlparse.urljoin(self.TEST_URL, 'v2.0/users/2/enabled'),
+        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
+                              'v2.0/users/2/enabled'),
                               'PUT',
                               body=json.dumps(req_4),
                               headers=self.TEST_POST_HEADERS) \
@@ -151,3 +160,5 @@ class UserTests(utils.TestCase):
         user = self.client.users.update_email(2, 'gabriel@example.com')
         user = self.client.users.update_tenant(2, 1)
         user = self.client.users.update_enabled(2, False)
+
+        self.mox.VerifyAll()

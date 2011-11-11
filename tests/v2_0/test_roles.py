@@ -12,11 +12,11 @@ class RoleTests(utils.TestCase):
         super(RoleTests, self).setUp()
         self.TEST_REQUEST_HEADERS = {'X-Auth-Project-Id': '1',
                                      'X-Auth-Token': 'aToken',
-                                     'User-Agent': 'python-keystoneclient',}
+                                     'User-Agent': 'python-keystoneclient'}
         self.TEST_POST_HEADERS = {'X-Auth-Project-Id': '1',
                                   'Content-Type': 'application/json',
                                   'X-Auth-Token': 'aToken',
-                                  'User-Agent': 'python-keystoneclient',}
+                                  'User-Agent': 'python-keystoneclient'}
         self.TEST_ROLES = {
                                 "roles": {
                                     "values": [
@@ -33,14 +33,15 @@ class RoleTests(utils.TestCase):
                             }
 
     def test_create(self):
-        req_body = {"role": {"name": "sysadmin",}}
-        resp_body = {"role": {"name": "sysadmin", "id": 3,}}
+        req_body = {"role": {"name": "sysadmin"}}
+        resp_body = {"role": {"name": "sysadmin", "id": 3}}
         resp = httplib2.Response({
             "status": 200,
             "body": json.dumps(resp_body),
             })
 
-        httplib2.Http.request(urlparse.urljoin(self.TEST_URL, 'v2.0/OS-KSADM/roles'),
+        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
+                              'v2.0/OS-KSADM/roles'),
                               'POST',
                               body=json.dumps(req_body),
                               headers=self.TEST_POST_HEADERS) \
@@ -57,7 +58,8 @@ class RoleTests(utils.TestCase):
             "status": 200,
             "body": ""
             })
-        httplib2.Http.request(urlparse.urljoin(self.TEST_URL, 'v2.0/OS-KSADM/roles/1'),
+        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
+                              'v2.0/OS-KSADM/roles/1'),
                               'DELETE',
                               headers=self.TEST_REQUEST_HEADERS) \
                               .AndReturn((resp, resp['body']))
@@ -68,9 +70,11 @@ class RoleTests(utils.TestCase):
     def test_get(self):
         resp = httplib2.Response({
             "status": 200,
-            "body": json.dumps({'role':self.TEST_ROLES['roles']['values'][0]}),
+            "body": json.dumps({'role':
+                                self.TEST_ROLES['roles']['values'][0]}),
             })
-        httplib2.Http.request(urlparse.urljoin(self.TEST_URL, 'v2.0/OS-KSADM/roles/1?fresh=1234'),
+        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
+                              'v2.0/OS-KSADM/roles/1?fresh=1234'),
                               'GET',
                               headers=self.TEST_REQUEST_HEADERS) \
                               .AndReturn((resp, resp['body']))
@@ -81,14 +85,14 @@ class RoleTests(utils.TestCase):
         self.assertEqual(role.id, 1)
         self.assertEqual(role.name, 'admin')
 
-
     def test_list(self):
         resp = httplib2.Response({
             "status": 200,
             "body": json.dumps(self.TEST_ROLES),
             })
 
-        httplib2.Http.request(urlparse.urljoin(self.TEST_URL, 'v2.0/OS-KSADM/roles?fresh=1234'),
+        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
+                              'v2.0/OS-KSADM/roles?fresh=1234'),
                               'GET',
                               headers=self.TEST_REQUEST_HEADERS) \
                               .AndReturn((resp, resp['body']))
@@ -96,4 +100,3 @@ class RoleTests(utils.TestCase):
 
         role_list = self.client.roles.list()
         [self.assertTrue(isinstance(r, roles.Role)) for r in role_list]
-

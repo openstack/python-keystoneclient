@@ -32,7 +32,9 @@ class ServiceManager(base.ManagerWithFind):
         return self._get("/OS-KSADM/services/%s" % id, "OS-KSADM:service")
 
     def create(self, name, service_type, description):
-        body = {"OS-KSADM:service": {'name': name, 'type':service_type, 'description': description}}
+        body = {"OS-KSADM:service": {'name': name,
+                                     'type': service_type,
+                                     'description': description}}
         return self._create("/OS-KSADM/services", body, "OS-KSADM:service")
 
     def delete(self, id):
