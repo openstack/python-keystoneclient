@@ -109,7 +109,9 @@ class HTTPClient(httplib2.Http):
             request_kwargs['headers']['Content-Type'] = 'application/json'
             request_kwargs['body'] = json.dumps(kwargs['body'])
 
-        resp, body = super(HTTPClient, self).request(url, method, **request_kwargs)
+        resp, body = super(HTTPClient, self).request(url,
+                                                     method,
+                                                     **request_kwargs)
 
         self.http_log((url, method,), request_kwargs, resp, body)
 

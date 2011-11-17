@@ -2,7 +2,6 @@ import httplib2
 import mock
 
 from keystoneclient import client
-from keystoneclient import exceptions
 from tests import utils
 
 
@@ -37,7 +36,8 @@ class ClientTest(utils.TestCase):
                        "X-Auth-Project-Id": "project_id",
                        "User-Agent": cl.USER_AGENT,
             }
-            mock_request.assert_called_with("http://127.0.0.1:5000/hi?fresh=1234",
+            mock_request.assert_called_with("http://127.0.0.1:5000/"
+                                            "hi?fresh=1234",
                                             "GET", headers=headers)
             # Automatic JSON parsing
             self.assertEqual(body, {"hi": "there"})
@@ -60,4 +60,3 @@ class ClientTest(utils.TestCase):
                                             headers=headers, body='[1, 2, 3]')
 
         test_post_call()
-

@@ -45,7 +45,8 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
             }
 
     def test_authenticate_failure(self):
-        self.TEST_REQUEST_BODY['auth']['passwordCredentials']['password'] = 'bad_key'
+        self.TEST_REQUEST_BODY['auth']['passwordCredentials']['password'] = \
+                'bad_key'
         self.TEST_REQUEST_HEADERS['X-Auth-Project-Id'] = '1'
         resp = httplib2.Response({
             "status": 401,
@@ -71,7 +72,6 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
                           password="bad_key",
                           project_id=self.TEST_TENANT,
                           auth_url=self.TEST_URL)
-
 
     def test_auth_redirect(self):
         self.TEST_REQUEST_HEADERS['X-Auth-Project-Id'] = '1'
@@ -154,7 +154,7 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
                            auth_url=self.TEST_URL)
         self.assertEqual(cs.auth_token,
                          self.TEST_RESPONSE_DICT["access"]["token"]["id"])
-        self.assertFalse(cs.service_catalog.catalog.has_key('serviceCatalog'))
+        self.assertFalse('serviceCatalog' in cs.service_catalog.catalog)
 
     def test_authenticate_success_token_scoped(self):
         del self.TEST_REQUEST_BODY['auth']['passwordCredentials']
@@ -204,4 +204,4 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
                            auth_url=self.TEST_URL)
         self.assertEqual(cs.auth_token,
                          self.TEST_RESPONSE_DICT["access"]["token"]["id"])
-        self.assertFalse(cs.service_catalog.catalog.has_key('serviceCatalog'))
+        self.assertFalse('serviceCatalog' in cs.service_catalog.catalog)

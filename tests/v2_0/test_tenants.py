@@ -12,45 +12,44 @@ class TenantTests(utils.TestCase):
         super(TenantTests, self).setUp()
         self.TEST_REQUEST_HEADERS = {'X-Auth-Project-Id': '1',
                                      'X-Auth-Token': 'aToken',
-                                     'User-Agent': 'python-keystoneclient',}
+                                     'User-Agent': 'python-keystoneclient'}
         self.TEST_POST_HEADERS = {'X-Auth-Project-Id': '1',
                                   'Content-Type': 'application/json',
                                   'X-Auth-Token': 'aToken',
-                                  'User-Agent': 'python-keystoneclient',}
-        self.TEST_TENANTS = {
-                                "tenants": {
-                                    "values": [
-                                        {
-                                            "enabled": True,
-                                            "description": "A description change!",
-                                            "name": "invisible_to_admin",
-                                            "id": 3
-                                        },
-                                        {
-                                            "enabled": True,
-                                            "description": "None",
-                                            "name": "demo",
-                                            "id": 2
-                                        },
-                                        {
-                                            "enabled": True,
-                                            "description": "None",
-                                            "name": "admin",
-                                            "id": 1
-                                        }
-                                    ],
-                                    "links": []
+                                  'User-Agent': 'python-keystoneclient'}
+        self.TEST_TENANTS = {"tenants": {
+                                 "values": [
+                                   {
+                                     "enabled": True,
+                                     "description": "A description change!",
+                                     "name": "invisible_to_admin",
+                                     "id": 3
+                                   },
+                                   {
+                                     "enabled": True,
+                                     "description": "None",
+                                     "name": "demo",
+                                     "id": 2
+                                   },
+                                   {
+                                     "enabled": True,
+                                     "description": "None",
+                                     "name": "admin",
+                                     "id": 1
+                                   }
+                                 ],
+                                 "links": []
                                 }
                             }
 
     def test_create(self):
         req_body = {"tenant": {"name": "tenantX",
                                "description": "Like tenant 9, but better.",
-                               "enabled": True,}}
+                               "enabled": True}}
         resp_body = {"tenant": {"name": "tenantX",
                                 "enabled": True,
                                 "id": 4,
-                                "description": "Like tenant 9, but better.",}}
+                                "description": "Like tenant 9, but better."}}
         resp = httplib2.Response({
             "status": 200,
             "body": json.dumps(resp_body),
@@ -76,7 +75,8 @@ class TenantTests(utils.TestCase):
             "status": 200,
             "body": ""
             })
-        httplib2.Http.request(urlparse.urljoin(self.TEST_URL, 'v2.0/tenants/1'),
+        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
+                              'v2.0/tenants/1'),
                               'DELETE',
                               headers=self.TEST_REQUEST_HEADERS) \
                               .AndReturn((resp, resp['body']))
@@ -87,9 +87,11 @@ class TenantTests(utils.TestCase):
     def test_get(self):
         resp = httplib2.Response({
             "status": 200,
-            "body": json.dumps({'tenant':self.TEST_TENANTS['tenants']['values'][2]}),
+            "body": json.dumps({'tenant':
+                self.TEST_TENANTS['tenants']['values'][2]}),
             })
-        httplib2.Http.request(urlparse.urljoin(self.TEST_URL, 'v2.0/tenants/1?fresh=1234'),
+        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
+                              'v2.0/tenants/1?fresh=1234'),
                               'GET',
                               headers=self.TEST_REQUEST_HEADERS) \
                               .AndReturn((resp, resp['body']))
@@ -100,14 +102,14 @@ class TenantTests(utils.TestCase):
         self.assertEqual(t.id, 1)
         self.assertEqual(t.name, 'admin')
 
-
     def test_list(self):
         resp = httplib2.Response({
             "status": 200,
             "body": json.dumps(self.TEST_TENANTS),
             })
 
-        httplib2.Http.request(urlparse.urljoin(self.TEST_URL, 'v2.0/tenants?fresh=1234'),
+        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
+                              'v2.0/tenants?fresh=1234'),
                               'GET',
                               headers=self.TEST_REQUEST_HEADERS) \
                               .AndReturn((resp, resp['body']))
@@ -116,22 +118,22 @@ class TenantTests(utils.TestCase):
         tenant_list = self.client.tenants.list()
         [self.assertTrue(isinstance(t, tenants.Tenant)) for t in tenant_list]
 
-
     def test_update(self):
         req_body = {"tenant": {"id": 4,
                                "name": "tenantX",
                                "description": "I changed you!",
-                               "enabled": False,}}
+                               "enabled": False}}
         resp_body = {"tenant": {"name": "tenantX",
                                 "enabled": False,
                                 "id": 4,
-                                "description": "I changed you!",}}
+                                "description": "I changed you!"}}
         resp = httplib2.Response({
             "status": 200,
             "body": json.dumps(resp_body),
             })
 
-        httplib2.Http.request(urlparse.urljoin(self.TEST_URL, 'v2.0/tenants/4'),
+        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
+                              'v2.0/tenants/4'),
                               'PUT',
                               body=json.dumps(req_body),
                               headers=self.TEST_POST_HEADERS) \

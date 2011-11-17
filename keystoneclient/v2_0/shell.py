@@ -15,13 +15,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import getpass
-import os
-
-from keystoneclient import exceptions
-from keystoneclient import utils
 from keystoneclient.v2_0 import client
 
-
 CLIENT_CLASS = client.Client
-

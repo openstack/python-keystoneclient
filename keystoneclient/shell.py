@@ -21,7 +21,6 @@ Command-line interface to the OpenStack Keystone API.
 import argparse
 import httplib2
 import os
-import prettytable
 import sys
 
 from keystoneclient import exceptions as exc
@@ -171,9 +170,11 @@ class OpenStackIdentityShell(object):
                                        "via --url or via"
                                        "env[KEYSTONE_URL")
 
-        self.cs = self.get_api_class(options.version) \
-                            (user, apikey, projectid, url,
-                             region_name=region_name)
+        self.cs = self.get_api_class(options.version)(user,
+                                                      apikey,
+                                                      projectid,
+                                                      url,
+                                                      region_name=region_name)
 
         try:
             self.cs.authenticate()
