@@ -118,12 +118,13 @@ def from_response(response, body):
     """
     cls = _code_map.get(response.status, ClientException)
     if body:
-        message = "n/a"
-        details = "n/a"
         if hasattr(body, 'keys'):
             error = body[body.keys()[0]]
             message = error.get('message', None)
             details = error.get('details', None)
+        else:
+            message = body
+            details = None
         return cls(code=response.status, message=message, details=details)
     else:
         return cls(code=response.status)

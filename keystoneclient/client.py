@@ -125,6 +125,7 @@ class HTTPClient(httplib2.Http):
             body = None
 
         if resp.status in (400, 401, 403, 404, 408, 409, 413, 500, 501):
+            _logger.exception("Request returned failure status.")
             raise exceptions.from_response(resp, body)
         elif resp.status in (301, 302, 305):
             # Redirected. Reissue the request to the new location.
