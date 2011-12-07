@@ -123,7 +123,9 @@ def from_response(response, body):
             message = error.get('message', None)
             details = error.get('details', None)
         else:
-            message = body
+            # If we didn't get back a properly formed error message we
+            # probably couldn't communicate with Keystone at all.
+            message = "Unable to communicate with identity service: %s." % body
             details = None
         return cls(code=response.status, message=message, details=details)
     else:
