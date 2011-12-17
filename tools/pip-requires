@@ -1,0 +1,8 @@
+argparse
+coverage
+httplib2
+mock
+mox
+nose
+prettytable
+simplejson
