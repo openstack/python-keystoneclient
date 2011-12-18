@@ -81,7 +81,7 @@ You'll find complete documentation on the shell by running
       --username USER       Defaults to env[OS_USERNAME].
       --password PASSWORD   Defaults to env[OS_PASSWORD].
       --tenant_name TENANT  Defaults to env[OS_TENANT_NAME].
-      --tenant_id TENANTID  Defaults to env[OS_TENANT_].
+      --tenant_id TENANTID  Defaults to env[OS_TENANT_ID].
       --url AUTH_URL        Defaults to env[OS_AUTH_URL] or
       --version VERSION     Defaults to env[KEYSTONE_VERSION] or 2.0.
       --region_name NAME    The region name in the Keystone Service Catalog
