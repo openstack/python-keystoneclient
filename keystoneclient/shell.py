@@ -59,10 +59,6 @@ class OpenStackIdentityShell(object):
             default=env('OS_USER_NAME'),
             help='Defaults to env[OS_USER_NAME].')
 
-        parser.add_argument('--user_id',
-            default=env('OS_USER_ID'),
-            help='Defaults to env[OS_USER_ID].')
-
         parser.add_argument('--password',
             default=env('OS_PASSWORD'),
             help='Defaults to env[OS_PASSWORD].')
@@ -155,10 +151,9 @@ class OpenStackIdentityShell(object):
         #FIXME(usrleon): Here should be restrict for project id same as
         # for username or apikey but for compatibility it is not.
 
-        if not args.user_id and not args.user_name:
-            raise exc.CommandError("You must provide a user name or id:"
-                                   "via --user_name or env[OS_USER_NAME]"
-                                   "via --user_id or env[OS_USER_ID])")
+        if not args.user_name:
+            raise exc.CommandError("You must provide a user name:"
+                                   "via --user_name or env[OS_USER_NAME]")
         if not args.password:
             raise exc.CommandError("You must provide a password, either"
                                    "via --password or env[OS_PASSWORD]")
@@ -169,7 +164,6 @@ class OpenStackIdentityShell(object):
                                     "env[OS_AUTH_URL")
 
         self.cs = self.get_api_class(options.version)(user_name=args.user_name,
-                                                      user_id=args.user_id,
                                                       tenant_name=args.tenant_name,
                                                       tenant_id=args.tenant_id,
                                                       password=args.password,

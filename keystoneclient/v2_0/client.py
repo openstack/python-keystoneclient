@@ -87,7 +87,6 @@ class Client(client.HTTPClient):
         self.management_url = self.auth_url
         # try:
         raw_token = self.tokens.authenticate(user_name=self.user_name,
-                                             user_id=self.user_id,
                                              tenant_id=self.tenant_id,
                                              tenant_name=self.tenant_name,
                                              password=self.password,

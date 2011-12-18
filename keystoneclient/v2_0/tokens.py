@@ -21,15 +21,12 @@ class Token(base.Resource):
 class TokenManager(base.ManagerWithFind):
     resource_class = Token
 
-    def authenticate(self, user_name=None, user_id=None, tenant_id=None,
-                     tenant_name=None, password=None, token=None, return_raw=False):
+    def authenticate(self, user_name=None, tenant_id=None, tenant_name=None,
+                     password=None, token=None, return_raw=False):
         if token and token != password:
             params = {"auth": {"token": {"id": token}}}
         elif user_name and password:
             params = {"auth": {"passwordCredentials": {"username": user_name,
-                                                       "password": password}}}
-        elif user_id and password:
-            params = {"auth": {"passwordCredentials": {"userId": user_id,
                                                        "password": password}}}
         else:
             raise ValueError('A username and password or token is required.')
