@@ -145,7 +145,6 @@ class HTTPClient(httplib2.Http):
         # Perform the request once. If we get a 401 back then it
         # might be because the auth token expired, so try to
         # re-authenticate and try again. If it still fails, bail.
-        print 'SENDING: %s' % kwargs
         try:
             resp, body = self.request(self.management_url + url, method,
                                       **kwargs)

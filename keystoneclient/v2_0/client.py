@@ -85,21 +85,20 @@ class Client(client.HTTPClient):
         Returns ``True`` if authentication was successful.
         """
         self.management_url = self.auth_url
-        # try:
-        raw_token = self.tokens.authenticate(username=self.username,
-                                             tenant_id=self.tenant_id,
-                                             tenant_name=self.tenant_name,
-                                             password=self.password,
-                                             return_raw=True)
-        print 'got token %s' % raw_token
-        self._extract_service_catalog(self.auth_url, raw_token)
-        return True
-        # except (exceptions.AuthorizationFailure, exceptions.Unauthorized):
-        #     raise
-        # except Exception, e:
-        #     _logger.exception("Authorization Failed.")
-        #     raise exceptions.AuthorizationFailure("Authorization Failed: "
-        #                                           "%s" % e)
+        try:
+            raw_token = self.tokens.authenticate(username=self.username,
+                                                 tenant_id=self.tenant_id,
+                                                 tenant_name=self.tenant_name,
+                                                 password=self.password,
+                                                 return_raw=True)
+            self._extract_service_catalog(self.auth_url, raw_token)
+            return True
+        except (exceptions.AuthorizationFailure, exceptions.Unauthorized):
+            raise
+        except Exception, e:
+            _logger.exception("Authorization Failed.")
+            raise exceptions.AuthorizationFailure("Authorization Failed: "
+                                                  "%s" % e)
 
     def _extract_service_catalog(self, url, body):
         """ Set the client's service catalog from the response data. """

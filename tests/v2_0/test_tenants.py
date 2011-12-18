@@ -144,7 +144,6 @@ class TenantTests(utils.TestCase):
                                             req_body['tenant']['name'],
                                             req_body['tenant']['description'],
                                             req_body['tenant']['enabled'])
-        print tenant
         self.assertTrue(isinstance(tenant, tenants.Tenant))
         self.assertEqual(tenant.id, 4)
         self.assertEqual(tenant.name, "tenantX")
