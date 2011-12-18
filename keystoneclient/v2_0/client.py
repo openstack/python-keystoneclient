@@ -12,7 +12,6 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-import urlparse
 import logging
 
 from keystoneclient import client
@@ -86,20 +85,22 @@ class Client(client.HTTPClient):
         Returns ``True`` if authentication was successful.
         """
         self.management_url = self.auth_url
-        try:
-            raw_token = self.tokens.authenticate(username=self.user,
-                                                  password=self.password,
-                                                  tenant=self.project_id,
-                                                  token=self.auth_token,
-                                                  return_raw=True)
-            self._extract_service_catalog(self.auth_url, raw_token)
-            return True
-        except (exceptions.AuthorizationFailure, exceptions.Unauthorized):
-            raise
-        except Exception, e:
-            _logger.exception("Authorization Failed.")
-            raise exceptions.AuthorizationFailure("Authorization Failed: "
-                                                  "%s" % e)
+        # try:
+        raw_token = self.tokens.authenticate(user_name=self.user_name,
+                                             user_id=self.user_id,
+                                             tenant_id=self.tenant_id,
+                                             tenant_name=self.tenant_name,
+                                             password=self.password,
+                                             return_raw=True)
+        print 'got token %s' % raw_token
+        self._extract_service_catalog(self.auth_url, raw_token)
+        return True
+        # except (exceptions.AuthorizationFailure, exceptions.Unauthorized):
+        #     raise
+        # except Exception, e:
+        #     _logger.exception("Authorization Failed.")
+        #     raise exceptions.AuthorizationFailure("Authorization Failed: "
+        #                                           "%s" % e)
 
     def _extract_service_catalog(self, url, body):
         """ Set the client's service catalog from the response data. """
@@ -108,9 +109,8 @@ class Client(client.HTTPClient):
             self.auth_token = self.service_catalog.get_token()
         except KeyError:
             raise exceptions.AuthorizationFailure()
-        if self.project_id:
-            # Unscoped tokens don't return a service catalog
-            self.management_url = self.service_catalog.url_for(
-                                       attr='region',
-                                       filter_value=self.region_name)
+
+        # Unscoped tokens don't return a service catalog
+        self.management_url = self.service_catalog.url_for(attr='region',
+               filter_value=self.region_name)
         return self.service_catalog

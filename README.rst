@@ -27,7 +27,7 @@ By way of a quick-start::
 
     # use v2.0 auth with http://example.com:5000/v2.0")
     >>> from keystoneclient.v2_0 import client
-    >>> keystone = client.Client(username=USERNAME, password=API_KEY, project_id=TENANT, auth_url=KEYSTONE_URL)
+    >>> keystone = client.Client(user_name=USERNAME, password=PASSWORD, tenant_name=TENANT, auth_url=KEYSTONE_URL)
     >>> keystone.tenants.list()
     >>> tenant = keystone.tenants.create(name="test", descrption="My new tenant!", enabled=True)
     >>> tenant.delete()
@@ -48,17 +48,16 @@ You'll need to provide your OpenStack username and API key. You can do this
 with the ``--username``, ``--apikey`` and  ``--projectid`` params, but it's
 easier to just set them as environment variables::
 
-    export KEYSTONE_USERNAME=openstack
-    export KEYSTONE_API_KEY=yadayada
-    export KEYSTONE_PROJECTID=yadayada
+    export OS_TENANT_NAME=project
+    export OS_USER_NAME=user
+    export OS_PASSWORD=pass
 
 You will also need to define the authentication url with ``--url`` and the
 version of the API with ``--version``.  Or set them as an environment
 variables as well::
 
-    export KEYSTONE_URL=http://example.com:5000/v2.0
+    export OS_AUTH_URL=http://example.com:5000/v2.0
     export KEYSTONE_ADMIN_URL=http://example.com:35357/v2.0
-    export KEYSTONE_VERSION=2.0
 
 Since Keystone can return multiple regions in the Service Catalog, you
 can specify the one you want with ``--region_name`` (or
@@ -67,8 +66,8 @@ can specify the one you want with ``--region_name`` (or
 You'll find complete documentation on the shell by running
 ``keystone help``::
 
-    usage: keystone [--username USERNAME] [--apikey APIKEY] [--projectid PROJECTID]
-                   [--url URL] [--version VERSION] [--region_name NAME]
+    usage: keystone [--user_name user] [--password password] 
+                    [--tenant_name tenant] [--auth_url URL]
                    <subcommand> ...
 
     Command-line interface to the OpenStack Keystone API.
@@ -79,11 +78,12 @@ You'll find complete documentation on the shell by running
 
 
     Optional arguments:
-      --username USERNAME   Defaults to env[KEYSTONE_USERNAME].
-      --apikey APIKEY       Defaults to env[KEYSTONE_API_KEY].
-      --apikey PROJECTID    Defaults to env[KEYSTONE_PROJECT_ID].
-      --url AUTH_URL        Defaults to env[KEYSTONE_URL] or
-      --url ADMIN_URL       Defaults to env[KEYSTONE_ADMIN_URL]
+      --user_name USER      Defaults to env[OS_USER_NAME].
+      --user_id USERID      Defaults to env[OS_USER_ID].
+      --password PASSWORD   Defaults to env[OS_PASSWORD].
+      --tenant_name TENANT  Defaults to env[OS_TENANT_NAME].
+      --tenant_id TENANTID  Defaults to env[OS_TENANT_].
+      --url AUTH_URL        Defaults to env[OS_AUTH_URL] or
       --version VERSION     Defaults to env[KEYSTONE_VERSION] or 2.0.
       --region_name NAME    The region name in the Keystone Service Catalog
                             to use after authentication. Defaults to

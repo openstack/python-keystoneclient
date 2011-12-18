@@ -21,17 +21,22 @@ class Token(base.Resource):
 class TokenManager(base.ManagerWithFind):
     resource_class = Token
 
-    def authenticate(self, username=None, password=None, tenant=None,
-                        token=None, return_raw=False):
+    def authenticate(self, user_name=None, user_id=None, tenant_id=None,
+                     tenant_name=None, password=None, token=None, return_raw=False):
         if token and token != password:
             params = {"auth": {"token": {"id": token}}}
-        elif username and password:
-            params = {"auth": {"passwordCredentials": {"username": username,
+        elif user_name and password:
+            params = {"auth": {"passwordCredentials": {"username": user_name,
+                                                       "password": password}}}
+        elif user_id and password:
+            params = {"auth": {"passwordCredentials": {"userId": user_id,
                                                        "password": password}}}
         else:
             raise ValueError('A username and password or token is required.')
-        if tenant:
-            params['auth']['tenantId'] = tenant
+        if tenant_id:
+            params['auth']['tenantId'] = tenant_id
+        elif tenant_name:
+            params['auth']['tenantName'] = tenant_name
         return self._create('/tokens', params, "access", return_raw=return_raw)
 
     def endpoints(self, token):

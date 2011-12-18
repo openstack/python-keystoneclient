@@ -55,21 +55,29 @@ class OpenStackIdentityShell(object):
             action='store_true',
             help=argparse.SUPPRESS)
 
-        parser.add_argument('--username',
-            default=env('KEYSTONE_USERNAME'),
-            help='Defaults to env[KEYSTONE_USERNAME].')
+        parser.add_argument('--user_name',
+            default=env('OS_USER_NAME'),
+            help='Defaults to env[OS_USER_NAME].')
 
-        parser.add_argument('--apikey',
-            default=env('KEYSTONE_API_KEY'),
-            help='Defaults to env[KEYSTONE_API_KEY].')
+        parser.add_argument('--user_id',
+            default=env('OS_USER_ID'),
+            help='Defaults to env[OS_USER_ID].')
 
-        parser.add_argument('--projectid',
-            default=env('KEYSTONE_PROJECT_ID'),
-            help='Defaults to env[KEYSTONE_PROJECT_ID].')
+        parser.add_argument('--password',
+            default=env('OS_PASSWORD'),
+            help='Defaults to env[OS_PASSWORD].')
+
+        parser.add_argument('--tenant_name',
+            default=env('OS_TENANT_NAME'),
+            help='Defaults to env[OS_TENANT_NAME].')
+
+        parser.add_argument('--tenant_id',
+            default=env('OS_TENANT_ID'),
+            help='Defaults to env[OS_TENANT_ID].')
 
         parser.add_argument('--url',
-            default=env('KEYSTONE_URL'),
-            help='Defaults to env[KEYSTONE_URL].')
+            default=env('OS_AUTH_URL'),
+            help='Defaults to env[OS_AUTH_URL].')
 
         parser.add_argument('--region_name',
             default=env('KEYSTONE_REGION_NAME'),
@@ -144,37 +152,29 @@ class OpenStackIdentityShell(object):
             self.do_help(args)
             return 0
 
-        user, apikey, projectid, url, region_name = \
-                args.username, args.apikey, args.projectid, args.url, \
-                args.region_name
-
         #FIXME(usrleon): Here should be restrict for project id same as
         # for username or apikey but for compatibility it is not.
 
-        if not user:
-            raise exc.CommandError("You must provide a username, either"
-                                   "via --username or via "
-                                   "env[KEYSTONE_USERNAME]")
-        if not apikey:
-            raise exc.CommandError("You must provide an API key, either"
-                                   "via --apikey or via"
-                                   "env[KEYSTONE_API_KEY]")
-        if options.version and options.version != '1.0':
-            if not projectid:
-                raise exc.CommandError("You must provide an projectid, either"
-                                       "via --projectid or via"
-                                       "env[KEYSTONE_PROJECT_ID")
+        if not args.user_id and not args.user_name:
+            raise exc.CommandError("You must provide a user name or id:"
+                                   "via --user_name or env[OS_USER_NAME]"
+                                   "via --user_id or env[OS_USER_ID])")
+        if not args.password:
+            raise exc.CommandError("You must provide a password, either"
+                                   "via --password or env[OS_PASSWORD]")
 
-            if not url:
-                raise exc.CommandError("You must provide a auth url, either"
-                                       "via --url or via"
-                                       "env[KEYSTONE_URL")
+        if not args.url:
+            raise exc.CommandError("You must provide a auth url, either"
+                                   "via --auth_url or via"
+                                    "env[OS_AUTH_URL")
 
-        self.cs = self.get_api_class(options.version)(user,
-                                                      apikey,
-                                                      projectid,
-                                                      url,
-                                                      region_name=region_name)
+        self.cs = self.get_api_class(options.version)(user_name=args.user_name,
+                                                      user_id=args.user_id,
+                                                      tenant_name=args.tenant_name,
+                                                      tenant_id=args.tenant_id,
+                                                      password=args.password,
+                                                      auth_url=args.auth_url,
+                                                      region_name=args.region_name)
 
         try:
             self.cs.authenticate()

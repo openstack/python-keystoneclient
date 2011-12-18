@@ -38,19 +38,22 @@ class HTTPClient(httplib2.Http):
 
     USER_AGENT = 'python-keystoneclient'
 
-    def __init__(self, username=None, password=None, token=None,
+    def __init__(self, user_name=None, user_id=None,
+                 tenant_id=None, tenant_name=None, password=None,
                  project_id=None, auth_url=None, region_name=None,
-                 timeout=None, endpoint=None):
+                 timeout=None, endpoint=None, token=None):
         super(HTTPClient, self).__init__(timeout=timeout)
-        self.user = username
+        self.user_id = user_id
+        self.user_name = user_name
+        self.tenant_id = tenant_id
+        self.tenant_name = tenant_name
         self.password = password
-        self.project_id = unicode(project_id)
         self.auth_url = auth_url
         self.version = 'v2.0'
         self.region_name = region_name
+        self.auth_token = token
 
         self.management_url = endpoint
-        self.auth_token = token or password
 
         # httplib2 overrides
         self.force_exception_to_status_code = True
@@ -140,12 +143,11 @@ class HTTPClient(httplib2.Http):
         kwargs.setdefault('headers', {})
         if self.auth_token and self.auth_token != self.password:
             kwargs['headers']['X-Auth-Token'] = self.auth_token
-        if self.project_id:
-            kwargs['headers']['X-Auth-Project-Id'] = self.project_id
 
         # Perform the request once. If we get a 401 back then it
         # might be because the auth token expired, so try to
         # re-authenticate and try again. If it still fails, bail.
+        print 'SENDING: %s' % kwargs
         try:
             resp, body = self.request(self.management_url + url, method,
                                       **kwargs)
