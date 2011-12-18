@@ -27,7 +27,7 @@ By way of a quick-start::
 
     # use v2.0 auth with http://example.com:5000/v2.0")
     >>> from keystoneclient.v2_0 import client
-    >>> keystone = client.Client(user_name=USERNAME, password=PASSWORD, tenant_name=TENANT, auth_url=KEYSTONE_URL)
+    >>> keystone = client.Client(username=USERNAME, password=PASSWORD, tenant_name=TENANT, auth_url=KEYSTONE_URL)
     >>> keystone.tenants.list()
     >>> tenant = keystone.tenants.create(name="test", descrption="My new tenant!", enabled=True)
     >>> tenant.delete()
@@ -49,7 +49,7 @@ with the ``--username``, ``--apikey`` and  ``--projectid`` params, but it's
 easier to just set them as environment variables::
 
     export OS_TENANT_NAME=project
-    export OS_USER_NAME=user
+    export OS_USERNAME=user
     export OS_PASSWORD=pass
 
 You will also need to define the authentication url with ``--url`` and the
@@ -66,7 +66,7 @@ can specify the one you want with ``--region_name`` (or
 You'll find complete documentation on the shell by running
 ``keystone help``::
 
-    usage: keystone [--user_name user] [--password password] 
+    usage: keystone [--username user] [--password password] 
                     [--tenant_name tenant] [--auth_url URL]
                    <subcommand> ...
 
@@ -78,8 +78,7 @@ You'll find complete documentation on the shell by running
 
 
     Optional arguments:
-      --user_name USER      Defaults to env[OS_USER_NAME].
-      --user_id USERID      Defaults to env[OS_USER_ID].
+      --username USER       Defaults to env[OS_USERNAME].
       --password PASSWORD   Defaults to env[OS_PASSWORD].
       --tenant_name TENANT  Defaults to env[OS_TENANT_NAME].
       --tenant_id TENANTID  Defaults to env[OS_TENANT_].
