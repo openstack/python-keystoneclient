@@ -33,7 +33,9 @@ class Client(client.HTTPClient):
     :param string username: Username for authentication. (optional)
     :param string password: Password for authentication. (optional)
     :param string token: Token for authentication. (optional)
-    :param string project_id: Tenant/Project id. (optional)
+    :param string tenant_name: Tenant id. (optional)
+    :param string tenant_id: Tenant name. (optional)
+    :param string project_id: Converted to tenant name. (deprecated - to be removed in essex)
     :param string auth_url: Keystone service endpoint for authorization.
     :param string region_name: Name of a region to select when choosing an
                                endpoint from the service catalog.
@@ -49,7 +51,7 @@ class Client(client.HTTPClient):
         >>> from keystoneclient.v2_0 import client
         >>> keystone = client.Client(username=USER,
                                      password=PASS,
-                                     project_id=TENANT,
+                                     tenant_name=TENANT,
                                      auth_url=KEYSTONE_URL)
         >>> keystone.tenants.list()
         ...
