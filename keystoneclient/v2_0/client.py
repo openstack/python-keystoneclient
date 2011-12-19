@@ -96,6 +96,7 @@ class Client(client.HTTPClient):
                                                  tenant_id=self.tenant_id,
                                                  tenant_name=self.tenant_name,
                                                  password=self.password,
+                                                 token=self.auth_token,
                                                  return_raw=True)
             self._extract_service_catalog(self.auth_url, raw_token)
             return True
