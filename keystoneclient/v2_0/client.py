@@ -72,6 +72,7 @@ class Client(client.HTTPClient):
         #                get away with lazy auth. Otherwise auth immediately.
         if endpoint is None:
             self.authenticate()
+            self.management_url = self.service_catalog.url_for(endpoint_type='adminURL')
         else:
             self.management_url = endpoint
 
