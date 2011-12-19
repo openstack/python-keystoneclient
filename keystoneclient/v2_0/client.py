@@ -73,9 +73,6 @@ class Client(client.HTTPClient):
         #                get away with lazy auth. Otherwise auth immediately.
         if endpoint is None:
             self.authenticate()
-            self.management_url = self.service_catalog.url_for(
-                service_type='identity',
-                endpoint_type='adminURL')
         else:
             self.management_url = endpoint
 
@@ -115,7 +112,12 @@ class Client(client.HTTPClient):
         except KeyError:
             raise exceptions.AuthorizationFailure()
 
-        # Unscoped tokens don't return a service catalog
-        self.management_url = self.service_catalog.url_for(attr='region',
-               filter_value=self.region_name)
-        return self.service_catalog
+        # FIXME(ja): we should be lazy about setting managment_url.
+        # in fact we should rewrite the client to support the service
+        # catalog (api calls should be directable to any endpoints)
+        try:
+            self.management_url = self.service_catalog.url_for(attr='region',
+                filter_value=self.region_name, endpoint_type='adminURL')
+        except:
+            # Unscoped tokens don't return a service catalog
+            pass
