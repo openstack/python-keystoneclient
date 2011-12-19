@@ -70,7 +70,7 @@ class TestCase(unittest.TestCase):
         httplib2.Http.request = self.mox.CreateMockAnything()
         self.client = client.Client(username=self.TEST_USER,
                                     token=self.TEST_TOKEN,
-                                    tenant_name=self.TEST_TENANT_ID,
+                                    tenant_name=self.TEST_TENANT_NAME,
                                     auth_url=self.TEST_URL,
                                     endpoint=self.TEST_URL)
 
