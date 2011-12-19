@@ -78,15 +78,15 @@ You'll find complete documentation on the shell by running
 
 
     Optional arguments:
-      --username USER       Defaults to env[OS_USERNAME].
-      --password PASSWORD   Defaults to env[OS_PASSWORD].
-      --tenant_name TENANT  Defaults to env[OS_TENANT_NAME].
-      --tenant_id TENANTID  Defaults to env[OS_TENANT_ID].
-      --url AUTH_URL        Defaults to env[OS_AUTH_URL] or
-      --version VERSION     Defaults to env[KEYSTONE_VERSION] or 2.0.
-      --region_name NAME    The region name in the Keystone Service Catalog
-                            to use after authentication. Defaults to
-                            env[KEYSTONE_REGION_NAME] or the first item
-                            in the list returned.
+      --username USER            Defaults to env[OS_USERNAME].
+      --password PASSWORD        Defaults to env[OS_PASSWORD].
+      --tenant_name TENANT_NAME  Defaults to env[OS_TENANT_NAME].
+      --tenant_id TENANT_ID      Defaults to env[OS_TENANT_ID].
+      --url AUTH_URL             Defaults to env[OS_AUTH_URL] or
+      --version VERSION          Defaults to env[KEYSTONE_VERSION] or 2.0.
+      --region_name NAME         The region name in the Keystone Service 
+                                 Catalog to use after authentication. 
+                                 Defaults to env[KEYSTONE_REGION_NAME] or the
+                                 first item in the list returned.
 
     See "keystone help COMMAND" for help on a specific command.
