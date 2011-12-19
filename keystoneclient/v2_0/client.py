@@ -35,7 +35,8 @@ class Client(client.HTTPClient):
     :param string token: Token for authentication. (optional)
     :param string tenant_name: Tenant id. (optional)
     :param string tenant_id: Tenant name. (optional)
-    :param string project_id: Converted to tenant name. (deprecated - to be removed in essex)
+    :param string project_id: Converted to tenant name. (deprecated -
+                              to be removed in essex)
     :param string auth_url: Keystone service endpoint for authorization.
     :param string region_name: Name of a region to select when choosing an
                                endpoint from the service catalog.
@@ -72,7 +73,9 @@ class Client(client.HTTPClient):
         #                get away with lazy auth. Otherwise auth immediately.
         if endpoint is None:
             self.authenticate()
-            self.management_url = self.service_catalog.url_for(endpoint_type='adminURL')
+            self.management_url = self.service_catalog.url_for(
+                service_type='identity',
+                endpoint_type='adminURL')
         else:
             self.management_url = endpoint
 

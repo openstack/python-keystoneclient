@@ -164,11 +164,11 @@ class OpenStackIdentityShell(object):
                                     "env[OS_AUTH_URL")
 
         self.cs = self.get_api_class(options.version)(username=args.username,
-                                                      tenant_name=args.tenant_name,
-                                                      tenant_id=args.tenant_id,
-                                                      password=args.password,
-                                                      auth_url=args.auth_url,
-                                                      region_name=args.region_name)
+            tenant_name=args.tenant_name,
+            tenant_id=args.tenant_id,
+            password=args.password,
+            auth_url=args.auth_url,
+            region_name=args.region_name)
 
         try:
             self.cs.authenticate()
