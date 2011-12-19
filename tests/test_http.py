@@ -11,8 +11,8 @@ mock_request = mock.Mock(return_value=(fake_response, fake_body))
 
 
 def get_client():
-    cl = client.HTTPClient(username="username", password="apikey",
-                           project_id="project_id", auth_url="auth_test")
+    cl = client.HTTPClient(username="username", password="password",
+                           tenant_id="tenant", auth_url="auth_test")
     return cl
 
 

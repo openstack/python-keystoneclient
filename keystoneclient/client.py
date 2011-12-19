@@ -39,8 +39,8 @@ class HTTPClient(httplib2.Http):
     USER_AGENT = 'python-keystoneclient'
 
     def __init__(self, username=None, tenant_id=None, tenant_name=None,
-                 password=None, project_id=None, auth_url=None,
-                 region_name=None, timeout=None, endpoint=None, token=None):
+                 password=None, auth_url=None, region_name=None, timeout=None,
+                 endpoint=None, token=None):
         super(HTTPClient, self).__init__(timeout=timeout)
         self.username = username
         self.tenant_id = tenant_id

@@ -35,8 +35,6 @@ class Client(client.HTTPClient):
     :param string token: Token for authentication. (optional)
     :param string tenant_name: Tenant id. (optional)
     :param string tenant_id: Tenant name. (optional)
-    :param string project_id: Converted to tenant name. (deprecated -
-                              to be removed in essex)
     :param string auth_url: Keystone service endpoint for authorization.
     :param string region_name: Name of a region to select when choosing an
                                endpoint from the service catalog.
