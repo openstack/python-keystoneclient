@@ -50,7 +50,7 @@ class Client(client.HTTPClient):
         >>> from keystoneclient.v2_0 import client
         >>> keystone = client.Client(username=USER,
                                      password=PASS,
-                                     tenant_name=TENANT,
+                                     tenant_name=TENANT_NAME,
                                      auth_url=KEYSTONE_URL)
         >>> keystone.tenants.list()
         ...
