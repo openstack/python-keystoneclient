@@ -118,4 +118,4 @@ class Client(client.HTTPClient):
                 filter_value=self.region_name, endpoint_type='adminURL')
         except:
             # Unscoped tokens don't return a service catalog
-            pass
+            _logger.exception("unable to retrieve service catalog with token")
