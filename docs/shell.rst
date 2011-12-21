@@ -12,27 +12,33 @@ The :program:`keystone` shell utility
 The :program:`keystone` shell utility interacts with OpenStack Keystone API
 from the command line. It supports the entirety of the OpenStack Keystone API.
 
-First, you'll need an OpenStack Keystone account and an API key. You get this
-by using the `keystone-manage` command in OpenStack Keystone.
+First, you'll need an OpenStack Keystone account. You get this by using the 
+`keystone-manage` command in OpenStack Keystone.
 
 You'll need to provide :program:`keystone` with your OpenStack username and
-API key. You can do this with the :option:`--username`, :option:`--apikey`
-and :option:`--projectid` options, but it's easier to just set them as
-environment variables by setting two environment variables:
+password. You can do this with the :option:`--username`, :option:`--password`.
+You can optionally specify a :option:`--tenant_id` or :option:`--tenant_name`, 
+to scope your token to a specific tenant.  If you don't specify a tenant, you
+will be scoped to your default tenant if you have one.  Instead of using 
+options, it is easier to just set them as environment variables:
 
-.. envvar:: KEYSTONE_USERNAME
+.. envvar:: OS_USERNAME
 
     Your Keystone username.
 
-.. envvar:: KEYSTONE_API_KEY
+.. envvar:: OS_PASSWORD
 
-    Your API key.
+    Your Keystone password.
 
-.. envvar:: KEYSTONE_PROJECT_ID
+.. envvar:: OS_TENANT_NAME
 
-    Project for work.
+    Name of Keystone Tenant.
 
-.. envvar:: KEYSTONE_URL
+.. envvar:: OS_TENANT_ID
+
+    ID of Keystone Tenant.
+
+.. envvar:: OS_AUTH_URL
 
     The OpenStack API server URL.
 
@@ -42,10 +48,10 @@ environment variables by setting two environment variables:
 
 For example, in Bash you'd use::
 
-    export KEYSTONE_USERNAME=yourname
-    export KEYSTONE_API_KEY=yadayadayada
-    export KEYSTONE_PROJECT_ID=myproject
-    export KEYSTONE_URL=http://...
+    export OS_USERNAME=yourname
+    export OS_PASSWORD=yadayadayada
+    export OS_TENANT_NAME=myproject
+    export OS_AUTH_URL=http://example.com:5000/v2.0/
     export KEYSTONE_VERSION=2.0
 
 From there, all shell commands take the form::

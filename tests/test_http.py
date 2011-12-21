@@ -11,8 +11,8 @@ mock_request = mock.Mock(return_value=(fake_response, fake_body))
 
 
 def get_client():
-    cl = client.HTTPClient(username="username", password="apikey",
-                           project_id="project_id", auth_url="auth_test")
+    cl = client.HTTPClient(username="username", password="password",
+                           tenant_id="tenant", auth_url="auth_test")
     return cl
 
 
@@ -33,7 +33,6 @@ class ClientTest(utils.TestCase):
         def test_get_call():
             resp, body = cl.get("/hi")
             headers = {"X-Auth-Token": "token",
-                       "X-Auth-Project-Id": "project_id",
                        "User-Agent": cl.USER_AGENT,
             }
             mock_request.assert_called_with("http://127.0.0.1:5000/"
@@ -52,7 +51,6 @@ class ClientTest(utils.TestCase):
             cl.post("/hi", body=[1, 2, 3])
             headers = {
                 "X-Auth-Token": "token",
-                "X-Auth-Project-Id": "project_id",
                 "Content-Type": "application/json",
                 "User-Agent": cl.USER_AGENT
             }

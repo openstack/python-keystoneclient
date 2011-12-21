@@ -8,7 +8,7 @@ from keystoneclient.v2_0 import client
 
 
 class TestCase(unittest.TestCase):
-    TEST_TENANT = '1'
+    TEST_TENANT_ID = '1'
     TEST_TENANT_NAME = 'aTenant'
     TEST_TOKEN = 'aToken'
     TEST_USER = 'test'
@@ -70,7 +70,7 @@ class TestCase(unittest.TestCase):
         httplib2.Http.request = self.mox.CreateMockAnything()
         self.client = client.Client(username=self.TEST_USER,
                                     token=self.TEST_TOKEN,
-                                    project_id=self.TEST_TENANT,
+                                    tenant_name=self.TEST_TENANT_NAME,
                                     auth_url=self.TEST_URL,
                                     endpoint=self.TEST_URL)
 

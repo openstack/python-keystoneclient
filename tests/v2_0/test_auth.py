@@ -36,7 +36,7 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
                         "username": self.TEST_USER,
                         "password": self.TEST_TOKEN,
                     },
-                    "tenantId": self.TEST_TENANT
+                    "tenantId": self.TEST_TENANT_ID
                 }
             }
         self.TEST_REQUEST_HEADERS = {
@@ -47,7 +47,6 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
     def test_authenticate_failure(self):
         self.TEST_REQUEST_BODY['auth']['passwordCredentials']['password'] = \
                 'bad_key'
-        self.TEST_REQUEST_HEADERS['X-Auth-Project-Id'] = '1'
         resp = httplib2.Response({
             "status": 401,
             "body": json.dumps({"unauthorized": {
@@ -70,11 +69,10 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         with self.assertRaises(exceptions.Unauthorized):
             client.Client(username=self.TEST_USER,
                           password="bad_key",
-                          project_id=self.TEST_TENANT,
+                          tenant_id=self.TEST_TENANT_ID,
                           auth_url=self.TEST_URL)
 
     def test_auth_redirect(self):
-        self.TEST_REQUEST_HEADERS['X-Auth-Project-Id'] = '1'
         correct_response = json.dumps(self.TEST_RESPONSE_DICT)
         dict_responses = [
             {"headers": {'location': self.TEST_ADMIN_URL + "/tokens"},
@@ -101,17 +99,16 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
 
         cs = client.Client(username=self.TEST_USER,
                            password=self.TEST_TOKEN,
-                           project_id=self.TEST_TENANT,
+                           tenant_id=self.TEST_TENANT_ID,
                            auth_url=self.TEST_URL)
 
         self.assertEqual(cs.management_url,
                          self.TEST_RESPONSE_DICT["access"]["serviceCatalog"][3]
-                             ['endpoints'][0]["publicURL"])
+                             ['endpoints'][0]["adminURL"])
         self.assertEqual(cs.auth_token,
                          self.TEST_RESPONSE_DICT["access"]["token"]["id"])
 
     def test_authenticate_success_password_scoped(self):
-        self.TEST_REQUEST_HEADERS['X-Auth-Project-Id'] = '1'
         resp = httplib2.Response({
             "status": 200,
             "body": json.dumps(self.TEST_RESPONSE_DICT),
@@ -126,11 +123,11 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
 
         cs = client.Client(username=self.TEST_USER,
                            password=self.TEST_TOKEN,
-                           project_id=self.TEST_TENANT,
+                           tenant_id=self.TEST_TENANT_ID,
                            auth_url=self.TEST_URL)
         self.assertEqual(cs.management_url,
                          self.TEST_RESPONSE_DICT["access"]["serviceCatalog"][3]
-                             ['endpoints'][0]["publicURL"])
+                             ['endpoints'][0]["adminURL"])
         self.assertEqual(cs.auth_token,
                          self.TEST_RESPONSE_DICT["access"]["token"]["id"])
 
@@ -159,7 +156,6 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
     def test_authenticate_success_token_scoped(self):
         del self.TEST_REQUEST_BODY['auth']['passwordCredentials']
         self.TEST_REQUEST_BODY['auth']['token'] = {'id': self.TEST_TOKEN}
-        self.TEST_REQUEST_HEADERS['X-Auth-Project-Id'] = '1'
         self.TEST_REQUEST_HEADERS['X-Auth-Token'] = self.TEST_TOKEN
         resp = httplib2.Response({
             "status": 200,
@@ -174,11 +170,11 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         self.mox.ReplayAll()
 
         cs = client.Client(token=self.TEST_TOKEN,
-                           project_id=self.TEST_TENANT,
+                           tenant_id=self.TEST_TENANT_ID,
                            auth_url=self.TEST_URL)
         self.assertEqual(cs.management_url,
                          self.TEST_RESPONSE_DICT["access"]["serviceCatalog"][3]
-                             ['endpoints'][0]["publicURL"])
+                             ['endpoints'][0]["adminURL"])
         self.assertEqual(cs.auth_token,
                          self.TEST_RESPONSE_DICT["access"]["token"]["id"])
 

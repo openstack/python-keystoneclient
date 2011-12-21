@@ -12,7 +12,6 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-import urlparse
 import logging
 
 from keystoneclient import client
@@ -34,7 +33,8 @@ class Client(client.HTTPClient):
     :param string username: Username for authentication. (optional)
     :param string password: Password for authentication. (optional)
     :param string token: Token for authentication. (optional)
-    :param string project_id: Tenant/Project id. (optional)
+    :param string tenant_name: Tenant id. (optional)
+    :param string tenant_id: Tenant name. (optional)
     :param string auth_url: Keystone service endpoint for authorization.
     :param string region_name: Name of a region to select when choosing an
                                endpoint from the service catalog.
@@ -50,7 +50,7 @@ class Client(client.HTTPClient):
         >>> from keystoneclient.v2_0 import client
         >>> keystone = client.Client(username=USER,
                                      password=PASS,
-                                     project_id=TENANT,
+                                     tenant_name=TENANT_NAME,
                                      auth_url=KEYSTONE_URL)
         >>> keystone.tenants.list()
         ...
@@ -87,11 +87,12 @@ class Client(client.HTTPClient):
         """
         self.management_url = self.auth_url
         try:
-            raw_token = self.tokens.authenticate(username=self.user,
-                                                  password=self.password,
-                                                  tenant=self.project_id,
-                                                  token=self.auth_token,
-                                                  return_raw=True)
+            raw_token = self.tokens.authenticate(username=self.username,
+                                                 tenant_id=self.tenant_id,
+                                                 tenant_name=self.tenant_name,
+                                                 password=self.password,
+                                                 token=self.auth_token,
+                                                 return_raw=True)
             self._extract_service_catalog(self.auth_url, raw_token)
             return True
         except (exceptions.AuthorizationFailure, exceptions.Unauthorized):
@@ -108,9 +109,13 @@ class Client(client.HTTPClient):
             self.auth_token = self.service_catalog.get_token()
         except KeyError:
             raise exceptions.AuthorizationFailure()
-        if self.project_id:
+
+        # FIXME(ja): we should be lazy about setting managment_url.
+        # in fact we should rewrite the client to support the service
+        # catalog (api calls should be directable to any endpoints)
+        try:
+            self.management_url = self.service_catalog.url_for(attr='region',
+                filter_value=self.region_name, endpoint_type='adminURL')
+        except:
             # Unscoped tokens don't return a service catalog
-            self.management_url = self.service_catalog.url_for(
-                                       attr='region',
-                                       filter_value=self.region_name)
-        return self.service_catalog
+            _logger.exception("unable to retrieve service catalog with token")

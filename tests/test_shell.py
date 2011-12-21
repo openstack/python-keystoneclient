@@ -13,10 +13,10 @@ class ShellTest(utils.TestCase):
     def setUp(self):
         global _old_env
         fake_env = {
-            'KEYSTONE_USERNAME': 'username',
-            'KEYSTONE_API_KEY': 'password',
-            'KEYSTONE_PROJECT_ID': 'project_id',
-            'KEYSTONE_URL': 'http://127.0.0.1:5000',
+            'OS_USERNAME': 'username',
+            'OS_PASSWORD': 'password',
+            'OS_TENANT_ID': 'tenant_id',
+            'OS_AUTH_URL': 'http://127.0.0.1:5000/v2.0',
         }
         _old_env, os.environ = os.environ, fake_env.copy()
 

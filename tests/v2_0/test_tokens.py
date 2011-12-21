@@ -10,11 +10,9 @@ from tests import utils
 class TokenTests(utils.TestCase):
     def setUp(self):
         #super(ServiceTests, self).setUp()
-        self.TEST_REQUEST_HEADERS = {'X-Auth-Project-Id': '1',
-                                     'X-Auth-Token': 'aToken',
+        self.TEST_REQUEST_HEADERS = {'X-Auth-Token': 'aToken',
                                      'User-Agent': 'python-keystoneclient'}
-        self.TEST_POST_HEADERS = {'X-Auth-Project-Id': '1',
-                                  'Content-Type': 'application/json',
+        self.TEST_POST_HEADERS = {'Content-Type': 'application/json',
                                   'X-Auth-Token': 'aToken',
                                   'User-Agent': 'python-keystoneclient'}
 '''
