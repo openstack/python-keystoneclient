@@ -67,3 +67,24 @@ def find_resource(manager, name_or_id):
         msg = "No %s with a name or ID of '%s' exists." % \
               (manager.resource_class.__name__.lower(), name_or_id)
         raise exceptions.CommandError(msg)
+
+
+def unauthenticated(f):
+    """ Adds 'unauthenticated' attribute to decorated function.
+
+    Usage:
+        @unauthenticated
+        def mymethod(f):
+            ...
+    """
+    f.unauthenticated = True
+    return f
+
+
+def isunauthenticated(f):
+    """
+    Checks to see if the function is marked as not requiring authentication
+    with the @unauthenticated decorator. Returns True if decorator is
+    set to True, False otherwise.
+    """
+    return getattr(f, 'unauthenticated', False)

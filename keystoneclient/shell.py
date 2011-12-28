@@ -26,6 +26,7 @@ import sys
 from keystoneclient import exceptions as exc
 from keystoneclient import utils
 from keystoneclient.v2_0 import shell as shell_v2_0
+from keystoneclient.generic import shell as shell_generic
 
 
 def env(e):
@@ -99,6 +100,7 @@ class OpenStackIdentityShell(object):
             actions_module = shell_v2_0
 
         self._find_actions(subparsers, actions_module)
+        self._find_actions(subparsers, shell_generic)
         self._find_actions(subparsers, self)
 
         return parser
@@ -151,28 +153,33 @@ class OpenStackIdentityShell(object):
         #FIXME(usrleon): Here should be restrict for project id same as
         # for username or apikey but for compatibility it is not.
 
-        if not args.os_username:
-            raise exc.CommandError("You must provide a username:"
-                                   "via --username or env[OS_USERNAME]")
-        if not args.os_password:
-            raise exc.CommandError("You must provide a password, either"
-                                   "via --password or env[OS_PASSWORD]")
+        if not utils.isunauthenticated(args.func):
+            if not args.os_username:
+                raise exc.CommandError("You must provide a username:"
+                                       "via --username or env[OS_USERNAME]")
+            if not args.os_password:
+                raise exc.CommandError("You must provide a password, either"
+                                       "via --password or env[OS_PASSWORD]")
 
-        if not args.os_auth_url:
-            raise exc.CommandError("You must provide a auth url, either"
-                                   "via --os-auth_url or via"
-                                    "env[OS_AUTH_URL]")
+            if not args.os_auth_url:
+                raise exc.CommandError("You must provide a auth url, either"
+                                       "via --os-auth_url or via"
+                                        "env[OS_AUTH_URL]")
 
-        self.cs = self.get_api_class(options.os_version)(
-                                     username=args.os_username,
-                                     tenant_name=args.os_tenant_name,
-                                     tenant_id=args.os_tenant_id,
-                                     password=args.os_password,
-                                     auth_url=args.os_auth_url,
-                                     region_name=args.os_region_name)
+        if utils.isunauthenticated(args.func):
+            self.cs = shell_generic.CLIENT_CLASS(endpoint=args.os_auth_url)
+        else:
+            self.cs = self.get_api_class(options.version)(
+                username=args.os_username,
+                tenant_name=args.os_tenant_name,
+                tenant_id=args.os_tenant_id,
+                password=args.os_password,
+                auth_url=args.os_auth_url,
+                region_name=args.os_region_name)
 
         try:
-            self.cs.authenticate()
+            if not utils.isunauthenticated(args.func):
+                self.cs.authenticate()
         except exc.Unauthorized:
             raise exc.CommandError("Invalid OpenStack Keystone credentials.")
         except exc.AuthorizationFailure:
