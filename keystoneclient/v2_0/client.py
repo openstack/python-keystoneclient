@@ -17,6 +17,7 @@ import logging
 from keystoneclient import client
 from keystoneclient import exceptions
 from keystoneclient import service_catalog
+from keystoneclient.v2_0 import ec2
 from keystoneclient.v2_0 import roles
 from keystoneclient.v2_0 import services
 from keystoneclient.v2_0 import tenants
@@ -69,6 +70,10 @@ class Client(client.HTTPClient):
         self.users = users.UserManager(self)
         # NOTE(gabriel): If we have a pre-defined endpoint then we can
         #                get away with lazy auth. Otherwise auth immediately.
+
+        # extensions
+        self.ec2 = ec2.CredentialsManager(self)
+
         if endpoint is None:
             self.authenticate()
         else:
