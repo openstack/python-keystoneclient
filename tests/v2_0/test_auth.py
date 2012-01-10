@@ -66,8 +66,9 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
                               .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
-        with self.assertRaises(exceptions.Unauthorized):
-            client.Client(username=self.TEST_USER,
+        self.assertRaises(exceptions.Unauthorized,
+                          client.Client,
+                          username=self.TEST_USER,
                           password="bad_key",
                           tenant_id=self.TEST_TENANT_ID,
                           auth_url=self.TEST_URL)
