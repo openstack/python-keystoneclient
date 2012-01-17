@@ -12,10 +12,10 @@ if sys.version_info < (2, 6):
 
 setup(
     name = "python-keystoneclient",
-    version = "2.7",
+    version = "2012.1",
     description = "Client library for OpenStack Keystone API",
     long_description = read('README.rst'),
-    url = 'https://github.com/4P/python-keystoneclient',
+    url = 'https://github.com/openstack/python-keystoneclient',
     license = 'Apache',
     author = 'Nebula Inc, based on work by Rackspace and Jacob Kaplan-Moss',
     author_email = 'gabriel.hurley@nebula.com',
