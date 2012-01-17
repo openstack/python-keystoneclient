@@ -20,8 +20,8 @@ class EC2Tests(utils.TestCase):
         user_id = 'usr'
         tenant_id = 'tnt'
         req_body = {"tenant_id": tenant_id}
-        resp_body = {"credential": {"access_key": "access",
-                                    "secret_key": "secret",
+        resp_body = {"credential": {"access": "access",
+                                    "secret": "secret",
                                     "tenant_id": tenant_id,
                                     "created": "12/12/12",
                                     "enabled": True}}
@@ -43,14 +43,14 @@ class EC2Tests(utils.TestCase):
         self.assertTrue(isinstance(cred, ec2.EC2))
         self.assertEqual(cred.tenant_id, tenant_id)
         self.assertEqual(cred.enabled, True)
-        self.assertEqual(cred.access_key, 'access')
-        self.assertEqual(cred.secret_key, 'secret')
+        self.assertEqual(cred.access, 'access')
+        self.assertEqual(cred.secret, 'secret')
 
     def test_get(self):
         user_id = 'usr'
         tenant_id = 'tnt'
-        resp_body = {"credential": {"access_key": "access",
-                                    "secret_key": "secret",
+        resp_body = {"credential": {"access": "access",
+                                    "secret": "secret",
                                     "tenant_id": tenant_id,
                                     "created": "12/12/12",
                                     "enabled": True}}
@@ -72,21 +72,21 @@ class EC2Tests(utils.TestCase):
         self.assertTrue(isinstance(cred, ec2.EC2))
         self.assertEqual(cred.tenant_id, tenant_id)
         self.assertEqual(cred.enabled, True)
-        self.assertEqual(cred.access_key, 'access')
-        self.assertEqual(cred.secret_key, 'secret')
+        self.assertEqual(cred.access, 'access')
+        self.assertEqual(cred.secret, 'secret')
 
     def test_list(self):
         user_id = 'usr'
         tenant_id = 'tnt'
         resp_body = {"credentials": {
                         "values": [
-                            {"access_key": "access",
-                             "secret_key": "secret",
+                            {"access": "access",
+                             "secret": "secret",
                              "tenant_id": tenant_id,
                              "created": "12/12/12",
                              "enabled": True},
-                            {"access_key": "another",
-                             "secret_key": "key",
+                            {"access": "another",
+                             "secret": "key",
                              "tenant_id": tenant_id,
                              "created": "12/12/31",
                              "enabled": True}]}}
@@ -110,8 +110,8 @@ class EC2Tests(utils.TestCase):
         self.assertTrue(isinstance(cred, ec2.EC2))
         self.assertEqual(cred.tenant_id, tenant_id)
         self.assertEqual(cred.enabled, True)
-        self.assertEqual(cred.access_key, 'access')
-        self.assertEqual(cred.secret_key, 'secret')
+        self.assertEqual(cred.access, 'access')
+        self.assertEqual(cred.secret, 'secret')
 
     def test_delete(self):
         user_id = 'usr'
