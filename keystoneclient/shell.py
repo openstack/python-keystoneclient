@@ -55,31 +55,31 @@ class OpenStackIdentityShell(object):
             action='store_true',
             help=argparse.SUPPRESS)
 
-        parser.add_argument('--username',
+        parser.add_argument('--os-username',
             default=env('OS_USERNAME'),
             help='Defaults to env[OS_USERNAME].')
 
-        parser.add_argument('--password',
+        parser.add_argument('--os-password',
             default=env('OS_PASSWORD'),
             help='Defaults to env[OS_PASSWORD].')
 
-        parser.add_argument('--tenant_name',
+        parser.add_argument('--os-tenant_name',
             default=env('OS_TENANT_NAME'),
             help='Defaults to env[OS_TENANT_NAME].')
 
-        parser.add_argument('--tenant_id',
+        parser.add_argument('--os-tenant_id',
             default=env('OS_TENANT_ID'),
             help='Defaults to env[OS_TENANT_ID].')
 
-        parser.add_argument('--url',
+        parser.add_argument('--os-auth-url',
             default=env('OS_AUTH_URL'),
             help='Defaults to env[OS_AUTH_URL].')
 
-        parser.add_argument('--region_name',
+        parser.add_argument('--os-region_name',
             default=env('KEYSTONE_REGION_NAME'),
             help='Defaults to env[KEYSTONE_REGION_NAME].')
 
-        parser.add_argument('--version',
+        parser.add_argument('--os-version',
             default=env('KEYSTONE_VERSION'),
             help='Accepts 1.0 or 1.1, defaults to env[KEYSTONE_VERSION].')
 
@@ -133,7 +133,7 @@ class OpenStackIdentityShell(object):
         (options, args) = parser.parse_known_args(argv)
 
         # build available subcommands based on version
-        subcommand_parser = self.get_subcommand_parser(options.version)
+        subcommand_parser = self.get_subcommand_parser(options.os_version)
         self.parser = subcommand_parser
 
         # Parse args again and call whatever callback was selected
@@ -151,24 +151,25 @@ class OpenStackIdentityShell(object):
         #FIXME(usrleon): Here should be restrict for project id same as
         # for username or apikey but for compatibility it is not.
 
-        if not args.username:
+        if not args.os_username:
             raise exc.CommandError("You must provide a username:"
                                    "via --username or env[OS_USERNAME]")
-        if not args.password:
+        if not args.os_password:
             raise exc.CommandError("You must provide a password, either"
                                    "via --password or env[OS_PASSWORD]")
 
-        if not args.url:
+        if not args.os_auth_url:
             raise exc.CommandError("You must provide a auth url, either"
-                                   "via --auth_url or via"
-                                    "env[OS_AUTH_URL")
+                                   "via --os-auth_url or via"
+                                    "env[OS_AUTH_URL]")
 
-        self.cs = self.get_api_class(options.version)(username=args.username,
-            tenant_name=args.tenant_name,
-            tenant_id=args.tenant_id,
-            password=args.password,
-            auth_url=args.auth_url,
-            region_name=args.region_name)
+        self.cs = self.get_api_class(options.os_version)(
+                                     username=args.os_username,
+                                     tenant_name=args.os_tenant_name,
+                                     tenant_id=args.os_tenant_id,
+                                     password=args.os_password,
+                                     auth_url=args.os_auth_url,
+                                     region_name=args.os_region_name)
 
         try:
             self.cs.authenticate()
@@ -188,7 +189,7 @@ class OpenStackIdentityShell(object):
             return shell_v2_0.CLIENT_CLASS
 
     @utils.arg('command', metavar='<subcommand>', nargs='?',
-                    help='Display help for <subcommand>')
+                          help='Display help for <subcommand>')
     def do_help(self, args):
         """
         Display help about this program or one of its subcommands.
