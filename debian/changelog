@@ -1,0 +1,5 @@
+python-keystoneclient (2012.1-1) oneiric; urgency=low
+
+  * source package automatically created by stdeb 0.6.0+git
+
+ -- Nebula Inc, based on work by Rackspace and Jacob Kaplan-Moss <gabriel.hurley@nebula.com>  Fri, 27 Jan 2012 14:33:48 -0800

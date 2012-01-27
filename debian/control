@@ -1,0 +1,31 @@
+Source: python-keystoneclient
+Maintainer: Nebula Inc, based on work by Rackspace and Jacob Kaplan-Moss <gabriel.hurley@nebula.com>
+Section: python
+Priority: optional
+Build-Depends: python-setuptools (>= 0.6b3), python-all (>= 2.6.6-3), debhelper (>= 7.4.3)
+Standards-Version: 3.9.1
+
+Package: python-keystoneclient
+Architecture: all
+Depends: ${misc:Depends}, ${python:Depends}
+Description: Client library for OpenStack Keystone API
+ Python bindings to the OpenStack Keystone API
+ =============================================
+ .
+ This is a client for the OpenStack Keystone API. There's a Python API (the
+ ``keystoneclient`` module), and a command-line script (``keystone``). The
+ Keystone 2.0 API is still a moving target, so this module will remain in
+ "Beta" status until the API is finalized and fully implemented.
+ .
+ Development takes place on GitHub__. Bug reports and patches may be filed there.
+ .
+ __ https://github.com/4P/python-keystoneclient
+ .
+ This code a fork of `Rackspace's python-novaclient`__ which is in turn a fork of
+ `Jacobian's python-cloudservers`__. The python-keystoneclient is licensed under
+ the Apache License like the rest of OpenStack.
+ .
+ __ http://github.com/rackspace/python-novaclient
+ __ http://github.com/jacobian/python-cloudservers
+ .
+ .. contents:: Contents:
