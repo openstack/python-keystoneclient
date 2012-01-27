@@ -14,6 +14,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import urllib
+
 from keystoneclient import base
 
 
@@ -90,14 +92,25 @@ class UserManager(base.ManagerWithFind):
         """
         return self._delete("/users/%s" % base.getid(user))
 
-    def list(self, tenant_id=None):
+    def list(self, tenant_id=None, limit=None, marker=None):
         """
         Get a list of users (optionally limited to a tenant)
 
         :rtype: list of :class:`User`
         """
 
+        params = {}
+        if limit:
+            params['limit'] = int(limit)
+        if marker:
+            params['marker'] = int(marker)
+
+        query = ""
+        if params:
+            query = "?" + urllib.urlencode(params)
+
         if not tenant_id:
-            return self._list("/users", "users")
+            return self._list("/users%s" % query, "users")
         else:
-            return self._list("/tenants/%s/users" % tenant_id, "users")
+            return self._list("/tenants/%s/users%s" % (tenant_id, query),
+                              "users")

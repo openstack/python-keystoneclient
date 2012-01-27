@@ -114,6 +114,54 @@ class UserTests(utils.TestCase):
         user_list = self.client.users.list()
         [self.assertTrue(isinstance(u, users.User)) for u in user_list]
 
+    def test_list_limit(self):
+        resp = httplib2.Response({
+            "status": 200,
+            "body": json.dumps(self.TEST_USERS),
+            })
+
+        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
+                              'v2.0/users?limit=1&fresh=1234'),
+                              'GET',
+                              headers=self.TEST_REQUEST_HEADERS) \
+                              .AndReturn((resp, resp['body']))
+        self.mox.ReplayAll()
+
+        user_list = self.client.users.list(limit=1)
+        [self.assertTrue(isinstance(u, users.User)) for u in user_list]
+
+    def test_list_marker(self):
+        resp = httplib2.Response({
+            "status": 200,
+            "body": json.dumps(self.TEST_USERS),
+            })
+
+        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
+                              'v2.0/users?marker=1&fresh=1234'),
+                              'GET',
+                              headers=self.TEST_REQUEST_HEADERS) \
+                              .AndReturn((resp, resp['body']))
+        self.mox.ReplayAll()
+
+        user_list = self.client.users.list(marker=1)
+        [self.assertTrue(isinstance(u, users.User)) for u in user_list]
+
+    def test_list_limit_marker(self):
+        resp = httplib2.Response({
+            "status": 200,
+            "body": json.dumps(self.TEST_USERS),
+            })
+
+        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
+                              'v2.0/users?marker=1&limit=1&fresh=1234'),
+                              'GET',
+                              headers=self.TEST_REQUEST_HEADERS) \
+                              .AndReturn((resp, resp['body']))
+        self.mox.ReplayAll()
+
+        user_list = self.client.users.list(limit=1, marker=1)
+        [self.assertTrue(isinstance(u, users.User)) for u in user_list]
+
     def test_update(self):
         req_1 = {"user": {"password": "swordfish", "id": 2}}
         req_2 = {"user": {"id": 2, "email": "gabriel@example.com"}}

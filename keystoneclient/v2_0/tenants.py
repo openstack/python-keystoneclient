@@ -14,6 +14,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import urllib
+
 from keystoneclient import base
 
 
@@ -48,12 +50,23 @@ class TenantManager(base.ManagerWithFind):
 
         return self._create('/tenants', params, "tenant")
 
-    def list(self):
+    def list(self, limit=None, marker=None):
         """
         Get a list of tenants.
         :rtype: list of :class:`Tenant`
         """
-        return self._list("/tenants", "tenants")
+
+        params = {}
+        if limit:
+            params['limit'] = limit
+        if marker:
+            params['marker'] = marker
+
+        query = ""
+        if params:
+            query = "?" + urllib.urlencode(params)
+
+        return self._list("/tenants%s" % query, "tenants")
 
     def update(self, tenant_id, tenant_name=None, description=None,
                enabled=None):

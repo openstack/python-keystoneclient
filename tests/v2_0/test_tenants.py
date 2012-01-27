@@ -116,6 +116,54 @@ class TenantTests(utils.TestCase):
         tenant_list = self.client.tenants.list()
         [self.assertTrue(isinstance(t, tenants.Tenant)) for t in tenant_list]
 
+    def test_list_limit(self):
+        resp = httplib2.Response({
+            "status": 200,
+            "body": json.dumps(self.TEST_TENANTS),
+            })
+
+        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
+                              'v2.0/tenants?limit=1&fresh=1234'),
+                              'GET',
+                              headers=self.TEST_REQUEST_HEADERS) \
+                              .AndReturn((resp, resp['body']))
+        self.mox.ReplayAll()
+
+        tenant_list = self.client.tenants.list(limit=1)
+        [self.assertTrue(isinstance(t, tenants.Tenant)) for t in tenant_list]
+
+    def test_list_marker(self):
+        resp = httplib2.Response({
+            "status": 200,
+            "body": json.dumps(self.TEST_TENANTS),
+            })
+
+        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
+                              'v2.0/tenants?marker=1&fresh=1234'),
+                              'GET',
+                              headers=self.TEST_REQUEST_HEADERS) \
+                              .AndReturn((resp, resp['body']))
+        self.mox.ReplayAll()
+
+        tenant_list = self.client.tenants.list(marker=1)
+        [self.assertTrue(isinstance(t, tenants.Tenant)) for t in tenant_list]
+
+    def test_list_limit_marker(self):
+        resp = httplib2.Response({
+            "status": 200,
+            "body": json.dumps(self.TEST_TENANTS),
+            })
+
+        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
+                              'v2.0/tenants?marker=1&limit=1&fresh=1234'),
+                              'GET',
+                              headers=self.TEST_REQUEST_HEADERS) \
+                              .AndReturn((resp, resp['body']))
+        self.mox.ReplayAll()
+
+        tenant_list = self.client.tenants.list(limit=1, marker=1)
+        [self.assertTrue(isinstance(t, tenants.Tenant)) for t in tenant_list]
+
     def test_update(self):
         req_body = {"tenant": {"id": 4,
                                "name": "tenantX",
