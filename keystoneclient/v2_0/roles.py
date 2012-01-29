@@ -50,16 +50,43 @@ class RoleManager(base.ManagerWithFind):
         """
         return self._list("/OS-KSADM/roles", "roles")
 
-    # FIXME(ja): finialize roles once finalized in keystone
-    #            right now the only way to add/remove a tenant is to
-    #            give them a role within a project
-    def get_user_role_refs(self, user_id):
-        return self._list("/users/%s/roleRefs" % user_id, "roles")
+    def roles_for_user(self, user, tenant=None):
+        user_id = base.getid(user)
+        if tenant:
+            tenant_id = base.getid(tenant)
+            route = "/tenants/%s/users/%s/roles"
+            return self._list(route % (tenant_id, user_id), "roles")
+        else:
+            return self._list("/users/%s/roles" % user_id, "roles")
 
-    def add_user_to_tenant(self, tenant_id, user_id, role_id):
-        params = {"role": {"tenantId": tenant_id, "roleId": role_id}}
-        return self._create("/users/%s/roleRefs" % user_id, params, "role")
+    def add_user_role(self, user, role, tenant=None):
+        """ Adds a role to a user.
 
-    def remove_user_from_tenant(self, tenant_id, user_id, role_id):
-        params = {"role": {"tenantId": tenant_id, "roleId": role_id}}
-        return self._delete("/users/%s/roleRefs/%s" % (user_id, role_id))
+        If tenant is specified, the role is added just for that tenant,
+        otherwise the role is added globally.
+        """
+        user_id = base.getid(user)
+        role_id = base.getid(role)
+        if tenant:
+            route = "/tenants/%s/users/%s/roles/OS-KSADM/%s"
+            params = (base.getid(tenant), user_id, role_id)
+            return self._update(route % params, None, "role")
+        else:
+            route = "/users/%s/roles/OS-KSADM/%s"
+            return self._update(route % (user_id, role_id), None, "roles")
+
+    def remove_user_role(self, user, role, tenant=None):
+        """ Removes a role from a user.
+
+        If tenant is specified, the role is removed just for that tenant,
+        otherwise the role is removed from the user's global roles.
+        """
+        user_id = base.getid(user)
+        role_id = base.getid(role)
+        if tenant:
+            route = "/tenants/%s/users/%s/roles/OS-KSADM/%s"
+            params = (base.getid(tenant), user_id, role_id)
+            return self._delete(route % params)
+        else:
+            route = "/users/%s/roles/OS-KSADM/%s"
+            return self._delete(route % (user_id, role_id), "roles")

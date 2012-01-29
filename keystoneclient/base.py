@@ -87,9 +87,11 @@ class Manager(object):
     def _delete(self, url):
         resp, body = self.api.delete(url)
 
-    def _update(self, url, body, response_key):
+    def _update(self, url, body, response_key=None):
         resp, body = self.api.put(url, body=body)
-        return self.resource_class(self, body[response_key])
+        # PUT requests may not return a body
+        if body:
+            return self.resource_class(self, body[response_key])
 
 
 class ManagerWithFind(Manager):

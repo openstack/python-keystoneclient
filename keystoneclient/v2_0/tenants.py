@@ -30,8 +30,18 @@ class Tenant(base.Resource):
         # FIXME(ja): set the attributes in this object if successful
         return self.manager.update(self.id, description, enabled)
 
-    def add_user(self, user):
-        return self.manager.add_user_to_tenant(self.id, base.getid(user))
+    def add_user(self, user, role):
+        return self.manager.api.roles.add_user_to_tenant(self.id,
+                                                         base.getid(user),
+                                                         base.getid(role))
+
+    def remove_user(self, user, role):
+        return self.manager.api.roles.remove_user_from_tenant(self.id,
+                                                              base.getid(user),
+                                                              base.getid(role))
+
+    def list_users(self):
+        return self.manager.list_users(self.id)
 
 
 class TenantManager(base.ManagerWithFind):
@@ -71,7 +81,7 @@ class TenantManager(base.ManagerWithFind):
     def update(self, tenant_id, tenant_name=None, description=None,
                enabled=None):
         """
-        update a tenant with a new name and description
+        Update a tenant with a new name and description.
         """
         body = {"tenant": {'id': tenant_id}}
         if tenant_name is not None:
@@ -88,3 +98,19 @@ class TenantManager(base.ManagerWithFind):
         Delete a tenant.
         """
         return self._delete("/tenants/%s" % (base.getid(tenant)))
+
+    def list_users(self, tenant):
+        """ List users for a tenant. """
+        return self.api.users.list(base.getid(tenant))
+
+    def add_user(self, tenant, user, role):
+        """ Add a user to a tenant with the given role. """
+        return self.api.roles.add_user_to_tenant(base.getid(tenant),
+                                                 base.getid(user),
+                                                 base.getid(role))
+
+    def remove_user(self, tenant, user, role):
+        """ Remove the specified role from the user on the tenant. """
+        return self.api.roles.remove_user_from_tenant(base.getid(tenant),
+                                                      base.getid(user),
+                                                      base.getid(role))

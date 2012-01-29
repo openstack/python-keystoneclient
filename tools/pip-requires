@@ -4,5 +4,6 @@ httplib2
 mock
 mox
 nose
+pep8
 prettytable
 simplejson
