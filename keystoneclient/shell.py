@@ -56,31 +56,31 @@ class OpenStackIdentityShell(object):
             action='store_true',
             help=argparse.SUPPRESS)
 
-        parser.add_argument('--os-username',
+        parser.add_argument('--username',
             default=env('OS_USERNAME'),
             help='Defaults to env[OS_USERNAME].')
 
-        parser.add_argument('--os-password',
+        parser.add_argument('--password',
             default=env('OS_PASSWORD'),
             help='Defaults to env[OS_PASSWORD].')
 
-        parser.add_argument('--os-tenant_name',
+        parser.add_argument('--tenant_name',
             default=env('OS_TENANT_NAME'),
             help='Defaults to env[OS_TENANT_NAME].')
 
-        parser.add_argument('--os-tenant_id',
+        parser.add_argument('--tenant_id',
             default=env('OS_TENANT_ID'),
             help='Defaults to env[OS_TENANT_ID].')
 
-        parser.add_argument('--os-auth-url',
+        parser.add_argument('--auth-url',
             default=env('OS_AUTH_URL'),
             help='Defaults to env[OS_AUTH_URL].')
 
-        parser.add_argument('--os-region_name',
-            default=env('KEYSTONE_REGION_NAME'),
-            help='Defaults to env[KEYSTONE_REGION_NAME].')
+        parser.add_argument('--region_name',
+            default=env('OS_REGION_NAME'),
+            help='Defaults to env[OS_REGION_NAME].')
 
-        parser.add_argument('--os-version',
+        parser.add_argument('--version',
             default=env('KEYSTONE_VERSION'),
             help='Accepts 1.0 or 1.1, defaults to env[KEYSTONE_VERSION].')
 
@@ -135,7 +135,7 @@ class OpenStackIdentityShell(object):
         (options, args) = parser.parse_known_args(argv)
 
         # build available subcommands based on version
-        subcommand_parser = self.get_subcommand_parser(options.os_version)
+        subcommand_parser = self.get_subcommand_parser(options.version)
         self.parser = subcommand_parser
 
         # Parse args again and call whatever callback was selected
@@ -154,28 +154,28 @@ class OpenStackIdentityShell(object):
         # for username or apikey but for compatibility it is not.
 
         if not utils.isunauthenticated(args.func):
-            if not args.os_username:
-                raise exc.CommandError("You must provide a username:"
-                                       "via --username or env[OS_USERNAME]")
-            if not args.os_password:
-                raise exc.CommandError("You must provide a password, either"
-                                       "via --password or env[OS_PASSWORD]")
+            if not args.username:
+                raise exc.CommandError("You must provide a username "
+                        "via either --username or env[OS_USERNAME]")
 
-            if not args.os_auth_url:
-                raise exc.CommandError("You must provide a auth url, either"
-                                       "via --os-auth_url or via"
-                                        "env[OS_AUTH_URL]")
+            if not args.password:
+                raise exc.CommandError("You must provide a password "
+                        "via either --password or env[OS_PASSWORD]")
+
+            if not args.auth_url:
+                raise exc.CommandError("You must provide an auth url "
+                        "via either --auth_url or via env[OS_AUTH_URL]")
 
         if utils.isunauthenticated(args.func):
-            self.cs = shell_generic.CLIENT_CLASS(endpoint=args.os_auth_url)
+            self.cs = shell_generic.CLIENT_CLASS(endpoint=args.auth_url)
         else:
             self.cs = self.get_api_class(options.version)(
-                username=args.os_username,
-                tenant_name=args.os_tenant_name,
-                tenant_id=args.os_tenant_id,
-                password=args.os_password,
-                auth_url=args.os_auth_url,
-                region_name=args.os_region_name)
+                username=args.username,
+                tenant_name=args.tenant_name,
+                tenant_id=args.tenant_id,
+                password=args.password,
+                auth_url=args.auth_url,
+                region_name=args.region_name)
 
         try:
             if not utils.isunauthenticated(args.func):

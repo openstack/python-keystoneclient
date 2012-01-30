@@ -46,7 +46,7 @@ class HTTPClient(httplib2.Http):
         self.tenant_id = tenant_id
         self.tenant_name = tenant_name
         self.password = password
-        self.auth_url = auth_url
+        self.auth_url = auth_url.rstrip('/') if auth_url else None
         self.version = 'v2.0'
         self.region_name = region_name
         self.auth_token = token
