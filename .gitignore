@@ -1,5 +1,5 @@
 .coverage
-.keystoneclient-venv
+.venv
 *,cover
 cover
 *.pyc

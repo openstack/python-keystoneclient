@@ -202,32 +202,20 @@ def do_role_delete(kc, args):
         print 'Unable to delete role.'
 
 
-@utils.arg('id', metavar='<user_id>', help='ID of User', nargs='?')
-def do_user_roles(kc, args):
-    roles = kc.roles.get_user_role_refs(args.id)
-    for role in roles:
-        try:
-            role.tenant = kc.tenants.get(role.tenantId).name
-        except Exception, e:
-            role.tenant = 'n/a'
-        role.name = kc.roles.get(role.roleId).name
-    utils.print_list(roles, ['tenant', 'name'])
+# TODO(jakedahn): refactor this to allow role, user, and tenant names.
+@utils.arg('user_id', metavar='<user_id>', help='ID of User', nargs='?')
+@utils.arg('role_id', metavar='<role_id>', help='ID of Role', nargs='?')
+@utils.arg('tenant_id', metavar='<tenant_id>', help='ID of Tenant', nargs='?')
+def do_add_user_role(kc, args):
+    kc.roles.add_user_role(args.user_id, args.role_id, args.tenant_id)
 
 
 # TODO(jakedahn): refactor this to allow role, user, and tenant names.
-@utils.arg('tenant_id', metavar='<tenant_id>', help='ID of Tenant', nargs='?')
 @utils.arg('user_id', metavar='<user_id>', help='ID of User', nargs='?')
 @utils.arg('role_id', metavar='<role_id>', help='ID of Role', nargs='?')
-def do_user_add_tenant_role(kc, args):
-    kc.roles.add_user_to_tenant(args.tenant_id, args.user_id, args.role_id)
-
-
-# TODO(jakedahn): refactor this to allow role, user, and tenant names.
 @utils.arg('tenant_id', metavar='<tenant_id>', help='ID of Tenant', nargs='?')
-@utils.arg('user_id', metavar='<user_id>', help='ID of User', nargs='?')
-@utils.arg('role_id', metavar='<role_id>', help='ID of Role', nargs='?')
-def do_user_remove_tenant_role(kc, args):
-    kc.roles.remove_user_to_tenant(args.tenant_id, args.user_id, args.role_id)
+def do_remove_user_role(kc, args):
+    kc.roles.remove_user_role(args.user_id, args.role_id, args.tenant_id)
 
 
 @utils.arg('tenant_id', metavar='<tenant_id>', help='ID of Tenant', nargs='?')

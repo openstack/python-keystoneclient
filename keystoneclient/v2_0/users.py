@@ -26,6 +26,9 @@ class User(base.Resource):
     def delete(self):
         return self.manager.delete(self)
 
+    def list_roles(self, tenant=None):
+        return self.manager.list_roles(self.id, base.getid(tenant))
+
 
 class UserManager(base.ManagerWithFind):
     resource_class = User
@@ -115,3 +118,7 @@ class UserManager(base.ManagerWithFind):
         else:
             return self._list("/tenants/%s/users%s" % (tenant_id, query),
                               "users")
+
+    def list_roles(self, user, tenant=None):
+        return self.api.roles.roles_for_user(base.getid(user),
+                                             base.getid(tenant))
