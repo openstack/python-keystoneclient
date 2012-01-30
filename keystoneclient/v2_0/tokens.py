@@ -36,5 +36,8 @@ class TokenManager(base.ManagerWithFind):
             params['auth']['tenantName'] = tenant_name
         return self._create('/tokens', params, "access", return_raw=return_raw)
 
+    def delete(self, token):
+        return self._delete("/tokens/%s" % base.getid(token))
+
     def endpoints(self, token):
         return self._get("/tokens/%s/endpoints" % base.getid(token), "token")
