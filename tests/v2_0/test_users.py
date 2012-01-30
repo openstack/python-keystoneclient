@@ -191,7 +191,7 @@ class UserTests(utils.TestCase):
                               headers=self.TEST_POST_HEADERS) \
                               .AndReturn((resp_3, resp_3['body']))
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
-                              'v2.0/users/2/enabled'),
+                              'v2.0/users/2/OS-KSADM/enabled'),
                               'PUT',
                               body=json.dumps(req_4),
                               headers=self.TEST_POST_HEADERS) \
