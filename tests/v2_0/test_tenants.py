@@ -180,7 +180,7 @@ class TenantTests(utils.TestCase):
 
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
                               'v2.0/tenants/4'),
-                              'PUT',
+                              'POST',
                               body=json.dumps(req_body),
                               headers=self.TEST_POST_HEADERS) \
                               .AndReturn((resp, resp['body']))

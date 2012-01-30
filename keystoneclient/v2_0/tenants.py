@@ -90,8 +90,8 @@ class TenantManager(base.ManagerWithFind):
             body['tenant']['enabled'] = enabled
         if description:
             body['tenant']['description'] = description
-
-        return self._update("/tenants/%s" % tenant_id, body, "tenant")
+        # Keystone's API uses a POST rather than a PUT here.
+        return self._create("/tenants/%s" % tenant_id, body, "tenant")
 
     def delete(self, tenant):
         """
