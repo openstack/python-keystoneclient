@@ -36,15 +36,18 @@ class UserManager(base.ManagerWithFind):
     def get(self, user):
         return self._get("/users/%s" % base.getid(user), "user")
 
-    def update_email(self, user, email):
+    def update(self, user, **kwargs):
         """
-        Update email
-        """
-        # FIXME(ja): why do we have to send id in params and url?
-        params = {"user": {"id": base.getid(user),
-                           "email": email}}
+        Update user data.
 
-        return self._update("/users/%s" % base.getid(user), params, "user")
+        Supported arguments include ``name`` and ``email``.
+        """
+        # FIXME(gabriel): "tenantId" seems to be accepted by the API but
+        #                 fails to actually update the default tenant.
+        params = {"user": kwargs}
+        params['user']['id'] = base.getid(user)
+        url = "/users/%s" % base.getid(user)
+        return self._update(url, params, "user", method="POST")
 
     def update_enabled(self, user, enabled):
         """
@@ -63,7 +66,7 @@ class UserManager(base.ManagerWithFind):
         params = {"user": {"id": base.getid(user),
                            "password": password}}
 
-        return self._update("/users/%s/password" % base.getid(user),
+        return self._update("/users/%s/OS-KSADM/password" % base.getid(user),
                             params, "user")
 
     def update_tenant(self, user, tenant):
@@ -75,7 +78,7 @@ class UserManager(base.ManagerWithFind):
 
         # FIXME(ja): seems like a bad url - default tenant is an attribute
         #            not a subresource!???
-        return self._update("/users/%s/tenant" % base.getid(user),
+        return self._update("/users/%s/OS-KSADM/tenant" % base.getid(user),
                             params, "user")
 
     def create(self, name, password, email, tenant_id=None, enabled=True):

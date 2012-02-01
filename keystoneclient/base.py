@@ -87,8 +87,14 @@ class Manager(object):
     def _delete(self, url):
         resp, body = self.api.delete(url)
 
-    def _update(self, url, body, response_key=None):
-        resp, body = self.api.put(url, body=body)
+    def _update(self, url, body, response_key=None, method="PUT"):
+        methods = {"PUT": self.api.put,
+                   "POST": self.api.post}
+        try:
+            resp, body = methods[method](url, body=body)
+        except KeyError:
+            raise exceptions.ClientException("Invalid update method: %s"
+                                             % method)
         # PUT requests may not return a body
         if body:
             return self.resource_class(self, body[response_key])

@@ -164,7 +164,9 @@ class UserTests(utils.TestCase):
 
     def test_update(self):
         req_1 = {"user": {"password": "swordfish", "id": 2}}
-        req_2 = {"user": {"id": 2, "email": "gabriel@example.com"}}
+        req_2 = {"user": {"id": 2,
+                          "email": "gabriel@example.com",
+                          "name": "gabriel"}}
         req_3 = {"user": {"tenantId": 1, "id": 2}}
         req_4 = {"user": {"enabled": False, "id": 2}}
         # Keystone basically echoes these back... including the password :-/
@@ -173,19 +175,19 @@ class UserTests(utils.TestCase):
         resp_3 = httplib2.Response({"status": 200, "body": json.dumps(req_3)})
         resp_4 = httplib2.Response({"status": 200, "body": json.dumps(req_3)})
 
-        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
-                              'v2.0/users/2/password'),
-                              'PUT',
-                              body=json.dumps(req_1),
-                              headers=self.TEST_POST_HEADERS) \
-                              .AndReturn((resp_1, resp_1['body']))
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL, 'v2.0/users/2'),
-                              'PUT',
+                              'POST',
                               body=json.dumps(req_2),
                               headers=self.TEST_POST_HEADERS) \
                               .AndReturn((resp_2, resp_2['body']))
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
-                              'v2.0/users/2/tenant'),
+                              'v2.0/users/2/OS-KSADM/password'),
+                              'PUT',
+                              body=json.dumps(req_1),
+                              headers=self.TEST_POST_HEADERS) \
+                              .AndReturn((resp_1, resp_1['body']))
+        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
+                              'v2.0/users/2/OS-KSADM/tenant'),
                               'PUT',
                               body=json.dumps(req_3),
                               headers=self.TEST_POST_HEADERS) \
@@ -198,7 +200,9 @@ class UserTests(utils.TestCase):
                               .AndReturn((resp_4, resp_4['body']))
         self.mox.ReplayAll()
 
+        user = self.client.users.update(2,
+                                        name='gabriel',
+                                        email='gabriel@example.com')
         user = self.client.users.update_password(2, 'swordfish')
-        user = self.client.users.update_email(2, 'gabriel@example.com')
         user = self.client.users.update_tenant(2, 1)
         user = self.client.users.update_enabled(2, False)
