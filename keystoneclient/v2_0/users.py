@@ -73,9 +73,7 @@ class UserManager(base.ManagerWithFind):
         params = {"user": {"id": base.getid(user),
                            "tenantId": base.getid(tenant)}}
 
-        # FIXME(ja): seems like a bad url - default tenant is an attribute
-        #            not a subresource!???
-        return self._update("/users/%s/tenant" % base.getid(user),
+        return self._update("/users/%s/OS-KSADM/tenant" % base.getid(user),
                             params, "user")
 
     def create(self, name, password, email, tenant_id=None, enabled=True):
