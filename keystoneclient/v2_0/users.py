@@ -60,11 +60,11 @@ class UserManager(base.ManagerWithFind):
         """
         Update password
         """
-        params = {"user": {"id": base.getid(user),
-                           "password": password}}
+        params = {"passwordCredentials": {"username": user.name,
+                                            "password": password}}
 
-        return self._update("/users/%s/password" % base.getid(user),
-                            params, "user")
+        return self._create("/users/%s/OS-KSADM/credentials/passwordCredentials"
+                % base.getid(user), params, "passwordCredentials", return_raw=True)
 
     def update_tenant(self, user, tenant):
         """
