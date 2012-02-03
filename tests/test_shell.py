@@ -3,8 +3,16 @@ import mock
 import httplib2
 
 from keystoneclient import shell as openstack_shell
+from keystoneclient.v2_0 import shell as shell_v2_0
 from keystoneclient import exceptions
 from tests import utils
+
+
+DEFAULT_USERNAME = 'username'
+DEFAULT_PASSWORD = 'password'
+DEFAULT_TENANT_ID = 'tenant_id'
+DEFAULT_TENANT_NAME = 'tenant_name'
+DEFAULT_AUTH_URL = 'http://127.0.0.1:5000/v2.0/'
 
 
 class ShellTest(utils.TestCase):
@@ -13,10 +21,11 @@ class ShellTest(utils.TestCase):
     def setUp(self):
         global _old_env
         fake_env = {
-            'OS_USERNAME': 'username',
-            'OS_PASSWORD': 'password',
-            'OS_TENANT_ID': 'tenant_id',
-            'OS_AUTH_URL': 'http://127.0.0.1:5000/v2.0',
+            'OS_USERNAME': DEFAULT_USERNAME,
+            'OS_PASSWORD': DEFAULT_PASSWORD,
+            'OS_TENANT_ID': DEFAULT_TENANT_ID,
+            'OS_TENANT_NAME': DEFAULT_TENANT_NAME,
+            'OS_AUTH_URL': DEFAULT_AUTH_URL,
         }
         _old_env, os.environ = os.environ, fake_env.copy()
 
@@ -37,3 +46,42 @@ class ShellTest(utils.TestCase):
         httplib2.debuglevel = 0
         shell('--debug help')
         assert httplib2.debuglevel == 1
+
+    def test_shell_args(self):
+        do_tenant_mock = mock.MagicMock()
+        with mock.patch('keystoneclient.v2_0.shell.do_user_list',
+                        do_tenant_mock):
+            shell('user-list')
+            assert do_tenant_mock.called
+            ((a, b), c) = do_tenant_mock.call_args
+            assert (b.auth_url, b.password, b.tenant_id,
+                    b.tenant_name, b.username, b.version) == \
+                   (DEFAULT_AUTH_URL, DEFAULT_PASSWORD, DEFAULT_TENANT_ID,
+                    DEFAULT_TENANT_NAME, DEFAULT_USERNAME, '')
+            shell('--auth-url http://0.0.0.0:5000/ --password xyzpdq '
+                  '--tenant_id 1234 --tenant_name fred --username barney '
+                  '--version 2.0 user-list')
+            assert do_tenant_mock.called
+            ((a, b), c) = do_tenant_mock.call_args
+            assert (b.auth_url, b.password, b.tenant_id,
+                    b.tenant_name, b.username, b.version) == \
+                   ('http://0.0.0.0:5000/', 'xyzpdq', '1234',
+                    'fred', 'barney', '2.0')
+
+    def test_do_tenant_create(self):
+        do_tenant_mock = mock.MagicMock()
+        with mock.patch('keystoneclient.v2_0.shell.do_tenant_create',
+                        do_tenant_mock):
+            shell('tenant-create')
+            assert do_tenant_mock.called
+            # FIXME(dtroyer): how do you test the decorators?
+            #shell('tenant-create --tenant-name wilma '
+            #        '--description "fred\'s wife"')
+            #assert do_tenant_mock.called
+
+    def test_do_tenant_list(self):
+        do_tenant_mock = mock.MagicMock()
+        with mock.patch('keystoneclient.v2_0.shell.do_tenant_list',
+                        do_tenant_mock):
+            shell('tenant-list')
+            assert do_tenant_mock.called

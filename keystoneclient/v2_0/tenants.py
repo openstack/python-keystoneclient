@@ -26,9 +26,20 @@ class Tenant(base.Resource):
     def delete(self):
         return self.manager.delete(self)
 
-    def update(self, description=None, enabled=None):
-        # FIXME(ja): set the attributes in this object if successful
-        return self.manager.update(self.id, description, enabled)
+    def update(self, name=None, description=None, enabled=None):
+        # Preserve the existing settings; keystone legacy resets these?
+        new_name = name if name else self.name
+        new_description = description if description else self.description
+        new_enabled = enabled if enabled else self.enabled
+
+        try:
+            retval = self.manager.update(self.id, tenant_name=new_name,
+                                         description=new_description,
+                                         enabled=new_enabled)
+            self = retval
+        except Exception, e:
+            retval = None
+        return retval
 
     def add_user(self, user, role):
         return self.manager.api.roles.add_user_to_tenant(self.id,
