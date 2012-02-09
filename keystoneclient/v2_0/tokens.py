@@ -23,7 +23,7 @@ class TokenManager(base.ManagerWithFind):
 
     def authenticate(self, username=None, tenant_id=None, tenant_name=None,
                      password=None, token=None, return_raw=False):
-        if token and token != password:
+        if token:
             params = {"auth": {"token": {"id": token}}}
         elif username and password:
             params = {"auth": {"passwordCredentials": {"username": username,

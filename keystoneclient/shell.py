@@ -56,6 +56,14 @@ class OpenStackIdentityShell(object):
             action='store_true',
             help=argparse.SUPPRESS)
 
+        parser.add_argument('--token',
+            default=env('SERVICE_TOKEN'),
+            help='Defaults to env[SERVICE_TOKEN].')
+
+        parser.add_argument('--endpoint',
+            default=env('SERVICE_ENDPOINT'),
+            help='Defaults to env[SERVICE_ENDPOINT].')
+
         parser.add_argument('--username',
             default=env('OS_USERNAME'),
             help='Defaults to env[OS_USERNAME].')
@@ -154,38 +162,43 @@ class OpenStackIdentityShell(object):
         # for username or apikey but for compatibility it is not.
 
         if not utils.isunauthenticated(args.func):
-            if not args.username:
-                raise exc.CommandError("You must provide a username "
-                        "via either --username or env[OS_USERNAME]")
+            if not (args.token and args.endpoint):
+                if not args.username:
+                    raise exc.CommandError("You must provide a username "
+                            "via either --username or env[OS_USERNAME]")
 
-            if not args.password:
-                raise exc.CommandError("You must provide a password "
-                        "via either --password or env[OS_PASSWORD]")
+                if not args.password:
+                    raise exc.CommandError("You must provide a password "
+                            "via either --password or env[OS_PASSWORD]")
 
-            if not args.auth_url:
-                raise exc.CommandError("You must provide an auth url "
-                        "via either --auth_url or via env[OS_AUTH_URL]")
+                if not args.auth_url:
+                    raise exc.CommandError("You must provide an auth url "
+                            "via either --auth_url or via env[OS_AUTH_URL]")
 
         if utils.isunauthenticated(args.func):
             self.cs = shell_generic.CLIENT_CLASS(endpoint=args.auth_url)
         else:
+            token = None
+            endpoint = None
+            if args.token and args.endpoint:
+                token = args.token
+                endpoint = args.endpoint
             self.cs = self.get_api_class(options.version)(
                 username=args.username,
                 tenant_name=args.tenant_name,
                 tenant_id=args.tenant_id,
+                token=token,
+                endpoint=endpoint,
                 password=args.password,
                 auth_url=args.auth_url,
                 region_name=args.region_name)
 
         try:
-            if not utils.isunauthenticated(args.func):
-                self.cs.authenticate()
+            args.func(self.cs, args)
         except exc.Unauthorized:
             raise exc.CommandError("Invalid OpenStack Keystone credentials.")
         except exc.AuthorizationFailure:
             raise exc.CommandError("Unable to authorize user")
-
-        args.func(self.cs, args)
 
     def get_api_class(self, version):
         try:

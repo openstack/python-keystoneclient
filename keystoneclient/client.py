@@ -139,7 +139,7 @@ class HTTPClient(httplib2.Http):
             self.authenticate()
 
         kwargs.setdefault('headers', {})
-        if self.auth_token and self.auth_token != self.password:
+        if self.auth_token:
             kwargs['headers']['X-Auth-Token'] = self.auth_token
 
         # Perform the request once. If we get a 401 back then it
