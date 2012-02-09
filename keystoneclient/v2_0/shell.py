@@ -31,9 +31,10 @@ def do_user_list(kc, args):
     utils.print_list(users, ['id', 'enabled', 'email', 'name', 'tenantId'])
 
 
-@utils.arg('--username', metavar='<username>', nargs='?',
+@utils.arg('--name', metavar='<name>', nargs='?',
            help='Desired username. (unique)')
-@utils.arg('--password', metavar='<password>', nargs='?',
+@utils.arg('--pass', metavar='<pass>', nargs='?',
+           dest='passwd',
            help='Desired password.')
 @utils.arg('--email', metavar='<email>', nargs='?',
            help='Desired email address. (unique)')
@@ -42,7 +43,7 @@ def do_user_list(kc, args):
 @utils.arg('--enabled', metavar='<enabled>', nargs='?', default=True,
            help='Enable user immediately (Optional, default True)')
 def do_user_create(kc, args):
-    user = kc.users.create(args.username, args.password, args.email,
+    user = kc.users.create(args.name, args.passwd, args.email,
                            tenant_id=args.default_tenant, enabled=args.enabled)
     utils.print_dict(user._info)
 
@@ -94,14 +95,14 @@ def do_user_delete(kc, args):
         'Unable to delete user.'
 
 
-@utils.arg('--tenant-name', metavar='<tenant_name>', nargs='?',
+@utils.arg('--name', metavar='<name>', nargs='?',
            help='Desired name of new tenant.')
 @utils.arg('--description', metavar='<description>', nargs='?', default=None,
            help='Useful description of new tenant (optional, default is None)')
 @utils.arg('--enabled', metavar='<enabled>', nargs='?', default=True,
            help='Enable user immediately (Optional, default True)')
 def do_tenant_create(kc, args):
-    tenant = kc.tenants.create(args.tenant_name,
+    tenant = kc.tenants.create(args.name,
                              description=args.description,
                              enabled=args.enabled)
     utils.print_dict(tenant._info)
@@ -134,17 +135,16 @@ def do_tenant_delete(kc, args):
         'Unable to delete tenant.'
 
 
-@utils.arg('--service-name', metavar='<service_name>', nargs='?',
+@utils.arg('--name', metavar='<name>', nargs='?',
            help='Desired name of service. (unique)')
-# TODO(jakedahn): add service type examples to helptext.
-@utils.arg('--service-type', metavar='<service_type>', nargs='?',
+@utils.arg('--type', metavar='<type>', nargs='?',
            help='Possible service types: identity, compute, network, \
                  image, or object-store.')
 @utils.arg('--description', metavar='<service_description>', nargs='?',
            help='Useful description of service.')
 def do_service_create(kc, args):
-    service = kc.services.create(args.service_name,
-                                 args.service_type,
+    service = kc.services.create(args.name,
+                                 args.type,
                                  args.description)
     utils.print_dict(service._info)
 
@@ -167,7 +167,7 @@ def do_service_get(kc, args):
            metavar='<service_id>',
            help='ID of Service to delete',
            nargs='?')
-def do_service_get(kc, args):
+def do_service_delete(kc, args):
     try:
         kc.services.delete(args.id)
         print 'Service has been deleted'
@@ -186,10 +186,10 @@ def do_role_get(kc, args):
     utils.print_dict(role._info)
 
 
-@utils.arg('role-name', metavar='<role_name>', nargs='?',
+@utils.arg('--name', metavar='<name>', nargs='?',
            help='Desired name of new role.')
 def do_role_create(kc, args):
-    role = kc.roles.create(args.role_name)
+    role = kc.roles.create(args.name)
     utils.print_dict(role._info)
 
 
@@ -218,8 +218,9 @@ def do_remove_user_role(kc, args):
     kc.roles.remove_user_role(args.user_id, args.role_id, args.tenant_id)
 
 
-@utils.arg('tenant_id', metavar='<tenant_id>', help='ID of Tenant', nargs='?')
-@utils.arg('user_id', metavar='<user_id>', help='ID of User', nargs='?')
+@utils.arg('--tenant_id', metavar='<tenant_id>', help='ID of Tenant',
+           nargs='?')
+@utils.arg('--user_id', metavar='<user_id>', help='ID of User', nargs='?')
 def do_ec2_create_credentials(kc, args):
     credentials = kc.ec2.create(args.user_id, args.tenant_id)
     utils.print_dict(credentials._info)
