@@ -1,8 +1,8 @@
 import time
-import unittest
 
 import httplib2
 import mox
+import unittest2 as unittest
 
 from keystoneclient.v2_0 import client
 

@@ -7,3 +7,4 @@ nose
 pep8
 prettytable
 simplejson
+unittest2
