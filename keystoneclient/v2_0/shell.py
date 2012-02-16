@@ -49,11 +49,13 @@ def do_user_create(kc, args):
 
 
 @utils.arg('id', metavar='<user_id>', nargs='?',
-           help='User ID to update email.')
+           help='User ID to update.')
+@utils.arg('name', metavar='<name>', nargs='?',
+           help='New desired user name.')
 @utils.arg('email', metavar='<email>', nargs='?',
            help='New desired email address.')
-def do_user_update_email(kc, args):
-    user = kc.users.update_email(args.id, args.email)
+def do_user_update(kc, args):
+    user = kc.users.update(args.id, name=args.name, email=args.email)
     utils.print_dict(user._info)
 
 
