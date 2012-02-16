@@ -176,7 +176,7 @@ class UserTests(utils.TestCase):
         resp_4 = httplib2.Response({"status": 200, "body": json.dumps(req_3)})
 
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL, 'v2.0/users/2'),
-                              'POST',
+                              'PUT',
                               body=json.dumps(req_2),
                               headers=self.TEST_POST_HEADERS) \
                               .AndReturn((resp_2, resp_2['body']))

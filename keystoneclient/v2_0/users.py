@@ -47,7 +47,7 @@ class UserManager(base.ManagerWithFind):
         params = {"user": kwargs}
         params['user']['id'] = base.getid(user)
         url = "/users/%s" % base.getid(user)
-        return self._update(url, params, "user", method="POST")
+        return self._update(url, params, "user")
 
     def update_enabled(self, user, enabled):
         """
