@@ -27,7 +27,15 @@ class ServiceCatalog(object):
         self.catalog = resource_dict
 
     def get_token(self):
-        return self.catalog['token']['id']
+        """Fetch token details fron service catalog"""
+        token = {'id': self.catalog['token']['id'],
+                'expires': self.catalog['token']['expires']}
+        try:
+            token['tenant'] = self.catalog['token']['tenant']['id']
+        except:
+            # just leave the tenant out if it doesn't exist
+            pass
+        return token
 
     def url_for(self, attr=None, filter_value=None,
                     service_type='identity', endpoint_type='publicURL'):
@@ -47,7 +55,24 @@ class ServiceCatalog(object):
 
             endpoints = service['endpoints']
             for endpoint in endpoints:
-                if not filter_value or endpoint[attr] == filter_value:
+                if not filter_value or endpoint.get(attr) == filter_value:
                     return endpoint[endpoint_type]
 
         raise exceptions.EndpointNotFound('Endpoint not found.')
+
+    def get_endpoints(self, service_type=None, endpoint_type=None):
+        """Fetch and filter endpoints for the specified service(s)
+
+        Returns endpoints for the specified service (or all) and
+        that contain the specified type (or all).
+        """
+        sc = {}
+        for service in self.catalog.get('serviceCatalog', []):
+            if service_type and service_type != service['type']:
+                continue
+            sc[service['type']] = []
+            for endpoint in service['endpoints']:
+                if endpoint_type and endpoint_type not in endpoint.keys():
+                    continue
+                sc[service['type']].append(endpoint)
+        return sc

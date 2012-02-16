@@ -107,3 +107,24 @@ class ServiceCatalogTest(utils.TestCase):
 
         self.assertRaises(exceptions.EndpointNotFound,
                         sc.url_for, "region", "South", service_type='compute')
+
+    def test_service_catalog_endpoints(self):
+        sc = service_catalog.ServiceCatalog(SERVICE_CATALOG['access'])
+        public_ep = sc.get_endpoints(service_type='compute',
+                endpoint_type='publicURL')
+        self.assertEquals(public_ep['compute'][1]['tenantId'], '2')
+        self.assertEquals(public_ep['compute'][1]['versionId'], '1.1')
+        self.assertEquals(public_ep['compute'][1]['internalURL'],
+                "https://compute.north.host/v1.1/3456")
+
+    def test_token(self):
+        sc = service_catalog.ServiceCatalog(SERVICE_CATALOG['access'])
+
+        self.assertEquals(sc.get_token(),
+                {'id': 'ab48a9efdfedb23ty3494',
+                 'tenant': '345',
+                 'expires': '2010-11-01T03:32:15-05:00'})
+        self.assertEquals(sc.catalog['token']['expires'],
+                "2010-11-01T03:32:15-05:00")
+        self.assertEquals(sc.catalog['token']['tenant']['id'],
+                '345')

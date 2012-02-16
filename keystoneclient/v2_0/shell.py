@@ -244,3 +244,45 @@ def do_ec2_delete_credentials(kc, args):
         print 'Deleted EC2 Credentials.'
     except:
         print 'Unable to delete EC2 Credentials.'
+
+
+@utils.arg('--service', metavar='<service_type>',
+        help='Service type to return', nargs='?', default=None)
+def do_catalog(kc, args):
+    """List service catalog, possibly filtered by service"""
+    endpoints = kc.service_catalog.get_endpoints(service_type=args.service)
+    for (service, service_endpoints) in endpoints.iteritems():
+        if len(service_endpoints) > 0:
+            print "Service: %s" % service
+            for ep in service_endpoints:
+                utils.print_dict(ep)
+
+
+@utils.arg('--endpoint_type', metavar='<endpoint_type>',
+        help='Endpoint type to select', nargs='?', default='publicURL')
+@utils.arg('--service', metavar='<service_type>',
+        help='Service type to select', nargs='?', required=True)
+@utils.arg('--attr', metavar='<attribute>',
+        help='Attribute to match', nargs='?')
+@utils.arg('--value', metavar='<value>',
+        help='Value of attribute to match', nargs='?')
+def do_endpoint_get(kc, args):
+    """Find endpoint filtered by a specific attribute or service type"""
+    kwargs = {
+        'service_type': args.service,
+        'endpoint_type': args.endpoint_type,
+    }
+
+    if args.attr and args.value:
+        kwargs.update({'attr': args.attr, 'filter_value': args.value})
+    elif args.attr or args.value:
+        print 'Both --attr and --value required.'
+        return
+
+    url = kc.service_catalog.url_for(**kwargs)
+    utils.print_dict({'%s.%s' % (args.service, args.endpoint_type): url})
+
+
+def do_token(kc, args):
+    """Fetch the current user's token"""
+    utils.print_dict(kc.service_catalog.get_token())
