@@ -79,7 +79,7 @@ class OpenStackIdentityShell(object):
             help='Defaults to env[OS_TENANT_NAME]')
 
         parser.add_argument('--tenant_id',
-            default=env('OS_TENANT_ID'),
+            default=env('OS_TENANT_ID'), dest='os_tenant_id',
             help='Defaults to env[OS_TENANT_ID]')
 
         parser.add_argument('--auth_url',
@@ -204,7 +204,7 @@ class OpenStackIdentityShell(object):
             self.cs = self.get_api_class(api_version)(
                 username=args.username,
                 tenant_name=args.tenant_name,
-                tenant_id=args.tenant_id,
+                tenant_id=args.os_tenant_id,
                 token=token,
                 endpoint=endpoint,
                 password=args.password,

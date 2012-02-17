@@ -54,7 +54,7 @@ class ShellTest(utils.TestCase):
             shell('user-list')
             assert do_tenant_mock.called
             ((a, b), c) = do_tenant_mock.call_args
-            assert (b.auth_url, b.password, b.tenant_id,
+            assert (b.auth_url, b.password, b.os_tenant_id,
                     b.tenant_name, b.username, b.identity_api_version) == \
                    (DEFAULT_AUTH_URL, DEFAULT_PASSWORD, DEFAULT_TENANT_ID,
                     DEFAULT_TENANT_NAME, DEFAULT_USERNAME, '')
@@ -63,7 +63,7 @@ class ShellTest(utils.TestCase):
                   '--identity_api_version 2.0 user-list')
             assert do_tenant_mock.called
             ((a, b), c) = do_tenant_mock.call_args
-            assert (b.auth_url, b.password, b.tenant_id,
+            assert (b.auth_url, b.password, b.os_tenant_id,
                     b.tenant_name, b.username, b.identity_api_version) == \
                    ('http://0.0.0.0:5000/', 'xyzpdq', '1234',
                     'fred', 'barney', '2.0')
@@ -120,3 +120,35 @@ class ShellTest(utils.TestCase):
                         do_tenant_mock):
             shell('tenant-list')
             assert do_tenant_mock.called
+
+    def test_shell_tenant_id_args(self):
+        """Test a corner case where --tenant_id appears on the
+           command-line twice"""
+        do_ec2_mock = mock.MagicMock()
+        # grab the decorators for do_ec2_create_credentials
+        ec2_func = getattr(shell_v2_0, 'do_ec2_credentials_create')
+        do_ec2_mock.arguments = getattr(ec2_func, 'arguments', [])
+        with mock.patch('keystoneclient.v2_0.shell.do_ec2_credentials_create',
+                        do_ec2_mock):
+
+            # Test case with one --tenant_id args present: ec2 creds
+            shell('ec2-credentials-create '
+                  '--tenant_id=ec2-tenant --user=ec2-user')
+            assert do_ec2_mock.called
+            ((a, b), c) = do_ec2_mock.call_args
+            assert (b.auth_url, b.password, b.os_tenant_id,
+                    b.tenant_name, b.username, b.identity_api_version) == \
+                   (DEFAULT_AUTH_URL, DEFAULT_PASSWORD, DEFAULT_TENANT_ID,
+                    DEFAULT_TENANT_NAME, DEFAULT_USERNAME, '')
+            assert (b.tenant_id, b.user) == ('ec2-tenant', 'ec2-user')
+
+            # Test case with two --tenant_id args present
+            shell('--tenant_id=os-tenant ec2-credentials-create '
+                  '--tenant_id=ec2-tenant --user=ec2-user')
+            assert do_ec2_mock.called
+            ((a, b), c) = do_ec2_mock.call_args
+            assert (b.auth_url, b.password, b.os_tenant_id,
+                    b.tenant_name, b.username, b.identity_api_version) == \
+                   (DEFAULT_AUTH_URL, DEFAULT_PASSWORD, 'os-tenant',
+                    DEFAULT_TENANT_NAME, DEFAULT_USERNAME, '')
+            assert (b.tenant_id, b.user) == ('ec2-tenant', 'ec2-user')
