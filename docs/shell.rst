@@ -42,9 +42,9 @@ options, it is easier to just set them as environment variables:
 
     The OpenStack API server URL.
 
-.. envvar:: KEYSTONE_VERSION
+.. envvar:: OS_IDENTITY_API_VERSION
 
-    The OpenStack API version.
+    The OpenStack Identity API version.
 
 For example, in Bash you'd use::
 
@@ -52,7 +52,7 @@ For example, in Bash you'd use::
     export OS_PASSWORD=yadayadayada
     export OS_TENANT_NAME=myproject
     export OS_AUTH_URL=http://example.com:5000/v2.0/
-    export KEYSTONE_VERSION=2.0
+    export OS_IDENTITY_API_VERSION=2.0
 
 From there, all shell commands take the form::
 

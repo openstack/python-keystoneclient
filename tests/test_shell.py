@@ -55,16 +55,16 @@ class ShellTest(utils.TestCase):
             assert do_tenant_mock.called
             ((a, b), c) = do_tenant_mock.call_args
             assert (b.auth_url, b.password, b.tenant_id,
-                    b.tenant_name, b.username, b.version) == \
+                    b.tenant_name, b.username, b.identity_api_version) == \
                    (DEFAULT_AUTH_URL, DEFAULT_PASSWORD, DEFAULT_TENANT_ID,
                     DEFAULT_TENANT_NAME, DEFAULT_USERNAME, '')
             shell('--auth_url http://0.0.0.0:5000/ --password xyzpdq '
                   '--tenant_id 1234 --tenant_name fred --username barney '
-                  '--version 2.0 user-list')
+                  '--identity_api_version 2.0 user-list')
             assert do_tenant_mock.called
             ((a, b), c) = do_tenant_mock.call_args
             assert (b.auth_url, b.password, b.tenant_id,
-                    b.tenant_name, b.username, b.version) == \
+                    b.tenant_name, b.username, b.identity_api_version) == \
                    ('http://0.0.0.0:5000/', 'xyzpdq', '1234',
                     'fred', 'barney', '2.0')
 
@@ -84,7 +84,7 @@ class ShellTest(utils.TestCase):
             ((a, b), c) = do_uc_mock.call_args
             # restore os_tenant_id when review 4295 is merged
             assert (b.auth_url, b.password,  # b.os_tenant_id,
-                    b.tenant_name, b.username, b.version) == \
+                    b.tenant_name, b.username, b.identity_api_version) == \
                    (DEFAULT_AUTH_URL, DEFAULT_PASSWORD,  # DEFAULT_TENANT_ID,
                     DEFAULT_TENANT_NAME, DEFAULT_USERNAME, '')
             assert (b.tenant_id, b.name, b.passwd, b.enabled) == \
@@ -97,7 +97,7 @@ class ShellTest(utils.TestCase):
             ((a, b), c) = do_uc_mock.call_args
             # restore os_tenant_id when review 4295 is merged
             assert (b.auth_url, b.password,  # b.os_tenant_id,
-                    b.tenant_name, b.username, b.version) == \
+                    b.tenant_name, b.username, b.identity_api_version) == \
                    (DEFAULT_AUTH_URL, DEFAULT_PASSWORD,  # 'os-tenant',
                     DEFAULT_TENANT_NAME, DEFAULT_USERNAME, '')
             assert (b.tenant_id, b.name, b.passwd, b.enabled) == \

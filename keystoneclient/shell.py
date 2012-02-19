@@ -29,8 +29,18 @@ from keystoneclient.v2_0 import shell as shell_v2_0
 from keystoneclient.generic import shell as shell_generic
 
 
-def env(e):
-    return os.environ.get(e, '')
+def env(*vars, **kwargs):
+    """Search for the first defined of possibly many env vars
+
+    Returns the first environment variable defined in vars, or
+    returns the default defined in kwargs.
+
+    """
+    for v in vars:
+        value = os.environ.get(v, None)
+        if value:
+            return value
+    return kwargs.get('default', '')
 
 
 class OpenStackIdentityShell(object):
@@ -88,9 +98,9 @@ class OpenStackIdentityShell(object):
             default=env('OS_REGION_NAME'),
             help='Defaults to env[OS_REGION_NAME].')
 
-        parser.add_argument('--version',
-            default=env('KEYSTONE_VERSION'),
-            help='Accepts 1.0 or 1.1, defaults to env[KEYSTONE_VERSION].')
+        parser.add_argument('--identity_api_version',
+            default=env('OS_IDENTITY_API_VERSION', 'KEYSTONE_VERSION'),
+            help='Defaults to env[OS_IDENTITY_API_VERSION] or 2.0.')
 
         return parser
 
@@ -143,7 +153,8 @@ class OpenStackIdentityShell(object):
         (options, args) = parser.parse_known_args(argv)
 
         # build available subcommands based on version
-        subcommand_parser = self.get_subcommand_parser(options.version)
+        api_version = options.identity_api_version
+        subcommand_parser = self.get_subcommand_parser(api_version)
         self.parser = subcommand_parser
 
         # Parse args again and call whatever callback was selected
@@ -183,7 +194,8 @@ class OpenStackIdentityShell(object):
             if args.token and args.endpoint:
                 token = args.token
                 endpoint = args.endpoint
-            self.cs = self.get_api_class(options.version)(
+            api_version = options.identity_api_version
+            self.cs = self.get_api_class(api_version)(
                 username=args.username,
                 tenant_name=args.tenant_name,
                 tenant_id=args.tenant_id,
