@@ -35,13 +35,13 @@ def do_user_list(kc, args):
            help='Desired password.')
 @utils.arg('--email', metavar='<email>', nargs='?',
            help='Desired email address. (unique)')
-@utils.arg('--default-tenant', metavar='<default_tenant>', nargs='?',
+@utils.arg('--tenant_id', metavar='<tenant>', nargs='?',
            help='User will join the default tenant as a Member.')
 @utils.arg('--enabled', metavar='<enabled>', nargs='?', default=True,
            help='Enable user immediately (Optional, default True)')
 def do_user_create(kc, args):
     user = kc.users.create(args.name, args.passwd, args.email,
-                           tenant_id=args.default_tenant, enabled=args.enabled)
+                           tenant_id=args.tenant_id, enabled=args.enabled)
     utils.print_dict(user._info)
 
 

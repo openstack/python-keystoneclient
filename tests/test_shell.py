@@ -58,7 +58,7 @@ class ShellTest(utils.TestCase):
                     b.tenant_name, b.username, b.version) == \
                    (DEFAULT_AUTH_URL, DEFAULT_PASSWORD, DEFAULT_TENANT_ID,
                     DEFAULT_TENANT_NAME, DEFAULT_USERNAME, '')
-            shell('--auth-url http://0.0.0.0:5000/ --password xyzpdq '
+            shell('--auth_url http://0.0.0.0:5000/ --password xyzpdq '
                   '--tenant_id 1234 --tenant_name fred --username barney '
                   '--version 2.0 user-list')
             assert do_tenant_mock.called
@@ -67,6 +67,41 @@ class ShellTest(utils.TestCase):
                     b.tenant_name, b.username, b.version) == \
                    ('http://0.0.0.0:5000/', 'xyzpdq', '1234',
                     'fred', 'barney', '2.0')
+
+    def test_shell_user_create_args(self):
+        """Test user-create args"""
+        do_uc_mock = mock.MagicMock()
+        # grab the decorators for do_user_create
+        uc_func = getattr(shell_v2_0, 'do_user_create')
+        do_uc_mock.arguments = getattr(uc_func, 'arguments', [])
+        with mock.patch('keystoneclient.v2_0.shell.do_user_create',
+                        do_uc_mock):
+
+            # Test case with one --tenant_id args present: ec2 creds
+            shell('user-create --name=FOO '
+                  '--pass=secrete --tenant_id=barrr --enabled=true')
+            assert do_uc_mock.called
+            ((a, b), c) = do_uc_mock.call_args
+            # restore os_tenant_id when review 4295 is merged
+            assert (b.auth_url, b.password,  # b.os_tenant_id,
+                    b.tenant_name, b.username, b.version) == \
+                   (DEFAULT_AUTH_URL, DEFAULT_PASSWORD,  # DEFAULT_TENANT_ID,
+                    DEFAULT_TENANT_NAME, DEFAULT_USERNAME, '')
+            assert (b.tenant_id, b.name, b.passwd, b.enabled) == \
+                   ('barrr', 'FOO', 'secrete', 'true')
+
+            # Test case with two --tenant_id args present
+            shell('--tenant_id=os-tenant user-create --name=FOO '
+                  '--pass=secrete --tenant_id=barrr --enabled=true')
+            assert do_uc_mock.called
+            ((a, b), c) = do_uc_mock.call_args
+            # restore os_tenant_id when review 4295 is merged
+            assert (b.auth_url, b.password,  # b.os_tenant_id,
+                    b.tenant_name, b.username, b.version) == \
+                   (DEFAULT_AUTH_URL, DEFAULT_PASSWORD,  # 'os-tenant',
+                    DEFAULT_TENANT_NAME, DEFAULT_USERNAME, '')
+            assert (b.tenant_id, b.name, b.passwd, b.enabled) == \
+                   ('barrr', 'FOO', 'secrete', 'true')
 
     def test_do_tenant_create(self):
         do_tenant_mock = mock.MagicMock()

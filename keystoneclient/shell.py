@@ -80,7 +80,7 @@ class OpenStackIdentityShell(object):
             default=env('OS_TENANT_ID'),
             help='Defaults to env[OS_TENANT_ID].')
 
-        parser.add_argument('--auth-url',
+        parser.add_argument('--auth_url',
             default=env('OS_AUTH_URL'),
             help='Defaults to env[OS_AUTH_URL].')
 
