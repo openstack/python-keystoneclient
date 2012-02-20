@@ -98,3 +98,97 @@ class RoleTests(utils.TestCase):
 
         role_list = self.client.roles.list()
         [self.assertTrue(isinstance(r, roles.Role)) for r in role_list]
+
+    def test_roles_for_user(self):
+        resp = httplib2.Response({
+            "status": 200,
+            "body": json.dumps(self.TEST_ROLES),
+            })
+
+        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
+                              'v2.0/users/foo/roles?fresh=1234'),
+                              'GET',
+                              headers=self.TEST_REQUEST_HEADERS) \
+                              .AndReturn((resp, resp['body']))
+        self.mox.ReplayAll()
+
+        role_list = self.client.roles.roles_for_user('foo')
+        [self.assertTrue(isinstance(r, roles.Role)) for r in role_list]
+
+    def test_roles_for_user_tenant(self):
+        resp = httplib2.Response({
+            "status": 200,
+            "body": json.dumps(self.TEST_ROLES),
+            })
+
+        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
+                              'v2.0/tenants/barrr/users/foo/roles?fresh=1234'),
+                              'GET',
+                              headers=self.TEST_REQUEST_HEADERS) \
+                              .AndReturn((resp, resp['body']))
+        self.mox.ReplayAll()
+
+        role_list = self.client.roles.roles_for_user('foo', 'barrr')
+        [self.assertTrue(isinstance(r, roles.Role)) for r in role_list]
+
+    def test_add_user_role(self):
+        resp = httplib2.Response({
+            "status": 200,
+            "body": json.dumps({}),
+            })
+
+        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
+                              'v2.0/users/foo/roles/OS-KSADM/barrr'),
+                              'PUT',
+                              body='null',
+                              headers=self.TEST_POST_HEADERS) \
+                              .AndReturn((resp, None))
+        self.mox.ReplayAll()
+
+        self.client.roles.add_user_role('foo', 'barrr')
+
+    def test_add_user_role_tenant(self):
+        resp = httplib2.Response({
+            "status": 200,
+            "body": json.dumps({}),
+            })
+
+        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
+                              'v2.0/tenants/4/users/foo/roles/OS-KSADM/barrr'),
+                              'PUT',
+                              body='null',
+                              headers=self.TEST_POST_HEADERS) \
+                              .AndReturn((resp, None))
+        self.mox.ReplayAll()
+
+        self.client.roles.add_user_role('foo', 'barrr', '4')
+
+    def test_remove_user_role(self):
+        resp = httplib2.Response({
+            "status": 200,
+            "body": json.dumps({}),
+            })
+
+        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
+                              'v2.0/users/foo/roles/OS-KSADM/barrr'),
+                              'DELETE',
+                              headers=self.TEST_REQUEST_HEADERS) \
+                              .AndReturn((resp, None))
+        self.mox.ReplayAll()
+
+        self.client.roles.remove_user_role('foo', 'barrr')
+
+    def test_remove_user_role_tenant(self):
+        resp = httplib2.Response({
+            "status": 200,
+            "body": json.dumps({}),
+            })
+
+        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
+                              'v2.0/tenants/4/users/foo/roles/OS-KSADM/barrr'),
+                              'DELETE',
+                              headers=self.TEST_REQUEST_HEADERS) \
+                              .AndReturn((resp, None))
+        self.mox.ReplayAll()
+
+        self.client.roles.remove_user_role('foo', 'barrr', '4')
