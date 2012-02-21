@@ -88,3 +88,7 @@ def isunauthenticated(f):
     set to True, False otherwise.
     """
     return getattr(f, 'unauthenticated', False)
+
+
+def string_to_bool(arg):
+    return arg.strip().lower() in ('t', 'true', 'yes', '1')

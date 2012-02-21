@@ -40,7 +40,7 @@ class UserManager(base.ManagerWithFind):
         """
         Update user data.
 
-        Supported arguments include ``name`` and ``email``.
+        Supported arguments include ``name``, ``email``, and ``enabled``.
         """
         # FIXME(gabriel): "tenantId" seems to be accepted by the API but
         #                 fails to actually update the default tenant.

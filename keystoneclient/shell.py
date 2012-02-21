@@ -66,41 +66,41 @@ class OpenStackIdentityShell(object):
             action='store_true',
             help=argparse.SUPPRESS)
 
-        parser.add_argument('--token',
-            default=env('SERVICE_TOKEN'),
-            help='Defaults to env[SERVICE_TOKEN].')
-
-        parser.add_argument('--endpoint',
-            default=env('SERVICE_ENDPOINT'),
-            help='Defaults to env[SERVICE_ENDPOINT].')
-
         parser.add_argument('--username',
             default=env('OS_USERNAME'),
-            help='Defaults to env[OS_USERNAME].')
+            help='Defaults to env[OS_USERNAME]')
 
         parser.add_argument('--password',
             default=env('OS_PASSWORD'),
-            help='Defaults to env[OS_PASSWORD].')
+            help='Defaults to env[OS_PASSWORD]')
 
         parser.add_argument('--tenant_name',
             default=env('OS_TENANT_NAME'),
-            help='Defaults to env[OS_TENANT_NAME].')
+            help='Defaults to env[OS_TENANT_NAME]')
 
         parser.add_argument('--tenant_id',
             default=env('OS_TENANT_ID'),
-            help='Defaults to env[OS_TENANT_ID].')
+            help='Defaults to env[OS_TENANT_ID]')
 
         parser.add_argument('--auth_url',
             default=env('OS_AUTH_URL'),
-            help='Defaults to env[OS_AUTH_URL].')
+            help='Defaults to env[OS_AUTH_URL]')
 
         parser.add_argument('--region_name',
             default=env('OS_REGION_NAME'),
-            help='Defaults to env[OS_REGION_NAME].')
+            help='Defaults to env[OS_REGION_NAME]')
 
         parser.add_argument('--identity_api_version',
             default=env('OS_IDENTITY_API_VERSION', 'KEYSTONE_VERSION'),
-            help='Defaults to env[OS_IDENTITY_API_VERSION] or 2.0.')
+            help='Defaults to env[OS_IDENTITY_API_VERSION] or 2.0')
+
+        parser.add_argument('--token',
+            default=env('SERVICE_TOKEN'),
+            help='Defaults to env[SERVICE_TOKEN]')
+
+        parser.add_argument('--endpoint',
+            default=env('SERVICE_ENDPOINT'),
+            help='Defaults to env[SERVICE_ENDPOINT]')
 
         return parser
 

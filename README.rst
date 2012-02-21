@@ -66,28 +66,66 @@ can specify the one you want with ``--region_name`` (or
 You'll find complete documentation on the shell by running
 ``keystone help``::
 
-    usage: keystone [--username user] [--password password] 
-                    [--tenant_name tenant] [--auth_url URL]
-                   <subcommand> ...
+    usage: keystone [--username USERNAME] [--password PASSWORD]
+                    [--tenant_name TENANT_NAME] [--tenant_id TENANT_ID]
+                    [--auth_url AUTH_URL] [--region_name REGION_NAME]
+                    [--identity_api_version IDENTITY_API_VERSION] [--token TOKEN]
+                    [--endpoint ENDPOINT]
+                    <subcommand> ...
 
     Command-line interface to the OpenStack Keystone API.
 
     Positional arguments:
       <subcommand>
-        add-fixed-ip        Add a new fixed IP address to a servers network.
-
+        catalog             List service catalog, possibly filtered by service.
+        ec2-credentials-create
+                            Create EC2-compatibile credentials for user per tenant
+        ec2-credentials-delete
+                            Delete EC2-compatibile credentials
+        ec2-credentials-list
+                            List EC2-compatibile credentials for a user
+        endpoint-get        Find endpoint filtered by a specific attribute or
+                            service type
+        role-create         Create new role
+        role-delete         Delete role
+        role-get            Display role details
+        role-list           List all available roles
+        service-create      Add service to Service Catalog
+        service-delete      Delete service from Service Catalog
+        service-get         Display service from Service Catalog
+        service-list        List all services in Service Catalog
+        tenant-create       Create new tenant
+        tenant-delete       Delete tenant
+        tenant-get          Display tenant details
+        tenant-list         List all tenants
+        tenant-update       Update tenant name, description, enabled status
+        token-get           Display the current user token
+        user-create         Create new user
+        user-delete         Delete user
+        user-list           List users
+        user-password-update
+                            Update user password
+        user-role-add       Add role to user
+        user-role-remove    Remove role from user
+        user-update         Update user's name, email, and enabled status
+        discover            Discover Keystone servers and show authentication
+                            protocols and
+        help                Display help about this program or one of its
+                            subcommands.
 
     Optional arguments:
-      --username USER            Defaults to env[OS_USERNAME].
-      --password PASSWORD        Defaults to env[OS_PASSWORD].
-      --tenant_name TENANT_NAME  Defaults to env[OS_TENANT_NAME].
-      --tenant_id TENANT_ID      Defaults to env[OS_TENANT_ID].
-      --url AUTH_URL             Defaults to env[OS_AUTH_URL].
+      --username USERNAME   Defaults to env[OS_USERNAME]
+      --password PASSWORD   Defaults to env[OS_PASSWORD]
+      --tenant_name TENANT_NAME
+                            Defaults to env[OS_TENANT_NAME]
+      --tenant_id TENANT_ID
+                            Defaults to env[OS_TENANT_ID]
+      --auth_url AUTH_URL   Defaults to env[OS_AUTH_URL]
+      --region_name REGION_NAME
+                            Defaults to env[OS_REGION_NAME]
       --identity_api_version IDENTITY_API_VERSION
-                                 Defaults to env[OS_IDENTITY_API_VERSION] or 2.0.
-      --region_name NAME         The region name in the Keystone Service 
-                                 Catalog to use after authentication. 
-                                 Defaults to env[KEYSTONE_REGION_NAME] or the
-                                 first item in the list returned.
+                            Defaults to env[OS_IDENTITY_API_VERSION] or 2.0
+      --token TOKEN         Defaults to env[SERVICE_TOKEN]
+      --endpoint ENDPOINT   Defaults to env[SERVICE_ENDPOINT]
 
-    See "keystone help COMMAND" for help on a specific command.
+See "keystone help COMMAND" for help on a specific command.
