@@ -89,4 +89,4 @@ class RoleManager(base.ManagerWithFind):
             return self._delete(route % params)
         else:
             route = "/users/%s/roles/OS-KSADM/%s"
-            return self._delete(route % (user_id, role_id), "roles")
+            return self._delete(route % (user_id, role_id))

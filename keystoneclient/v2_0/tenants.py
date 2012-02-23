@@ -42,14 +42,14 @@ class Tenant(base.Resource):
         return retval
 
     def add_user(self, user, role):
-        return self.manager.api.roles.add_user_to_tenant(self.id,
-                                                         base.getid(user),
-                                                         base.getid(role))
+        return self.manager.api.roles.add_user_role(base.getid(user),
+                                                    base.getid(role),
+                                                    self.id)
 
     def remove_user(self, user, role):
-        return self.manager.api.roles.remove_user_from_tenant(self.id,
-                                                              base.getid(user),
-                                                              base.getid(role))
+        return self.manager.api.roles.remove_user_role(base.getid(user),
+                                                      base.getid(role),
+                                                      self.id)
 
     def list_users(self):
         return self.manager.list_users(self.id)
@@ -116,12 +116,12 @@ class TenantManager(base.ManagerWithFind):
 
     def add_user(self, tenant, user, role):
         """ Add a user to a tenant with the given role. """
-        return self.api.roles.add_user_to_tenant(base.getid(tenant),
-                                                 base.getid(user),
-                                                 base.getid(role))
+        return self.api.roles.add_user_role(base.getid(user),
+                                            base.getid(role),
+                                            base.getid(tenant))
 
     def remove_user(self, tenant, user, role):
         """ Remove the specified role from the user on the tenant. """
-        return self.api.roles.remove_user_from_tenant(base.getid(tenant),
-                                                      base.getid(user),
-                                                      base.getid(role))
+        return self.api.roles.remove_user_role(base.getid(user),
+                                               base.getid(role),
+                                               base.getid(tenant))
