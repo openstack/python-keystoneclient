@@ -234,20 +234,38 @@ def do_ec2_credentials_create(kc, args):
     utils.print_dict(credentials._info)
 
 
-@utils.arg('--user', metavar='<user-id>', help='User ID to list')
+@utils.arg('--user', metavar='<user-id>', required=True, help='User ID')
+@utils.arg('--access', metavar='<access-key>', required=True,
+        help='Access Key')
+def do_ec2_credentials_get(kc, args):
+    """Display EC2-compatibile credentials"""
+    cred = kc.ec2.get(args.user, args.access)
+    if cred:
+        utils.print_dict(cred._info)
+
+
+@utils.arg('--user', metavar='<user-id>', required=True, help='User ID')
 def do_ec2_credentials_list(kc, args):
     """List EC2-compatibile credentials for a user"""
     credentials = kc.ec2.list(args.user)
     for cred in credentials:
-        cred.tenant = kc.tenants.get(cred.tenant_id).name
-    utils.print_list(credentials, ['tenant', 'key', 'secret'])
+        try:
+            cred.tenant = getattr(kc.tenants.get(cred.tenant_id), 'name')
+        except:
+            pass
+    utils.print_list(credentials, ['tenant', 'access', 'secret'])
 
 
-@utils.arg('--user', metavar='<user-id>', help='User ID')
-@utils.arg('--key', metavar='<access-key>', help='Access Key')
+@utils.arg('--user', metavar='<user-id>', required=True, help='User ID')
+@utils.arg('--access', metavar='<access-key>', required=True,
+        help='Access Key')
 def do_ec2_credentials_delete(kc, args):
     """Delete EC2-compatibile credentials"""
-    kc.ec2.delete(args.user, args.key)
+    try:
+        kc.ec2.delete(args.user, args.access)
+        print 'Credential has been deleted.'
+    except Exception, e:
+        print 'Unable to delete credential: %s' % e
 
 
 @utils.arg('--service', metavar='<service-type>', default=None,

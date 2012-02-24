@@ -152,3 +152,26 @@ class ShellTest(utils.TestCase):
                    (DEFAULT_AUTH_URL, DEFAULT_PASSWORD, 'os-tenant',
                     DEFAULT_TENANT_NAME, DEFAULT_USERNAME, '')
             assert (b.tenant_id, b.user) == ('ec2-tenant', 'ec2-user')
+
+    def test_do_ec2_get(self):
+        do_shell_mock = mock.MagicMock()
+
+        with mock.patch('keystoneclient.v2_0.shell.do_ec2_credentials_create',
+                        do_shell_mock):
+            shell('ec2-credentials-create')
+            assert do_shell_mock.called
+
+        with mock.patch('keystoneclient.v2_0.shell.do_ec2_credentials_get',
+                        do_shell_mock):
+            shell('ec2-credentials-get')
+            assert do_shell_mock.called
+
+        with mock.patch('keystoneclient.v2_0.shell.do_ec2_credentials_list',
+                        do_shell_mock):
+            shell('ec2-credentials-list')
+            assert do_shell_mock.called
+
+        with mock.patch('keystoneclient.v2_0.shell.do_ec2_credentials_delete',
+                        do_shell_mock):
+            shell('ec2-credentials-delete')
+            assert do_shell_mock.called
