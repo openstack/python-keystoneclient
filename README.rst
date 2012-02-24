@@ -6,9 +6,11 @@ This is a client for the OpenStack Keystone API. There's a Python API (the
 Keystone 2.0 API is still a moving target, so this module will remain in
 "Beta" status until the API is finalized and fully implemented.
 
-Development takes place on GitHub__. Bug reports and patches may be filed there.
+Development takes place via the usual OpenStack processes as outlined in
+the `OpenStack wiki`_.  The master repository is on GitHub__.
 
-__ https://github.com/4P/python-keystoneclient
+__ http://wiki.openstack.org/HowToContribute
+__ http://github.com/openstack/python-keystoneclient
 
 This code a fork of `Rackspace's python-novaclient`__ which is in turn a fork of
 `Jacobian's python-cloudservers`__. The python-keystoneclient is licensed under
@@ -36,32 +38,37 @@ By way of a quick-start::
 Command-line API
 ----------------
 
-.. attention:: COMING SOON
-
-    The CLI is not yet implemented, but will follow the pattern laid
-    out below.
-
 Installing this package gets you a shell command, ``keystone``, that you
-can use to interact with Keystone's API.
+can use to interact with Keystone's Identity API.
 
-You'll need to provide your OpenStack username and API key. You can do this
-with the ``--username``, ``--apikey`` and  ``--projectid`` params, but it's
+You'll need to provide your OpenStack tenant, username and password. You can do this
+with the ``tenant_name``, ``--username`` and ``--password`` params, but it's
 easier to just set them as environment variables::
 
     export OS_TENANT_NAME=project
     export OS_USERNAME=user
     export OS_PASSWORD=pass
 
-You will also need to define the authentication url with ``--url`` and the
-version of the API with ``--version``.  Or set them as an environment
+You will also need to define the authentication url with ``--auth_url`` and the
+version of the API with ``--identity_api_version``.  Or set them as an environment
 variables as well::
 
     export OS_AUTH_URL=http://example.com:5000/v2.0
-    export KEYSTONE_ADMIN_URL=http://example.com:35357/v2.0
+    export OS_IDENTITY_API_VERSION=2.0
+
+Alternatively, to authenticate to Keystone without a username/password,
+such as when there are no users in the database yet, use the service
+token and endpoint arguemnts.  The service token is set in keystone.conf as
+``admin_token``; set it with ``service_token``.  Note: keep the service token
+secret as it allows total access to Keystone's database.  The admin endpoint is set
+with ``--endpoint`` or ``SERVICE_ENDPOINT``::
+
+    export SERVICE_TOKEN=thequickbrownfox-jumpsover-thelazydog
+    export SERVICE_ENDPOINT=http://example.com:35357/v2.0
 
 Since Keystone can return multiple regions in the Service Catalog, you
 can specify the one you want with ``--region_name`` (or
-``export KEYSTONE_REGION_NAME``). It defaults to the first in the list returned.
+``export OS_REGION_NAME``). It defaults to the first in the list returned.
 
 You'll find complete documentation on the shell by running
 ``keystone help``::
@@ -73,7 +80,7 @@ You'll find complete documentation on the shell by running
                     [--endpoint ENDPOINT]
                     <subcommand> ...
 
-    Command-line interface to the OpenStack Keystone API.
+    Command-line interface to the OpenStack Identity API.
 
     Positional arguments:
       <subcommand>

@@ -15,7 +15,7 @@
 #    under the License.
 
 """
-Command-line interface to the OpenStack Keystone API.
+Command-line interface to the OpenStack Identity API.
 """
 
 import argparse
@@ -57,7 +57,7 @@ class OpenStackIdentityShell(object):
 
         # Global arguments
         parser.add_argument('-h', '--help',
-            action='help',
+            action='store_true',
             help=argparse.SUPPRESS,
         )
 
@@ -157,6 +157,12 @@ class OpenStackIdentityShell(object):
         subcommand_parser = self.get_subcommand_parser(api_version)
         self.parser = subcommand_parser
 
+        # Handle top-level --help/-h before attempting to parse
+        # a command off the command line
+        if options.help:
+            self.do_help(options)
+            return 0
+
         # Parse args again and call whatever callback was selected
         args = subcommand_parser.parse_args(argv)
 
@@ -164,7 +170,7 @@ class OpenStackIdentityShell(object):
         if args.debug:
             httplib2.debuglevel = 1
 
-        # Short-circuit and deal with help right away.
+        # Short-circuit and deal with help command right away.
         if args.func == self.do_help:
             self.do_help(args)
             return 0
@@ -208,7 +214,7 @@ class OpenStackIdentityShell(object):
         try:
             args.func(self.cs, args)
         except exc.Unauthorized:
-            raise exc.CommandError("Invalid OpenStack Keystone credentials.")
+            raise exc.CommandError("Invalid OpenStack Identity credentials.")
         except exc.AuthorizationFailure:
             raise exc.CommandError("Unable to authorize user")
 
@@ -226,7 +232,7 @@ class OpenStackIdentityShell(object):
         """
         Display help about this program or one of its subcommands.
         """
-        if args.command:
+        if getattr(args, 'command', None):
             if args.command in self.subcommands:
                 self.subcommands[args.command].print_help()
             else:
