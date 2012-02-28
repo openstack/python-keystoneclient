@@ -175,3 +175,25 @@ class ShellTest(utils.TestCase):
                         do_shell_mock):
             shell('ec2-credentials-delete')
             assert do_shell_mock.called
+
+    def test_do_endpoints(self):
+        do_shell_mock = mock.MagicMock()
+        # grab the decorators for do_endpoint_create
+        shell_func = getattr(shell_v2_0, 'do_endpoint_create')
+        do_shell_mock.arguments = getattr(shell_func, 'arguments', [])
+        with mock.patch('keystoneclient.v2_0.shell.do_endpoint_create',
+                        do_shell_mock):
+
+            # Test create args
+            shell('endpoint-create '
+                  '--service_id=2 --publicurl=http://example.com:1234/go '
+                  '--adminurl=http://example.com:9876/adm')
+            assert do_shell_mock.called
+            ((a, b), c) = do_shell_mock.call_args
+            assert (b.auth_url, b.password, b.os_tenant_id,
+                    b.tenant_name, b.username, b.identity_api_version) == \
+                   (DEFAULT_AUTH_URL, DEFAULT_PASSWORD, DEFAULT_TENANT_ID,
+                    DEFAULT_TENANT_NAME, DEFAULT_USERNAME, '')
+            assert (b.service_id, b.publicurl, b.adminurl) == ('2',
+                    'http://example.com:1234/go',
+                    'http://example.com:9876/adm')

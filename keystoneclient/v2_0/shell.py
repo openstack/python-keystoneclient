@@ -322,37 +322,33 @@ def do_endpoint_get(kc, args):
 
 
 def do_endpoint_list(kc, args):
+    """List configured service endpoints"""
     endpoints = kc.endpoints.list()
     utils.print_list(endpoints,
-                     ['id', 'region', 'publicurl', 'internalurl', 'publicurl'])
+                     ['id', 'region', 'publicurl', 'internalurl', 'adminurl'])
 
 
-@utils.arg('--region', metavar='<endpoint_region>',
-           help='Endpoint region', nargs='?', default='regionOne')
-@utils.arg('--service_id', metavar='<service_id>',
-           help='ID of service associated with Endpoint', nargs='?')
-@utils.arg('--publicurl', metavar='<publicurl>',
-           help='Public URL endpoint', nargs='?')
-@utils.arg('--adminurl', metavar='<publicurl>',
-           help='Admin URL endpoint', nargs='?')
-@utils.arg('--internalurl', metavar='<publicurl>',
-           help='Internal URL endpoint', nargs='?')
+@utils.arg('--region', metavar='<endpoint-region>',
+           help='Endpoint region', default='regionOne')
+@utils.arg('--service_id', metavar='<service-id>',
+           help='ID of service associated with Endpoint')
+@utils.arg('--publicurl', metavar='<public-url>',
+           help='Public URL endpoint')
+@utils.arg('--adminurl', metavar='<admin-url>',
+           help='Admin URL endpoint')
+@utils.arg('--internalurl', metavar='<internal-url>',
+           help='Internal URL endpoint')
 def do_endpoint_create(kc, args):
-    kwargs = {
-        'region': args.region,
-        'service_id': args.service_id,
-        'publicurl': args.publicurl,
-        'adminurl': args.adminurl,
-        'internalurl': args.internalurl,
-    }
+    """Create a new endpoint associated with a service"""
     endpoint = kc.endpoints.create(
                     args.region, args.service_id, args.publicurl,
                     args.adminurl, args.internalurl)
     utils.print_dict(endpoint._info)
 
 
-@utils.arg('id', metavar='<endpoint_id>', help='ID of endpoint to delete')
+@utils.arg('id', metavar='<endpoint-id>', help='ID of endpoint to delete')
 def do_endpoint_delete(kc, args):
+    """Delete a service endpoint"""
     try:
         kc.endpoints.delete(args.id)
         print 'Endpoint has been deleted.'
