@@ -305,6 +305,45 @@ def do_endpoint_get(kc, args):
     utils.print_dict({'%s.%s' % (args.service, args.endpoint_type): url})
 
 
+def do_endpoint_list(kc, args):
+    endpoints = kc.endpoints.list()
+    utils.print_list(endpoints,
+                     ['id', 'region', 'publicurl', 'internalurl', 'publicurl'])
+
+
+@utils.arg('--region', metavar='<endpoint_region>',
+           help='Endpoint region', nargs='?', default='regionOne')
+@utils.arg('--service_id', metavar='<service_id>',
+           help='ID of service associated with Endpoint', nargs='?')
+@utils.arg('--publicurl', metavar='<publicurl>',
+           help='Public URL endpoint', nargs='?')
+@utils.arg('--adminurl', metavar='<publicurl>',
+           help='Admin URL endpoint', nargs='?')
+@utils.arg('--internalurl', metavar='<publicurl>',
+           help='Internal URL endpoint', nargs='?')
+def do_endpoint_create(kc, args):
+    kwargs = {
+        'region': args.region,
+        'service_id': args.service_id,
+        'publicurl': args.publicurl,
+        'adminurl': args.adminurl,
+        'internalurl': args.internalurl,
+    }
+    endpoint = kc.endpoints.create(
+                    args.region, args.service_id, args.publicurl,
+                    args.adminurl, args.internalurl)
+    utils.print_dict(endpoint._info)
+
+
+@utils.arg('id', metavar='<endpoint_id>', help='ID of endpoint to delete')
+def do_endpoint_delete(kc, args):
+    try:
+        kc.endpoints.delete(args.id)
+        print 'Endpoint has been deleted.'
+    except:
+        print 'Unable to delete endpoint.'
+
+
 def do_token_get(kc, args):
     """Display the current user token"""
     utils.print_dict(kc.service_catalog.get_token())
