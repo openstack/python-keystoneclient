@@ -107,8 +107,8 @@ class Client(client.HTTPClient):
                                                 "url": version_url}
                         return results
                     else:
-                        results['message'] = "Unrecognized response from %s" \
-                                        % url
+                        results['message'] = ("Unrecognized response from %s"
+                                              % url)
                     return results
                 except KeyError:
                     raise exceptions.AuthorizationFailure()
@@ -162,8 +162,8 @@ class Client(client.HTTPClient):
                                 results[alias] = name
                             return results
                     else:
-                        results['message'] = "Unrecognized extensions" \
-                                " response from %s" % url
+                        results['message'] = ("Unrecognized extensions "
+                                              "response from %s" % url)
                     return results
                 except KeyError:
                     raise exceptions.AuthorizationFailure()

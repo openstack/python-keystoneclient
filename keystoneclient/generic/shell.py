@@ -47,13 +47,13 @@ def do_discover(cs, args):
             print versions['message']
         for key, version in versions.iteritems():
             if key != 'message':
-                print "    - supports version %s (%s) here %s" % \
-                    (version['id'], version['status'], version['url'])
+                print ("    - supports version %s (%s) here %s" %
+                       (version['id'], version['status'], version['url']))
                 extensions = cs.discover_extensions(version['url'])
                 if extensions:
                     for key, extension in extensions.iteritems():
                         if key != 'message':
-                            print "        - and %s: %s" % \
-                                (key, extension)
+                            print ("        - and %s: %s" %
+                                   (key, extension))
     else:
         print "No Keystone-compatible endpoint found"

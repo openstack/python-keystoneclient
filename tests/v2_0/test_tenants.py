@@ -10,44 +10,57 @@ from tests import utils
 class TenantTests(utils.TestCase):
     def setUp(self):
         super(TenantTests, self).setUp()
-        self.TEST_REQUEST_HEADERS = {'X-Auth-Token': 'aToken',
-                                     'User-Agent': 'python-keystoneclient'}
-        self.TEST_POST_HEADERS = {'Content-Type': 'application/json',
-                                  'X-Auth-Token': 'aToken',
-                                  'User-Agent': 'python-keystoneclient'}
-        self.TEST_TENANTS = {"tenants": {
-                                 "values": [
-                                   {
-                                     "enabled": True,
-                                     "description": "A description change!",
-                                     "name": "invisible_to_admin",
-                                     "id": 3
-                                   },
-                                   {
-                                     "enabled": True,
-                                     "description": "None",
-                                     "name": "demo",
-                                     "id": 2
-                                   },
-                                   {
-                                     "enabled": True,
-                                     "description": "None",
-                                     "name": "admin",
-                                     "id": 1
-                                   }
-                                 ],
-                                 "links": []
-                                }
-                            }
+        self.TEST_REQUEST_HEADERS = {
+            'X-Auth-Token': 'aToken',
+            'User-Agent': 'python-keystoneclient',
+            }
+        self.TEST_POST_HEADERS = {
+            'Content-Type': 'application/json',
+            'X-Auth-Token': 'aToken',
+            'User-Agent': 'python-keystoneclient',
+            }
+        self.TEST_TENANTS = {
+            "tenants": {
+                "values": [
+                    {
+                        "enabled": True,
+                        "description": "A description change!",
+                        "name": "invisible_to_admin",
+                        "id": 3,
+                        },
+                    {
+                        "enabled": True,
+                        "description": "None",
+                        "name": "demo",
+                        "id": 2,
+                        },
+                    {
+                        "enabled": True,
+                        "description": "None",
+                        "name": "admin",
+                        "id": 1,
+                        }
+                    ],
+                "links": [],
+            },
+        }
 
     def test_create(self):
-        req_body = {"tenant": {"name": "tenantX",
-                               "description": "Like tenant 9, but better.",
-                               "enabled": True}}
-        resp_body = {"tenant": {"name": "tenantX",
-                                "enabled": True,
-                                "id": 4,
-                                "description": "Like tenant 9, but better."}}
+        req_body = {
+            "tenant": {
+                "name": "tenantX",
+                "description": "Like tenant 9, but better.",
+                "enabled": True
+                },
+            }
+        resp_body = {
+            "tenant": {
+                "name": "tenantX",
+                "enabled": True,
+                "id": 4,
+                "description": "Like tenant 9, but better.",
+                }
+            }
         resp = httplib2.Response({
             "status": 200,
             "body": json.dumps(resp_body),
@@ -71,7 +84,7 @@ class TenantTests(utils.TestCase):
     def test_delete(self):
         resp = httplib2.Response({
             "status": 200,
-            "body": ""
+            "body": "",
             })
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
                               'v2.0/tenants/1'),
@@ -85,8 +98,9 @@ class TenantTests(utils.TestCase):
     def test_get(self):
         resp = httplib2.Response({
             "status": 200,
-            "body": json.dumps({'tenant':
-                self.TEST_TENANTS['tenants']['values'][2]}),
+            "body": json.dumps({
+                'tenant': self.TEST_TENANTS['tenants']['values'][2],
+                }),
             })
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
                               'v2.0/tenants/1'),
@@ -165,14 +179,22 @@ class TenantTests(utils.TestCase):
         [self.assertTrue(isinstance(t, tenants.Tenant)) for t in tenant_list]
 
     def test_update(self):
-        req_body = {"tenant": {"id": 4,
-                               "name": "tenantX",
-                               "description": "I changed you!",
-                               "enabled": False}}
-        resp_body = {"tenant": {"name": "tenantX",
-                                "enabled": False,
-                                "id": 4,
-                                "description": "I changed you!"}}
+        req_body = {
+            "tenant": {
+                "id": 4,
+                "name": "tenantX",
+                "description": "I changed you!",
+                "enabled": False,
+                },
+            }
+        resp_body = {
+            "tenant": {
+                "name": "tenantX",
+                "enabled": False,
+                "id": 4,
+                "description": "I changed you!",
+                },
+            }
         resp = httplib2.Response({
             "status": 200,
             "body": json.dumps(resp_body),
@@ -228,10 +250,14 @@ class TenantTests(utils.TestCase):
         self.client.tenants.remove_user('4', 'foo', 'barrr')
 
     def test_tenant_add_user(self):
-        req_body = {"tenant": {"id": 4,
-                               "name": "tenantX",
-                               "description": "I changed you!",
-                               "enabled": False}}
+        req_body = {
+            "tenant": {
+                "id": 4,
+                "name": "tenantX",
+                "description": "I changed you!",
+                "enabled": False,
+                },
+            }
         resp = httplib2.Response({
             "status": 200,
             "body": json.dumps({}),
@@ -252,10 +278,14 @@ class TenantTests(utils.TestCase):
         self.assertTrue(isinstance(tenant, tenants.Tenant))
 
     def test_tenant_remove_user(self):
-        req_body = {"tenant": {"id": 4,
-                               "name": "tenantX",
-                               "description": "I changed you!",
-                               "enabled": False}}
+        req_body = {
+            "tenant": {
+                "id": 4,
+                "name": "tenantX",
+                "description": "I changed you!",
+                "enabled": False,
+                },
+            }
         resp = httplib2.Response({
             "status": 200,
             "body": json.dumps({}),
