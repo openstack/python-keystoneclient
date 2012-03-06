@@ -122,7 +122,8 @@ class ServiceCatalogTest(utils.TestCase):
 
         self.assertEquals(sc.get_token(),
                 {'id': 'ab48a9efdfedb23ty3494',
-                 'tenant': '345',
+                 'tenant_id': '345',
+                 'user_id': '123',
                  'expires': '2010-11-01T03:32:15-05:00'})
         self.assertEquals(sc.catalog['token']['expires'],
                 "2010-11-01T03:32:15-05:00")

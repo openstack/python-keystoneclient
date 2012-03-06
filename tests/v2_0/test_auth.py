@@ -25,7 +25,13 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
                 "access": {
                     "token": {
                         "expires": "12345",
-                        "id": self.TEST_TOKEN
+                        "id": self.TEST_TOKEN,
+                        "tenant": {
+                            "id": self.TEST_TENANT_ID
+                        },
+                    },
+                    "user": {
+                        "id": self.TEST_USER
                     },
                     "serviceCatalog": self.TEST_SERVICE_CATALOG
                 }
