@@ -72,7 +72,7 @@ class RoleTests(utils.TestCase):
                                 self.TEST_ROLES['roles']['values'][0]}),
             })
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
-                              'v2.0/OS-KSADM/roles/1?fresh=1234'),
+                              'v2.0/OS-KSADM/roles/1'),
                               'GET',
                               headers=self.TEST_REQUEST_HEADERS) \
                               .AndReturn((resp, resp['body']))
@@ -90,7 +90,7 @@ class RoleTests(utils.TestCase):
             })
 
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
-                              'v2.0/OS-KSADM/roles?fresh=1234'),
+                              'v2.0/OS-KSADM/roles'),
                               'GET',
                               headers=self.TEST_REQUEST_HEADERS) \
                               .AndReturn((resp, resp['body']))
@@ -106,7 +106,7 @@ class RoleTests(utils.TestCase):
             })
 
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
-                              'v2.0/users/foo/roles?fresh=1234'),
+                              'v2.0/users/foo/roles'),
                               'GET',
                               headers=self.TEST_REQUEST_HEADERS) \
                               .AndReturn((resp, resp['body']))
@@ -122,7 +122,7 @@ class RoleTests(utils.TestCase):
             })
 
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
-                              'v2.0/tenants/barrr/users/foo/roles?fresh=1234'),
+                              'v2.0/tenants/barrr/users/foo/roles'),
                               'GET',
                               headers=self.TEST_REQUEST_HEADERS) \
                               .AndReturn((resp, resp['body']))

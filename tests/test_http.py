@@ -35,8 +35,7 @@ class ClientTest(utils.TestCase):
             headers = {"X-Auth-Token": "token",
                        "User-Agent": cl.USER_AGENT,
             }
-            mock_request.assert_called_with("http://127.0.0.1:5000/"
-                                            "hi?fresh=1234",
+            mock_request.assert_called_with("http://127.0.0.1:5000/hi",
                                             "GET", headers=headers)
             # Automatic JSON parsing
             self.assertEqual(body, {"hi": "there"})

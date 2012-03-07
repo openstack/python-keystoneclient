@@ -84,7 +84,7 @@ class ServiceTests(utils.TestCase):
                 self.TEST_SERVICES['OS-KSADM:services']['values'][0]}),
             })
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
-                              'v2.0/OS-KSADM/services/1?fresh=1234'),
+                              'v2.0/OS-KSADM/services/1'),
                               'GET',
                               headers=self.TEST_REQUEST_HEADERS) \
                               .AndReturn((resp, resp['body']))
@@ -103,7 +103,7 @@ class ServiceTests(utils.TestCase):
             })
 
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
-                              'v2.0/OS-KSADM/services?fresh=1234'),
+                              'v2.0/OS-KSADM/services'),
                               'GET',
                               headers=self.TEST_REQUEST_HEADERS) \
                               .AndReturn((resp, resp['body']))

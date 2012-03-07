@@ -106,7 +106,7 @@ class EndpointTests(utils.TestCase):
             })
 
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
-                              'v2.0/endpoints?fresh=1234'),
+                              'v2.0/endpoints'),
                               'GET',
                               headers=self.TEST_REQUEST_HEADERS) \
                               .AndReturn((resp, resp['body']))

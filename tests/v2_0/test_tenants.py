@@ -89,7 +89,7 @@ class TenantTests(utils.TestCase):
                 self.TEST_TENANTS['tenants']['values'][2]}),
             })
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
-                              'v2.0/tenants/1?fresh=1234'),
+                              'v2.0/tenants/1'),
                               'GET',
                               headers=self.TEST_REQUEST_HEADERS) \
                               .AndReturn((resp, resp['body']))
@@ -107,7 +107,7 @@ class TenantTests(utils.TestCase):
             })
 
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
-                              'v2.0/tenants?fresh=1234'),
+                              'v2.0/tenants'),
                               'GET',
                               headers=self.TEST_REQUEST_HEADERS) \
                               .AndReturn((resp, resp['body']))
@@ -123,7 +123,7 @@ class TenantTests(utils.TestCase):
             })
 
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
-                              'v2.0/tenants?limit=1&fresh=1234'),
+                              'v2.0/tenants?limit=1'),
                               'GET',
                               headers=self.TEST_REQUEST_HEADERS) \
                               .AndReturn((resp, resp['body']))
@@ -139,7 +139,7 @@ class TenantTests(utils.TestCase):
             })
 
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
-                              'v2.0/tenants?marker=1&fresh=1234'),
+                              'v2.0/tenants?marker=1'),
                               'GET',
                               headers=self.TEST_REQUEST_HEADERS) \
                               .AndReturn((resp, resp['body']))
@@ -155,7 +155,7 @@ class TenantTests(utils.TestCase):
             })
 
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
-                              'v2.0/tenants?marker=1&limit=1&fresh=1234'),
+                              'v2.0/tenants?marker=1&limit=1'),
                               'GET',
                               headers=self.TEST_REQUEST_HEADERS) \
                               .AndReturn((resp, resp['body']))

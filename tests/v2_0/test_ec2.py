@@ -60,8 +60,8 @@ class EC2Tests(utils.TestCase):
             })
 
         url = urlparse.urljoin(self.TEST_URL,
-                               'v2.0/users/%s/credentials/OS-EC2/%s'
-                               '?fresh=1234' % (user_id, 'access'))
+                               'v2.0/users/%s/credentials/OS-EC2/%s' %
+                               (user_id, 'access'))
         httplib2.Http.request(url,
                               'GET',
                               headers=self.TEST_REQUEST_HEADERS) \
@@ -97,7 +97,7 @@ class EC2Tests(utils.TestCase):
             })
 
         url = urlparse.urljoin(self.TEST_URL,
-            'v2.0/users/%s/credentials/OS-EC2?fresh=1234' % user_id)
+            'v2.0/users/%s/credentials/OS-EC2' % user_id)
         httplib2.Http.request(url,
                               'GET',
                               headers=self.TEST_REQUEST_HEADERS) \
