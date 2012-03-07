@@ -116,8 +116,10 @@ class Client(client.HTTPClient):
             sc = self.service_catalog.get_token()
             self.auth_token = sc['id']
             # Save these since we have them and they'll be useful later
-            self.auth_tenant_id = sc['tenant_id']
-            self.auth_user_id = sc['user_id']
+            # NOTE(termie): these used to be in the token and then were removed
+            #               ... why?
+            self.auth_tenant_id = sc.get('tenant_id')
+            self.auth_user_id = sc.get('user_id')
         except KeyError:
             raise exceptions.AuthorizationFailure()
 
