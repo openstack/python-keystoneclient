@@ -225,42 +225,58 @@ def do_user_role_remove(kc, args):
     kc.roles.remove_user_role(args.user, args.role, args.tenant_id)
 
 
-@utils.arg('--user', metavar='<user-id>', required=True, help='User ID')
-@utils.arg('--tenant_id', metavar='<tenant-id>', required=True,
-           help='Tenant ID')
+@utils.arg('--user', metavar='<user-id>', help='User ID')
+@utils.arg('--tenant_id', metavar='<tenant-id>', help='Tenant ID')
 def do_ec2_credentials_create(kc, args):
     """Create EC2-compatibile credentials for user per tenant"""
+    if not args.tenant_id:
+        # use the authenticated tenant id as a default
+        args.tenant_id = kc.auth_tenant_id
+    if not args.user:
+        # use the authenticated user id as a default
+        args.user = kc.auth_user_id
     credentials = kc.ec2.create(args.user, args.tenant_id)
     utils.print_dict(credentials._info)
 
 
-@utils.arg('--user', metavar='<user-id>', required=True, help='User ID')
+@utils.arg('--user', metavar='<user-id>', help='User ID')
 @utils.arg('--access', metavar='<access-key>', required=True,
         help='Access Key')
 def do_ec2_credentials_get(kc, args):
     """Display EC2-compatibile credentials"""
+    if not args.user:
+        # use the authenticated user id as a default
+        args.user = kc.auth_user_id
     cred = kc.ec2.get(args.user, args.access)
     if cred:
         utils.print_dict(cred._info)
 
 
-@utils.arg('--user', metavar='<user-id>', required=True, help='User ID')
+@utils.arg('--user', metavar='<user-id>', help='User ID')
 def do_ec2_credentials_list(kc, args):
     """List EC2-compatibile credentials for a user"""
+    if not args.user:
+        # use the authenticated user id as a default
+        args.user = kc.auth_user_id
     credentials = kc.ec2.list(args.user)
     for cred in credentials:
         try:
             cred.tenant = getattr(kc.tenants.get(cred.tenant_id), 'name')
         except:
-            pass
+            # FIXME(dtroyer): Retrieving the tenant name fails for normal
+            #                 users; stuff in the tenant_id instead.
+            cred.tenant = cred.tenant_id
     utils.print_list(credentials, ['tenant', 'access', 'secret'])
 
 
-@utils.arg('--user', metavar='<user-id>', required=True, help='User ID')
+@utils.arg('--user', metavar='<user-id>', help='User ID')
 @utils.arg('--access', metavar='<access-key>', required=True,
         help='Access Key')
 def do_ec2_credentials_delete(kc, args):
     """Delete EC2-compatibile credentials"""
+    if not args.user:
+        # use the authenticated user id as a default
+        args.user = kc.auth_user_id
     try:
         kc.ec2.delete(args.user, args.access)
         print 'Credential has been deleted.'
