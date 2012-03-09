@@ -180,9 +180,21 @@ def do_service_delete(kc, args):
     kc.services.delete(args.id)
 
 
+@utils.arg('--user', metavar='<user-id>',
+           help='List roles granted to a user')
+@utils.arg('--tenant_id', metavar='<tenant-id>',
+           help='List roles granted on a tenant')
 def do_role_list(kc, args):
-    """List all available roles"""
-    roles = kc.roles.list()
+    """List all roles, or only those granted to a user."""
+    if bool(args.tenant_id) ^ bool(args.user):
+        print 'User ID and Tenant ID are both required to list granted roles.'
+        return
+
+    if args.tenant_id and args.user:
+        roles = kc.roles.roles_for_user(user=args.user, tenant=args.tenant_id)
+    else:
+        roles = kc.roles.list()
+
     utils.print_list(roles, ['id', 'name'])
 
 
