@@ -74,12 +74,12 @@ def do_user_update(kc, args):
         print 'Unable to update user: %s' % e
 
 
-@utils.arg('--pass', metavar='<password>', required=True,
+@utils.arg('--pass', metavar='<password>', dest='passwd', required=True,
            help='Desired new password')
 @utils.arg('id', metavar='<user-id>', help='User ID to update')
 def do_user_password_update(kc, args):
     """Update user password"""
-    kc.users.update_password(args.id, args.password)
+    kc.users.update_password(args.id, args.passwd)
 
 
 @utils.arg('id', metavar='<user-id>', help='User ID to delete')
