@@ -91,4 +91,7 @@ def isunauthenticated(f):
 
 
 def string_to_bool(arg):
+    if isinstance(arg, bool):
+        return arg
+
     return arg.strip().lower() in ('t', 'true', 'yes', '1')

@@ -42,7 +42,8 @@ def do_user_list(kc, args):
 def do_user_create(kc, args):
     """Create new user"""
     user = kc.users.create(args.name, args.passwd, args.email,
-                           tenant_id=args.tenant_id, enabled=args.enabled)
+                           tenant_id=args.tenant_id,
+                           enabled=utils.string_to_bool(args.enabled))
     utils.print_dict(user._info)
 
 
@@ -111,7 +112,7 @@ def do_tenant_create(kc, args):
     """Create new tenant"""
     tenant = kc.tenants.create(args.name,
                              description=args.description,
-                             enabled=args.enabled)
+                             enabled=utils.string_to_bool(args.enabled))
     utils.print_dict(tenant._info)
 
 
@@ -131,8 +132,7 @@ def do_tenant_update(kc, args):
     if args.description:
         kwargs.update({'description': args.description})
     if args.enabled:
-        new_enable = args.enabled.lower() in ['true', 'yes', '1']
-        kwargs.update({'enabled': new_enable})
+        kwargs.update({'enabled': utils.string_to_bool(args.enabled)})
 
     if kwargs == {}:
         print "Tenant not updated, no arguments present."
