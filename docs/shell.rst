@@ -16,8 +16,8 @@ First, you'll need an OpenStack Keystone account. You get this by using the
 `keystone-manage` command in OpenStack Keystone.
 
 You'll need to provide :program:`keystone` with your OpenStack username and
-password. You can do this with the :option:`--username`, :option:`--password`.
-You can optionally specify a :option:`--tenant_id` or :option:`--tenant_name`, 
+password. You can do this with the :option:`--os_username`, :option:`--os_password`.
+You can optionally specify a :option:`--os_tenant_id` or :option:`--os_tenant_name`,
 to scope your token to a specific tenant.  If you don't specify a tenant, you
 will be scoped to your default tenant if you have one.  Instead of using 
 options, it is easier to just set them as environment variables:

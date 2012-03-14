@@ -66,41 +66,63 @@ class OpenStackIdentityShell(object):
             action='store_true',
             help=argparse.SUPPRESS)
 
-        parser.add_argument('--username',
+        parser.add_argument('--os_username', metavar='<auth-user-name>',
             default=env('OS_USERNAME'),
             help='Defaults to env[OS_USERNAME]')
 
-        parser.add_argument('--password',
+        parser.add_argument('--os_password', metavar='<auth-password>',
             default=env('OS_PASSWORD'),
             help='Defaults to env[OS_PASSWORD]')
 
-        parser.add_argument('--tenant_name',
+        parser.add_argument('--os_tenant_name', metavar='<auth-tenant-name>',
             default=env('OS_TENANT_NAME'),
             help='Defaults to env[OS_TENANT_NAME]')
 
-        parser.add_argument('--tenant_id',
-            default=env('OS_TENANT_ID'), dest='os_tenant_id',
+        parser.add_argument('--os_tenant_id', metavar='<tenant-id>',
+            default=env('OS_TENANT_ID'),
             help='Defaults to env[OS_TENANT_ID]')
 
-        parser.add_argument('--auth_url',
+        parser.add_argument('--os_auth_url', metavar='<auth-url>',
             default=env('OS_AUTH_URL'),
             help='Defaults to env[OS_AUTH_URL]')
 
-        parser.add_argument('--region_name',
+        parser.add_argument('--os_region_name', metavar='<region-name>',
             default=env('OS_REGION_NAME'),
             help='Defaults to env[OS_REGION_NAME]')
 
-        parser.add_argument('--identity_api_version',
+        parser.add_argument('--os_identity_api_version',
+            metavar='<identity-api-version>',
             default=env('OS_IDENTITY_API_VERSION', 'KEYSTONE_VERSION'),
             help='Defaults to env[OS_IDENTITY_API_VERSION] or 2.0')
 
-        parser.add_argument('--token',
+        parser.add_argument('--token', metavar='<service-token>',
             default=env('SERVICE_TOKEN'),
             help='Defaults to env[SERVICE_TOKEN]')
 
-        parser.add_argument('--endpoint',
+        parser.add_argument('--endpoint', metavar='<service-endpoint>',
             default=env('SERVICE_ENDPOINT'),
             help='Defaults to env[SERVICE_ENDPOINT]')
+
+        # FIXME(dtroyer): The args below are here for diablo compatibility,
+        #                 remove them in folsum cycle
+
+        parser.add_argument('--username', metavar='<auth-user-name>',
+            help='Deprecated')
+
+        parser.add_argument('--password', metavar='<auth-password>',
+            help='Deprecated')
+
+        parser.add_argument('--tenant_name', metavar='<tenant-name>',
+            help='Deprecated')
+
+        parser.add_argument('--tenant_id', metavar='<tenant-id>',
+            help='Deprecated')
+
+        parser.add_argument('--auth_url', metavar='<auth-url>',
+            help='Deprecated')
+
+        parser.add_argument('--region_name', metavar='<region-name>',
+            help='Deprecated')
 
         return parser
 
@@ -153,7 +175,7 @@ class OpenStackIdentityShell(object):
         (options, args) = parser.parse_known_args(argv)
 
         # build available subcommands based on version
-        api_version = options.identity_api_version
+        api_version = options.os_identity_api_version
         subcommand_parser = self.get_subcommand_parser(api_version)
         self.parser = subcommand_parser
 
@@ -180,36 +202,57 @@ class OpenStackIdentityShell(object):
 
         if not utils.isunauthenticated(args.func):
             if not (args.token and args.endpoint):
-                if not args.username:
-                    raise exc.CommandError("You must provide a username "
-                            "via either --username or env[OS_USERNAME]")
+                if not args.os_username:
+                    if not args.username:
+                        raise exc.CommandError("You must provide a username "
+                                "via either --os_username or env[OS_USERNAME]")
+                    else:
+                        args.os_username = args.username
 
-                if not args.password:
-                    raise exc.CommandError("You must provide a password "
-                            "via either --password or env[OS_PASSWORD]")
+                if not args.os_password:
+                    if not args.password:
+                        raise exc.CommandError("You must provide a password "
+                                "via either --os_password or env[OS_PASSWORD]")
+                    else:
+                        args.os_password = args.password
 
-                if not args.auth_url:
-                    raise exc.CommandError("You must provide an auth url "
-                            "via either --auth_url or via env[OS_AUTH_URL]")
+                if not args.os_auth_url:
+                    if not args.auth_url:
+                        raise exc.CommandError("You must provide an auth url "
+                                "via either --os_auth_url or via "
+                                "env[OS_AUTH_URL]")
+                    else:
+                        args.os_auth_url = args.auth_url
+
+                if not args.os_tenant_name and args.tenant_name:
+                    args.os_tenant_name = args.tenant_name
+
+                if not args.os_tenant_id and args.tenant_id:
+                    args.os_tenant_id = args.tenant_id
+
+                if not args.os_region_name and args.region_name:
+                    args.os_region_name = args.region_name
 
         if utils.isunauthenticated(args.func):
-            self.cs = shell_generic.CLIENT_CLASS(endpoint=args.auth_url)
+            if not args.os_auth_url and args.auth_url:
+                args.os_auth_url = args.auth_url
+            self.cs = shell_generic.CLIENT_CLASS(endpoint=args.os_auth_url)
         else:
             token = None
             endpoint = None
             if args.token and args.endpoint:
                 token = args.token
                 endpoint = args.endpoint
-            api_version = options.identity_api_version
+            api_version = options.os_identity_api_version
             self.cs = self.get_api_class(api_version)(
-                username=args.username,
-                tenant_name=args.tenant_name,
+                username=args.os_username,
+                tenant_name=args.os_tenant_name,
                 tenant_id=args.os_tenant_id,
                 token=token,
                 endpoint=endpoint,
-                password=args.password,
-                auth_url=args.auth_url,
-                region_name=args.region_name)
+                password=args.os_password,
+                auth_url=args.os_auth_url,
+                region_name=args.os_region_name)
 
         try:
             args.func(self.cs, args)

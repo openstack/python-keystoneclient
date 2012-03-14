@@ -41,15 +41,15 @@ Command-line API
 Installing this package gets you a shell command, ``keystone``, that you
 can use to interact with Keystone's Identity API.
 
-You'll need to provide your OpenStack tenant, username and password. You can do this
-with the ``tenant_name``, ``--username`` and ``--password`` params, but it's
-easier to just set them as environment variables::
+You'll need to provide your OpenStack tenant, username and password. You can
+do this with the ``--os_tenant_name``, ``--os_username`` and ``--os_password``
+params, but it's easier to just set them as environment variables::
 
     export OS_TENANT_NAME=project
     export OS_USERNAME=user
     export OS_PASSWORD=pass
 
-You will also need to define the authentication url with ``--auth_url`` and the
+You will also need to define the authentication url with ``--os_auth_url`` and the
 version of the API with ``--identity_api_version``.  Or set them as an environment
 variables as well::
 
@@ -73,9 +73,10 @@ can specify the one you want with ``--region_name`` (or
 You'll find complete documentation on the shell by running
 ``keystone help``::
 
-    usage: keystone [--username USERNAME] [--password PASSWORD]
-                    [--tenant_name TENANT_NAME] [--tenant_id TENANT_ID]
-                    [--auth_url AUTH_URL] [--region_name REGION_NAME]
+    usage: keystone [--os_username OS_USERNAME] [--os_password OS_PASSWORD]
+                    [--os_tenant_name OS_TENANT_NAME]
+                    [--os_tenant_id OS_TENANT_ID] [--os_auth_url OS_AUTH_URL]
+                    [--os_region_name OS_REGION_NAME]
                     [--identity_api_version IDENTITY_API_VERSION] [--token TOKEN]
                     [--endpoint ENDPOINT]
                     <subcommand> ...
@@ -89,10 +90,15 @@ You'll find complete documentation on the shell by running
                             Create EC2-compatibile credentials for user per tenant
         ec2-credentials-delete
                             Delete EC2-compatibile credentials
+        ec2-credentials-get
+                            Display EC2-compatibile credentials
         ec2-credentials-list
                             List EC2-compatibile credentials for a user
+        endpoint-create     Create a new endpoint associated with a service
+        endpoint-delete     Delete a service endpoint
         endpoint-get        Find endpoint filtered by a specific attribute or
                             service type
+        endpoint-list       List configured service endpoints
         role-create         Create new role
         role-delete         Delete role
         role-get            Display role details
@@ -121,14 +127,17 @@ You'll find complete documentation on the shell by running
                             subcommands.
 
     Optional arguments:
-      --username USERNAME   Defaults to env[OS_USERNAME]
-      --password PASSWORD   Defaults to env[OS_PASSWORD]
-      --tenant_name TENANT_NAME
+      --os_username OS_USERNAME
+                            Defaults to env[OS_USERNAME]
+      --os_password OS_PASSWORD
+                            Defaults to env[OS_PASSWORD]
+      --os_tenant_name OS_TENANT_NAME
                             Defaults to env[OS_TENANT_NAME]
-      --tenant_id TENANT_ID
+      --os_tenant_id OS_TENANT_ID
                             Defaults to env[OS_TENANT_ID]
-      --auth_url AUTH_URL   Defaults to env[OS_AUTH_URL]
-      --region_name REGION_NAME
+      --os_auth_url OS_AUTH_URL
+                            Defaults to env[OS_AUTH_URL]
+      --os_region_name OS_REGION_NAME
                             Defaults to env[OS_REGION_NAME]
       --identity_api_version IDENTITY_API_VERSION
                             Defaults to env[OS_IDENTITY_API_VERSION] or 2.0
