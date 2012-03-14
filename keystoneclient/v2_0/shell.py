@@ -29,6 +29,13 @@ def do_user_list(kc, args):
     utils.print_list(users, ['id', 'enabled', 'email', 'name'])
 
 
+@utils.arg('id', metavar='<user-id>', help='User ID to display')
+def do_user_get(kc, args):
+    """Display user details."""
+    user = kc.users.get(args.id)
+    utils.print_dict(user._info)
+
+
 @utils.arg('--name', metavar='<user-name>', required=True,
            help='New user name (must be unique)')
 @utils.arg('--tenant_id', metavar='<tenant-id>',
