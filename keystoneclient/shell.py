@@ -181,7 +181,7 @@ class OpenStackIdentityShell(object):
 
         # Handle top-level --help/-h before attempting to parse
         # a command off the command line
-        if options.help:
+        if not argv or options.help:
             self.do_help(options)
             return 0
 
