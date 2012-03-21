@@ -200,42 +200,54 @@ class OpenStackIdentityShell(object):
         #FIXME(usrleon): Here should be restrict for project id same as
         # for username or apikey but for compatibility it is not.
 
+        # provide support for legacy args
+        args.os_username = args.os_username or args.username
+        args.os_password = args.os_password or args.password
+        args.os_auth_url = args.os_auth_url or args.auth_url
+        args.os_tenant_name = args.os_tenant_name or args.tenant_name
+        args.os_tenant_id = args.os_tenant_id or args.tenant_id
+        args.os_region_name = args.os_region_name or args.region_name
+
         if not utils.isunauthenticated(args.func):
-            if not (args.token and args.endpoint):
+            # if the user hasn't provided any auth data
+            if not (args.token or args.endpoint or args.os_username or
+                    args.os_password or args.os_auth_url):
+                raise exc.CommandError('Expecting authentication method via \n'
+                                       '  either a service token, '
+                                       '--token or env[SERVICE_TOKEN], \n'
+                                       '  or credentials, '
+                                       '--os_username or env[OS_USERNAME].')
+
+            # if it looks like the user wants to provide a service token
+            # but is missing something
+            if args.token or args.endpoint and not (
+                    args.token and args.endpoint):
+                if not args.token:
+                    raise exc.CommandError('Expecting a token provided '
+                            'via either --token or env[SERVICE_TOKEN]')
+
+                if not args.endpoint:
+                    raise exc.CommandError('Expecting an endpoint provided '
+                            'via either --endpoint or env[SERVICE_ENDPOINT]')
+
+            # if it looks like the user wants to provide a credentials
+            # but is missing something
+            if ((args.os_username or args.os_password or args.os_auth_url)
+                    and not (args.os_username and args.os_password and
+                             args.os_auth_url)):
                 if not args.os_username:
-                    if not args.username:
-                        raise exc.CommandError("You must provide a username "
-                                "via either --os_username or env[OS_USERNAME]")
-                    else:
-                        args.os_username = args.username
+                    raise exc.CommandError('Expecting a username provided '
+                            'via either --os_username or env[OS_USERNAME]')
 
                 if not args.os_password:
-                    if not args.password:
-                        raise exc.CommandError("You must provide a password "
-                                "via either --os_password or env[OS_PASSWORD]")
-                    else:
-                        args.os_password = args.password
+                    raise exc.CommandError('Expecting a password provided '
+                            'via either --os_password or env[OS_PASSWORD]')
 
                 if not args.os_auth_url:
-                    if not args.auth_url:
-                        raise exc.CommandError("You must provide an auth url "
-                                "via either --os_auth_url or via "
-                                "env[OS_AUTH_URL]")
-                    else:
-                        args.os_auth_url = args.auth_url
-
-                if not args.os_tenant_name and args.tenant_name:
-                    args.os_tenant_name = args.tenant_name
-
-                if not args.os_tenant_id and args.tenant_id:
-                    args.os_tenant_id = args.tenant_id
-
-                if not args.os_region_name and args.region_name:
-                    args.os_region_name = args.region_name
+                    raise exc.CommandError('Expecting an auth URL '
+                            'via either --os_auth_url or env[OS_AUTH_URL]')
 
         if utils.isunauthenticated(args.func):
-            if not args.os_auth_url and args.auth_url:
-                args.os_auth_url = args.auth_url
             self.cs = shell_generic.CLIENT_CLASS(endpoint=args.os_auth_url)
         else:
             token = None
