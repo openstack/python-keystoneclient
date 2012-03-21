@@ -49,7 +49,7 @@ class OpenStackIdentityShell(object):
         parser = argparse.ArgumentParser(
             prog='keystone',
             description=__doc__.strip(),
-            epilog='See "keystone help COMMAND" '\
+            epilog='See "keystone help COMMAND" '
                    'for help on a specific command.',
             add_help=False,
             formatter_class=OpenStackHelpFormatter,

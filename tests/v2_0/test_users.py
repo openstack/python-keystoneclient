@@ -10,42 +10,54 @@ from tests import utils
 class UserTests(utils.TestCase):
     def setUp(self):
         super(UserTests, self).setUp()
-        self.TEST_REQUEST_HEADERS = {'X-Auth-Token': 'aToken',
-                                     'User-Agent': 'python-keystoneclient'}
-        self.TEST_POST_HEADERS = {'Content-Type': 'application/json',
-                                  'X-Auth-Token': 'aToken',
-                                  'User-Agent': 'python-keystoneclient'}
+        self.TEST_REQUEST_HEADERS = {
+            'X-Auth-Token': 'aToken',
+            'User-Agent': 'python-keystoneclient',
+            }
+        self.TEST_POST_HEADERS = {
+            'Content-Type': 'application/json',
+            'X-Auth-Token': 'aToken',
+            'User-Agent': 'python-keystoneclient',
+            }
         self.TEST_USERS = {
-                            "users": {
-                                "values": [
-                                    {
-                                        "email": "None",
-                                        "enabled": True,
-                                        "id": 1,
-                                        "name": "admin"
-                                    },
-                                    {
-                                        "email": "None",
-                                        "enabled": True,
-                                        "id": 2,
-                                        "name": "demo"
-                                    },
-                                ]
-                            }
-                        }
+            "users": {
+                "values": [
+                    {
+                        "email": "None",
+                        "enabled": True,
+                        "id": 1,
+                        "name": "admin",
+                        },
+                    {
+                        "email": "None",
+                        "enabled": True,
+                        "id": 2,
+                        "name": "demo",
+                        },
+                    ]
+                }
+            }
 
     def test_create(self):
-        req_body = {"user": {"name": "gabriel",
-                             "password": "test",
-                             "tenantId": 2,
-                             "email": "test@example.com",
-                             "enabled": True}}
-        resp_body = {"user": {"name": "gabriel",
-                              "enabled": True,
-                              "tenantId": 2,
-                              "id": 3,
-                              "password": "test",
-                              "email": "test@example.com"}}
+        req_body = {
+            "user": {
+                "name": "gabriel",
+                "password": "test",
+                "tenantId": 2,
+                "email": "test@example.com",
+                "enabled": True,
+                }
+            }
+        resp_body = {
+            "user": {
+                "name": "gabriel",
+                "enabled": True,
+                "tenantId": 2,
+                "id": 3,
+                "password": "test",
+                "email": "test@example.com",
+                }
+            }
         resp = httplib2.Response({
             "status": 200,
             "body": json.dumps(resp_body),
@@ -71,7 +83,7 @@ class UserTests(utils.TestCase):
     def test_delete(self):
         resp = httplib2.Response({
             "status": 200,
-            "body": ""
+            "body": "",
             })
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL, 'v2.0/users/1'),
                               'DELETE',
@@ -84,7 +96,9 @@ class UserTests(utils.TestCase):
     def test_get(self):
         resp = httplib2.Response({
             "status": 200,
-            "body": json.dumps({'user': self.TEST_USERS['users']['values'][0]})
+            "body": json.dumps({
+                'user': self.TEST_USERS['users']['values'][0],
+                })
             })
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
                               'v2.0/users/1'),

@@ -10,29 +10,42 @@ from tests import utils
 class RoleTests(utils.TestCase):
     def setUp(self):
         super(RoleTests, self).setUp()
-        self.TEST_REQUEST_HEADERS = {'X-Auth-Token': 'aToken',
-                                     'User-Agent': 'python-keystoneclient'}
-        self.TEST_POST_HEADERS = {'Content-Type': 'application/json',
-                                  'X-Auth-Token': 'aToken',
-                                  'User-Agent': 'python-keystoneclient'}
+        self.TEST_REQUEST_HEADERS = {
+            'X-Auth-Token': 'aToken',
+            'User-Agent': 'python-keystoneclient',
+            }
+        self.TEST_POST_HEADERS = {
+            'Content-Type': 'application/json',
+            'X-Auth-Token': 'aToken',
+            'User-Agent': 'python-keystoneclient',
+            }
         self.TEST_ROLES = {
-                                "roles": {
-                                    "values": [
-                                        {
-                                            "name": "admin",
-                                            "id": 1
-                                        },
-                                        {
-                                            "name": "member",
-                                            "id": 2
-                                        }
-                                    ]
-                                }
-                            }
+            "roles": {
+                "values": [
+                    {
+                        "name": "admin",
+                        "id": 1,
+                        },
+                    {
+                        "name": "member",
+                        "id": 2,
+                        }
+                    ],
+                },
+            }
 
     def test_create(self):
-        req_body = {"role": {"name": "sysadmin"}}
-        resp_body = {"role": {"name": "sysadmin", "id": 3}}
+        req_body = {
+            "role": {
+                "name": "sysadmin",
+                }
+            }
+        resp_body = {
+            "role": {
+                "name": "sysadmin",
+                "id": 3,
+                }
+            }
         resp = httplib2.Response({
             "status": 200,
             "body": json.dumps(resp_body),
@@ -54,7 +67,7 @@ class RoleTests(utils.TestCase):
     def test_delete(self):
         resp = httplib2.Response({
             "status": 200,
-            "body": ""
+            "body": "",
             })
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
                               'v2.0/OS-KSADM/roles/1'),
@@ -68,8 +81,9 @@ class RoleTests(utils.TestCase):
     def test_get(self):
         resp = httplib2.Response({
             "status": 200,
-            "body": json.dumps({'role':
-                                self.TEST_ROLES['roles']['values'][0]}),
+            "body": json.dumps({
+                'role': self.TEST_ROLES['roles']['values'][0],
+                }),
             })
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
                               'v2.0/OS-KSADM/roles/1'),
