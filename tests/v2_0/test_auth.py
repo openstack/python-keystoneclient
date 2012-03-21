@@ -78,11 +78,16 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
                               .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
-        with self.assertRaises(exceptions.Unauthorized):
+        # Workaround for issue with assertRaises on python2.6
+        # where with assertRaises(exceptions.Unauthorized): doesn't work
+        # right
+        def client_create_wrapper():
             client.Client(username=self.TEST_USER,
                           password="bad_key",
                           tenant_id=self.TEST_TENANT_ID,
                           auth_url=self.TEST_URL)
+
+        self.assertRaises(exceptions.Unauthorized, client_create_wrapper)
 
     def test_auth_redirect(self):
         correct_response = json.dumps(self.TEST_RESPONSE_DICT)
