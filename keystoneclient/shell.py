@@ -113,29 +113,6 @@ class OpenStackIdentityShell(object):
                             default=env('SERVICE_ENDPOINT'),
                             help='Defaults to env[SERVICE_ENDPOINT]')
 
-        # FIXME(dtroyer): The args below are here for diablo compatibility,
-        #                 remove them in folsum cycle
-
-        parser.add_argument('--username',
-                            metavar='<auth-user-name>',
-                            help='Deprecated')
-
-        parser.add_argument('--password',
-                            metavar='<auth-password>',
-                            help='Deprecated')
-
-        parser.add_argument('--tenant_name',
-                            metavar='<tenant-name>',
-                            help='Deprecated')
-
-        parser.add_argument('--auth_url',
-                            metavar='<auth-url>',
-                            help='Deprecated')
-
-        parser.add_argument('--region_name',
-                            metavar='<region-name>',
-                            help='Deprecated')
-
         return parser
 
     def get_subcommand_parser(self, version):
@@ -209,13 +186,6 @@ class OpenStackIdentityShell(object):
 
         #FIXME(usrleon): Here should be restrict for project id same as
         # for username or apikey but for compatibility it is not.
-
-        # provide support for legacy args
-        args.os_username = args.os_username or args.username
-        args.os_password = args.os_password or args.password
-        args.os_auth_url = args.os_auth_url or args.auth_url
-        args.os_tenant_name = args.os_tenant_name or args.tenant_name
-        args.os_region_name = args.os_region_name or args.region_name
 
         if not utils.isunauthenticated(args.func):
             # if the user hasn't provided any auth data
