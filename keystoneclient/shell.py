@@ -115,9 +115,6 @@ class OpenStackIdentityShell(object):
         parser.add_argument('--tenant_name', metavar='<tenant-name>',
             help='Deprecated')
 
-        parser.add_argument('--tenant_id', metavar='<tenant-id>',
-            help='Deprecated')
-
         parser.add_argument('--auth_url', metavar='<auth-url>',
             help='Deprecated')
 
@@ -205,7 +202,6 @@ class OpenStackIdentityShell(object):
         args.os_password = args.os_password or args.password
         args.os_auth_url = args.os_auth_url or args.auth_url
         args.os_tenant_name = args.os_tenant_name or args.tenant_name
-        args.os_tenant_id = args.os_tenant_id or args.tenant_id
         args.os_region_name = args.os_region_name or args.region_name
 
         if not utils.isunauthenticated(args.func):
