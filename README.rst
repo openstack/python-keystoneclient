@@ -29,9 +29,9 @@ By way of a quick-start::
 
     # use v2.0 auth with http://example.com:5000/v2.0")
     >>> from keystoneclient.v2_0 import client
-    >>> keystone = client.Client(username=USERNAME, password=PASSWORD, tenant_name=TENANT, auth_url=KEYSTONE_URL)
+    >>> keystone = client.Client(username=USERNAME, password=PASSWORD, tenant_name=TENANT, auth_url=AUTH_URL)
     >>> keystone.tenants.list()
-    >>> tenant = keystone.tenants.create(name="test", descrption="My new tenant!", enabled=True)
+    >>> tenant = keystone.tenants.create(tenant_name="test", description="My new tenant!", enabled=True)
     >>> tenant.delete()
 
 
