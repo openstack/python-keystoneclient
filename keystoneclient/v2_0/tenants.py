@@ -37,7 +37,7 @@ class Tenant(base.Resource):
                                          description=new_description,
                                          enabled=new_enabled)
             self = retval
-        except Exception, e:
+        except Exception:
             retval = None
         return retval
 

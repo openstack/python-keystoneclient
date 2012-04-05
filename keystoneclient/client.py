@@ -11,8 +11,6 @@ OpenStack Client interface. Handles the REST calls and responses.
 import copy
 import logging
 import os
-import time
-import urllib
 import urlparse
 
 import httplib2
@@ -119,7 +117,7 @@ class HTTPClient(httplib2.Http):
         if body:
             try:
                 body = json.loads(body)
-            except ValueError, e:
+            except ValueError:
                 _logger.debug("Could not decode JSON from body: %s" % body)
         else:
             _logger.debug("No body was returned.")
