@@ -349,7 +349,7 @@ def do_endpoint_list(kc, args):
 
 @utils.arg('--region', metavar='<endpoint-region>',
            help='Endpoint region', default='regionOne')
-@utils.arg('--service_id', metavar='<service-id>',
+@utils.arg('--service_id', metavar='<service-id>', required=True,
            help='ID of service associated with Endpoint')
 @utils.arg('--publicurl', metavar='<public-url>',
            help='Public URL endpoint')
