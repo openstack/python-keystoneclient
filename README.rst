@@ -120,6 +120,7 @@ You'll find complete documentation on the shell by running
                             Update user password
         user-role-add       Add role to user
         user-role-remove    Remove role from user
+        user-role-list      List roles for user
         user-update         Update user's name, email, and enabled status
         discover            Discover Keystone servers and show authentication
                             protocols and

@@ -187,21 +187,9 @@ def do_service_delete(kc, args):
     kc.services.delete(args.id)
 
 
-@utils.arg('--user', metavar='<user-id>',
-           help='List roles granted to a user')
-@utils.arg('--tenant_id', metavar='<tenant-id>',
-           help='List roles granted on a tenant')
 def do_role_list(kc, args):
-    """List all roles, or only those granted to a user."""
-    if bool(args.tenant_id) ^ bool(args.user):
-        print 'User ID and Tenant ID are both required to list granted roles.'
-        return
-
-    if args.tenant_id and args.user:
-        roles = kc.roles.roles_for_user(user=args.user, tenant=args.tenant_id)
-    else:
-        roles = kc.roles.list()
-
+    """List all roles"""
+    roles = kc.roles.list()
     utils.print_list(roles, ['id', 'name'])
 
 
@@ -242,6 +230,28 @@ def do_user_role_add(kc, args):
 def do_user_role_remove(kc, args):
     """Remove role from user"""
     kc.roles.remove_user_role(args.user, args.role, args.tenant_id)
+
+
+@utils.arg('--user', metavar='<user-id>',
+           help='List roles granted to a user')
+@utils.arg('--tenant_id', metavar='<tenant-id>',
+           help='List roles granted on a tenant')
+def do_user_role_list(kc, args):
+    """List roles granted to a user"""
+    if not args.tenant_id:
+        # use the authenticated tenant id as a default
+        args.tenant_id = kc.auth_tenant_id
+    if not args.user:
+        # use the authenticated user id as a default
+        args.user = kc.auth_user_id
+    roles = kc.roles.roles_for_user(user=args.user, tenant=args.tenant_id)
+
+    # this makes the command output a bit more intuitive
+    for role in roles:
+        role.user_id = args.user
+        role.tenant_id = args.tenant_id
+
+    utils.print_list(roles, ['id', 'name', 'user_id', 'tenant_id'])
 
 
 @utils.arg('--user', metavar='<user-id>', help='User ID')
