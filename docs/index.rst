@@ -2,18 +2,15 @@ Python bindings to the OpenStack Keystone API
 ==================================================
 
 This is a client for OpenStack Keystone API. There's :doc:`a Python API
-<api>` (the :mod:`keystoneclient` module), and a :doc:`command-line script
+<using-api>` (the :mod:`keystoneclient` module), and a :doc:`command-line script
 <shell>` (installed as :program:`keystone`).
-
-You'll need an `OpenStack Keystone` account, which you can get by
-using `keystone-manage`.
 
 Contents:
 
 .. toctree::
    :maxdepth: 1
 
-   api
+   using-api
    shell
    ref/index
    releases
@@ -21,9 +18,13 @@ Contents:
 Contributing
 ============
 
-Development takes place `on GitHub`__; please file bugs/pull requests there.
+Code is hosted `on GitHub`_. Submit bugs to the Keystone project on 
+`Launchpad`_. Submit code to the openstack/python-keystoneclient project using
+`Gerrit`_.
 
-__ https://github.com/4P/python-keystoneclient
+.. _on GitHub: https://github.com/openstack/python-keystoneclient
+.. _Launchpad: https://launchpad.net/keystone
+.. _Gerrit: http://wiki.openstack.org/GerritWorkflow
 
 Run tests with ``python setup.py test``.
 

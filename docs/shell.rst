@@ -4,10 +4,6 @@ The :program:`keystone` shell utility
 .. program:: keystone
 .. highlight:: bash
 
-.. warning:: COMING SOON
-
-    The command line interface is not yet completed. This document serves
-    as a reference for the implementation.
 
 The :program:`keystone` shell utility interacts with OpenStack Keystone API
 from the command line. It supports the entirety of the OpenStack Keystone API.
