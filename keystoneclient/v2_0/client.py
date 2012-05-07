@@ -46,6 +46,10 @@ class Client(client.HTTPClient):
                             instantiation.(optional)
     :param integer timeout: Allows customization of the timeout for client
                             http requests. (optional)
+    :param string ca_certs: Filename of the CA certificates to use when using
+                            ssl. (optional)
+    :param bool disable_tls_verify: Flag to disable certificate verification
+                            when using ssl.  The default is False. (optional)
 
     Example::
 
