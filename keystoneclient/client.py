@@ -38,8 +38,11 @@ class HTTPClient(httplib2.Http):
 
     def __init__(self, username=None, tenant_id=None, tenant_name=None,
                  password=None, auth_url=None, region_name=None, timeout=None,
-                 endpoint=None, token=None):
-        super(HTTPClient, self).__init__(timeout=timeout)
+                 endpoint=None, token=None, ca_certs=None,
+                 disable_tls_verify=False):
+        super(HTTPClient, self).__init__(timeout=timeout,
+                 ca_certs=ca_certs,
+                 disable_ssl_certificate_validation=disable_tls_verify)
         self.username = username
         self.tenant_id = tenant_id
         self.tenant_name = tenant_name
