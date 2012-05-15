@@ -30,7 +30,7 @@ class Tenant(base.Resource):
         # Preserve the existing settings; keystone legacy resets these?
         new_name = name if name else self.name
         new_description = description if description else self.description
-        new_enabled = enabled if enabled else self.enabled
+        new_enabled = enabled if enabled is not None else self.enabled
 
         try:
             retval = self.manager.update(self.id, tenant_name=new_name,
