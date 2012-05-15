@@ -21,11 +21,11 @@ from keystoneclient import utils
 CLIENT_CLASS = client.Client
 
 
-@utils.arg('tenant', metavar='<tenant-id>', nargs='?', default=None,
-           help='Tenant ID (Optional);  lists all users if not specified')
+@utils.arg('--tenant_id', metavar='<tenant-id>',
+           help='Tenant ID;  lists all users if not specified')
 def do_user_list(kc, args):
     """List users"""
-    users = kc.users.list(tenant_id=args.tenant)
+    users = kc.users.list(tenant_id=args.tenant_id)
     utils.print_list(users, ['id', 'enabled', 'email', 'name'])
 
 
@@ -215,24 +215,24 @@ def do_role_delete(kc, args):
 
 
 # TODO(jakedahn): refactor this to allow role, user, and tenant names.
-@utils.arg('--user', metavar='<user-id>', required=True, help='User ID')
-@utils.arg('--role', metavar='<role-id>', required=True, help='Role ID')
+@utils.arg('--user_id', metavar='<user-id>', required=True, help='User ID')
+@utils.arg('--role_id', metavar='<role-id>', required=True, help='Role ID')
 @utils.arg('--tenant_id', metavar='<tenant-id>', help='Tenant ID')
 def do_user_role_add(kc, args):
     """Add role to user"""
-    kc.roles.add_user_role(args.user, args.role, args.tenant_id)
+    kc.roles.add_user_role(args.user_id, args.role_id, args.tenant_id)
 
 
 # TODO(jakedahn): refactor this to allow role, user, and tenant names.
-@utils.arg('--user', metavar='<user-id>', required=True, help='User ID')
-@utils.arg('--role', metavar='<role-id>', required=True, help='Role ID')
+@utils.arg('--user_id', metavar='<user-id>', required=True, help='User ID')
+@utils.arg('--role_id', metavar='<role-id>', required=True, help='Role ID')
 @utils.arg('--tenant_id', metavar='<tenant-id>', help='Tenant ID')
 def do_user_role_remove(kc, args):
     """Remove role from user"""
-    kc.roles.remove_user_role(args.user, args.role, args.tenant_id)
+    kc.roles.remove_user_role(args.user_id, args.role_id, args.tenant_id)
 
 
-@utils.arg('--user', metavar='<user-id>',
+@utils.arg('--user_id', metavar='<user-id>',
            help='List roles granted to a user')
 @utils.arg('--tenant_id', metavar='<tenant-id>',
            help='List roles granted on a tenant')
@@ -241,53 +241,53 @@ def do_user_role_list(kc, args):
     if not args.tenant_id:
         # use the authenticated tenant id as a default
         args.tenant_id = kc.auth_tenant_id
-    if not args.user:
+    if not args.user_id:
         # use the authenticated user id as a default
-        args.user = kc.auth_user_id
-    roles = kc.roles.roles_for_user(user=args.user, tenant=args.tenant_id)
+        args.user_id = kc.auth_user_id
+    roles = kc.roles.roles_for_user(user=args.user_id, tenant=args.tenant_id)
 
     # this makes the command output a bit more intuitive
     for role in roles:
-        role.user_id = args.user
+        role.user_id = args.user_id
         role.tenant_id = args.tenant_id
 
     utils.print_list(roles, ['id', 'name', 'user_id', 'tenant_id'])
 
 
-@utils.arg('--user', metavar='<user-id>', help='User ID')
+@utils.arg('--user_id', metavar='<user-id>', help='User ID')
 @utils.arg('--tenant_id', metavar='<tenant-id>', help='Tenant ID')
 def do_ec2_credentials_create(kc, args):
     """Create EC2-compatibile credentials for user per tenant"""
     if not args.tenant_id:
         # use the authenticated tenant id as a default
         args.tenant_id = kc.auth_tenant_id
-    if not args.user:
+    if not args.user_id:
         # use the authenticated user id as a default
-        args.user = kc.auth_user_id
-    credentials = kc.ec2.create(args.user, args.tenant_id)
+        args.user_id = kc.auth_user_id
+    credentials = kc.ec2.create(args.user_id, args.tenant_id)
     utils.print_dict(credentials._info)
 
 
-@utils.arg('--user', metavar='<user-id>', help='User ID')
+@utils.arg('--user_id', metavar='<user-id>', help='User ID')
 @utils.arg('--access', metavar='<access-key>', required=True,
         help='Access Key')
 def do_ec2_credentials_get(kc, args):
     """Display EC2-compatibile credentials"""
-    if not args.user:
+    if not args.user_id:
         # use the authenticated user id as a default
-        args.user = kc.auth_user_id
-    cred = kc.ec2.get(args.user, args.access)
+        args.user_id = kc.auth_user_id
+    cred = kc.ec2.get(args.user_id, args.access)
     if cred:
         utils.print_dict(cred._info)
 
 
-@utils.arg('--user', metavar='<user-id>', help='User ID')
+@utils.arg('--user_id', metavar='<user-id>', help='User ID')
 def do_ec2_credentials_list(kc, args):
     """List EC2-compatibile credentials for a user"""
-    if not args.user:
+    if not args.user_id:
         # use the authenticated user id as a default
-        args.user = kc.auth_user_id
-    credentials = kc.ec2.list(args.user)
+        args.user_id = kc.auth_user_id
+    credentials = kc.ec2.list(args.user_id)
     for cred in credentials:
         try:
             cred.tenant = getattr(kc.tenants.get(cred.tenant_id), 'name')
@@ -298,16 +298,16 @@ def do_ec2_credentials_list(kc, args):
     utils.print_list(credentials, ['tenant', 'access', 'secret'])
 
 
-@utils.arg('--user', metavar='<user-id>', help='User ID')
+@utils.arg('--user_id', metavar='<user-id>', help='User ID')
 @utils.arg('--access', metavar='<access-key>', required=True,
         help='Access Key')
 def do_ec2_credentials_delete(kc, args):
     """Delete EC2-compatibile credentials"""
-    if not args.user:
+    if not args.user_id:
         # use the authenticated user id as a default
-        args.user = kc.auth_user_id
+        args.user_id = kc.auth_user_id
     try:
-        kc.ec2.delete(args.user, args.access)
+        kc.ec2.delete(args.user_id, args.access)
         print 'Credential has been deleted.'
     except Exception, e:
         print 'Unable to delete credential: %s' % e

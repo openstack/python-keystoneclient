@@ -142,7 +142,7 @@ class ShellTest(utils.TestCase):
 
             # Test case with one --tenant_id args present: ec2 creds
             shell('ec2-credentials-create '
-                  '--tenant_id=ec2-tenant --user=ec2-user')
+                  '--tenant_id=ec2-tenant --user_id=ec2-user')
             assert do_ec2_mock.called
             ((a, b), c) = do_ec2_mock.call_args
             actual = (b.os_auth_url, b.os_password, b.os_tenant_id,
@@ -151,13 +151,13 @@ class ShellTest(utils.TestCase):
             expect = (DEFAULT_AUTH_URL, DEFAULT_PASSWORD, DEFAULT_TENANT_ID,
                       DEFAULT_TENANT_NAME, DEFAULT_USERNAME, '')
             self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
-            actual = (b.tenant_id, b.user)
+            actual = (b.tenant_id, b.user_id)
             expect = ('ec2-tenant', 'ec2-user')
             self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
 
             # Test case with two --tenant_id args present
             shell('--os_tenant_id=os-tenant ec2-credentials-create '
-                  '--tenant_id=ec2-tenant --user=ec2-user')
+                  '--tenant_id=ec2-tenant --user_id=ec2-user')
             assert do_ec2_mock.called
             ((a, b), c) = do_ec2_mock.call_args
             actual = (b.os_auth_url, b.os_password, b.os_tenant_id,
@@ -166,7 +166,7 @@ class ShellTest(utils.TestCase):
             expect = (DEFAULT_AUTH_URL, DEFAULT_PASSWORD, 'os-tenant',
                       DEFAULT_TENANT_NAME, DEFAULT_USERNAME, '')
             self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
-            actual = (b.tenant_id, b.user)
+            actual = (b.tenant_id, b.user_id)
             expect = ('ec2-tenant', 'ec2-user')
             self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
 
