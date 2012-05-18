@@ -1,6 +1,7 @@
 import os
 import sys
 from setuptools import setup, find_packages
+from keystoneclient.openstack.common.setup import generate_authors
 
 
 def read(fname):
@@ -12,6 +13,7 @@ if sys.version_info < (2, 6):
 if sys.version_info < (2, 7):
     requirements.append('argparse')
 
+generate_authors()
 setup(
     name="python-keystoneclient",
     version="2012.2",
