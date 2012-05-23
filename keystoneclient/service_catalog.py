@@ -39,7 +39,7 @@ class ServiceCatalog(object):
         return token
 
     def url_for(self, attr=None, filter_value=None,
-                    service_type='identity', endpoint_type='publicURL'):
+                service_type='identity', endpoint_type='publicURL'):
         """Fetch an endpoint from the service catalog.
 
         Fetch the specified endpoint from the service catalog for

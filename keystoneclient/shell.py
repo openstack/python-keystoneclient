@@ -127,6 +127,41 @@ class OpenStackIdentityShell(object):
                             default=env('SERVICE_ENDPOINT'),
                             help='Defaults to env[SERVICE_ENDPOINT]')
 
+        parser.add_argument('--os_cacert', metavar='<ca-certificate>',
+                            default=env('OS_CA_CERT'),
+                            help='Defaults to env[OS_CA_CERT]')
+
+        parser.add_argument('--os_cert', metavar='<certificate>',
+                            default=env('OS_CERT'),
+                            help='Defaults to env[OS_CERT]')
+
+        parser.add_argument('--os_key', metavar='<key>',
+                            default=env('OS_KEY'),
+                            help='Defaults to env[OS_KEY]')
+
+        # FIXME(dtroyer): The args below are here for diablo compatibility,
+        #                 remove them in folsum cycle
+
+        parser.add_argument('--username',
+                            metavar='<auth-user-name>',
+                            help='Deprecated')
+
+        parser.add_argument('--password',
+                            metavar='<auth-password>',
+                            help='Deprecated')
+
+        parser.add_argument('--tenant_name',
+                            metavar='<tenant-name>',
+                            help='Deprecated')
+
+        parser.add_argument('--auth_url',
+                            metavar='<auth-url>',
+                            help='Deprecated')
+
+        parser.add_argument('--region_name',
+                            metavar='<region-name>',
+                            help='Deprecated')
+
         return parser
 
     def get_subcommand_parser(self, version):
@@ -246,7 +281,10 @@ class OpenStackIdentityShell(object):
                         'env[OS_AUTH_URL]')
 
         if utils.isunauthenticated(args.func):
-            self.cs = shell_generic.CLIENT_CLASS(endpoint=args.os_auth_url)
+            self.cs = shell_generic.CLIENT_CLASS(endpoint=args.os_auth_url,
+                                                 cacert=args.os_cacert,
+                                                 key=args.os_key,
+                                                 cert=args.os_cert)
         else:
             token = None
             endpoint = None
@@ -262,7 +300,10 @@ class OpenStackIdentityShell(object):
                 endpoint=endpoint,
                 password=args.os_password,
                 auth_url=args.os_auth_url,
-                region_name=args.os_region_name)
+                region_name=args.os_region_name,
+                cacert=args.os_cacert,
+                key=args.os_key,
+                cert=args.os_cert)
 
         try:
             args.func(self.cs, args)
