@@ -118,8 +118,8 @@ def do_tenant_get(kc, args):
 def do_tenant_create(kc, args):
     """Create new tenant"""
     tenant = kc.tenants.create(args.name,
-                             description=args.description,
-                             enabled=utils.string_to_bool(args.enabled))
+                               description=args.description,
+                               enabled=utils.string_to_bool(args.enabled))
     utils.print_dict(tenant._info)
 
 
@@ -157,7 +157,7 @@ def do_tenant_delete(kc, args):
            help='Name of new service (must be unique)')
 @utils.arg('--type', metavar='<type>', required=True,
            help='Service type (one of: identity, compute, network, '
-                 'image, or object-store)')
+                'image, or object-store)')
 @utils.arg('--description', metavar='<service-description>',
            help='Description of service')
 def do_service_create(kc, args):
@@ -270,7 +270,7 @@ def do_ec2_credentials_create(kc, args):
 
 @utils.arg('--user_id', metavar='<user-id>', help='User ID')
 @utils.arg('--access', metavar='<access-key>', required=True,
-        help='Access Key')
+           help='Access Key')
 def do_ec2_credentials_get(kc, args):
     """Display EC2-compatibile credentials"""
     if not args.user_id:
@@ -300,7 +300,7 @@ def do_ec2_credentials_list(kc, args):
 
 @utils.arg('--user_id', metavar='<user-id>', help='User ID')
 @utils.arg('--access', metavar='<access-key>', required=True,
-        help='Access Key')
+           help='Access Key')
 def do_ec2_credentials_delete(kc, args):
     """Delete EC2-compatibile credentials"""
     if not args.user_id:
@@ -369,9 +369,11 @@ def do_endpoint_list(kc, args):
            help='Internal URL endpoint')
 def do_endpoint_create(kc, args):
     """Create a new endpoint associated with a service"""
-    endpoint = kc.endpoints.create(
-                    args.region, args.service_id, args.publicurl,
-                    args.adminurl, args.internalurl)
+    endpoint = kc.endpoints.create(args.region,
+                                   args.service_id,
+                                   args.publicurl,
+                                   args.adminurl,
+                                   args.internalurl)
     utils.print_dict(endpoint._info)
 
 

@@ -33,8 +33,7 @@ class ClientTest(utils.TestCase):
         def test_get_call():
             resp, body = cl.get("/hi")
             headers = {"X-Auth-Token": "token",
-                       "User-Agent": cl.USER_AGENT,
-            }
+                       "User-Agent": cl.USER_AGENT}
             mock_request.assert_called_with("http://127.0.0.1:5000/hi",
                                             "GET", headers=headers)
             # Automatic JSON parsing

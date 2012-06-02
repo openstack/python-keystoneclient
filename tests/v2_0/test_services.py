@@ -13,12 +13,12 @@ class ServiceTests(utils.TestCase):
         self.TEST_REQUEST_HEADERS = {
             'X-Auth-Token': 'aToken',
             'User-Agent': 'python-keystoneclient',
-            }
+        }
         self.TEST_POST_HEADERS = {
             'Content-Type': 'application/json',
             'X-Auth-Token': 'aToken',
             'User-Agent': 'python-keystoneclient',
-            }
+        }
         self.TEST_SERVICES = {
             "OS-KSADM:services": {
                 "values": [
@@ -27,16 +27,16 @@ class ServiceTests(utils.TestCase):
                         "type": "compute",
                         "description": "Nova-compatible service.",
                         "id": 1
-                        },
+                    },
                     {
                         "name": "keystone",
                         "type": "identity",
                         "description": "Keystone-compatible service.",
                         "id": 2
-                        },
-                    ],
-                },
-            }
+                    },
+                ],
+            },
+        }
 
     def test_create(self):
         req_body = {
@@ -44,33 +44,33 @@ class ServiceTests(utils.TestCase):
                 "name": "swift",
                 "type": "object-store",
                 "description": "Swift-compatible service.",
-                }
             }
+        }
         resp_body = {
             "OS-KSADM:service": {
                 "name": "swift",
                 "type": "object-store",
                 "description": "Swift-compatible service.",
                 "id": 3,
-                }
             }
+        }
         resp = httplib2.Response({
             "status": 200,
             "body": json.dumps(resp_body),
-            })
+        })
 
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
                               'v2.0/OS-KSADM/services'),
                               'POST',
                               body=json.dumps(req_body),
                               headers=self.TEST_POST_HEADERS) \
-                              .AndReturn((resp, resp['body']))
+            .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
         service = self.client.services.create(
-                req_body['OS-KSADM:service']['name'],
-                req_body['OS-KSADM:service']['type'],
-                req_body['OS-KSADM:service']['description'])
+            req_body['OS-KSADM:service']['name'],
+            req_body['OS-KSADM:service']['type'],
+            req_body['OS-KSADM:service']['description'])
         self.assertTrue(isinstance(service, services.Service))
         self.assertEqual(service.id, 3)
         self.assertEqual(service.name, req_body['OS-KSADM:service']['name'])
@@ -79,12 +79,12 @@ class ServiceTests(utils.TestCase):
         resp = httplib2.Response({
             "status": 200,
             "body": "",
-            })
+        })
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
                               'v2.0/OS-KSADM/services/1'),
                               'DELETE',
                               headers=self.TEST_REQUEST_HEADERS) \
-                              .AndReturn((resp, resp['body']))
+            .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
         self.client.services.delete(1)
@@ -94,12 +94,12 @@ class ServiceTests(utils.TestCase):
         resp = httplib2.Response({
             "status": 200,
             "body": json.dumps({'OS-KSADM:service': test_services}),
-            })
+        })
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
                               'v2.0/OS-KSADM/services/1'),
                               'GET',
                               headers=self.TEST_REQUEST_HEADERS) \
-                              .AndReturn((resp, resp['body']))
+            .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
         service = self.client.services.get(1)
@@ -112,13 +112,13 @@ class ServiceTests(utils.TestCase):
         resp = httplib2.Response({
             "status": 200,
             "body": json.dumps(self.TEST_SERVICES),
-            })
+        })
 
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
                               'v2.0/OS-KSADM/services'),
                               'GET',
                               headers=self.TEST_REQUEST_HEADERS) \
-                              .AndReturn((resp, resp['body']))
+            .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
         service_list = self.client.services.list()

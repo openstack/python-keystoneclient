@@ -13,50 +13,50 @@ class RoleTests(utils.TestCase):
         self.TEST_REQUEST_HEADERS = {
             'X-Auth-Token': 'aToken',
             'User-Agent': 'python-keystoneclient',
-            }
+        }
         self.TEST_POST_HEADERS = {
             'Content-Type': 'application/json',
             'X-Auth-Token': 'aToken',
             'User-Agent': 'python-keystoneclient',
-            }
+        }
         self.TEST_ROLES = {
             "roles": {
                 "values": [
                     {
                         "name": "admin",
                         "id": 1,
-                        },
+                    },
                     {
                         "name": "member",
                         "id": 2,
-                        }
-                    ],
-                },
-            }
+                    }
+                ],
+            },
+        }
 
     def test_create(self):
         req_body = {
             "role": {
                 "name": "sysadmin",
-                }
             }
+        }
         resp_body = {
             "role": {
                 "name": "sysadmin",
                 "id": 3,
-                }
             }
+        }
         resp = httplib2.Response({
             "status": 200,
             "body": json.dumps(resp_body),
-            })
+        })
 
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
                               'v2.0/OS-KSADM/roles'),
                               'POST',
                               body=json.dumps(req_body),
                               headers=self.TEST_POST_HEADERS) \
-                              .AndReturn((resp, resp['body']))
+            .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
         role = self.client.roles.create(req_body['role']['name'])
@@ -68,12 +68,12 @@ class RoleTests(utils.TestCase):
         resp = httplib2.Response({
             "status": 200,
             "body": "",
-            })
+        })
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
                               'v2.0/OS-KSADM/roles/1'),
                               'DELETE',
                               headers=self.TEST_REQUEST_HEADERS) \
-                              .AndReturn((resp, resp['body']))
+            .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
         self.client.roles.delete(1)
@@ -83,13 +83,13 @@ class RoleTests(utils.TestCase):
             "status": 200,
             "body": json.dumps({
                 'role': self.TEST_ROLES['roles']['values'][0],
-                }),
-            })
+            }),
+        })
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
                               'v2.0/OS-KSADM/roles/1'),
                               'GET',
                               headers=self.TEST_REQUEST_HEADERS) \
-                              .AndReturn((resp, resp['body']))
+            .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
         role = self.client.roles.get(1)
@@ -101,13 +101,13 @@ class RoleTests(utils.TestCase):
         resp = httplib2.Response({
             "status": 200,
             "body": json.dumps(self.TEST_ROLES),
-            })
+        })
 
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
                               'v2.0/OS-KSADM/roles'),
                               'GET',
                               headers=self.TEST_REQUEST_HEADERS) \
-                              .AndReturn((resp, resp['body']))
+            .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
         role_list = self.client.roles.list()
@@ -117,13 +117,13 @@ class RoleTests(utils.TestCase):
         resp = httplib2.Response({
             "status": 200,
             "body": json.dumps(self.TEST_ROLES),
-            })
+        })
 
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
                               'v2.0/users/foo/roles'),
                               'GET',
                               headers=self.TEST_REQUEST_HEADERS) \
-                              .AndReturn((resp, resp['body']))
+            .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
         role_list = self.client.roles.roles_for_user('foo')
@@ -133,13 +133,13 @@ class RoleTests(utils.TestCase):
         resp = httplib2.Response({
             "status": 200,
             "body": json.dumps(self.TEST_ROLES),
-            })
+        })
 
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
                               'v2.0/tenants/barrr/users/foo/roles'),
                               'GET',
                               headers=self.TEST_REQUEST_HEADERS) \
-                              .AndReturn((resp, resp['body']))
+            .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
         role_list = self.client.roles.roles_for_user('foo', 'barrr')
@@ -149,14 +149,14 @@ class RoleTests(utils.TestCase):
         resp = httplib2.Response({
             "status": 200,
             "body": json.dumps({}),
-            })
+        })
 
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
                               'v2.0/users/foo/roles/OS-KSADM/barrr'),
                               'PUT',
                               body='null',
                               headers=self.TEST_POST_HEADERS) \
-                              .AndReturn((resp, None))
+            .AndReturn((resp, None))
         self.mox.ReplayAll()
 
         self.client.roles.add_user_role('foo', 'barrr')
@@ -165,14 +165,14 @@ class RoleTests(utils.TestCase):
         resp = httplib2.Response({
             "status": 200,
             "body": json.dumps({}),
-            })
+        })
 
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
                               'v2.0/tenants/4/users/foo/roles/OS-KSADM/barrr'),
                               'PUT',
                               body='null',
                               headers=self.TEST_POST_HEADERS) \
-                              .AndReturn((resp, None))
+            .AndReturn((resp, None))
         self.mox.ReplayAll()
 
         self.client.roles.add_user_role('foo', 'barrr', '4')
@@ -181,13 +181,13 @@ class RoleTests(utils.TestCase):
         resp = httplib2.Response({
             "status": 200,
             "body": json.dumps({}),
-            })
+        })
 
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
                               'v2.0/users/foo/roles/OS-KSADM/barrr'),
                               'DELETE',
                               headers=self.TEST_REQUEST_HEADERS) \
-                              .AndReturn((resp, None))
+            .AndReturn((resp, None))
         self.mox.ReplayAll()
 
         self.client.roles.remove_user_role('foo', 'barrr')
@@ -196,13 +196,13 @@ class RoleTests(utils.TestCase):
         resp = httplib2.Response({
             "status": 200,
             "body": json.dumps({}),
-            })
+        })
 
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
                               'v2.0/tenants/4/users/foo/roles/OS-KSADM/barrr'),
                               'DELETE',
                               headers=self.TEST_REQUEST_HEADERS) \
-                              .AndReturn((resp, None))
+            .AndReturn((resp, None))
         self.mox.ReplayAll()
 
         self.client.roles.remove_user_role('foo', 'barrr', '4')

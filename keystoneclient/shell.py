@@ -56,70 +56,85 @@ class OpenStackIdentityShell(object):
         )
 
         # Global arguments
-        parser.add_argument('-h', '--help',
-            action='store_true',
-            help=argparse.SUPPRESS,
-        )
+        parser.add_argument('-h',
+                            '--help',
+                            action='store_true',
+                            help=argparse.SUPPRESS)
 
         parser.add_argument('--debug',
-            default=False,
-            action='store_true',
-            help=argparse.SUPPRESS)
+                            default=False,
+                            action='store_true',
+                            help=argparse.SUPPRESS)
 
-        parser.add_argument('--os_username', metavar='<auth-user-name>',
-            default=env('OS_USERNAME'),
-            help='Defaults to env[OS_USERNAME]')
+        parser.add_argument('--os_username',
+                            metavar='<auth-user-name>',
+                            default=env('OS_USERNAME'),
+                            help='Defaults to env[OS_USERNAME]')
 
-        parser.add_argument('--os_password', metavar='<auth-password>',
-            default=env('OS_PASSWORD'),
-            help='Defaults to env[OS_PASSWORD]')
+        parser.add_argument('--os_password',
+                            metavar='<auth-password>',
+                            default=env('OS_PASSWORD'),
+                            help='Defaults to env[OS_PASSWORD]')
 
-        parser.add_argument('--os_tenant_name', metavar='<auth-tenant-name>',
-            default=env('OS_TENANT_NAME'),
-            help='Defaults to env[OS_TENANT_NAME]')
+        parser.add_argument('--os_tenant_name',
+                            metavar='<auth-tenant-name>',
+                            default=env('OS_TENANT_NAME'),
+                            help='Defaults to env[OS_TENANT_NAME]')
 
-        parser.add_argument('--os_tenant_id', metavar='<tenant-id>',
-            default=env('OS_TENANT_ID'),
-            help='Defaults to env[OS_TENANT_ID]')
+        parser.add_argument('--os_tenant_id',
+                            metavar='<tenant-id>',
+                            default=env('OS_TENANT_ID'),
+                            help='Defaults to env[OS_TENANT_ID]')
 
-        parser.add_argument('--os_auth_url', metavar='<auth-url>',
-            default=env('OS_AUTH_URL'),
-            help='Defaults to env[OS_AUTH_URL]')
+        parser.add_argument('--os_auth_url',
+                            metavar='<auth-url>',
+                            default=env('OS_AUTH_URL'),
+                            help='Defaults to env[OS_AUTH_URL]')
 
-        parser.add_argument('--os_region_name', metavar='<region-name>',
-            default=env('OS_REGION_NAME'),
-            help='Defaults to env[OS_REGION_NAME]')
+        parser.add_argument('--os_region_name',
+                            metavar='<region-name>',
+                            default=env('OS_REGION_NAME'),
+                            help='Defaults to env[OS_REGION_NAME]')
 
         parser.add_argument('--os_identity_api_version',
-            metavar='<identity-api-version>',
-            default=env('OS_IDENTITY_API_VERSION', 'KEYSTONE_VERSION'),
-            help='Defaults to env[OS_IDENTITY_API_VERSION] or 2.0')
+                            metavar='<identity-api-version>',
+                            default=env('OS_IDENTITY_API_VERSION',
+                                        'KEYSTONE_VERSION'),
+                            help='Defaults to env[OS_IDENTITY_API_VERSION]'
+                                 ' or 2.0')
 
-        parser.add_argument('--token', metavar='<service-token>',
-            default=env('SERVICE_TOKEN'),
-            help='Defaults to env[SERVICE_TOKEN]')
+        parser.add_argument('--token',
+                            metavar='<service-token>',
+                            default=env('SERVICE_TOKEN'),
+                            help='Defaults to env[SERVICE_TOKEN]')
 
-        parser.add_argument('--endpoint', metavar='<service-endpoint>',
-            default=env('SERVICE_ENDPOINT'),
-            help='Defaults to env[SERVICE_ENDPOINT]')
+        parser.add_argument('--endpoint',
+                            metavar='<service-endpoint>',
+                            default=env('SERVICE_ENDPOINT'),
+                            help='Defaults to env[SERVICE_ENDPOINT]')
 
         # FIXME(dtroyer): The args below are here for diablo compatibility,
         #                 remove them in folsum cycle
 
-        parser.add_argument('--username', metavar='<auth-user-name>',
-            help='Deprecated')
+        parser.add_argument('--username',
+                            metavar='<auth-user-name>',
+                            help='Deprecated')
 
-        parser.add_argument('--password', metavar='<auth-password>',
-            help='Deprecated')
+        parser.add_argument('--password',
+                            metavar='<auth-password>',
+                            help='Deprecated')
 
-        parser.add_argument('--tenant_name', metavar='<tenant-name>',
-            help='Deprecated')
+        parser.add_argument('--tenant_name',
+                            metavar='<tenant-name>',
+                            help='Deprecated')
 
-        parser.add_argument('--auth_url', metavar='<auth-url>',
-            help='Deprecated')
+        parser.add_argument('--auth_url',
+                            metavar='<auth-url>',
+                            help='Deprecated')
 
-        parser.add_argument('--region_name', metavar='<region-name>',
-            help='Deprecated')
+        parser.add_argument('--region_name',
+                            metavar='<region-name>',
+                            help='Deprecated')
 
         return parser
 
@@ -151,16 +166,14 @@ class OpenStackIdentityShell(object):
             help = desc.strip().split('\n')[0]
             arguments = getattr(callback, 'arguments', [])
 
-            subparser = subparsers.add_parser(command,
+            subparser = subparsers.add_parser(
+                command,
                 help=help,
                 description=desc,
                 add_help=False,
-                formatter_class=OpenStackHelpFormatter
-            )
-            subparser.add_argument('-h', '--help',
-                action='help',
-                help=argparse.SUPPRESS,
-            )
+                formatter_class=OpenStackHelpFormatter)
+            subparser.add_argument('-h', '--help', action='help',
+                                   help=argparse.SUPPRESS)
             self.subcommands[command] = subparser
             for (args, kwargs) in arguments:
                 subparser.add_argument(*args, **kwargs)
@@ -219,12 +232,14 @@ class OpenStackIdentityShell(object):
             if args.token or args.endpoint and not (
                     args.token and args.endpoint):
                 if not args.token:
-                    raise exc.CommandError('Expecting a token provided '
-                            'via either --token or env[SERVICE_TOKEN]')
+                    raise exc.CommandError(
+                        'Expecting a token provided via either --token or '
+                        'env[SERVICE_TOKEN]')
 
                 if not args.endpoint:
-                    raise exc.CommandError('Expecting an endpoint provided '
-                            'via either --endpoint or env[SERVICE_ENDPOINT]')
+                    raise exc.CommandError(
+                        'Expecting an endpoint provided via either --endpoint '
+                        'or env[SERVICE_ENDPOINT]')
 
             # if it looks like the user wants to provide a credentials
             # but is missing something
@@ -232,16 +247,19 @@ class OpenStackIdentityShell(object):
                     and not (args.os_username and args.os_password and
                              args.os_auth_url)):
                 if not args.os_username:
-                    raise exc.CommandError('Expecting a username provided '
-                            'via either --os_username or env[OS_USERNAME]')
+                    raise exc.CommandError(
+                        'Expecting a username provided via either '
+                        '--os_username or env[OS_USERNAME]')
 
                 if not args.os_password:
-                    raise exc.CommandError('Expecting a password provided '
-                            'via either --os_password or env[OS_PASSWORD]')
+                    raise exc.CommandError(
+                        'Expecting a password provided via either '
+                        '--os_password or env[OS_PASSWORD]')
 
                 if not args.os_auth_url:
-                    raise exc.CommandError('Expecting an auth URL '
-                            'via either --os_auth_url or env[OS_AUTH_URL]')
+                    raise exc.CommandError(
+                        'Expecting an auth URL via either --os_auth_url or '
+                        'env[OS_AUTH_URL]')
 
         if utils.isunauthenticated(args.func):
             self.cs = shell_generic.CLIENT_CLASS(endpoint=args.os_auth_url)

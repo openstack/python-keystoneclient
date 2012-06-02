@@ -13,19 +13,19 @@ class EC2Tests(utils.TestCase):
         self.TEST_REQUEST_HEADERS = {
             'X-Auth-Token': 'aToken',
             'User-Agent': 'python-keystoneclient',
-            }
+        }
         self.TEST_POST_HEADERS = {
             'Content-Type': 'application/json',
             'X-Auth-Token': 'aToken',
             'User-Agent': 'python-keystoneclient',
-            }
+        }
 
     def test_create(self):
         user_id = 'usr'
         tenant_id = 'tnt'
         req_body = {
             "tenant_id": tenant_id,
-            }
+        }
         resp_body = {
             "credential": {
                 "access": "access",
@@ -33,12 +33,12 @@ class EC2Tests(utils.TestCase):
                 "tenant_id": tenant_id,
                 "created": "12/12/12",
                 "enabled": True,
-                }
             }
+        }
         resp = httplib2.Response({
             "status": 200,
             "body": json.dumps(resp_body),
-            })
+        })
 
         url = urlparse.urljoin(self.TEST_URL,
                                'v2.0/users/%s/credentials/OS-EC2' % user_id)
@@ -46,7 +46,7 @@ class EC2Tests(utils.TestCase):
                               'POST',
                               body=json.dumps(req_body),
                               headers=self.TEST_POST_HEADERS) \
-                              .AndReturn((resp, resp['body']))
+            .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
         cred = self.client.ec2.create(user_id, tenant_id)
@@ -66,12 +66,12 @@ class EC2Tests(utils.TestCase):
                 "tenant_id": tenant_id,
                 "created": "12/12/12",
                 "enabled": True,
-                }
             }
+        }
         resp = httplib2.Response({
             "status": 200,
             "body": json.dumps(resp_body),
-            })
+        })
 
         url = urlparse.urljoin(self.TEST_URL,
                                'v2.0/users/%s/credentials/OS-EC2/%s' %
@@ -79,7 +79,7 @@ class EC2Tests(utils.TestCase):
         httplib2.Http.request(url,
                               'GET',
                               headers=self.TEST_REQUEST_HEADERS) \
-                              .AndReturn((resp, resp['body']))
+            .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
         cred = self.client.ec2.get(user_id, 'access')
@@ -101,29 +101,29 @@ class EC2Tests(utils.TestCase):
                         "tenant_id": tenant_id,
                         "created": "12/12/12",
                         "enabled": True,
-                        },
+                    },
                     {
                         "access": "another",
                         "secret": "key",
                         "tenant_id": tenant_id,
                         "created": "12/12/31",
                         "enabled": True,
-                        }
-                    ]
-                }
+                    }
+                ]
             }
+        }
 
         resp = httplib2.Response({
             "status": 200,
             "body": json.dumps(resp_body),
-            })
+        })
 
         url = urlparse.urljoin(self.TEST_URL,
                                'v2.0/users/%s/credentials/OS-EC2' % user_id)
         httplib2.Http.request(url,
                               'GET',
                               headers=self.TEST_REQUEST_HEADERS) \
-                              .AndReturn((resp, resp['body']))
+            .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
         creds = self.client.ec2.list(user_id)
@@ -141,7 +141,7 @@ class EC2Tests(utils.TestCase):
         resp = httplib2.Response({
             "status": 200,
             "body": "",
-            })
+        })
 
         url = urlparse.urljoin(self.TEST_URL,
                                'v2.0/users/%s/credentials/OS-EC2/%s' %
@@ -149,7 +149,7 @@ class EC2Tests(utils.TestCase):
         httplib2.Http.request(url,
                               'DELETE',
                               headers=self.TEST_REQUEST_HEADERS) \
-                              .AndReturn((resp, resp['body']))
+            .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
         self.client.ec2.delete(user_id, access)

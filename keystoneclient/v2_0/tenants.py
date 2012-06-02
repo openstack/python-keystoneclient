@@ -48,8 +48,8 @@ class Tenant(base.Resource):
 
     def remove_user(self, user, role):
         return self.manager.api.roles.remove_user_role(base.getid(user),
-                                                      base.getid(role),
-                                                      self.id)
+                                                       base.getid(role),
+                                                       self.id)
 
     def list_users(self):
         return self.manager.list_users(self.id)

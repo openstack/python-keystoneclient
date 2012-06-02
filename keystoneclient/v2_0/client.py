@@ -127,8 +127,9 @@ class Client(client.HTTPClient):
         # in fact we should rewrite the client to support the service
         # catalog (api calls should be directable to any endpoints)
         try:
-            self.management_url = self.service_catalog.url_for(attr='region',
-                filter_value=self.region_name, endpoint_type='adminURL')
+            self.management_url = self.service_catalog.url_for(
+                attr='region', filter_value=self.region_name,
+                endpoint_type='adminURL')
         except:
             # Unscoped tokens don't return a service catalog
             _logger.exception("unable to retrieve service catalog with token")

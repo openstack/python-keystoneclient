@@ -57,7 +57,7 @@ class UserManager(base.ManagerWithFind):
                            "enabled": enabled}}
 
         self._update("/users/%s/OS-KSADM/enabled" % base.getid(user), params,
-                "user")
+                     "user")
 
     def update_password(self, user, password):
         """

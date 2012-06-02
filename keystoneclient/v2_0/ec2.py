@@ -44,7 +44,7 @@ class CredentialsManager(base.ManagerWithFind):
         :rtype: list of :class:`EC2`
         """
         return self._list("/users/%s/credentials/OS-EC2" % user_id,
-            "credentials")
+                          "credentials")
 
     def get(self, user_id, access):
         """
@@ -59,4 +59,4 @@ class CredentialsManager(base.ManagerWithFind):
         Delete an access/secret pair for a user
         """
         return self._delete("/users/%s/credentials/OS-EC2/%s" %
-                                (user_id, base.getid(access)))
+                            (user_id, base.getid(access)))

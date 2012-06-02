@@ -29,10 +29,10 @@ class EndpointManager(base.ManagerWithFind):
 
     def create(self, region, service_id, publicurl, adminurl, internalurl):
         body = {'endpoint': {'region': region,
-                  'service_id': service_id,
-                  'publicurl': publicurl,
-                  'adminurl': adminurl,
-                  'internalurl': internalurl}}
+                             'service_id': service_id,
+                             'publicurl': publicurl,
+                             'adminurl': adminurl,
+                             'internalurl': internalurl}}
         return self._create('/endpoints', body, 'endpoint')
 
     def delete(self, id):

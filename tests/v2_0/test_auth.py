@@ -28,27 +28,27 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
                     "id": self.TEST_TOKEN,
                     "tenant": {
                         "id": self.TEST_TENANT_ID
-                        },
                     },
+                },
                 "user": {
                     "id": self.TEST_USER
-                    },
-                "serviceCatalog": self.TEST_SERVICE_CATALOG,
                 },
-            }
+                "serviceCatalog": self.TEST_SERVICE_CATALOG,
+            },
+        }
         self.TEST_REQUEST_BODY = {
             "auth": {
                 "passwordCredentials": {
                     "username": self.TEST_USER,
                     "password": self.TEST_TOKEN,
-                    },
-                "tenantId": self.TEST_TENANT_ID,
                 },
-            }
+                "tenantId": self.TEST_TENANT_ID,
+            },
+        }
         self.TEST_REQUEST_HEADERS = {
             'Content-Type': 'application/json',
             'User-Agent': 'python-keystoneclient',
-            }
+        }
 
     def test_authenticate_failure(self):
         _auth = 'auth'
@@ -61,21 +61,21 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
                 "unauthorized": {
                     "message": "Unauthorized",
                     "code": "401",
-                    },
-                }),
-            })
+                },
+            }),
+        })
 
         # Implicit retry on API calls, so it gets called twice
         httplib2.Http.request(self.TEST_URL + "/tokens",
                               'POST',
                               body=json.dumps(self.TEST_REQUEST_BODY),
                               headers=self.TEST_REQUEST_HEADERS) \
-                              .AndReturn((resp, resp['body']))
+            .AndReturn((resp, resp['body']))
         httplib2.Http.request(self.TEST_URL + "/tokens",
                               'POST',
                               body=json.dumps(self.TEST_REQUEST_BODY),
                               headers=self.TEST_REQUEST_HEADERS) \
-                              .AndReturn((resp, resp['body']))
+            .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
         # Workaround for issue with assertRaises on python2.6
@@ -95,16 +95,16 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
             {
                 "headers": {
                     'location': self.TEST_ADMIN_URL + "/tokens",
-                    },
+                },
                 "status": 305,
                 "body": "Use proxy",
-                },
+            },
             {
                 "headers": {},
                 "status": 200,
                 "body": correct_response,
-                },
-            ]
+            },
+        ]
         responses = [(to_http_response(resp), resp['body'])
                      for resp in dict_responses]
 
@@ -112,12 +112,12 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
                               'POST',
                               body=json.dumps(self.TEST_REQUEST_BODY),
                               headers=self.TEST_REQUEST_HEADERS) \
-                              .AndReturn(responses[0])
+            .AndReturn(responses[0])
         httplib2.Http.request(self.TEST_ADMIN_URL + "/tokens",
                               'POST',
                               body=json.dumps(self.TEST_REQUEST_BODY),
                               headers=self.TEST_REQUEST_HEADERS) \
-                              .AndReturn(responses[1])
+            .AndReturn(responses[1])
         self.mox.ReplayAll()
 
         cs = client.Client(username=self.TEST_USER,
@@ -127,7 +127,7 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
 
         self.assertEqual(cs.management_url,
                          self.TEST_RESPONSE_DICT["access"]["serviceCatalog"][3]
-                             ['endpoints'][0]["adminURL"])
+                         ['endpoints'][0]["adminURL"])
         self.assertEqual(cs.auth_token,
                          self.TEST_RESPONSE_DICT["access"]["token"]["id"])
 
@@ -135,13 +135,13 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         resp = httplib2.Response({
             "status": 200,
             "body": json.dumps(self.TEST_RESPONSE_DICT),
-            })
+        })
 
         httplib2.Http.request(self.TEST_URL + "/tokens",
                               'POST',
                               body=json.dumps(self.TEST_REQUEST_BODY),
                               headers=self.TEST_REQUEST_HEADERS) \
-                              .AndReturn((resp, resp['body']))
+            .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
         cs = client.Client(username=self.TEST_USER,
@@ -150,7 +150,7 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
                            auth_url=self.TEST_URL)
         self.assertEqual(cs.management_url,
                          self.TEST_RESPONSE_DICT["access"]["serviceCatalog"][3]
-                             ['endpoints'][0]["adminURL"])
+                         ['endpoints'][0]["adminURL"])
         self.assertEqual(cs.auth_token,
                          self.TEST_RESPONSE_DICT["access"]["token"]["id"])
 
@@ -160,13 +160,13 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         resp = httplib2.Response({
             "status": 200,
             "body": json.dumps(self.TEST_RESPONSE_DICT),
-            })
+        })
 
         httplib2.Http.request(self.TEST_URL + "/tokens",
                               'POST',
                               body=json.dumps(self.TEST_REQUEST_BODY),
                               headers=self.TEST_REQUEST_HEADERS) \
-                              .AndReturn((resp, resp['body']))
+            .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
         cs = client.Client(username=self.TEST_USER,
@@ -183,13 +183,13 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         resp = httplib2.Response({
             "status": 200,
             "body": json.dumps(self.TEST_RESPONSE_DICT),
-            })
+        })
 
         httplib2.Http.request(self.TEST_URL + "/tokens",
                               'POST',
                               body=json.dumps(self.TEST_REQUEST_BODY),
                               headers=self.TEST_REQUEST_HEADERS) \
-                              .AndReturn((resp, resp['body']))
+            .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
         cs = client.Client(token=self.TEST_TOKEN,
@@ -197,7 +197,7 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
                            auth_url=self.TEST_URL)
         self.assertEqual(cs.management_url,
                          self.TEST_RESPONSE_DICT["access"]["serviceCatalog"][3]
-                             ['endpoints'][0]["adminURL"])
+                         ['endpoints'][0]["adminURL"])
         self.assertEqual(cs.auth_token,
                          self.TEST_RESPONSE_DICT["access"]["token"]["id"])
 
@@ -210,13 +210,13 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         resp = httplib2.Response({
             "status": 200,
             "body": json.dumps(self.TEST_RESPONSE_DICT),
-            })
+        })
 
         httplib2.Http.request(self.TEST_URL + "/tokens",
                               'POST',
                               body=json.dumps(self.TEST_REQUEST_BODY),
                               headers=self.TEST_REQUEST_HEADERS) \
-                              .AndReturn((resp, resp['body']))
+            .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
         cs = client.Client(token=self.TEST_TOKEN,

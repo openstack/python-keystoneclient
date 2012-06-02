@@ -13,12 +13,12 @@ class UserTests(utils.TestCase):
         self.TEST_REQUEST_HEADERS = {
             'X-Auth-Token': 'aToken',
             'User-Agent': 'python-keystoneclient',
-            }
+        }
         self.TEST_POST_HEADERS = {
             'Content-Type': 'application/json',
             'X-Auth-Token': 'aToken',
             'User-Agent': 'python-keystoneclient',
-            }
+        }
         self.TEST_USERS = {
             "users": {
                 "values": [
@@ -27,16 +27,16 @@ class UserTests(utils.TestCase):
                         "enabled": True,
                         "id": 1,
                         "name": "admin",
-                        },
+                    },
                     {
                         "email": "None",
                         "enabled": True,
                         "id": 2,
                         "name": "demo",
-                        },
-                    ]
-                }
+                    },
+                ]
             }
+        }
 
     def test_create(self):
         req_body = {
@@ -46,8 +46,8 @@ class UserTests(utils.TestCase):
                 "tenantId": 2,
                 "email": "test@example.com",
                 "enabled": True,
-                }
             }
+        }
         resp_body = {
             "user": {
                 "name": "gabriel",
@@ -56,18 +56,18 @@ class UserTests(utils.TestCase):
                 "id": 3,
                 "password": "test",
                 "email": "test@example.com",
-                }
             }
+        }
         resp = httplib2.Response({
             "status": 200,
             "body": json.dumps(resp_body),
-            })
+        })
 
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL, 'v2.0/users'),
                               'POST',
                               body=json.dumps(req_body),
                               headers=self.TEST_POST_HEADERS) \
-                              .AndReturn((resp, resp['body']))
+            .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
         user = self.client.users.create(req_body['user']['name'],
@@ -84,11 +84,11 @@ class UserTests(utils.TestCase):
         resp = httplib2.Response({
             "status": 200,
             "body": "",
-            })
+        })
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL, 'v2.0/users/1'),
                               'DELETE',
                               headers=self.TEST_REQUEST_HEADERS) \
-                              .AndReturn((resp, resp['body']))
+            .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
         self.client.users.delete(1)
@@ -98,13 +98,13 @@ class UserTests(utils.TestCase):
             "status": 200,
             "body": json.dumps({
                 'user': self.TEST_USERS['users']['values'][0],
-                })
             })
+        })
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
                               'v2.0/users/1'),
                               'GET',
                               headers=self.TEST_REQUEST_HEADERS) \
-                              .AndReturn((resp, resp['body']))
+            .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
         u = self.client.users.get(1)
@@ -116,13 +116,13 @@ class UserTests(utils.TestCase):
         resp = httplib2.Response({
             "status": 200,
             "body": json.dumps(self.TEST_USERS),
-            })
+        })
 
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
                               'v2.0/users'),
                               'GET',
                               headers=self.TEST_REQUEST_HEADERS) \
-                              .AndReturn((resp, resp['body']))
+            .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
         user_list = self.client.users.list()
@@ -132,13 +132,13 @@ class UserTests(utils.TestCase):
         resp = httplib2.Response({
             "status": 200,
             "body": json.dumps(self.TEST_USERS),
-            })
+        })
 
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
                               'v2.0/users?limit=1'),
                               'GET',
                               headers=self.TEST_REQUEST_HEADERS) \
-                              .AndReturn((resp, resp['body']))
+            .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
         user_list = self.client.users.list(limit=1)
@@ -148,13 +148,13 @@ class UserTests(utils.TestCase):
         resp = httplib2.Response({
             "status": 200,
             "body": json.dumps(self.TEST_USERS),
-            })
+        })
 
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
                               'v2.0/users?marker=1'),
                               'GET',
                               headers=self.TEST_REQUEST_HEADERS) \
-                              .AndReturn((resp, resp['body']))
+            .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
         user_list = self.client.users.list(marker=1)
@@ -164,13 +164,13 @@ class UserTests(utils.TestCase):
         resp = httplib2.Response({
             "status": 200,
             "body": json.dumps(self.TEST_USERS),
-            })
+        })
 
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
                               'v2.0/users?marker=1&limit=1'),
                               'GET',
                               headers=self.TEST_REQUEST_HEADERS) \
-                              .AndReturn((resp, resp['body']))
+            .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
         user_list = self.client.users.list(limit=1, marker=1)
@@ -193,25 +193,25 @@ class UserTests(utils.TestCase):
                               'PUT',
                               body=json.dumps(req_2),
                               headers=self.TEST_POST_HEADERS) \
-                              .AndReturn((resp_2, resp_2['body']))
+            .AndReturn((resp_2, resp_2['body']))
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
                               'v2.0/users/2/OS-KSADM/password'),
                               'PUT',
                               body=json.dumps(req_1),
                               headers=self.TEST_POST_HEADERS) \
-                              .AndReturn((resp_1, resp_1['body']))
+            .AndReturn((resp_1, resp_1['body']))
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
                               'v2.0/users/2/OS-KSADM/tenant'),
                               'PUT',
                               body=json.dumps(req_3),
                               headers=self.TEST_POST_HEADERS) \
-                              .AndReturn((resp_3, resp_3['body']))
+            .AndReturn((resp_3, resp_3['body']))
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
                               'v2.0/users/2/OS-KSADM/enabled'),
                               'PUT',
                               body=json.dumps(req_4),
                               headers=self.TEST_POST_HEADERS) \
-                              .AndReturn((resp_4, resp_4['body']))
+            .AndReturn((resp_4, resp_4['body']))
         self.mox.ReplayAll()
 
         user = self.client.users.update(2,

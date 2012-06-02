@@ -82,7 +82,8 @@ class Client(client.HTTPClient):
         try:
             httpclient = client.HTTPClient()
             resp, body = httpclient.request(url, "GET",
-                                      headers={'Accept': 'application/json'})
+                                            headers={'Accept':
+                                                     'application/json'})
             if resp.status in (200, 204):  # in some cases we get No Content
                 try:
                     results = {}
@@ -90,8 +91,8 @@ class Client(client.HTTPClient):
                         results['message'] = "Keystone found at %s" % url
                         version = body['version']
                         # Stable/diablo incorrect format
-                        id, status, version_url = self._get_version_info(
-                                                                version, url)
+                        id, status, version_url = \
+                            self._get_version_info(version, url)
                         results[str(id)] = {"id": id,
                                             "status": status,
                                             "url": version_url}
@@ -100,8 +101,8 @@ class Client(client.HTTPClient):
                         # Correct format
                         results['message'] = "Keystone found at %s" % url
                         for version in body['versions']['values']:
-                            id, status, version_url = self._get_version_info(
-                                                                version, url)
+                            id, status, version_url = \
+                                self._get_version_info(version, url)
                             results[str(id)] = {"id": id,
                                                 "status": status,
                                                 "url": version_url}
@@ -142,7 +143,8 @@ class Client(client.HTTPClient):
             if not url.endswith("/"):
                 url += '/'
             resp, body = httpclient.request("%sextensions" % url, "GET",
-                                      headers={'Accept': 'application/json'})
+                                            headers={'Accept':
+                                                     'application/json'})
             if resp.status in (200, 204):  # in some cases we get No Content
                 try:
                     results = {}
@@ -150,15 +152,17 @@ class Client(client.HTTPClient):
                         if 'values' in body['extensions']:
                             # Parse correct format (per contract)
                             for extension in body['extensions']['values']:
-                                alias, name = self._get_extension_info(
-                                        extension['extension'])
+                                alias, name = \
+                                    self._get_extension_info(
+                                        extension['extension']
+                                    )
                                 results[alias] = name
                             return results
                         else:
                             # Support incorrect, but prevalent format
                             for extension in body['extensions']:
-                                alias, name = self._get_extension_info(
-                                        extension)
+                                alias, name = \
+                                    self._get_extension_info(extension)
                                 results[alias] = name
                             return results
                     else:
