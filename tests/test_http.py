@@ -2,6 +2,7 @@ import httplib2
 import mock
 
 from keystoneclient import client
+from keystoneclient import exceptions
 from tests import utils
 
 
@@ -38,6 +39,20 @@ class ClientTest(utils.TestCase):
                                             "GET", headers=headers)
             # Automatic JSON parsing
             self.assertEqual(body, {"hi": "there"})
+
+        test_get_call()
+
+    def test_get_error(self):
+        cl = get_authed_client()
+
+        fake_err_response = httplib2.Response({"status": 400})
+        fake_err_body = 'Some evil plaintext string'
+        err_mock_request = mock.Mock(return_value=(fake_err_response,
+                                                   fake_err_body))
+
+        @mock.patch.object(httplib2.Http, "request", err_mock_request)
+        def test_get_call():
+            self.assertRaises(exceptions.BadRequest, cl.get, '/hi')
 
         test_get_call()
 
