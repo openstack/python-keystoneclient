@@ -26,7 +26,7 @@ CLIENT_CLASS = client.Client
 def do_user_list(kc, args):
     """List users"""
     users = kc.users.list(tenant_id=args.tenant_id)
-    utils.print_list(users, ['id', 'enabled', 'email', 'name'])
+    utils.print_list(users, ['id', 'name', 'enabled', 'email'])
 
 
 @utils.arg('id', metavar='<user-id>', help='User ID to display')
