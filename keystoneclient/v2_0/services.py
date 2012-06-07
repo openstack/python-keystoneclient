@@ -18,24 +18,30 @@ from keystoneclient import base
 
 
 class Service(base.Resource):
+    """Represents a Keystone service"""
     def __repr__(self):
         return "<Service %s>" % self._info
 
 
 class ServiceManager(base.ManagerWithFind):
+    """Manager class for manipulating Keystone services"""
     resource_class = Service
 
     def list(self):
+        """List available services"""
         return self._list("/OS-KSADM/services", "OS-KSADM:services")
 
     def get(self, id):
+        """Retrieve a service by id"""
         return self._get("/OS-KSADM/services/%s" % id, "OS-KSADM:service")
 
     def create(self, name, service_type, description):
+        """Create a new service"""
         body = {"OS-KSADM:service": {'name': name,
                                      'type': service_type,
                                      'description': description}}
         return self._create("/OS-KSADM/services", body, "OS-KSADM:service")
 
     def delete(self, id):
+        """Delete a service"""
         return self._delete("/OS-KSADM/services/%s" % id)

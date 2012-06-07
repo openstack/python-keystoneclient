@@ -20,6 +20,15 @@ from keystoneclient import base
 
 
 class Tenant(base.Resource):
+    """Represents a Keystone tenant
+
+    Attributes:
+        * id: a uuid that identifies the tenant
+        * name: tenant name
+        * description: tenant description
+        * enabled: boolean to indicate if tenant is enabled
+
+    """
     def __repr__(self):
         return "<Tenant %s>" % self._info
 
@@ -56,6 +65,7 @@ class Tenant(base.Resource):
 
 
 class TenantManager(base.ManagerWithFind):
+    """Manager class for manipulating Keystone tenants"""
     resource_class = Tenant
 
     def get(self, tenant_id):
@@ -64,6 +74,7 @@ class TenantManager(base.ManagerWithFind):
     def create(self, tenant_name, description=None, enabled=True):
         """
         Create a new tenant.
+
         """
         params = {"tenant": {"name": tenant_name,
                              "description": description,
@@ -74,7 +85,13 @@ class TenantManager(base.ManagerWithFind):
     def list(self, limit=None, marker=None):
         """
         Get a list of tenants.
+
+        :param integer limit: maximum number to return. (optional)
+        :param string marker: use when specifying a limit and making
+                              multiple calls for querying. (optional)
+
         :rtype: list of :class:`Tenant`
+
         """
 
         params = {}
