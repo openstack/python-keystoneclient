@@ -204,8 +204,8 @@ def print_help():
     help = """
     python-keystoneclient development environment setup is complete.
 
-    python-keystoneclient development uses virtualenv to track and manage Python
-    dependencies while in development and testing.
+    python-keystoneclient development uses virtualenv to track and manage
+    Python dependencies while in development and testing.
 
     To activate the python-keystoneclient virtualenv for the extent of your
     current shell session you can run:

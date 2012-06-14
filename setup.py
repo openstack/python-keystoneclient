@@ -1,20 +1,18 @@
 import os
 import sys
-from setuptools import setup, find_packages
-from keystoneclient.openstack.common.setup import generate_authors
+import setuptools
+
+from keystoneclient.openstack.common import setup
 
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
-requirements = ['httplib2', 'prettytable']
-if sys.version_info < (2, 6):
-    requirements.append('simplejson')
-if sys.version_info < (2, 7):
-    requirements.append('argparse')
+requires = setup.parse_requirements()
+depend_links = setup.parse_dependency_links()
+tests_require = setup.parse_requirements(['tools/test-requires'])
 
-generate_authors()
-setup(
+setuptools.setup(
     name="python-keystoneclient",
     version="2012.2",
     description="Client library for OpenStack Keystone API",
@@ -23,7 +21,7 @@ setup(
     license='Apache',
     author='Nebula Inc, based on work by Rackspace and Jacob Kaplan-Moss',
     author_email='gabriel.hurley@nebula.com',
-    packages=find_packages(exclude=['tests', 'tests.*']),
+    packages=setuptools.find_packages(exclude=['tests', 'tests.*']),
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',
@@ -33,9 +31,11 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python',
     ],
-    install_requires=requirements,
+    install_requires=requires,
+    dependency_links=depend_links,
+    cmdclass=setup.get_cmdclass(),
 
-    tests_require=["nose", "mock", "mox"],
+    tests_require=tests_require,
     test_suite="nose.collector",
 
     entry_points={
