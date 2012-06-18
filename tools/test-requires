@@ -8,3 +8,4 @@ nose-exclude
 openstack.nose_plugin
 pep8==1.2
 sphinx>=1.1.2
+unittest2>=0.5.1

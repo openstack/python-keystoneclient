@@ -2,4 +2,3 @@ argparse
 httplib2
 prettytable
 simplejson
-unittest2
