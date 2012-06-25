@@ -19,6 +19,7 @@ Command-line interface to the OpenStack Identity API.
 """
 
 import argparse
+import getpass
 import httplib2
 import os
 import sys
@@ -283,9 +284,20 @@ class OpenStackIdentityShell(object):
                         '--os-username or env[OS_USERNAME]')
 
                 if not args.os_password:
-                    raise exc.CommandError(
-                        'Expecting a password provided via either '
-                        '--os-password or env[OS_PASSWORD]')
+                    # No password, If we've got a tty, try prompting for it
+                    if hasattr(sys.stdin, 'isatty') and sys.stdin.isatty():
+                        # Check for Ctl-D
+                        try:
+                            args.os_password = getpass.getpass('OS Password: ')
+                        except EOFError:
+                            pass
+                    # No password because we did't have a tty or the
+                    # user Ctl-D when prompted?
+                    if not args.os_password:
+                        raise exc.CommandError(
+                            'Expecting a password provided via either '
+                            '--os-password, env[OS_PASSWORD], or '
+                            'prompted response')
 
                 if not args.os_auth_url:
                     raise exc.CommandError(
