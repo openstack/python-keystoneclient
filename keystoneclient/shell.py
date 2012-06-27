@@ -180,8 +180,17 @@ class OpenStackIdentityShell(object):
         self._find_actions(subparsers, actions_module)
         self._find_actions(subparsers, shell_generic)
         self._find_actions(subparsers, self)
+        self._add_bash_completion_subparser(subparsers)
 
         return parser
+
+    def _add_bash_completion_subparser(self, subparsers):
+        subparser = subparsers.add_parser('bash_completion',
+            add_help=False,
+            formatter_class=OpenStackHelpFormatter
+        )
+        self.subcommands['bash_completion'] = subparser
+        subparser.set_defaults(func=self.do_bash_completion)
 
     def _find_actions(self, subparsers, actions_module):
         for attr in (a for a in dir(actions_module) if a.startswith('do_')):
@@ -231,6 +240,9 @@ class OpenStackIdentityShell(object):
         # Short-circuit and deal with help command right away.
         if args.func == self.do_help:
             self.do_help(args)
+            return 0
+        elif args.func == self.do_bash_completion:
+            self.do_bash_completion(args)
             return 0
 
         #FIXME(usrleon): Here should be restrict for project id same as
@@ -319,6 +331,22 @@ class OpenStackIdentityShell(object):
             }[version]
         except KeyError:
             return shell_v2_0.CLIENT_CLASS
+
+    def do_bash_completion(self, args):
+        """
+        Prints all of the commands and options to stdout.
+        The keystone.bash_completion script doesn't have to hard code them.
+        """
+        commands = set()
+        options = set()
+        for sc_str, sc in self.subcommands.items():
+            commands.add(sc_str)
+            for option in sc._optionals._option_string_actions.keys():
+                options.add(option)
+
+        commands.remove('bash-completion')
+        commands.remove('bash_completion')
+        print ' '.join(commands | options)
 
     @utils.arg('command', metavar='<subcommand>', nargs='?',
                           help='Display help for <subcommand>')
