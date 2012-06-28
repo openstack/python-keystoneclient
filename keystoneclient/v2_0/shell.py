@@ -15,14 +15,17 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import argparse
+
 from keystoneclient.v2_0 import client
 from keystoneclient import utils
 
 CLIENT_CLASS = client.Client
 
 
-@utils.arg('--tenant_id', metavar='<tenant-id>',
+@utils.arg('--tenant-id', metavar='<tenant-id>',
            help='Tenant ID;  lists all users if not specified')
+@utils.arg('--tenant_id', help=argparse.SUPPRESS)
 def do_user_list(kc, args):
     """List users"""
     users = kc.users.list(tenant_id=args.tenant_id)
@@ -38,8 +41,9 @@ def do_user_get(kc, args):
 
 @utils.arg('--name', metavar='<user-name>', required=True,
            help='New user name (must be unique)')
-@utils.arg('--tenant_id', metavar='<tenant-id>',
+@utils.arg('--tenant-id', metavar='<tenant-id>',
            help='New user default tenant')
+@utils.arg('--tenant_id', help=argparse.SUPPRESS)
 @utils.arg('--pass', metavar='<pass>', dest='passwd',
            help='New user password')
 @utils.arg('--email', metavar='<email>',
@@ -215,27 +219,35 @@ def do_role_delete(kc, args):
 
 
 # TODO(jakedahn): refactor this to allow role, user, and tenant names.
-@utils.arg('--user_id', metavar='<user-id>', required=True, help='User ID')
-@utils.arg('--role_id', metavar='<role-id>', required=True, help='Role ID')
-@utils.arg('--tenant_id', metavar='<tenant-id>', help='Tenant ID')
+@utils.arg('--user-id', '--user_id', metavar='<user-id>', required=True,
+           help='User ID')
+@utils.arg('--role-id', '--role_id', metavar='<role-id>', required=True,
+           help='Role ID')
+@utils.arg('--tenant-id', metavar='<tenant-id>', help='Tenant ID')
+@utils.arg('--tenant_id', help=argparse.SUPPRESS)
 def do_user_role_add(kc, args):
     """Add role to user"""
     kc.roles.add_user_role(args.user_id, args.role_id, args.tenant_id)
 
 
 # TODO(jakedahn): refactor this to allow role, user, and tenant names.
-@utils.arg('--user_id', metavar='<user-id>', required=True, help='User ID')
-@utils.arg('--role_id', metavar='<role-id>', required=True, help='Role ID')
-@utils.arg('--tenant_id', metavar='<tenant-id>', help='Tenant ID')
+@utils.arg('--user-id', '--user_id', metavar='<user-id>', required=True,
+           help='User ID')
+@utils.arg('--role-id', '--role_id', metavar='<role-id>', required=True,
+           help='Role ID')
+@utils.arg('--tenant-id', metavar='<tenant-id>', help='Tenant ID')
+@utils.arg('--tenant_id', help=argparse.SUPPRESS)
 def do_user_role_remove(kc, args):
     """Remove role from user"""
     kc.roles.remove_user_role(args.user_id, args.role_id, args.tenant_id)
 
 
-@utils.arg('--user_id', metavar='<user-id>',
+@utils.arg('--user-id', metavar='<user-id>',
            help='List roles granted to a user')
-@utils.arg('--tenant_id', metavar='<tenant-id>',
+@utils.arg('--user_id', help=argparse.SUPPRESS)
+@utils.arg('--tenant-id', metavar='<tenant-id>',
            help='List roles granted on a tenant')
+@utils.arg('--tenant_id', help=argparse.SUPPRESS)
 def do_user_role_list(kc, args):
     """List roles granted to a user"""
     if not args.tenant_id:
@@ -254,8 +266,10 @@ def do_user_role_list(kc, args):
     utils.print_list(roles, ['id', 'name', 'user_id', 'tenant_id'])
 
 
-@utils.arg('--user_id', metavar='<user-id>', help='User ID')
-@utils.arg('--tenant_id', metavar='<tenant-id>', help='Tenant ID')
+@utils.arg('--user-id', metavar='<user-id>', help='User ID')
+@utils.arg('--user_id', help=argparse.SUPPRESS)
+@utils.arg('--tenant-id', metavar='<tenant-id>', help='Tenant ID')
+@utils.arg('--tenant_id', help=argparse.SUPPRESS)
 def do_ec2_credentials_create(kc, args):
     """Create EC2-compatibile credentials for user per tenant"""
     if not args.tenant_id:
@@ -268,7 +282,8 @@ def do_ec2_credentials_create(kc, args):
     utils.print_dict(credentials._info)
 
 
-@utils.arg('--user_id', metavar='<user-id>', help='User ID')
+@utils.arg('--user-id', metavar='<user-id>', help='User ID')
+@utils.arg('--user_id', help=argparse.SUPPRESS)
 @utils.arg('--access', metavar='<access-key>', required=True,
            help='Access Key')
 def do_ec2_credentials_get(kc, args):
@@ -281,7 +296,8 @@ def do_ec2_credentials_get(kc, args):
         utils.print_dict(cred._info)
 
 
-@utils.arg('--user_id', metavar='<user-id>', help='User ID')
+@utils.arg('--user-id', metavar='<user-id>', help='User ID')
+@utils.arg('--user_id', help=argparse.SUPPRESS)
 def do_ec2_credentials_list(kc, args):
     """List EC2-compatibile credentials for a user"""
     if not args.user_id:
@@ -298,7 +314,8 @@ def do_ec2_credentials_list(kc, args):
     utils.print_list(credentials, ['tenant', 'access', 'secret'])
 
 
-@utils.arg('--user_id', metavar='<user-id>', help='User ID')
+@utils.arg('--user-id', metavar='<user-id>', help='User ID')
+@utils.arg('--user_id', help=argparse.SUPPRESS)
 @utils.arg('--access', metavar='<access-key>', required=True,
            help='Access Key')
 def do_ec2_credentials_delete(kc, args):
@@ -327,8 +344,10 @@ def do_catalog(kc, args):
 
 @utils.arg('--service', metavar='<service-type>', required=True,
            help='Service type to select')
-@utils.arg('--endpoint_type', metavar='<endpoint-type>', default='publicURL',
+@utils.arg('--endpoint-type', metavar='<endpoint-type>', default='publicURL',
            help='Endpoint type to select')
+@utils.arg('--endpoint_type', default='publicURL',
+           help=argparse.SUPPRESS)
 @utils.arg('--attr', metavar='<service-attribute>',
            help='Service attribute to match for selection')
 @utils.arg('--value', metavar='<value>',
@@ -359,8 +378,8 @@ def do_endpoint_list(kc, args):
 
 @utils.arg('--region', metavar='<endpoint-region>',
            help='Endpoint region', default='regionOne')
-@utils.arg('--service_id', metavar='<service-id>', required=True,
-           help='ID of service associated with Endpoint')
+@utils.arg('--service-id', '--service_id', metavar='<service-id>',
+           required=True, help='ID of service associated with Endpoint')
 @utils.arg('--publicurl', metavar='<public-url>',
            help='Public URL endpoint')
 @utils.arg('--adminurl', metavar='<admin-url>',

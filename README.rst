@@ -42,14 +42,14 @@ Installing this package gets you a shell command, ``keystone``, that you
 can use to interact with Keystone's Identity API.
 
 You'll need to provide your OpenStack tenant, username and password. You can
-do this with the ``--os_tenant_name``, ``--os_username`` and ``--os_password``
+do this with the ``--os-tenant-name``, ``--os-username`` and ``--os-password``
 params, but it's easier to just set them as environment variables::
 
     export OS_TENANT_NAME=project
     export OS_USERNAME=user
     export OS_PASSWORD=pass
 
-You will also need to define the authentication url with ``--os_auth_url`` and the
+You will also need to define the authentication url with ``--os-auth-url`` and the
 version of the API with ``--identity_api_version``.  Or set them as an environment
 variables as well::
 
@@ -73,12 +73,13 @@ can specify the one you want with ``--region_name`` (or
 You'll find complete documentation on the shell by running
 ``keystone help``::
 
-    usage: keystone [--os_username OS_USERNAME] [--os_password OS_PASSWORD]
-                    [--os_tenant_name OS_TENANT_NAME]
-                    [--os_tenant_id OS_TENANT_ID] [--os_auth_url OS_AUTH_URL]
-                    [--os_region_name OS_REGION_NAME]
-                    [--identity_api_version IDENTITY_API_VERSION] [--token TOKEN]
-                    [--endpoint ENDPOINT]
+    usage: keystone [--os-username <auth-user-name>]
+                    [--os-password <auth-password>]
+                    [--os-tenant-name <auth-tenant-name>]
+                    [--os-tenant-id <tenant-id>] [--os-auth-url <auth-url>]
+                    [--os-region-name <region-name>]
+                    [--os-identity-api-version <identity-api-version>]
+                    [--token <service-token>] [--endpoint <service-endpoint>]
                     <subcommand> ...
 
     Command-line interface to the OpenStack Identity API.
@@ -128,21 +129,23 @@ You'll find complete documentation on the shell by running
                             subcommands.
 
     Optional arguments:
-      --os_username OS_USERNAME
+      --os-username <auth-user-name>
                             Defaults to env[OS_USERNAME]
-      --os_password OS_PASSWORD
+      --os-password <auth-password>
                             Defaults to env[OS_PASSWORD]
-      --os_tenant_name OS_TENANT_NAME
+      --os-tenant-name <auth-tenant-name>
                             Defaults to env[OS_TENANT_NAME]
-      --os_tenant_id OS_TENANT_ID
+      --os-tenant-id <tenant-id>
                             Defaults to env[OS_TENANT_ID]
-      --os_auth_url OS_AUTH_URL
+      --os-auth-url <auth-url>
                             Defaults to env[OS_AUTH_URL]
-      --os_region_name OS_REGION_NAME
+      --os-region-name <region-name>
                             Defaults to env[OS_REGION_NAME]
-      --identity_api_version IDENTITY_API_VERSION
+      --os-identity-api-version <identity-api-version>
                             Defaults to env[OS_IDENTITY_API_VERSION] or 2.0
-      --token TOKEN         Defaults to env[SERVICE_TOKEN]
-      --endpoint ENDPOINT   Defaults to env[SERVICE_ENDPOINT]
+      --token <service-token>
+                            Defaults to env[SERVICE_TOKEN]
+      --endpoint <service-endpoint>
+                            Defaults to env[SERVICE_ENDPOINT]
 
 See "keystone help COMMAND" for help on a specific command.
