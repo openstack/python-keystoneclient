@@ -31,6 +31,8 @@ def print_list(objs, fields, formatters={}):
             else:
                 field_name = field.lower().replace(' ', '_')
                 data = getattr(o, field_name, '')
+                if data is None:
+                    data = ''
                 row.append(data)
         pt.add_row(row)
 
@@ -40,7 +42,10 @@ def print_list(objs, fields, formatters={}):
 def print_dict(d):
     pt = prettytable.PrettyTable(['Property', 'Value'], caching=False)
     pt.aligns = ['l', 'l']
-    [pt.add_row(list(r)) for r in d.iteritems()]
+    for (prop, value) in d.iteritems():
+        if value is None:
+            value = ''
+        pt.add_row((prop, value))
     print pt.get_string(sortby='Property')
 
 
