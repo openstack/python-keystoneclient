@@ -45,7 +45,7 @@ def print_dict(d):
     for (prop, value) in d.iteritems():
         if value is None:
             value = ''
-        pt.add_row((prop, value))
+        pt.add_row([prop, value])
     print pt.get_string(sortby='Property')
 
 
