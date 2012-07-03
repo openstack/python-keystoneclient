@@ -60,6 +60,8 @@ class ShellTest(utils.TestCase):
             expect = (DEFAULT_AUTH_URL, DEFAULT_PASSWORD, DEFAULT_TENANT_ID,
                       DEFAULT_TENANT_NAME, DEFAULT_USERNAME, '')
             self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
+
+            # Old_style options
             shell('--os_auth_url http://0.0.0.0:5000/ --os_password xyzpdq '
                   '--os_tenant_id 1234 --os_tenant_name fred '
                   '--os_username barney '
@@ -73,6 +75,20 @@ class ShellTest(utils.TestCase):
                       'fred', 'barney', '2.0')
             self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
 
+            # New-style options
+            shell('--os-auth-url http://1.1.1.1:5000/ --os-password xyzpdq '
+                  '--os-tenant-id 4321 --os-tenant-name wilma '
+                  '--os-username betty '
+                  '--os-identity-api-version 2.0 user-list')
+            assert do_tenant_mock.called
+            ((a, b), c) = do_tenant_mock.call_args
+            actual = (b.os_auth_url, b.os_password, b.os_tenant_id,
+                      b.os_tenant_name, b.os_username,
+                      b.os_identity_api_version)
+            expect = ('http://1.1.1.1:5000/', 'xyzpdq', '4321',
+                      'wilma', 'betty', '2.0')
+            self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
+
     def test_shell_user_create_args(self):
         """Test user-create args"""
         do_uc_mock = mock.MagicMock()
@@ -82,6 +98,7 @@ class ShellTest(utils.TestCase):
         with mock.patch('keystoneclient.v2_0.shell.do_user_create',
                         do_uc_mock):
 
+            # Old_style options
             # Test case with one --tenant_id args present: ec2 creds
             shell('user-create --name=FOO '
                   '--pass=secrete --tenant_id=barrr --enabled=true')
@@ -97,6 +114,23 @@ class ShellTest(utils.TestCase):
             expect = ('barrr', 'FOO', 'secrete', 'true')
             self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
 
+            # New-style options
+            # Test case with one --tenant-id args present: ec2 creds
+            shell('user-create --name=foo '
+                  '--pass=secrete --tenant-id=BARRR --enabled=true')
+            assert do_uc_mock.called
+            ((a, b), c) = do_uc_mock.call_args
+            actual = (b.os_auth_url, b.os_password, b.os_tenant_id,
+                      b.os_tenant_name, b.os_username,
+                      b.os_identity_api_version)
+            expect = (DEFAULT_AUTH_URL, DEFAULT_PASSWORD, DEFAULT_TENANT_ID,
+                      DEFAULT_TENANT_NAME, DEFAULT_USERNAME, '')
+            self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
+            actual = (b.tenant_id, b.name, b.passwd, b.enabled)
+            expect = ('BARRR', 'foo', 'secrete', 'true')
+            self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
+
+            # Old_style options
             # Test case with --os_tenant_id and --tenant_id args present
             shell('--os_tenant_id=os-tenant user-create --name=FOO '
                   '--pass=secrete --tenant_id=barrr --enabled=true')
@@ -110,6 +144,22 @@ class ShellTest(utils.TestCase):
             self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
             actual = (b.tenant_id, b.name, b.passwd, b.enabled)
             expect = ('barrr', 'FOO', 'secrete', 'true')
+            self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
+
+            # New-style options
+            # Test case with --os-tenant-id and --tenant-id args present
+            shell('--os-tenant-id=ostenant user-create --name=foo '
+                  '--pass=secrete --tenant-id=BARRR --enabled=true')
+            assert do_uc_mock.called
+            ((a, b), c) = do_uc_mock.call_args
+            actual = (b.os_auth_url, b.os_password, b.os_tenant_id,
+                      b.os_tenant_name, b.os_username,
+                      b.os_identity_api_version)
+            expect = (DEFAULT_AUTH_URL, DEFAULT_PASSWORD, 'ostenant',
+                      DEFAULT_TENANT_NAME, DEFAULT_USERNAME, '')
+            self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
+            actual = (b.tenant_id, b.name, b.passwd, b.enabled)
+            expect = ('BARRR', 'foo', 'secrete', 'true')
             self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
 
     def test_do_tenant_create(self):
@@ -140,6 +190,7 @@ class ShellTest(utils.TestCase):
         with mock.patch('keystoneclient.v2_0.shell.do_ec2_credentials_create',
                         do_ec2_mock):
 
+            # Old_style options
             # Test case with one --tenant_id args present: ec2 creds
             shell('ec2-credentials-create '
                   '--tenant_id=ec2-tenant --user_id=ec2-user')
@@ -155,6 +206,23 @@ class ShellTest(utils.TestCase):
             expect = ('ec2-tenant', 'ec2-user')
             self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
 
+            # New-style options
+            # Test case with one --tenant-id args present: ec2 creds
+            shell('ec2-credentials-create '
+                  '--tenant-id=dash-tenant --user-id=dash-user')
+            assert do_ec2_mock.called
+            ((a, b), c) = do_ec2_mock.call_args
+            actual = (b.os_auth_url, b.os_password, b.os_tenant_id,
+                      b.os_tenant_name, b.os_username,
+                      b.os_identity_api_version)
+            expect = (DEFAULT_AUTH_URL, DEFAULT_PASSWORD, DEFAULT_TENANT_ID,
+                      DEFAULT_TENANT_NAME, DEFAULT_USERNAME, '')
+            self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
+            actual = (b.tenant_id, b.user_id)
+            expect = ('dash-tenant', 'dash-user')
+            self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
+
+            # Old_style options
             # Test case with two --tenant_id args present
             shell('--os_tenant_id=os-tenant ec2-credentials-create '
                   '--tenant_id=ec2-tenant --user_id=ec2-user')
@@ -168,6 +236,22 @@ class ShellTest(utils.TestCase):
             self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
             actual = (b.tenant_id, b.user_id)
             expect = ('ec2-tenant', 'ec2-user')
+            self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
+
+            # New-style options
+            # Test case with two --tenant-id args present
+            shell('--os-tenant-id=ostenant ec2-credentials-create '
+                  '--tenant-id=dash-tenant --user-id=dash-user')
+            assert do_ec2_mock.called
+            ((a, b), c) = do_ec2_mock.call_args
+            actual = (b.os_auth_url, b.os_password, b.os_tenant_id,
+                      b.os_tenant_name, b.os_username,
+                      b.os_identity_api_version)
+            expect = (DEFAULT_AUTH_URL, DEFAULT_PASSWORD, 'ostenant',
+                      DEFAULT_TENANT_NAME, DEFAULT_USERNAME, '')
+            self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
+            actual = (b.tenant_id, b.user_id)
+            expect = ('dash-tenant', 'dash-user')
             self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
 
     def test_do_ec2_get(self):
@@ -201,6 +285,7 @@ class ShellTest(utils.TestCase):
         with mock.patch('keystoneclient.v2_0.shell.do_endpoint_create',
                         do_shell_mock):
 
+            # Old_style options
             # Test create args
             shell('endpoint-create '
                   '--service_id=2 --publicurl=http://example.com:1234/go '
@@ -216,5 +301,24 @@ class ShellTest(utils.TestCase):
             actual = (b.service_id, b.publicurl, b.adminurl)
             expect = ('2',
                       'http://example.com:1234/go',
+                      'http://example.com:9876/adm')
+            self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
+
+            # New-style options
+            # Test create args
+            shell('endpoint-create '
+                  '--service-id=3 --publicurl=http://example.com:4321/go '
+                  '--adminurl=http://example.com:9876/adm')
+            assert do_shell_mock.called
+            ((a, b), c) = do_shell_mock.call_args
+            actual = (b.os_auth_url, b.os_password, b.os_tenant_id,
+                      b.os_tenant_name, b.os_username,
+                      b.os_identity_api_version)
+            expect = (DEFAULT_AUTH_URL, DEFAULT_PASSWORD, DEFAULT_TENANT_ID,
+                      DEFAULT_TENANT_NAME, DEFAULT_USERNAME, '')
+            self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
+            actual = (b.service_id, b.publicurl, b.adminurl)
+            expect = ('3',
+                      'http://example.com:4321/go',
                       'http://example.com:9876/adm')
             self.assertTrue(all([x == y for x, y in zip(actual, expect)]))

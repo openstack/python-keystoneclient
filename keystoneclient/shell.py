@@ -66,42 +66,56 @@ class OpenStackIdentityShell(object):
                             action='store_true',
                             help=argparse.SUPPRESS)
 
-        parser.add_argument('--os_username',
+        parser.add_argument('--os-username',
                             metavar='<auth-user-name>',
                             default=env('OS_USERNAME'),
                             help='Defaults to env[OS_USERNAME]')
+        parser.add_argument('--os_username',
+                            help=argparse.SUPPRESS)
 
-        parser.add_argument('--os_password',
+        parser.add_argument('--os-password',
                             metavar='<auth-password>',
                             default=env('OS_PASSWORD'),
                             help='Defaults to env[OS_PASSWORD]')
+        parser.add_argument('--os_password',
+                            help=argparse.SUPPRESS)
 
-        parser.add_argument('--os_tenant_name',
+        parser.add_argument('--os-tenant-name',
                             metavar='<auth-tenant-name>',
                             default=env('OS_TENANT_NAME'),
                             help='Defaults to env[OS_TENANT_NAME]')
+        parser.add_argument('--os_tenant_name',
+                            help=argparse.SUPPRESS)
 
-        parser.add_argument('--os_tenant_id',
+        parser.add_argument('--os-tenant-id',
                             metavar='<tenant-id>',
                             default=env('OS_TENANT_ID'),
                             help='Defaults to env[OS_TENANT_ID]')
+        parser.add_argument('--os_tenant_id',
+                            help=argparse.SUPPRESS)
 
-        parser.add_argument('--os_auth_url',
+        parser.add_argument('--os-auth-url',
                             metavar='<auth-url>',
                             default=env('OS_AUTH_URL'),
                             help='Defaults to env[OS_AUTH_URL]')
+        parser.add_argument('--os_auth_url',
+                            help=argparse.SUPPRESS)
 
-        parser.add_argument('--os_region_name',
+        parser.add_argument('--os-region-name',
                             metavar='<region-name>',
                             default=env('OS_REGION_NAME'),
                             help='Defaults to env[OS_REGION_NAME]')
+        parser.add_argument('--os_region_name',
+                            help=argparse.SUPPRESS)
 
-        parser.add_argument('--os_identity_api_version',
+        parser.add_argument('--os-identity-api-version',
                             metavar='<identity-api-version>',
                             default=env('OS_IDENTITY_API_VERSION',
                                         'KEYSTONE_VERSION'),
                             help='Defaults to env[OS_IDENTITY_API_VERSION]'
                                  ' or 2.0')
+        parser.add_argument('--os_identity_api_version',
+                            help=argparse.SUPPRESS)
 
         parser.add_argument('--token',
                             metavar='<service-token>',
@@ -195,7 +209,7 @@ class OpenStackIdentityShell(object):
                                        '  either a service token, '
                                        '--token or env[SERVICE_TOKEN], \n'
                                        '  or credentials, '
-                                       '--os_username or env[OS_USERNAME].')
+                                       '--os-username or env[OS_USERNAME].')
 
             # if it looks like the user wants to provide a service token
             # but is missing something
@@ -219,16 +233,16 @@ class OpenStackIdentityShell(object):
                 if not args.os_username:
                     raise exc.CommandError(
                         'Expecting a username provided via either '
-                        '--os_username or env[OS_USERNAME]')
+                        '--os-username or env[OS_USERNAME]')
 
                 if not args.os_password:
                     raise exc.CommandError(
                         'Expecting a password provided via either '
-                        '--os_password or env[OS_PASSWORD]')
+                        '--os-password or env[OS_PASSWORD]')
 
                 if not args.os_auth_url:
                     raise exc.CommandError(
-                        'Expecting an auth URL via either --os_auth_url or '
+                        'Expecting an auth URL via either --os-auth-url or '
                         'env[OS_AUTH_URL]')
 
         if utils.isunauthenticated(args.func):
