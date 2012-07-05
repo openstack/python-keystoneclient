@@ -50,7 +50,7 @@ params, but it's easier to just set them as environment variables::
     export OS_PASSWORD=pass
 
 You will also need to define the authentication url with ``--os-auth-url`` and the
-version of the API with ``--identity_api_version``.  Or set them as an environment
+version of the API with ``--os-identity-api-version``.  Or set them as an environment
 variables as well::
 
     export OS_AUTH_URL=http://example.com:5000/v2.0
