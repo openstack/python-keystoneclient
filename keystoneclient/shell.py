@@ -140,6 +140,15 @@ class OpenStackIdentityShell(object):
                             default=env('OS_KEY'),
                             help='Defaults to env[OS_KEY]')
 
+        parser.add_argument('--insecure',
+                            default=False,
+                            action="store_true",
+                            help="Explicitly allow keystoneclient to perform "
+                                 "\"insecure\" SSL (https) requests. The "
+                                 "server's certificate will not be verified "
+                                 "against any certificate authorities. This "
+                                 "option should be used with caution.")
+
         # FIXME(dtroyer): The args below are here for diablo compatibility,
         #                 remove them in folsum cycle
 
@@ -308,7 +317,8 @@ class OpenStackIdentityShell(object):
             self.cs = shell_generic.CLIENT_CLASS(endpoint=args.os_auth_url,
                                                  cacert=args.os_cacert,
                                                  key=args.os_key,
-                                                 cert=args.os_cert)
+                                                 cert=args.os_cert,
+                                                 insecure=args.insecure)
         else:
             token = None
             endpoint = None
@@ -327,7 +337,8 @@ class OpenStackIdentityShell(object):
                 region_name=args.os_region_name,
                 cacert=args.os_cacert,
                 key=args.os_key,
-                cert=args.os_cert)
+                cert=args.os_cert,
+                insecure=args.insecure)
 
         try:
             args.func(self.cs, args)

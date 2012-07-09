@@ -39,7 +39,7 @@ class HTTPClient(httplib2.Http):
     def __init__(self, username=None, tenant_id=None, tenant_name=None,
                  password=None, auth_url=None, region_name=None, timeout=None,
                  endpoint=None, token=None, cacert=None, key=None,
-                 cert=None):
+                 cert=None, insecure=False):
         super(HTTPClient, self).__init__(timeout=timeout, ca_certs=cacert)
         if cert:
             if key:
@@ -59,6 +59,7 @@ class HTTPClient(httplib2.Http):
 
         # httplib2 overrides
         self.force_exception_to_status_code = True
+        self.disable_ssl_certificate_validation = insecure
 
     def authenticate(self):
         """ Authenticate against the keystone API.
