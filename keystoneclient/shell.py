@@ -195,7 +195,8 @@ class OpenStackIdentityShell(object):
         return parser
 
     def _add_bash_completion_subparser(self, subparsers):
-        subparser = subparsers.add_parser('bash_completion',
+        subparser = subparsers.add_parser(
+            'bash_completion',
             add_help=False,
             formatter_class=OpenStackHelpFormatter
         )
@@ -372,7 +373,7 @@ class OpenStackIdentityShell(object):
         print ' '.join(commands | options)
 
     @utils.arg('command', metavar='<subcommand>', nargs='?',
-                          help='Display help for <subcommand>')
+               help='Display help for <subcommand>')
     def do_help(self, args):
         """
         Display help about this program or one of its subcommands.
