@@ -42,7 +42,7 @@ options, it is easier to just set them as environment variables:
 
     The OpenStack Identity API version.
 
-.. envvar:: OS_CA_CERT
+.. envvar:: OS_CACERT
 
     The location for the CA truststore (PEM formatted) for this client.
 
@@ -65,7 +65,7 @@ For example, in Bash you'd use::
     export OS_TENANT_NAME=myproject
     export OS_AUTH_URL=http(s)://example.com:5000/v2.0/
     export OS_IDENTITY_API_VERSION=2.0
-    export OS_CA_CERT=/etc/keystone/yourca.pem
+    export OS_CACERT=/etc/keystone/yourca.pem
     export OS_CERT=/etc/keystone/yourpublickey.pem
     export OS_KEY=/etc/keystone/yourprivatekey.pem
 

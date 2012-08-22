@@ -128,17 +128,26 @@ class OpenStackIdentityShell(object):
                             default=env('SERVICE_ENDPOINT'),
                             help='Defaults to env[SERVICE_ENDPOINT]')
 
-        parser.add_argument('--os_cacert', metavar='<ca-certificate>',
+        parser.add_argument('--os-cacert',
+                            metavar='<ca-certificate>',
                             default=env('OS_CA_CERT'),
-                            help='Defaults to env[OS_CA_CERT]')
+                            help='Defaults to env[OS_CACERT]')
+        parser.add_argument('--os_cacert',
+                            help=argparse.SUPPRESS)
 
-        parser.add_argument('--os_cert', metavar='<certificate>',
+        parser.add_argument('--os-cert',
+                            metavar='<certificate>',
                             default=env('OS_CERT'),
                             help='Defaults to env[OS_CERT]')
+        parser.add_argument('--os_cert',
+                            help=argparse.SUPPRESS)
 
-        parser.add_argument('--os_key', metavar='<key>',
+        parser.add_argument('--os-key',
+                            metavar='<key>',
                             default=env('OS_KEY'),
                             help='Defaults to env[OS_KEY]')
+        parser.add_argument('--os_key',
+                            help=argparse.SUPPRESS)
 
         parser.add_argument('--insecure',
                             default=False,
