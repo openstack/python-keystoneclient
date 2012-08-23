@@ -61,6 +61,13 @@ class HTTPClient(httplib2.Http):
         self.force_exception_to_status_code = True
         self.disable_ssl_certificate_validation = insecure
 
+        # logging setup
+        self.debug_log = os.environ.get('KEYSTONECLIENT_DEBUG', False)
+        if self.debug_log:
+            ch = logging.StreamHandler()
+            _logger.setLevel(logging.DEBUG)
+            _logger.addHandler(ch)
+
     def authenticate(self):
         """ Authenticate against the keystone API.
 
@@ -77,12 +84,8 @@ class HTTPClient(httplib2.Http):
         """
         raise NotImplementedError
 
-    def http_log(self, args, kwargs, resp, body):
-        if os.environ.get('KEYSTONECLIENT_DEBUG', False):
-            ch = logging.StreamHandler()
-            _logger.setLevel(logging.DEBUG)
-            _logger.addHandler(ch)
-        elif not _logger.isEnabledFor(logging.DEBUG):
+    def http_log_req(self, args, kwargs):
+        if not self.debug_log:
             return
 
         string_parts = ['curl -i']
@@ -99,7 +102,10 @@ class HTTPClient(httplib2.Http):
         _logger.debug("REQ: %s\n" % "".join(string_parts))
         if 'body' in kwargs:
             _logger.debug("REQ BODY: %s\n" % (kwargs['body']))
-        _logger.debug("RESP: %s\nRESP BODY: %s\n", resp, body)
+
+    def http_log_resp(self, resp, body):
+        if self.debug_log:
+            _logger.debug("RESP: %s\nRESP BODY: %s\n", resp, body)
 
     def request(self, url, method, **kwargs):
         """ Send an http request with the specified characteristics.
@@ -115,11 +121,11 @@ class HTTPClient(httplib2.Http):
             request_kwargs['headers']['Content-Type'] = 'application/json'
             request_kwargs['body'] = json.dumps(kwargs['body'])
 
+        self.http_log_req((url, method,), request_kwargs)
         resp, body = super(HTTPClient, self).request(url,
                                                      method,
                                                      **request_kwargs)
-
-        self.http_log((url, method,), request_kwargs, resp, body)
+        self.http_log_resp(resp, body)
 
         if body:
             try:
