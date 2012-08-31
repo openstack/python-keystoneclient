@@ -28,28 +28,24 @@ class DiscoverKeystoneTests(utils.UnauthenticatedTestCase):
                     "updated": "2011-11-19T00:00:00Z",
                     "links": [
                         {"rel": "self",
-                         "href": "http://127.0.0.1:5000/v2.0/",
-                        },
+                         "href": "http://127.0.0.1:5000/v2.0/", },
                         {"rel": "describedby",
                          "type": "text/html",
                          "href": "http://docs.openstack.org/api/"
-                         "openstack-identity-service/2.0/content/",
-                        }, {
-                            "rel": "describedby",
-                            "type": "application/pdf",
-                            "href": "http://docs.openstack.org/api/"
-                                    "openstack-identity-service/2.0/"
-                                    "identity-dev-guide-2.0.pdf",
-                        }, {
-                            "rel": "describedby",
-                            "type": "application/vnd.sun.wadl+xml",
-                            "href": "http://127.0.0.1:5000/v2.0/identity.wadl",
-                        }],
+                         "openstack-identity-service/2.0/content/", },
+                        {"rel": "describedby",
+                         "type": "application/pdf",
+                         "href": "http://docs.openstack.org/api/"
+                                 "openstack-identity-service/2.0/"
+                                 "identity-dev-guide-2.0.pdf", },
+                        {"rel": "describedby",
+                         "type": "application/vnd.sun.wadl+xml",
+                         "href": "http://127.0.0.1:5000/v2.0/identity.wadl", }
+                    ],
                     "media-types": [{
                         "base": "application/xml",
                         "type": "application/vnd.openstack.identity-v2.0+xml",
-                    },
-                    {
+                    }, {
                         "base": "application/json",
                         "type": "application/vnd.openstack.identity-v2.0+json",
                     }],
