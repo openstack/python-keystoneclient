@@ -140,7 +140,7 @@ def do_tenant_update(kc, args):
     kwargs = {}
     if args.name:
         kwargs.update({'name': args.name})
-    if args.description:
+    if args.description is not None:
         kwargs.update({'description': args.description})
     if args.enabled:
         kwargs.update({'enabled': utils.string_to_bool(args.enabled)})

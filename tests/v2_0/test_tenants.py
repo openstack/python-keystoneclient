@@ -218,6 +218,46 @@ class TenantTests(utils.TestCase):
         self.assertEqual(tenant.description, "I changed you!")
         self.assertFalse(tenant.enabled)
 
+    def test_update_empty_description(self):
+        req_body = {
+            "tenant": {
+                "id": 4,
+                "name": "tenantX",
+                "description": "",
+                "enabled": False,
+            },
+        }
+        resp_body = {
+            "tenant": {
+                "name": "tenantX",
+                "enabled": False,
+                "id": 4,
+                "description": "",
+            },
+        }
+        resp = httplib2.Response({
+            "status": 200,
+            "body": json.dumps(resp_body),
+        })
+
+        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
+                              'v2.0/tenants/4'),
+                              'POST',
+                              body=json.dumps(req_body),
+                              headers=self.TEST_POST_HEADERS) \
+            .AndReturn((resp, resp['body']))
+        self.mox.ReplayAll()
+
+        tenant = self.client.tenants.update(req_body['tenant']['id'],
+                                            req_body['tenant']['name'],
+                                            req_body['tenant']['description'],
+                                            req_body['tenant']['enabled'])
+        self.assertTrue(isinstance(tenant, tenants.Tenant))
+        self.assertEqual(tenant.id, 4)
+        self.assertEqual(tenant.name, "tenantX")
+        self.assertEqual(tenant.description, "")
+        self.assertFalse(tenant.enabled)
+
     def test_add_user(self):
         resp = httplib2.Response({
             "status": 200,

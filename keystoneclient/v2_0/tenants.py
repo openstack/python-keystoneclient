@@ -38,7 +38,10 @@ class Tenant(base.Resource):
     def update(self, name=None, description=None, enabled=None):
         # Preserve the existing settings; keystone legacy resets these?
         new_name = name if name else self.name
-        new_description = description if description else self.description
+        if description is not None:
+            new_description = description
+        else:
+            new_description = self.description
         new_enabled = enabled if enabled is not None else self.enabled
 
         try:
@@ -116,7 +119,7 @@ class TenantManager(base.ManagerWithFind):
             body['tenant']['name'] = tenant_name
         if enabled is not None:
             body['tenant']['enabled'] = enabled
-        if description:
+        if description is not None:
             body['tenant']['description'] = description
         # Keystone's API uses a POST rather than a PUT here.
         return self._create("/tenants/%s" % tenant_id, body, "tenant")
