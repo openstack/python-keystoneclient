@@ -16,6 +16,7 @@ import json
 import logging
 
 from keystoneclient.v2_0 import client
+from keystoneclient.v3 import services
 
 
 _logger = logging.getLogger(__name__)
@@ -56,6 +57,8 @@ class Client(client.Client):
     def __init__(self, endpoint=None, **kwargs):
         """ Initialize a new client for the Keystone v2.0 API. """
         super(Client, self).__init__(endpoint=endpoint, **kwargs)
+
+        self.services = services.ServiceManager(self)
 
         # NOTE(gabriel): If we have a pre-defined endpoint then we can
         #                get away with lazy auth. Otherwise auth immediately.
