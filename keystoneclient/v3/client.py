@@ -17,6 +17,7 @@ import logging
 
 from keystoneclient.v2_0 import client
 from keystoneclient.v3 import endpoints
+from keystoneclient.v3 import policies
 from keystoneclient.v3 import services
 
 
@@ -60,6 +61,7 @@ class Client(client.Client):
         super(Client, self).__init__(endpoint=endpoint, **kwargs)
 
         self.endpoints = endpoints.EndpointManager(self)
+        self.policies = policies.PolicyManager(self)
         self.services = services.ServiceManager(self)
 
         # NOTE(gabriel): If we have a pre-defined endpoint then we can
