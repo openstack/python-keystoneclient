@@ -76,13 +76,13 @@ class Manager(object):
 
     def _get(self, url, response_key):
         resp, body = self.api.get(url)
-        return self.resource_class(self, body[response_key])
+        return self.resource_class(self, body[response_key], loaded=True)
 
     def _create(self, url, body, response_key, return_raw=False):
         resp, body = self.api.post(url, body=body)
         if return_raw:
             return body[response_key]
-        return self.resource_class(self, body[response_key])
+        return self.resource_class(self, body[response_key], loaded=True)
 
     def _delete(self, url):
         resp, body = self.api.delete(url)
@@ -97,7 +97,7 @@ class Manager(object):
                                              % method)
         # PUT requests may not return a body
         if body:
-            return self.resource_class(self, body[response_key])
+            return self.resource_class(self, body[response_key], loaded=True)
 
 
 class ManagerWithFind(Manager):
