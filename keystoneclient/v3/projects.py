@@ -58,8 +58,10 @@ class ProjectManager(base.CrudManager):
             description=description,
             enabled=enabled)
 
-    def list(self, domain=None):
+    def list(self, domain=None, user=None):
+        base_url = '/users/%s' % base.getid(user) if user else None
         return super(ProjectManager, self).list(
+            base_url=base_url,
             domain_id=base.getid(domain))
 
     def get(self, project):
