@@ -103,8 +103,8 @@ class CrudTests(object):
             return json.dumps({self.collection_key: entity}, sort_keys=True)
         raise NotImplementedError('Are you sure you want to serialize that?')
 
-    def test_create(self):
-        ref = self.new_ref()
+    def test_create(self, ref=None):
+        ref = ref or self.new_ref()
         resp = httplib2.Response({
             'status': 201,
             'body': self.serialize(ref),
@@ -131,8 +131,8 @@ class CrudTests(object):
                 ref[attr],
                 'Expected different %s' % attr)
 
-    def test_get(self):
-        ref = self.new_ref()
+    def test_get(self, ref=None):
+        ref = ref or self.new_ref()
         resp = httplib2.Response({
             'status': 200,
             'body': self.serialize(ref),
@@ -155,8 +155,8 @@ class CrudTests(object):
                 ref[attr],
                 'Expected different %s' % attr)
 
-    def test_list(self):
-        ref_list = [self.new_ref(), self.new_ref()]
+    def test_list(self, ref_list=None, expected_path=None, **filter_kwargs):
+        ref_list = ref_list or [self.new_ref(), self.new_ref()]
 
         resp = httplib2.Response({
             'status': 200,
@@ -167,18 +167,18 @@ class CrudTests(object):
         httplib2.Http.request(
             urlparse.urljoin(
                 self.TEST_URL,
-                'v3/%s' % self.collection_key),
+                expected_path or 'v3/%s' % self.collection_key),
             method,
             headers=self.headers[method]) \
             .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
-        returned_list = self.manager.list()
+        returned_list = self.manager.list(**filter_kwargs)
         self.assertTrue(len(returned_list))
         [self.assertTrue(isinstance(r, self.model)) for r in returned_list]
 
-    def test_update(self):
-        ref = self.new_ref()
+    def test_update(self, ref=None):
+        ref = ref or self.new_ref()
         req_ref = ref.copy()
         del req_ref['id']
 
@@ -206,8 +206,8 @@ class CrudTests(object):
                 ref[attr],
                 'Expected different %s' % attr)
 
-    def test_delete(self):
-        ref = self.new_ref()
+    def test_delete(self, ref=None):
+        ref = ref or self.new_ref()
         method = 'DELETE'
         resp = httplib2.Response({
             'status': 204,

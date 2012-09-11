@@ -16,6 +16,7 @@ import json
 import logging
 
 from keystoneclient.v2_0 import client
+from keystoneclient.v3 import endpoints
 from keystoneclient.v3 import services
 
 
@@ -58,6 +59,7 @@ class Client(client.Client):
         """ Initialize a new client for the Keystone v2.0 API. """
         super(Client, self).__init__(endpoint=endpoint, **kwargs)
 
+        self.endpoints = endpoints.EndpointManager(self)
         self.services = services.ServiceManager(self)
 
         # NOTE(gabriel): If we have a pre-defined endpoint then we can
