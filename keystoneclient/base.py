@@ -78,6 +78,10 @@ class Manager(object):
         resp, body = self.api.get(url)
         return self.resource_class(self, body[response_key], loaded=True)
 
+    def _head(self, url):
+        resp, body = self.api.head(url)
+        return resp.status == 204
+
     def _create(self, url, body, response_key, return_raw=False):
         resp, body = self.api.post(url, body=body)
         if return_raw:
@@ -87,9 +91,10 @@ class Manager(object):
     def _delete(self, url):
         resp, body = self.api.delete(url)
 
-    def _update(self, url, body, response_key=None, method="PUT"):
+    def _update(self, url, body=None, response_key=None, method="PUT"):
         methods = {"PUT": self.api.put,
-                   "POST": self.api.post}
+                   "POST": self.api.post,
+                   "PATCH": self.api.patch}
         try:
             resp, body = methods[method](url, body=body)
         except KeyError:

@@ -176,11 +176,17 @@ class HTTPClient(httplib2.Http):
     def get(self, url, **kwargs):
         return self._cs_request(url, 'GET', **kwargs)
 
+    def head(self, url, **kwargs):
+        return self._cs_request(url, 'HEAD', **kwargs)
+
     def post(self, url, **kwargs):
         return self._cs_request(url, 'POST', **kwargs)
 
     def put(self, url, **kwargs):
         return self._cs_request(url, 'PUT', **kwargs)
+
+    def patch(self, url, **kwargs):
+        return self._cs_request(url, 'PATCH', **kwargs)
 
     def delete(self, url, **kwargs):
         return self._cs_request(url, 'DELETE', **kwargs)
