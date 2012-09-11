@@ -22,6 +22,7 @@ from keystoneclient.v3 import policies
 from keystoneclient.v3 import projects
 from keystoneclient.v3 import roles
 from keystoneclient.v3 import services
+from keystoneclient.v3 import users
 
 
 _logger = logging.getLogger(__name__)
@@ -69,6 +70,7 @@ class Client(client.Client):
         self.projects = projects.ProjectManager(self)
         self.roles = roles.RoleManager(self)
         self.services = services.ServiceManager(self)
+        self.users = users.UserManager(self)
 
         # NOTE(gabriel): If we have a pre-defined endpoint then we can
         #                get away with lazy auth. Otherwise auth immediately.
