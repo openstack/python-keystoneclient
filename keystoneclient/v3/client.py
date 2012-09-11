@@ -19,6 +19,7 @@ from keystoneclient.v2_0 import client
 from keystoneclient.v3 import endpoints
 from keystoneclient.v3 import domains
 from keystoneclient.v3 import policies
+from keystoneclient.v3 import roles
 from keystoneclient.v3 import services
 
 
@@ -64,6 +65,7 @@ class Client(client.Client):
         self.endpoints = endpoints.EndpointManager(self)
         self.domains = domains.DomainManager(self)
         self.policies = policies.PolicyManager(self)
+        self.roles = roles.RoleManager(self)
         self.services = services.ServiceManager(self)
 
         # NOTE(gabriel): If we have a pre-defined endpoint then we can
