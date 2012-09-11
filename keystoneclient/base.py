@@ -190,6 +190,9 @@ class Resource(object):
         if new:
             self._add_details(new._info)
 
+    def delete(self):
+        return self.manager.delete(self)
+
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
             return False
