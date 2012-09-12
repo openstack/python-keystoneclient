@@ -182,7 +182,8 @@ def do_service_id(kc, args):
     services = kc.services.list()
     for service in services:
         if getattr(service,'name','') == args.name:
-           return getattr(service,'id','')
+           print getattr(service,'id','')
+           return
 
 @utils.arg('id', metavar='<service-id>', help='Service ID to display')
 def do_service_get(kc, args):
