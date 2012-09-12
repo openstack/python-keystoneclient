@@ -139,7 +139,7 @@ class EC2Tests(utils.TestCase):
         user_id = 'usr'
         access = 'access'
         resp = httplib2.Response({
-            "status": 200,
+            "status": 204,
             "body": "",
         })
 

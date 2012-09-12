@@ -18,7 +18,7 @@ class TokenTests(utils.TestCase):
 
     def test_delete(self):
         resp = httplib2.Response({
-            "status": 200,
+            "status": 204,
             "body": ""})
 
         req = httplib2.Http.request(
