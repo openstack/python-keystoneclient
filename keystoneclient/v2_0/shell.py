@@ -177,7 +177,7 @@ def do_service_list(kc, args):
     services = kc.services.list()
     utils.print_list(services, ['id', 'name', 'type', 'description'])
 
-@utils.args('name', metavar='<service-name>', help='Service Name to show ID')
+@utils.arg('name', metavar='<service-name>', help='Service Name to show ID')
 def do_service_id(kc, args):
     services = kc.services.list()
     for service in services:
