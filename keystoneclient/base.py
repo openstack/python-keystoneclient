@@ -98,7 +98,10 @@ class Manager(object):
                    "POST": self.api.post,
                    "PATCH": self.api.patch}
         try:
-            resp, body = methods[method](url, body=body)
+            if body is not None:
+                resp, body = methods[method](url, body=body)
+            else:
+                resp, body = methods[method](url)
         except KeyError:
             raise exceptions.ClientException("Invalid update method: %s"
                                              % method)
