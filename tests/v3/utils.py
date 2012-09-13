@@ -91,7 +91,9 @@ class CrudTests(object):
             }
         }
 
+        self.headers['HEAD'] = self.headers['GET'].copy()
         self.headers['DELETE'] = self.headers['GET'].copy()
+        self.headers['PUT'] = self.headers['GET'].copy()
         self.headers['POST'] = self.headers['GET'].copy()
         self.headers['POST']['Content-Type'] = 'application/json'
         self.headers['PATCH'] = self.headers['POST'].copy()
