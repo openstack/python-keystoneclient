@@ -46,6 +46,9 @@ class Client(client.HTTPClient):
                             instantiation.(optional)
     :param integer timeout: Allows customization of the timeout for client
                             http requests. (optional)
+    :param string original_ip: The original IP of the requesting user
+                               which will be sent to Keystone in a
+                               'Forwarded' header. (optional)
 
     Example::
 

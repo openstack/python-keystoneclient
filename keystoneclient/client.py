@@ -39,7 +39,7 @@ class HTTPClient(httplib2.Http):
     def __init__(self, username=None, tenant_id=None, tenant_name=None,
                  password=None, auth_url=None, region_name=None, timeout=None,
                  endpoint=None, token=None, cacert=None, key=None,
-                 cert=None, insecure=False):
+                 cert=None, insecure=False, original_ip=None):
         super(HTTPClient, self).__init__(timeout=timeout, ca_certs=cacert)
         if cert:
             if key:
@@ -54,6 +54,7 @@ class HTTPClient(httplib2.Http):
         self.version = 'v2.0'
         self.region_name = region_name
         self.auth_token = token
+        self.original_ip = original_ip
 
         self.management_url = endpoint
 
@@ -117,6 +118,9 @@ class HTTPClient(httplib2.Http):
         request_kwargs = copy.copy(kwargs)
         request_kwargs.setdefault('headers', kwargs.get('headers', {}))
         request_kwargs['headers']['User-Agent'] = self.USER_AGENT
+        if self.original_ip:
+            request_kwargs['headers']['Forwarded'] = "for=%s;by=%s" % (
+                self.original_ip, self.USER_AGENT)
         if 'body' in kwargs:
             request_kwargs['headers']['Content-Type'] = 'application/json'
             request_kwargs['body'] = json.dumps(kwargs['body'])

@@ -62,3 +62,17 @@ class ClientTest(utils.TestCase):
             }
             mock_request.assert_called_with("http://127.0.0.1:5000/hi", "POST",
                                             headers=headers, body='[1, 2, 3]')
+
+    def test_forwarded_for(self):
+        ORIGINAL_IP = "10.100.100.1"
+        cl = client.HTTPClient(username="username", password="password",
+                               tenant_id="tenant", auth_url="auth_test",
+                               original_ip=ORIGINAL_IP)
+
+        with mock.patch.object(httplib2.Http, "request", mock_request):
+            res = cl.request('/', 'GET')
+
+            args, kwargs = mock_request.call_args
+            self.assertIn(
+                ('Forwarded', "for=%s;by=%s" % (ORIGINAL_IP, cl.USER_AGENT)),
+                kwargs['headers'].items())
