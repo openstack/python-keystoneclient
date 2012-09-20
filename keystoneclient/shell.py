@@ -158,29 +158,6 @@ class OpenStackIdentityShell(object):
                                  "against any certificate authorities. This "
                                  "option should be used with caution.")
 
-        # FIXME(dtroyer): The args below are here for diablo compatibility,
-        #                 remove them in folsum cycle
-
-        parser.add_argument('--username',
-                            metavar='<auth-user-name>',
-                            help='Deprecated')
-
-        parser.add_argument('--password',
-                            metavar='<auth-password>',
-                            help='Deprecated')
-
-        parser.add_argument('--tenant_name',
-                            metavar='<tenant-name>',
-                            help='Deprecated')
-
-        parser.add_argument('--auth_url',
-                            metavar='<auth-url>',
-                            help='Deprecated')
-
-        parser.add_argument('--region_name',
-                            metavar='<region-name>',
-                            help='Deprecated')
-
         return parser
 
     def get_subcommand_parser(self, version):
