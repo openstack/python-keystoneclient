@@ -39,12 +39,25 @@ def print_list(objs, fields, formatters={}):
     print pt.get_string(sortby=fields[0])
 
 
-def print_dict(d):
+def _word_wrap(string, max_length=0):
+    """wrap long strings to be no longer then max_length"""
+    if max_length <= 0:
+        return string
+    return '\n'.join([string[i:i + max_length] for i in
+            range(0, len(string), max_length)])
+
+
+def print_dict(d, wrap=0):
+    """pretty table prints dictionaries.
+
+    Wrap values to max_length wrap if wrap>0
+    """
     pt = prettytable.PrettyTable(['Property', 'Value'], caching=False)
     pt.aligns = ['l', 'l']
     for (prop, value) in d.iteritems():
         if value is None:
             value = ''
+        value = _word_wrap(value, max_length=wrap)
         pt.add_row([prop, value])
     print pt.get_string(sortby='Property')
 

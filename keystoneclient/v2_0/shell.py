@@ -406,6 +406,9 @@ def do_endpoint_delete(kc, args):
         print 'Unable to delete endpoint.'
 
 
+@utils.arg('--wrap', metavar='<integer>', default=79,
+           help='wrap PKI tokens to a specified length, or 0 to disable')
 def do_token_get(kc, args):
     """Display the current user token"""
-    utils.print_dict(kc.service_catalog.get_token())
+    utils.print_dict(kc.service_catalog.get_token(),
+        wrap=int(args.wrap))
