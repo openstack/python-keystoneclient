@@ -118,15 +118,15 @@ class OpenStackIdentityShell(object):
         parser.add_argument('--os_identity_api_version',
                             help=argparse.SUPPRESS)
 
-        parser.add_argument('--token',
+        parser.add_argument('--os-token',
                             metavar='<service-token>',
-                            default=env('SERVICE_TOKEN'),
-                            help='Defaults to env[SERVICE_TOKEN]')
+                            default=env('OS_SERVICE_TOKEN'),
+                            help='Defaults to env[OS_SERVICE_TOKEN]')
 
-        parser.add_argument('--endpoint',
+        parser.add_argument('--os-endpoint',
                             metavar='<service-endpoint>',
-                            default=env('SERVICE_ENDPOINT'),
-                            help='Defaults to env[SERVICE_ENDPOINT]')
+                            default=env('OS_SERVICE_ENDPOINT'),
+                            help='Defaults to env[OS_SERVICE_ENDPOINT]')
 
         parser.add_argument('--os-cacert',
                             metavar='<ca-certificate>',
@@ -157,6 +157,21 @@ class OpenStackIdentityShell(object):
                                  "server's certificate will not be verified "
                                  "against any certificate authorities. This "
                                  "option should be used with caution.")
+        #FIXME(heckj):
+        # deprecated command line options for essex compatibility. To be
+        # removed in Grizzly release cycle.
+
+        parser.add_argument('--token',
+                            metavar='<service-token>',
+                            dest='os_token',
+                            default=env('SERVICE_TOKEN'),
+                            help='Deprecated. use --os-token')
+
+        parser.add_argument('--endpoint',
+                            dest='os_endpoint',
+                            metavar='<service-endpoint>',
+                            default=env('SERVICE_ENDPOINT'),
+                            help='Deprecated. use --os-endpoint')
 
         return parser
 
@@ -245,9 +260,15 @@ class OpenStackIdentityShell(object):
         #FIXME(usrleon): Here should be restrict for project id same as
         # for username or apikey but for compatibility it is not.
 
+        # TODO(heckj): supporting backwards compatibility with environment
+        # variables. To be removed after DEVSTACK is updated, ideally in
+        # the Grizzly release cycle.
+        args.os_token = args.os_token or env('SERVICE_TOKEN')
+        args.os_endpoint = args.os_endpoint or env('SERVICE_ENDPOINT')
+
         if not utils.isunauthenticated(args.func):
             # if the user hasn't provided any auth data
-            if not (args.token or args.endpoint or args.os_username or
+            if not (args.os_token or args.os_endpoint or args.os_username or
                     args.os_password or args.os_auth_url):
                 raise exc.CommandError('Expecting authentication method via \n'
                                        '  either a service token, '
@@ -257,14 +278,14 @@ class OpenStackIdentityShell(object):
 
             # if it looks like the user wants to provide a service token
             # but is missing something
-            if args.token or args.endpoint and not (
-                    args.token and args.endpoint):
-                if not args.token:
+            if args.os_token or args.os_endpoint and not (
+                    args.os_token and args.os_endpoint):
+                if not args.os_token:
                     raise exc.CommandError(
                         'Expecting a token provided via either --token or '
                         'env[SERVICE_TOKEN]')
 
-                if not args.endpoint:
+                if not args.os_endpoint:
                     raise exc.CommandError(
                         'Expecting an endpoint provided via either --endpoint '
                         'or env[SERVICE_ENDPOINT]')
@@ -309,9 +330,9 @@ class OpenStackIdentityShell(object):
         else:
             token = None
             endpoint = None
-            if args.token and args.endpoint:
-                token = args.token
-                endpoint = args.endpoint
+            if args.os_token and args.os_endpoint:
+                token = args.os_token
+                endpoint = args.os_endpoint
             api_version = options.os_identity_api_version
             self.cs = self.get_api_class(api_version)(
                 username=args.os_username,
