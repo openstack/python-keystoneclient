@@ -18,7 +18,7 @@ Contents:
 Contributing
 ============
 
-Code is hosted `on GitHub`_. Submit bugs to the Keystone project on 
+Code is hosted `on GitHub`_. Submit bugs to the Keystone project on
 `Launchpad`_. Submit code to the openstack/python-keystoneclient project using
 `Gerrit`_.
 
