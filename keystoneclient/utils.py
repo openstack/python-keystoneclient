@@ -44,7 +44,7 @@ def _word_wrap(string, max_length=0):
     if max_length <= 0:
         return string
     return '\n'.join([string[i:i + max_length] for i in
-            range(0, len(string), max_length)])
+                     range(0, len(string), max_length)])
 
 
 def print_dict(d, wrap=0):

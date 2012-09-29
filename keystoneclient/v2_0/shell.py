@@ -411,4 +411,4 @@ def do_endpoint_delete(kc, args):
 def do_token_get(kc, args):
     """Display the current user token"""
     utils.print_dict(kc.service_catalog.get_token(),
-        wrap=int(args.wrap))
+                     wrap=int(args.wrap))
