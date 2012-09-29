@@ -88,9 +88,10 @@ def find_resource(manager, name_or_id):
 
 
 def unauthenticated(f):
-    """ Adds 'unauthenticated' attribute to decorated function.
+    """Adds 'unauthenticated' attribute to decorated function.
 
-    Usage:
+    Usage::
+
         @unauthenticated
         def mymethod(f):
             ...

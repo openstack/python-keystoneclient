@@ -10,20 +10,21 @@ Contents:
 .. toctree::
    :maxdepth: 1
 
-   using-api
-   shell
-   ref/index
    releases
+   shell
+   using-api
+
+   api/autoindex
 
 Contributing
 ============
 
-Code is hosted `on GitHub`_. Submit bugs to the Keystone project on 
+Code is hosted `on GitHub`_. Submit bugs to the Keystone project on
 `Launchpad`_. Submit code to the openstack/python-keystoneclient project using
 `Gerrit`_.
 
 .. _on GitHub: https://github.com/openstack/python-keystoneclient
-.. _Launchpad: https://launchpad.net/keystone
+.. _Launchpad: https://launchpad.net/python-keystoneclient
 .. _Gerrit: http://wiki.openstack.org/GerritWorkflow
 
 Run tests with ``python setup.py test``.
