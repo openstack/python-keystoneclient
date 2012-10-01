@@ -28,13 +28,15 @@ def do_discover(cs, args):
     extensions supported.
 
     Usage::
-    $ keystone discover
-    Keystone found at http://localhost:35357
-        - supports version v1.0 (DEPRECATED) here http://localhost:35357/v1.0
-        - supports version v1.1 (CURRENT) here http://localhost:35357/v1.1
-        - supports version v2.0 (BETA) here http://localhost:35357/v2.0
-            - and RAX-KSKEY: Rackspace API Key Authentication Admin Extension
-            - and RAX-KSGRP: Rackspace Keystone Group Extensions
+
+        $ keystone discover
+        Keystone found at http://localhost:35357
+
+    - supports version v1.0 (DEPRECATED) here http://localhost:35357/v1.0
+    - supports version v1.1 (CURRENT) here http://localhost:35357/v1.1
+    - supports version v2.0 (CURRENT) here http://localhost:35357/v2.0
+        - and RAX-KSKEY: Rackspace API Key Authentication Admin Extension
+        - and RAX-KSGRP: Rackspace Keystone Group Extensions
     """
     if cs.endpoint:
         versions = cs.discover(cs.endpoint)
