@@ -28,6 +28,7 @@ from keystoneclient import exceptions as exc
 from keystoneclient import utils
 from keystoneclient.v2_0 import shell as shell_v2_0
 from keystoneclient.generic import shell as shell_generic
+from keystoneclient.contrib.bootstrap import shell as shell_bootstrap
 
 
 def env(*vars, **kwargs):
@@ -190,6 +191,7 @@ class OpenStackIdentityShell(object):
 
         self._find_actions(subparsers, actions_module)
         self._find_actions(subparsers, shell_generic)
+        self._find_actions(subparsers, shell_bootstrap)
         self._find_actions(subparsers, self)
         self._add_bash_completion_subparser(subparsers)
 
