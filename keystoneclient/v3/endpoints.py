@@ -29,6 +29,7 @@ class Endpoint(base.Resource):
         * region: geographic location of the endpoint
         * service_id: service to which the endpoint belongs
         * url: fully qualified service endpoint
+        * enabled: determines whether the endpoint appears in the catalog
 
     """
     pass
@@ -46,34 +47,39 @@ class EndpointManager(base.CrudManager):
             msg = msg % ', '.join(VALID_INTERFACES)
             raise Exception(msg)
 
-    def create(self, service, url, name=None, interface=None, region=None):
+    def create(self, service, url, name=None, interface=None, region=None,
+               enabled=True):
         self._validate_interface(interface)
         return super(EndpointManager, self).create(
             service_id=base.getid(service),
             interface=interface,
             url=url,
-            region=region)
+            region=region,
+            enabled=enabled)
 
     def get(self, endpoint):
         return super(EndpointManager, self).get(
             endpoint_id=base.getid(endpoint))
 
-    def list(self, service=None, name=None, interface=None, region=None):
+    def list(self, service=None, name=None, interface=None, region=None,
+             enabled=None):
         self._validate_interface(interface)
         return super(EndpointManager, self).list(
             service_id=base.getid(service),
             interface=interface,
-            region=region)
+            region=region,
+            enabled=enabled)
 
     def update(self, endpoint, service=None, url=None, name=None,
-               interface=None, region=None):
+               interface=None, region=None, enabled=None):
         self._validate_interface(interface)
         return super(EndpointManager, self).update(
             endpoint_id=base.getid(endpoint),
             service_id=base.getid(service),
             interface=interface,
             url=url,
-            region=region)
+            region=region,
+            enabled=enabled)
 
     def delete(self, endpoint):
         return super(EndpointManager, self).delete(

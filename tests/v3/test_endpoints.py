@@ -19,6 +19,7 @@ class EndpointTests(utils.TestCase, utils.CrudTests):
         kwargs.setdefault('region', uuid.uuid4().hex)
         kwargs.setdefault('service_id', uuid.uuid4().hex)
         kwargs.setdefault('url', uuid.uuid4().hex)
+        kwargs.setdefault('enabled', True)
         return kwargs
 
     def test_create_public_interface(self):

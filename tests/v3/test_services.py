@@ -17,4 +17,5 @@ class ServiceTests(utils.TestCase, utils.CrudTests):
         kwargs = super(ServiceTests, self).new_ref(**kwargs)
         kwargs.setdefault('name', uuid.uuid4().hex)
         kwargs.setdefault('type', uuid.uuid4().hex)
+        kwargs.setdefault('enabled', True)
         return kwargs

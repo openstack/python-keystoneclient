@@ -24,6 +24,7 @@ class Service(base.Resource):
         * id: a uuid that identifies the service
         * name: user-facing name of the service (e.g. Keystone)
         * type: 'compute', 'identity', etc
+        * enabled: determines whether the service appears in the catalog
 
     """
     pass
@@ -35,21 +36,23 @@ class ServiceManager(base.CrudManager):
     collection_key = 'services'
     key = 'service'
 
-    def create(self, name, type, **kwargs):
+    def create(self, name, type, enabled=True, **kwargs):
         return super(ServiceManager, self).create(
             name=name,
             type=type,
+            enabled=enabled,
             **kwargs)
 
     def get(self, service):
         return super(ServiceManager, self).get(
             service_id=base.getid(service))
 
-    def update(self, service, name=None, type=None, **kwargs):
+    def update(self, service, name=None, type=None, enabled=None, **kwargs):
         return super(ServiceManager, self).update(
             service_id=base.getid(service),
             name=name,
             type=type,
+            enabled=enabled,
             **kwargs)
 
     def delete(self, service):
