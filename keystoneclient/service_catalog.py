@@ -27,7 +27,16 @@ class ServiceCatalog(object):
         self.catalog = resource_dict
 
     def get_token(self):
-        """Fetch token details fron service catalog"""
+        """Fetch token details fron service catalog.
+
+        Returns a dictionary containing the following::
+
+        - `id`: Token's ID
+        - `expires`: Token's expiration
+        - `user_id`: Authenticated user's ID
+        - `tenant_id`: Authorized project's ID
+
+        """
         token = {'id': self.catalog['token']['id'],
                  'expires': self.catalog['token']['expires']}
         try:
@@ -46,6 +55,8 @@ class ServiceCatalog(object):
         a particular endpoint attribute. If no attribute is given, return
         the first endpoint of the specified type.
 
+        Valid endpoint types: `publicURL`, `internalURL`, `adminURL`
+
         See tests for a sample service catalog.
         """
         catalog = self.catalog.get('serviceCatalog', [])
@@ -62,7 +73,7 @@ class ServiceCatalog(object):
         raise exceptions.EndpointNotFound('Endpoint not found.')
 
     def get_endpoints(self, service_type=None, endpoint_type=None):
-        """Fetch and filter endpoints for the specified service(s)
+        """Fetch and filter endpoints for the specified service(s).
 
         Returns endpoints for the specified service (or all) and
         that contain the specified type (or all).
