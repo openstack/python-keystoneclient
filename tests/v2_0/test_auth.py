@@ -65,12 +65,6 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
             }),
         })
 
-        # Implicit retry on API calls, so it gets called twice
-        httplib2.Http.request(self.TEST_URL + "/tokens",
-                              'POST',
-                              body=json.dumps(self.TEST_REQUEST_BODY),
-                              headers=self.TEST_REQUEST_HEADERS) \
-            .AndReturn((resp, resp['body']))
         httplib2.Http.request(self.TEST_URL + "/tokens",
                               'POST',
                               body=json.dumps(self.TEST_REQUEST_BODY),

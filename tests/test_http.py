@@ -26,6 +26,13 @@ def get_authed_client():
 
 class ClientTest(utils.TestCase):
 
+    def test_unauthorized_client_requests(self):
+        cl = get_client()
+        self.assertRaises(exceptions.AuthorizationFailure, cl.get, '/hi')
+        self.assertRaises(exceptions.AuthorizationFailure, cl.post, '/hi')
+        self.assertRaises(exceptions.AuthorizationFailure, cl.put, '/hi')
+        self.assertRaises(exceptions.AuthorizationFailure, cl.delete, '/hi')
+
     def test_get(self):
         cl = get_authed_client()
 

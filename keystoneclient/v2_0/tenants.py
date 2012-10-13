@@ -107,7 +107,16 @@ class TenantManager(base.ManagerWithFind):
         if params:
             query = "?" + urllib.urlencode(params)
 
-        return self._list("/tenants%s" % query, "tenants")
+        reset = 0
+        if self.api.management_url is None:
+            # special casing to allow tenant lists on the auth_url
+            # for unscoped tokens
+            reset = 1
+            self.api.management_url = self.api.auth_url
+        tenant_list = self._list("/tenants%s" % query, "tenants")
+        if reset:
+            self.api.management_url = None
+        return tenant_list
 
     def update(self, tenant_id, tenant_name=None, description=None,
                enabled=None):

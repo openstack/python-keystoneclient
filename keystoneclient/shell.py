@@ -259,9 +259,6 @@ class OpenStackIdentityShell(object):
             self.do_bash_completion(args)
             return 0
 
-        #FIXME(usrleon): Here should be restrict for project id same as
-        # for username or apikey but for compatibility it is not.
-
         # TODO(heckj): supporting backwards compatibility with environment
         # variables. To be removed after DEVSTACK is updated, ideally in
         # the Grizzly release cycle.
@@ -328,27 +325,27 @@ class OpenStackIdentityShell(object):
                                                  cacert=args.os_cacert,
                                                  key=args.os_key,
                                                  cert=args.os_cert,
-                                                 insecure=args.insecure)
+                                                 insecure=args.insecure,
+                                                 debug=args.debug)
         else:
             token = None
-            endpoint = None
             if args.os_token and args.os_endpoint:
                 token = args.os_token
-                endpoint = args.os_endpoint
             api_version = options.os_identity_api_version
             self.cs = self.get_api_class(api_version)(
                 username=args.os_username,
                 tenant_name=args.os_tenant_name,
                 tenant_id=args.os_tenant_id,
                 token=token,
-                endpoint=endpoint,
+                endpoint=args.os_endpoint,
                 password=args.os_password,
                 auth_url=args.os_auth_url,
                 region_name=args.os_region_name,
                 cacert=args.os_cacert,
                 key=args.os_key,
                 cert=args.os_cert,
-                insecure=args.insecure)
+                insecure=args.insecure,
+                debug=args.debug)
 
         try:
             args.func(self.cs, args)
