@@ -29,24 +29,20 @@ class ClientTest(utils.TestCase):
     def test_get(self):
         cl = get_authed_client()
 
-        @mock.patch.object(httplib2.Http, "request", MOCK_REQUEST)
-        @mock.patch('time.time', mock.Mock(return_value=1234))
-        def test_get_call():
-            resp, body = cl.get("/hi")
-            headers = {"X-Auth-Token": "token",
-                       "User-Agent": cl.USER_AGENT}
-            MOCK_REQUEST.assert_called_with("https://127.0.0.1:5000/hi",
-                                            "GET", headers=headers)
-            # Automatic JSON parsing
-            self.assertEqual(body, {"hi": "there"})
-
-        test_get_call()
+        with mock.patch.object(httplib2.Http, "request", MOCK_REQUEST):
+            with mock.patch('time.time', mock.Mock(return_value=1234)):
+                resp, body = cl.get("/hi")
+                headers = {"X-Auth-Token": "token",
+                           "User-Agent": cl.USER_AGENT}
+                MOCK_REQUEST.assert_called_with("https://127.0.0.1:5000/hi",
+                                                "GET", headers=headers)
+                # Automatic JSON parsing
+                self.assertEqual(body, {"hi": "there"})
 
     def test_post(self):
         cl = get_authed_client()
 
-        @mock.patch.object(httplib2.Http, "request", MOCK_REQUEST)
-        def test_post_call():
+        with mock.patch.object(httplib2.Http, "request", MOCK_REQUEST):
             cl.post("/hi", body=[1, 2, 3])
             headers = {
                 "X-Auth-Token": "token",
@@ -56,5 +52,3 @@ class ClientTest(utils.TestCase):
             MOCK_REQUEST.assert_called_with("https://127.0.0.1:5000/hi",
                                             "POST", headers=headers,
                                             body='[1, 2, 3]')
-
-        test_post_call()
