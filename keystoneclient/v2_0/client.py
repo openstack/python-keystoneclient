@@ -106,9 +106,9 @@ class Client(client.HTTPClient):
             self._extract_service_catalog(self.auth_url, raw_token)
             return True
         except (exceptions.AuthorizationFailure, exceptions.Unauthorized):
+            _logger.debug("Authorization Failed.")
             raise
         except Exception, e:
-            _logger.exception("Authorization Failed.")
             raise exceptions.AuthorizationFailure("Authorization Failed: "
                                                   "%s" % e)
 
