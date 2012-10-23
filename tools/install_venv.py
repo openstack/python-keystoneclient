@@ -144,10 +144,35 @@ class Fedora(Distro):
         super(Fedora, self).install_virtualenv()
 
 
+class Suse(Distro):
+    """This covers all SuSE distributions."""
+
+    def check_pkg(self, pkg):
+        return run_command_with_code(['rpm', '-q', pkg],
+                                     check_exit_code=False)[1] == 0
+
+    def zypper_install(self, pkg, **kwargs):
+        run_command(['sudo', 'zypper', '-qn', 'install', pkg], **kwargs)
+
+    def apply_patch(self, originalfile, patchfile):
+        run_command(['patch', originalfile, patchfile])
+
+    def install_virtualenv(self):
+        if self.check_cmd('virtualenv'):
+            return
+
+        if not self.check_pkg('python-virtualenv'):
+            self.zypper_install('python-virtualenv', check_exit_code=False)
+
+        super(Suse, self).install_virtualenv()
+
+
 def get_distro():
     if (os.path.exists('/etc/fedora-release') or
         os.path.exists('/etc/redhat-release')):
         return Fedora()
+    elif os.path.exists('/etc/SuSE-release'):
+        return Suse()
     elif os.path.exists('/etc/debian_version'):
         return Debian()
     else:

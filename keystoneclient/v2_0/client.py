@@ -76,10 +76,13 @@ class Client(client.HTTPClient):
         # extensions
         self.ec2 = ec2.CredentialsManager(self)
 
+        self.management_url = endpoint
         if endpoint is None:
             self.authenticate()
-        else:
-            self.management_url = endpoint
+
+    def has_service_catalog(self):
+        """Returns True if this client provides a service catalog."""
+        return hasattr(self, 'service_catalog')
 
     def authenticate(self):
         """ Authenticate against the Keystone API.
@@ -103,9 +106,9 @@ class Client(client.HTTPClient):
             self._extract_service_catalog(self.auth_url, raw_token)
             return True
         except (exceptions.AuthorizationFailure, exceptions.Unauthorized):
+            _logger.debug("Authorization Failed.")
             raise
         except Exception, e:
-            _logger.exception("Authorization Failed.")
             raise exceptions.AuthorizationFailure("Authorization Failed: "
                                                   "%s" % e)
 

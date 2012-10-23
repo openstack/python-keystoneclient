@@ -66,7 +66,7 @@ class RoleTests(utils.TestCase):
 
     def test_delete(self):
         resp = httplib2.Response({
-            "status": 200,
+            "status": 204,
             "body": "",
         })
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
@@ -147,62 +147,60 @@ class RoleTests(utils.TestCase):
 
     def test_add_user_role(self):
         resp = httplib2.Response({
-            "status": 200,
-            "body": json.dumps({}),
+            "status": 204,
+            "body": '',
         })
 
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
                               'v2.0/users/foo/roles/OS-KSADM/barrr'),
                               'PUT',
-                              body='null',
-                              headers=self.TEST_POST_HEADERS) \
-            .AndReturn((resp, None))
+                              headers=self.TEST_REQUEST_HEADERS) \
+            .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
         self.client.roles.add_user_role('foo', 'barrr')
 
     def test_add_user_role_tenant(self):
         resp = httplib2.Response({
-            "status": 200,
-            "body": json.dumps({}),
+            "status": 204,
+            "body": '',
         })
 
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
                               'v2.0/tenants/4/users/foo/roles/OS-KSADM/barrr'),
                               'PUT',
-                              body='null',
-                              headers=self.TEST_POST_HEADERS) \
-            .AndReturn((resp, None))
+                              headers=self.TEST_REQUEST_HEADERS) \
+            .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
         self.client.roles.add_user_role('foo', 'barrr', '4')
 
     def test_remove_user_role(self):
         resp = httplib2.Response({
-            "status": 200,
-            "body": json.dumps({}),
+            "status": 204,
+            "body": '',
         })
 
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
                               'v2.0/users/foo/roles/OS-KSADM/barrr'),
                               'DELETE',
                               headers=self.TEST_REQUEST_HEADERS) \
-            .AndReturn((resp, None))
+            .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
         self.client.roles.remove_user_role('foo', 'barrr')
 
     def test_remove_user_role_tenant(self):
         resp = httplib2.Response({
-            "status": 200,
-            "body": json.dumps({}),
+            "status": 204,
+            "body": '',
         })
 
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
                               'v2.0/tenants/4/users/foo/roles/OS-KSADM/barrr'),
                               'DELETE',
                               headers=self.TEST_REQUEST_HEADERS) \
-            .AndReturn((resp, None))
+            .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
         self.client.roles.remove_user_role('foo', 'barrr', '4')

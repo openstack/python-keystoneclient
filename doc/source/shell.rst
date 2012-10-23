@@ -1,5 +1,5 @@
 The :program:`keystone` shell utility
-=========================================
+=====================================
 
 .. program:: keystone
 .. highlight:: bash
@@ -8,15 +8,36 @@ The :program:`keystone` shell utility
 The :program:`keystone` shell utility interacts with OpenStack Keystone API
 from the command line. It supports the entirety of the OpenStack Keystone API.
 
-First, you'll need an OpenStack Keystone account. You get this by using the 
-`keystone-manage` command in OpenStack Keystone.
+To communicate with the API, you will need to be authenticated - and the
+:program:`keystone` provides multiple options for this.
 
-You'll need to provide :program:`keystone` with your OpenStack username and
-password. You can do this with the :option:`--os-username`, :option:`--os-password`.
-You can optionally specify a :option:`--os-tenant-id` or :option:`--os-tenant-name`,
-to scope your token to a specific tenant.  If you don't specify a tenant, you
-will be scoped to your default tenant if you have one.  Instead of using 
-options, it is easier to just set them as environment variables:
+While bootstrapping keystone the authentication is accomplished with a
+shared secret token and the location of the keystone API endpoint. The
+shared secret token is configured in keystone.conf as "admin_token".
+
+You can specify those values on the command line with :option:`--os-token`
+and :option:`--os-endpoint`, or set them in environment variables:
+
+.. envvar:: OS_SERVICE_TOKEN
+
+    Your keystone administrative token
+
+.. envvar:: OS_SERVICE_ENDPOINT
+
+    Your keystone API endpoint
+
+The command line options will override any environment variables set.
+
+If you already have accounts, you can use your OpenStack username and
+password. You can do this with the :option:`--os-username`,
+:option:`--os-password`.
+
+Keystone allows a user to be associated with one or more tenants. To specify
+the tenant for which you want to authorize against, you may optionally
+specify a :option:`--os-tenant-id` or :option:`--os-tenant-name`.
+
+Instead of using options, it is easier to just set them as environment
+variables:
 
 .. envvar:: OS_USERNAME
 

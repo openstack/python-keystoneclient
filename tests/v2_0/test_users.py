@@ -82,7 +82,7 @@ class UserTests(utils.TestCase):
 
     def test_delete(self):
         resp = httplib2.Response({
-            "status": 200,
+            "status": 204,
             "body": "",
         })
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL, 'v2.0/users/1'),

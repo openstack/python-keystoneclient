@@ -20,7 +20,21 @@ import argparse
 from keystoneclient.v2_0 import client
 from keystoneclient import utils
 
+
 CLIENT_CLASS = client.Client
+
+
+def require_service_catalog(f):
+    msg = ('Configuration error: Client configured to run without a service '
+           'catalog. Run the client using --os-auth-url or OS_AUTH_URL, '
+           'instead of --os-endpoint or OS_SERVICE_ENDPOINT, for example.')
+
+    def wrapped(kc, args):
+        if not kc.has_service_catalog():
+            raise Exception(msg)
+        return f(kc, args)
+
+    return wrapped
 
 
 @utils.arg('--tenant-id', metavar='<tenant-id>',
@@ -140,7 +154,7 @@ def do_tenant_update(kc, args):
     kwargs = {}
     if args.name:
         kwargs.update({'name': args.name})
-    if args.description:
+    if args.description is not None:
         kwargs.update({'description': args.description})
     if args.enabled:
         kwargs.update({'enabled': utils.string_to_bool(args.enabled)})
@@ -339,6 +353,7 @@ def do_ec2_credentials_delete(kc, args):
 
 @utils.arg('--service', metavar='<service-type>', default=None,
            help='Service type to return')
+@require_service_catalog
 def do_catalog(kc, args):
     """List service catalog, possibly filtered by service."""
     endpoints = kc.service_catalog.get_endpoints(service_type=args.service)
@@ -359,6 +374,7 @@ def do_catalog(kc, args):
            help='Service attribute to match for selection')
 @utils.arg('--value', metavar='<value>',
            help='Value of attribute to match')
+@require_service_catalog
 def do_endpoint_get(kc, args):
     """Find endpoint filtered by a specific attribute or service type"""
     kwargs = {
@@ -380,7 +396,8 @@ def do_endpoint_list(kc, args):
     """List configured service endpoints"""
     endpoints = kc.endpoints.list()
     utils.print_list(endpoints,
-                     ['id', 'region', 'publicurl', 'internalurl', 'adminurl'])
+                     ['id', 'region', 'publicurl',
+                      'internalurl', 'adminurl', 'service_id'])
 
 
 @utils.arg('--region', metavar='<endpoint-region>',
@@ -413,6 +430,10 @@ def do_endpoint_delete(kc, args):
         print 'Unable to delete endpoint.'
 
 
+@utils.arg('--wrap', metavar='<integer>', default=0,
+           help='wrap PKI tokens to a specified length, or 0 to disable')
+@require_service_catalog
 def do_token_get(kc, args):
     """Display the current user token"""
-    utils.print_dict(kc.service_catalog.get_token())
+    utils.print_dict(kc.service_catalog.get_token(),
+                     wrap=int(args.wrap))

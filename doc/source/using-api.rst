@@ -13,11 +13,12 @@ The main concepts in the Keystone API are:
  * endpoints
 
 The Keystone API lets you query and make changes through managers. For example,
-to maipulate tenants, you interact with a
+to manipulate tenants, you interact with a
 ``keystoneclient.v2_0.tenants.TenantManger`` object.
 
-You obtain access to managers through via atributes of the ``keystoneclient.v2_0.client.Client`` object. For example, the ``tenants`` attribute of the ``Client``
-class is a tenant manager::
+You obtain access to managers through via atributes of the
+``keystoneclient.v2_0.client.Client`` object. For example, the ``tenants``
+attribute of the ``Client`` class is a tenant manager::
 
     >>> from keystoneclient.v2_0 import client
     >>> keystone = client.Client(...)
@@ -36,8 +37,8 @@ There are two ways to authenticate against Keystone:
 
 If you are an administrator, you can authenticate by connecting to the admin
 endpoint and using the admin token (sometimes referred to as the service
-token). The token is specified as the ``admin_token`` configuration option in your
-keystone.conf config file, which is typically in /etc/keystone::
+token). The token is specified as the ``admin_token`` configuration option in
+your keystone.conf config file, which is typically in /etc/keystone::
 
     >>> from keystoneclient.v2_0 import client
     >>> token = '012345SECRET99TOKEN012345'
@@ -54,7 +55,7 @@ user::
     >>> tenant_name='openstackDemo'
     >>> auth_url='http://192.168.206.130:5000/v2.0'
     >>> keystone = client.Client(username=username, password=password,
-    ...                         tenant_name, auth_url=auth_url)
+    ...                          tenant_name=tenant_name, auth_url=auth_url)
 
 Creating tenants
 ================
@@ -77,8 +78,9 @@ in the opoenstackDemo tenant. We first need to retrieve the tenant::
     >>> keystone = client.Client(...)
     >>> tenants = keystone.tenants.list()
     >>> my_tenant = [x for x in tenants if x.name=='openstackDemo'][0]
-    >>> my_user = keystone.users.create(name="adminUser", password="secretword",
-    ...                                                   tenant_id=my_tenant.id)
+    >>> my_user = keystone.users.create(name="adminUser",
+    ...                                 password="secretword",
+    ...                                 tenant_id=my_tenant.id)
 
 Creating roles and adding users
 ===============================
@@ -103,7 +105,8 @@ Compute service::
     >>> keystone = client.Client(...)
     >>> service = keystone.services.create(name="nova", service_type="compute",
     ...                                    description="Nova Compute Service")
-    >>> keystone.endpoints.create(region="RegionOne", service_id=service.id,
-    ...            publicurl="http://192.168.206.130:8774/v2/%(tenant_id)s",
-    ...            adminurl="http://192.168.206.130:8774/v2/%(tenant_id)s",
-    ...            internalurl="http://192.168.206.130:8774/v2/%(tenant_id)s")
+    >>> keystone.endpoints.create(
+    ...     region="RegionOne", service_id=service.id,
+    ...     publicurl="http://192.168.206.130:8774/v2/%(tenant_id)s",
+    ...     adminurl="http://192.168.206.130:8774/v2/%(tenant_id)s",
+    ...     internalurl="http://192.168.206.130:8774/v2/%(tenant_id)s")

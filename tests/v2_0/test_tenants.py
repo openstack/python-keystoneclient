@@ -83,7 +83,7 @@ class TenantTests(utils.TestCase):
 
     def test_delete(self):
         resp = httplib2.Response({
-            "status": 200,
+            "status": 204,
             "body": "",
         })
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
@@ -218,33 +218,72 @@ class TenantTests(utils.TestCase):
         self.assertEqual(tenant.description, "I changed you!")
         self.assertFalse(tenant.enabled)
 
-    def test_add_user(self):
+    def test_update_empty_description(self):
+        req_body = {
+            "tenant": {
+                "id": 4,
+                "name": "tenantX",
+                "description": "",
+                "enabled": False,
+            },
+        }
+        resp_body = {
+            "tenant": {
+                "name": "tenantX",
+                "enabled": False,
+                "id": 4,
+                "description": "",
+            },
+        }
         resp = httplib2.Response({
             "status": 200,
-            "body": json.dumps({}),
+            "body": json.dumps(resp_body),
+        })
+
+        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
+                              'v2.0/tenants/4'),
+                              'POST',
+                              body=json.dumps(req_body),
+                              headers=self.TEST_POST_HEADERS) \
+            .AndReturn((resp, resp['body']))
+        self.mox.ReplayAll()
+
+        tenant = self.client.tenants.update(req_body['tenant']['id'],
+                                            req_body['tenant']['name'],
+                                            req_body['tenant']['description'],
+                                            req_body['tenant']['enabled'])
+        self.assertTrue(isinstance(tenant, tenants.Tenant))
+        self.assertEqual(tenant.id, 4)
+        self.assertEqual(tenant.name, "tenantX")
+        self.assertEqual(tenant.description, "")
+        self.assertFalse(tenant.enabled)
+
+    def test_add_user(self):
+        resp = httplib2.Response({
+            "status": 204,
+            "body": '',
         })
 
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
                               'v2.0/tenants/4/users/foo/roles/OS-KSADM/barrr'),
                               'PUT',
-                              body='null',
-                              headers=self.TEST_POST_HEADERS) \
-            .AndReturn((resp, None))
+                              headers=self.TEST_REQUEST_HEADERS) \
+            .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
         self.client.tenants.add_user('4', 'foo', 'barrr')
 
     def test_remove_user(self):
         resp = httplib2.Response({
-            "status": 200,
-            "body": json.dumps({}),
+            "status": 204,
+            "body": '',
         })
 
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
                               'v2.0/tenants/4/users/foo/roles/OS-KSADM/barrr'),
                               'DELETE',
                               headers=self.TEST_REQUEST_HEADERS) \
-            .AndReturn((resp, None))
+            .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
         self.client.tenants.remove_user('4', 'foo', 'barrr')
@@ -259,16 +298,15 @@ class TenantTests(utils.TestCase):
             },
         }
         resp = httplib2.Response({
-            "status": 200,
-            "body": json.dumps({}),
+            "status": 204,
+            "body": '',
         })
 
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
                               'v2.0/tenants/4/users/foo/roles/OS-KSADM/barrr'),
                               'PUT',
-                              body='null',
-                              headers=self.TEST_POST_HEADERS) \
-            .AndReturn((resp, None))
+                              headers=self.TEST_REQUEST_HEADERS) \
+            .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
         # make tenant object with manager
@@ -287,15 +325,15 @@ class TenantTests(utils.TestCase):
             },
         }
         resp = httplib2.Response({
-            "status": 200,
-            "body": json.dumps({}),
+            "status": 204,
+            "body": '',
         })
 
         httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
                               'v2.0/tenants/4/users/foo/roles/OS-KSADM/barrr'),
                               'DELETE',
                               headers=self.TEST_REQUEST_HEADERS) \
-            .AndReturn((resp, None))
+            .AndReturn((resp, resp['body']))
         self.mox.ReplayAll()
 
         # make tenant object with manager
