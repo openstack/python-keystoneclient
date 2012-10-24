@@ -25,7 +25,7 @@ Release notes
 ======================
 * released with OpenStack Essex and Diablo compatibility
 * forked from http://github.com/rackspace/python-novaclient
-* refactored to support Keystone API (auth, tokens, services, roles, tenants,
+* refactored to support Identity API (auth, tokens, services, roles, tenants,
   users, etc.)
 * removed legacy arguments of --username, --password, etc in migration to
   support a cross-openstack unified CLI convention defined at

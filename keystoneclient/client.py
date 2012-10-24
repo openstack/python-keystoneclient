@@ -70,7 +70,7 @@ class HTTPClient(httplib2.Http):
             _logger.addHandler(ch)
 
     def authenticate(self):
-        """ Authenticate against the keystone API.
+        """ Authenticate against the Identity API.
 
         Not implemented here because auth protocols should be API
         version-specific.

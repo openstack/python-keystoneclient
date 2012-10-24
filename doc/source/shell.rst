@@ -5,14 +5,14 @@ The :program:`keystone` shell utility
 .. highlight:: bash
 
 
-The :program:`keystone` shell utility interacts with OpenStack Keystone API
-from the command line. It supports the entirety of the OpenStack Keystone API.
+The :program:`keystone` shell utility interacts with OpenStack Identity API
+from the command line. It supports the entirety of the OpenStack Identity API.
 
 To communicate with the API, you will need to be authenticated - and the
 :program:`keystone` provides multiple options for this.
 
 While bootstrapping keystone the authentication is accomplished with a
-shared secret token and the location of the keystone API endpoint. The
+shared secret token and the location of the Identity API endpoint. The
 shared secret token is configured in keystone.conf as "admin_token".
 
 You can specify those values on the command line with :option:`--os-token`
@@ -24,7 +24,7 @@ and :option:`--os-endpoint`, or set them in environment variables:
 
 .. envvar:: OS_SERVICE_ENDPOINT
 
-    Your keystone API endpoint
+    Your Identity API endpoint
 
 The command line options will override any environment variables set.
 
