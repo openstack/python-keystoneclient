@@ -24,6 +24,11 @@ class EndpointNotFound(Exception):
     pass
 
 
+class EmptyCatalog(Exception):
+    """ The service catalog is empty. """
+    pass
+
+
 class ClientException(Exception):
     """
     The base exception class for all exceptions this library raises.

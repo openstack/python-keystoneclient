@@ -122,8 +122,6 @@ class Client(client.HTTPClient):
             sc = self.service_catalog.get_token()
             self.auth_token = sc['id']
             # Save these since we have them and they'll be useful later
-            # NOTE(termie): these used to be in the token and then were removed
-            #               ... why?
             self.auth_tenant_id = sc.get('tenant_id')
             self.auth_user_id = sc.get('user_id')
         except KeyError:
@@ -136,6 +134,7 @@ class Client(client.HTTPClient):
             self.management_url = self.service_catalog.url_for(
                 attr='region', filter_value=self.region_name,
                 endpoint_type='adminURL')
-        except:
-            # Unscoped tokens don't return a service catalog
-            _logger.exception("unable to retrieve service catalog with token")
+        except exceptions.EmptyCatalog:
+            # Unscoped tokens don't return a service catalog;
+            # allow those to pass while any other errors bubble up.
+            pass

@@ -61,6 +61,9 @@ class ServiceCatalog(object):
         """
         catalog = self.catalog.get('serviceCatalog', [])
 
+        if not catalog:
+            raise exceptions.EmptyCatalog('The service catalog is empty.')
+
         for service in catalog:
             if service['type'] != service_type:
                 continue
