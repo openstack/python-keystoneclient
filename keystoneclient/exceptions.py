@@ -9,6 +9,10 @@ class CommandError(Exception):
     pass
 
 
+class ValidationError(Exception):
+    pass
+
+
 class AuthorizationFailure(Exception):
     pass
 
