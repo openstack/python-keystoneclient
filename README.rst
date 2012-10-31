@@ -48,6 +48,11 @@ params, but it's easier to just set them as environment variables::
     export OS_TENANT_NAME=project
     export OS_USERNAME=user
     export OS_PASSWORD=pass
+    unset SERVICE_TOKEN
+    unset SERVICE_ENDPOINT
+
+Also note that SERVICE_TOKEN and SERVICE_ENDPOINT environment variables (discussed
+below) must be unset for user-based authentication to be enabled.
 
 You will also need to define the authentication url with ``--os-auth-url`` and the
 version of the API with ``--os-identity-api-version``.  Or set them as an environment
@@ -65,6 +70,10 @@ with ``--endpoint`` or ``SERVICE_ENDPOINT``::
 
     export SERVICE_TOKEN=thequickbrownfox-jumpsover-thelazydog
     export SERVICE_ENDPOINT=http://example.com:35357/v2.0
+
+Authentication via service token and endpoint will be preferred when one or
+both of the SERVICE_TOKEN and SERVICE_ENDPOINT environment variables are
+defined.
 
 Since Keystone can return multiple regions in the Service Catalog, you
 can specify the one you want with ``--region_name`` (or
