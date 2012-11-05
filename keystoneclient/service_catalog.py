@@ -42,7 +42,7 @@ class ServiceCatalog(object):
         try:
             token['user_id'] = self.catalog['user']['id']
             token['tenant_id'] = self.catalog['token']['tenant']['id']
-        except:
+        except Exception:
             # just leave the tenant and user out if it doesn't exist
             pass
         return token

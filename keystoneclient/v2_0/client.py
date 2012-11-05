@@ -111,7 +111,7 @@ class Client(client.HTTPClient):
         except (exceptions.AuthorizationFailure, exceptions.Unauthorized):
             _logger.debug("Authorization Failed.")
             raise
-        except Exception, e:
+        except Exception as e:
             raise exceptions.AuthorizationFailure("Authorization Failed: "
                                                   "%s" % e)
 
