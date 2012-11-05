@@ -138,3 +138,8 @@ class Client(client.HTTPClient):
             # Unscoped tokens don't return a service catalog;
             # allow those to pass while any other errors bubble up.
             pass
+        except exceptions.EndpointNotFound:
+            # the client shouldn't expect the authenticating user to
+            # be authorized to view adminURL's, nor expect the identity
+            # endpoint to publish one
+            pass
