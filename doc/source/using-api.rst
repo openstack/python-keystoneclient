@@ -4,7 +4,8 @@ The client API
 
 Introduction
 ============
-The main concepts in the Keystone API are:
+
+The main concepts in the Identity API are:
 
  * tenants
  * users
@@ -12,11 +13,11 @@ The main concepts in the Keystone API are:
  * services
  * endpoints
 
-The Keystone API lets you query and make changes through managers. For example,
+The Identity API lets you query and make changes through managers. For example,
 to manipulate tenants, you interact with a
-``keystoneclient.v2_0.tenants.TenantManger`` object.
+``keystoneclient.v2_0.tenants.TenantManager`` object.
 
-You obtain access to managers through via atributes of the
+You obtain access to managers through via attributes of the
 ``keystoneclient.v2_0.client.Client`` object. For example, the ``tenants``
 attribute of the ``Client`` class is a tenant manager::
 

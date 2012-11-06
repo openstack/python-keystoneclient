@@ -1,10 +1,9 @@
-Python bindings to the OpenStack Keystone API
-=============================================
+Python bindings to the OpenStack Identity API (Keystone)
+========================================================
 
-This is a client for the OpenStack Keystone API. There's a Python API (the
-``keystoneclient`` module), and a command-line script (``keystone``). The
-Keystone 2.0 API is still a moving target, so this module will remain in
-"Beta" status until the API is finalized and fully implemented.
+This is a client for the OpenStack Identity API, implemented by Keystone.
+There's a Python API (the ``keystoneclient`` module), and a command-line script
+(``keystone``).
 
 Development takes place via the usual OpenStack processes as outlined in
 the `OpenStack wiki`_.  The master repository is on GitHub__.
@@ -27,7 +26,7 @@ Python API
 
 By way of a quick-start::
 
-    # use v2.0 auth with http://example.com:5000/v2.0")
+    # use v2.0 auth with http://example.com:5000/v2.0
     >>> from keystoneclient.v2_0 import client
     >>> keystone = client.Client(username=USERNAME, password=PASSWORD, tenant_name=TENANT, auth_url=AUTH_URL)
     >>> keystone.tenants.list()
@@ -39,7 +38,7 @@ Command-line API
 ----------------
 
 Installing this package gets you a shell command, ``keystone``, that you
-can use to interact with Keystone's Identity API.
+can use to interact with OpenStack's Identity API.
 
 You'll need to provide your OpenStack tenant, username and password. You can
 do this with the ``--os-tenant-name``, ``--os-username`` and ``--os-password``

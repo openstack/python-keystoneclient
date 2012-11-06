@@ -88,7 +88,7 @@ class Client(client.HTTPClient):
         return hasattr(self, 'service_catalog')
 
     def authenticate(self):
-        """ Authenticate against the Keystone API.
+        """ Authenticate against the Identity API.
 
         Uses the data provided at instantiation to authenticate against
         the Keystone server. This may use either a username and password
