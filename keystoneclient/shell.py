@@ -272,10 +272,10 @@ class OpenStackIdentityShell(object):
             # if the user hasn't provided any auth data
             if not (args.os_token or args.os_endpoint or args.os_username or
                     args.os_password or args.os_auth_url):
-                raise exc.CommandError('Expecting authentication method via \n'
-                                       '  either a service token, '
-                                       '--token or env[SERVICE_TOKEN], \n'
-                                       '  or credentials, '
+                raise exc.CommandError('Expecting authentication method via'
+                                       '\n  either a service token, '
+                                       '--os-token or env[OS_SERVICE_TOKEN], '
+                                       '\n  or credentials, '
                                        '--os-username or env[OS_USERNAME].')
 
             # if it looks like the user wants to provide a service token
@@ -284,13 +284,13 @@ class OpenStackIdentityShell(object):
                     args.os_token and args.os_endpoint):
                 if not args.os_token:
                     raise exc.CommandError(
-                        'Expecting a token provided via either --token or '
-                        'env[SERVICE_TOKEN]')
+                        'Expecting a token provided via either --os-token or '
+                        'env[OS_SERVICE_TOKEN]')
 
                 if not args.os_endpoint:
                     raise exc.CommandError(
-                        'Expecting an endpoint provided via either --endpoint '
-                        'or env[SERVICE_ENDPOINT]')
+                        'Expecting an endpoint provided via either '
+                        '--os-endpoint or env[OS_SERVICE_ENDPOINT]')
 
             # if it looks like the user wants to provide a credentials
             # but is missing something
