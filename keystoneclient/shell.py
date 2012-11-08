@@ -300,6 +300,11 @@ class OpenStackIdentityShell(object):
                         'Expecting a username provided via either '
                         '--os-username or env[OS_USERNAME]')
 
+                if not args.os_auth_url:
+                    raise exc.CommandError(
+                        'Expecting an auth URL via either --os-auth-url or '
+                        'env[OS_AUTH_URL]')
+
                 if not args.os_password:
                     # No password, If we've got a tty, try prompting for it
                     if hasattr(sys.stdin, 'isatty') and sys.stdin.isatty():
@@ -315,11 +320,6 @@ class OpenStackIdentityShell(object):
                             'Expecting a password provided via either '
                             '--os-password, env[OS_PASSWORD], or '
                             'prompted response')
-
-                if not args.os_auth_url:
-                    raise exc.CommandError(
-                        'Expecting an auth URL via either --os-auth-url or '
-                        'env[OS_AUTH_URL]')
 
             # if it looks like the user wants to provide a service token
             # but is missing something
