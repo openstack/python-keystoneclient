@@ -289,20 +289,6 @@ class OpenStackIdentityShell(object):
                        'ignored).')
                 print msg
 
-            # if it looks like the user wants to provide a service token
-            # but is missing something
-            if args.os_token or args.os_endpoint and not (
-                    args.os_token and args.os_endpoint):
-                if not args.os_token:
-                    raise exc.CommandError(
-                        'Expecting a token provided via either --os-token or '
-                        'env[OS_SERVICE_TOKEN]')
-
-                if not args.os_endpoint:
-                    raise exc.CommandError(
-                        'Expecting an endpoint provided via either '
-                        '--os-endpoint or env[OS_SERVICE_ENDPOINT]')
-
             # if it looks like the user wants to provide a credentials
             # but is missing something
             if (not (args.os_token and args.os_endpoint)
@@ -334,6 +320,20 @@ class OpenStackIdentityShell(object):
                     raise exc.CommandError(
                         'Expecting an auth URL via either --os-auth-url or '
                         'env[OS_AUTH_URL]')
+
+            # if it looks like the user wants to provide a service token
+            # but is missing something
+            if args.os_token or args.os_endpoint and not (
+                    args.os_token and args.os_endpoint):
+                if not args.os_token:
+                    raise exc.CommandError(
+                        'Expecting a token provided via either --os-token or '
+                        'env[OS_SERVICE_TOKEN]')
+
+                if not args.os_endpoint:
+                    raise exc.CommandError(
+                        'Expecting an endpoint provided via either '
+                        '--os-endpoint or env[OS_SERVICE_ENDPOINT]')
 
         if utils.isunauthenticated(args.func):
             self.cs = shell_generic.CLIENT_CLASS(endpoint=args.os_auth_url,
