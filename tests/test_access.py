@@ -1,4 +1,7 @@
+import datetime
+
 from keystoneclient import access
+from keystoneclient.openstack.common import timeutils
 from tests import utils
 from tests import client_fixtures
 
@@ -27,6 +30,16 @@ class AccessInfoTest(utils.TestCase):
         self.assertEquals(auth_ref.management_url, None)
 
         self.assertFalse(auth_ref.scoped)
+
+        self.assertEquals(auth_ref.expires, timeutils.parse_isotime(
+                          UNSCOPED_TOKEN['access']['token']['expires']))
+
+    def test_will_expire_soon(self):
+        expires = timeutils.utcnow() + datetime.timedelta(minutes=5)
+        UNSCOPED_TOKEN['access']['token']['expires'] = expires.isoformat()
+        auth_ref = access.AccessInfo(UNSCOPED_TOKEN['access'])
+        self.assertFalse(auth_ref.will_expire_soon(stale_duration=120))
+        self.assertTrue(auth_ref.will_expire_soon(stale_duration=300))
 
     def test_building_scoped_accessinfo(self):
         auth_ref = access.AccessInfo(PROJECT_SCOPED_TOKEN['access'])

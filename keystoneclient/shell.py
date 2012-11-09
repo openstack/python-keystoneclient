@@ -25,6 +25,8 @@ import os
 import sys
 
 import keystoneclient
+
+from keystoneclient import access
 from keystoneclient import exceptions as exc
 from keystoneclient import utils
 from keystoneclient.v2_0 import shell as shell_v2_0
@@ -177,6 +179,37 @@ class OpenStackIdentityShell(object):
                                  'server\'s certificate will not be verified '
                                  'against any certificate authorities. This '
                                  'option should be used with caution.')
+
+        parser.add_argument('--no-cache',
+                            default=env('OS_NO_CACHE',
+                                        default=False),
+                            action='store_true',
+                            help='Don\'t use the auth token cache. '
+                                 'Default to env[OS_NO_CACHE]')
+        parser.add_argument('--no_cache',
+                            help=argparse.SUPPRESS)
+
+        parser.add_argument('--force-new-token',
+                            default=False,
+                            action="store_true",
+                            dest='force_new_token',
+                            help="If keyring is available and in used, "
+                                 "token will always be stored and fetched "
+                                 "from the keyring, until the token has "
+                                 "expired. Use this option to request a "
+                                 "new token and replace the existing one "
+                                 "in keyring.")
+
+        parser.add_argument('--stale-duration',
+                            metavar='<seconds>',
+                            default=access.STALE_TOKEN_DURATION,
+                            dest='stale_duration',
+                            help="Stale duration (in seconds) used to "
+                                 "determine whether a token has expired "
+                                 "when retrieving it from keyring. This "
+                                 "is useful in mitigating process or "
+                                 "network delays. Default is %s seconds." % (
+                            access.STALE_TOKEN_DURATION))
 
         #FIXME(heckj):
         # deprecated command line options for essex compatibility. To be
@@ -375,7 +408,10 @@ class OpenStackIdentityShell(object):
                 key=args.os_key,
                 cert=args.os_cert,
                 insecure=args.insecure,
-                debug=args.debug)
+                debug=args.debug,
+                use_keyring=(not args.no_cache),
+                force_new_token=args.force_new_token,
+                stale_duration=args.stale_duration)
 
         try:
             args.func(self.cs, args)

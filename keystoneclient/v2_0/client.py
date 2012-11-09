@@ -139,57 +139,41 @@ class Client(client.HTTPClient):
         """Returns True if this client provides a service catalog."""
         return hasattr(self, 'service_catalog')
 
-    def authenticate(self, username=None, password=None, tenant_name=None,
-                     tenant_id=None, auth_url=None, token=None):
+    def process_token(self):
+        """ Extract and process information from the new auth_ref.
+
+        And set the relevant authentication information.
+        """
+        # if we got a response without a service catalog, set the local
+        # list of tenants for introspection, and leave to client user
+        # to determine what to do. Otherwise, load up the service catalog
+        self.auth_token = self.auth_ref.auth_token
+        if self.auth_ref.scoped:
+            if self.management_url is None:
+                self.management_url = self.auth_ref.management_url[0]
+            self.tenant_name = self.auth_ref.tenant_name
+            self.tenant_id = self.auth_ref.tenant_id
+            self.user_id = self.auth_ref.user_id
+        self._extract_service_catalog(self.auth_url, self.auth_ref)
+
+    def get_raw_token_from_identity_service(self, auth_url, username=None,
+                                            password=None, tenant_name=None,
+                                            tenant_id=None, token=None):
         """ Authenticate against the Keystone API.
 
-        Uses the data provided at instantiation to authenticate against
-        the Keystone server. This may use either a username and password
-        or token for authentication. If a tenant name or id was provided
-        then the resulting authenticated client will be scoped to that
-        tenant and contain a service catalog of available endpoints.
-
-        With the v2.0 API, if a tenant name or ID is not provided, the
-        authenication token returned will be 'unscoped' and limited in
-        capabilities until a fully-scoped token is acquired.
-
-        If successful, sets the self.auth_ref and self.auth_token with
-        the returned token. If not already set, will also set
-        self.management_url from the details provided in the token.
-
-        :returns: ``True`` if authentication was successful.
+        :returns: ``raw token`` if authentication was successful.
         :raises: AuthorizationFailure if unable to authenticate or validate
                  the existing authorization token
         :raises: ValueError if insufficient parameters are used.
-        """
-        auth_url = auth_url or self.auth_url
-        username = username or self.username
-        password = password or self.password
-        tenant_name = tenant_name or self.tenant_name
-        tenant_id = tenant_id or self.tenant_id
-        token = token or self.auth_token
 
+        """
         try:
-            raw_token = self._base_authN(auth_url,
-                                         username=username,
-                                         tenant_id=tenant_id,
-                                         tenant_name=tenant_name,
-                                         password=password,
-                                         token=token)
-            self.auth_ref = access.AccessInfo(**raw_token)
-            # if we got a response without a service catalog, set the local
-            # list of tenants for introspection, and leave to client user
-            # to determine what to do. Otherwise, load up the service catalog
-            self.auth_token = self.auth_ref.auth_token
-            if self.auth_ref.scoped:
-                if self.management_url is None \
-                        and self.auth_ref.management_url:
-                    self.management_url = self.auth_ref.management_url[0]
-                self.tenant_name = self.auth_ref.tenant_name
-                self.tenant_id = self.auth_ref.tenant_id
-            self.user_id = self.auth_ref.user_id
-            self._extract_service_catalog(self.auth_url, self.auth_ref)
-            return True
+            return self._base_authN(auth_url,
+                                    username=username,
+                                    tenant_id=tenant_id,
+                                    tenant_name=tenant_name,
+                                    password=password,
+                                    token=token)
         except (exceptions.AuthorizationFailure, exceptions.Unauthorized):
             _logger.debug("Authorization Failed.")
             raise

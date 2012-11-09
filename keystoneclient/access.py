@@ -15,12 +15,44 @@
 # limitations under the License.
 
 
+import datetime
+
+from keystoneclient.openstack.common import timeutils
+
+
+# gap, in seconds, to determine whether the given token is about to expire
+STALE_TOKEN_DURATION = '30'
+
+
 class AccessInfo(dict):
     """An object for encapsulating a raw authentication token from keystone
     and helper methods for extracting useful values from that token."""
 
     def __init__(self, *args, **kwargs):
         dict.__init__(self, *args, **kwargs)
+
+    def will_expire_soon(self, stale_duration=None):
+        """ Determines if expiration is about to occur.
+
+        :return: boolean : true if expiration is within the given duration
+
+        """
+        stale_duration = stale_duration or TALE_TOKEN_DURATION
+        norm_expires = timeutils.normalize_time(self.expires)
+        # (gyee) should we move auth_token.will_expire_soon() to timeutils
+        # instead of duplicating code here?
+        soon = (timeutils.utcnow() + datetime.timedelta(
+                seconds=stale_duration))
+        return norm_expires < soon
+
+    @property
+    def expires(self):
+        """ Returns the token expiration (as datetime object)
+
+        :returns: datetime
+
+        """
+        return timeutils.parse_isotime(self['token']['expires'])
 
     @property
     def auth_token(self):
