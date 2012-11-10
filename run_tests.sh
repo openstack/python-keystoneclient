@@ -92,8 +92,13 @@ function run_pep8 {
   #     other than what the PEP8 tool claims. It is deprecated in Python 3, so,
   #     perhaps the mistake was thinking that the deprecation applied to Python 2
   #     as well.
+  #
+  # NOTE(henry-nash): Added exlusion of the openstack.common dir (as
+  # is the case in other projects, since some of the common files
+  # don't pass pep8.  Clearly we should come back a fix this
+  #
   ${wrapper} pep8 --repeat --show-pep8 --show-source \
-    --ignore=E202,W602 \
+    --ignore=E202,W602 --exclude=openstack \
     ${srcfiles}
 }
 
