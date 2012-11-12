@@ -10,5 +10,7 @@ nosehtmloutput
 pep8==1.2
 sphinx>=1.1.2
 unittest2>=0.5.1
+WebOb==1.0.8
+iso8601>=0.1.4
 
 Babel

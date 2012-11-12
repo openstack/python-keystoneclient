@@ -1,4 +1,5 @@
 import uuid
+import hashlib
 
 import prettytable
 
@@ -114,3 +115,9 @@ def string_to_bool(arg):
         return arg
 
     return arg.strip().lower() in ('t', 'true', 'yes', '1')
+
+
+def hash_signed_token(signed_text):
+    hash_ = hashlib.md5()
+    hash_.update(signed_text)
+    return hash_.hexdigest()
