@@ -79,6 +79,9 @@ class HTTPClient(httplib2.Http):
             ch = logging.StreamHandler()
             _logger.setLevel(logging.DEBUG)
             _logger.addHandler(ch)
+	else:
+	    logging.raiseExceptions = 0
+	    
 
     def authenticate(self):
         """ Authenticate against the Identity API.
