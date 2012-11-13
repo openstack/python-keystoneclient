@@ -96,7 +96,7 @@ def do_user_update(kc, args):
     try:
         kc.users.update(args.id, **kwargs)
         print 'User has been updated.'
-    except Exception, e:
+    except Exception as e:
         print 'Unable to update user: %s' % e
 
 
@@ -321,7 +321,7 @@ def do_ec2_credentials_list(kc, args):
     for cred in credentials:
         try:
             cred.tenant = getattr(kc.tenants.get(cred.tenant_id), 'name')
-        except:
+        except Exception:
             # FIXME(dtroyer): Retrieving the tenant name fails for normal
             #                 users; stuff in the tenant_id instead.
             cred.tenant = cred.tenant_id
@@ -340,7 +340,7 @@ def do_ec2_credentials_delete(kc, args):
     try:
         kc.ec2.delete(args.user_id, args.access)
         print 'Credential has been deleted.'
-    except Exception, e:
+    except Exception as e:
         print 'Unable to delete credential: %s' % e
 
 
@@ -419,7 +419,7 @@ def do_endpoint_delete(kc, args):
     try:
         kc.endpoints.delete(args.id)
         print 'Endpoint has been deleted.'
-    except:
+    except Exception:
         print 'Unable to delete endpoint.'
 
 

@@ -406,7 +406,7 @@ def main():
     try:
         OpenStackIdentityShell().main(sys.argv[1:])
 
-    except Exception, e:
+    except Exception as e:
         if httplib2.debuglevel == 1:
             raise  # dump stack.
         else:
