@@ -71,35 +71,43 @@ class OpenStackIdentityShell(object):
         parser.add_argument('--os-username',
                             metavar='<auth-user-name>',
                             default=env('OS_USERNAME'),
-                            help='Defaults to env[OS_USERNAME]')
+                            help='Name used for authentication with the '
+                                 'OpenStack Identity service. '
+                                 'Defaults to env[OS_USERNAME]')
         parser.add_argument('--os_username',
                             help=argparse.SUPPRESS)
 
         parser.add_argument('--os-password',
                             metavar='<auth-password>',
                             default=env('OS_PASSWORD'),
-                            help='Defaults to env[OS_PASSWORD]')
+                            help='Password used for authentication with the '
+                                 'OpenStack Identity service. '
+                                 'Defaults to env[OS_PASSWORD]')
         parser.add_argument('--os_password',
                             help=argparse.SUPPRESS)
 
         parser.add_argument('--os-tenant-name',
                             metavar='<auth-tenant-name>',
                             default=env('OS_TENANT_NAME'),
-                            help='Defaults to env[OS_TENANT_NAME]')
+                            help='Tenant to request authorization on. '
+                                 'Defaults to env[OS_TENANT_NAME]')
         parser.add_argument('--os_tenant_name',
                             help=argparse.SUPPRESS)
 
         parser.add_argument('--os-tenant-id',
                             metavar='<tenant-id>',
                             default=env('OS_TENANT_ID'),
-                            help='Defaults to env[OS_TENANT_ID]')
+                            help='Tenant to request authorization on. '
+                                 'Defaults to env[OS_TENANT_ID]')
         parser.add_argument('--os_tenant_id',
                             help=argparse.SUPPRESS)
 
         parser.add_argument('--os-auth-url',
                             metavar='<auth-url>',
                             default=env('OS_AUTH_URL'),
-                            help='Defaults to env[OS_AUTH_URL]')
+                            help='Specify the Identity endpoint to use for '
+                                 'authentication. '
+                                 'Defaults to env[OS_AUTH_URL]')
         parser.add_argument('--os_auth_url',
                             help=argparse.SUPPRESS)
 
@@ -122,12 +130,18 @@ class OpenStackIdentityShell(object):
         parser.add_argument('--os-token',
                             metavar='<service-token>',
                             default=env('OS_SERVICE_TOKEN'),
-                            help='Defaults to env[OS_SERVICE_TOKEN]')
+                            help='Specify an existing token to use instead of '
+                                 'retrieving one via authentication (e.g. '
+                                 'with username & password). '
+                                 'Defaults to env[OS_SERVICE_TOKEN]')
 
         parser.add_argument('--os-endpoint',
                             metavar='<service-endpoint>',
                             default=env('OS_SERVICE_ENDPOINT'),
-                            help='Defaults to env[OS_SERVICE_ENDPOINT]')
+                            help='Specify an endpoint to use instead of '
+                                 'retrieving one from the service catalog '
+                                 '(via authentication). '
+                                 'Defaults to env[OS_SERVICE_ENDPOINT]')
 
         parser.add_argument('--os-cacert',
                             metavar='<ca-certificate>',
@@ -153,26 +167,25 @@ class OpenStackIdentityShell(object):
         parser.add_argument('--insecure',
                             default=False,
                             action="store_true",
-                            help="Explicitly allow keystoneclient to perform "
-                                 "\"insecure\" SSL (https) requests. The "
-                                 "server's certificate will not be verified "
-                                 "against any certificate authorities. This "
-                                 "option should be used with caution.")
+                            help='Explicitly allow keystoneclient to perform '
+                                 '"insecure" SSL (https) requests. The '
+                                 'server\'s certificate will not be verified '
+                                 'against any certificate authorities. This '
+                                 'option should be used with caution.')
+
         #FIXME(heckj):
         # deprecated command line options for essex compatibility. To be
         # removed in Grizzly release cycle.
-
         parser.add_argument('--token',
                             metavar='<service-token>',
                             dest='os_token',
                             default=env('SERVICE_TOKEN'),
-                            help='Deprecated. use --os-token')
-
+                            help=argparse.SUPPRESS)
         parser.add_argument('--endpoint',
                             dest='os_endpoint',
                             metavar='<service-endpoint>',
                             default=env('SERVICE_ENDPOINT'),
-                            help='Deprecated. use --os-endpoint')
+                            help=argparse.SUPPRESS)
 
         return parser
 
