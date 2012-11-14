@@ -48,25 +48,40 @@ class HTTPClient(httplib2.Http):
             else:
                 self.add_certificate(key=cert, cert=cert, domain='')
         self.version = 'v2.0'
+        # set baseline defaults
+        self.username = None
+        self.tenant_id = None
+        self.tenant_name = None
+        self.auth_url = None
+        self.token = None
+        self.auth_token = None
+        self.management_url = None
+        # if loading from a dictionary passed in via auth_ref,
+        # load values from AccessInfo parsing that dictionary
         self.auth_ref = access.AccessInfo(**auth_ref) if auth_ref else None
         if self.auth_ref:
             self.username = self.auth_ref.username
             self.tenant_id = self.auth_ref.tenant_id
             self.tenant_name = self.auth_ref.tenant_name
-            self.auth_url = self.auth_ref.auth_url
-            self.management_url = self.auth_ref.management_url
+            self.auth_url = self.auth_ref.auth_url[0]
+            self.management_url = self.auth_ref.management_url[0]
             self.auth_token = self.auth_ref.auth_token
-        #NOTE(heckj): allow override of the auth_ref defaults from explicit
+        # allow override of the auth_ref defaults from explicit
         # values provided to the client
-        self.username = username
-        self.tenant_id = tenant_id
-        self.tenant_name = tenant_name
+        if username:
+            self.username = username
+        if tenant_id:
+            self.tenant_id = tenant_id
+        if tenant_name:
+            self.tenant_name = tenant_name
+        if auth_url:
+            self.auth_url = auth_url.rstrip('/')
+        if token:
+            self.auth_token = token
+        if endpoint:
+            self.management_url = endpoint.rstrip('/')
         self.password = password
-        self.auth_url = auth_url.rstrip('/') if auth_url else None
-        self.auth_token = token
         self.original_ip = original_ip
-
-        self.management_url = endpoint.rstrip('/') if endpoint else None
         self.region_name = region_name
 
         # httplib2 overrides
