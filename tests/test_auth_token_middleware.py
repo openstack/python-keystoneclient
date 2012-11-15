@@ -449,6 +449,7 @@ class DiabloAuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
         req.headers['X-Auth-Token'] = VALID_DIABLO_TOKEN
         self.middleware(req.environ, self.start_fake_response)
         self.assertEqual(self.response_status, 200)
+        self.assertTrue('keystone.token_info' in req.environ)
 
 
 class AuthTokenMiddlewareTest(test.NoModule, BaseAuthTokenMiddlewareTest):
@@ -459,6 +460,7 @@ class AuthTokenMiddlewareTest(test.NoModule, BaseAuthTokenMiddlewareTest):
         self.assertEqual(self.response_status, 200)
         self.assertTrue(req.headers.get('X-Service-Catalog'))
         self.assertEqual(body, ['SUCCESS'])
+        self.assertTrue('keystone.token_info' in req.environ)
 
     def test_valid_uuid_request(self):
         self.assert_valid_request_200(UUID_TOKEN_DEFAULT)
@@ -484,6 +486,7 @@ class AuthTokenMiddlewareTest(test.NoModule, BaseAuthTokenMiddlewareTest):
         body = self.middleware(req.environ, self.start_fake_response)
         self.assertEqual(self.response_status, 200)
         self.assertEqual(body, ['SUCCESS'])
+        self.assertTrue('keystone.token_info' in req.environ)
 
     def test_default_tenant_uuid_token(self):
         self.assert_unscoped_default_tenant_auto_scopes(UUID_TOKEN_DEFAULT)
