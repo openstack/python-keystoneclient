@@ -5,15 +5,15 @@ This is a client for the OpenStack Identity API, implemented by Keystone.
 There's a Python API (the ``keystoneclient`` module), and a command-line script
 (``keystone``).
 
-Development takes place via the usual OpenStack processes as outlined in
-the `OpenStack wiki`_.  The master repository is on GitHub__.
+Development takes place via the usual OpenStack processes as outlined in the
+`OpenStack wiki`_.  The master repository is on GitHub__.
 
 __ http://wiki.openstack.org/HowToContribute
 __ http://github.com/openstack/python-keystoneclient
 
-This code a fork of `Rackspace's python-novaclient`__ which is in turn a fork of
-`Jacobian's python-cloudservers`__. The python-keystoneclient is licensed under
-the Apache License like the rest of OpenStack.
+This code a fork of `Rackspace's python-novaclient`__ which is in turn a fork
+of `Jacobian's python-cloudservers`__. The python-keystoneclient is licensed
+under the Apache License like the rest of OpenStack.
 
 __ http://github.com/rackspace/python-novaclient
 __ http://github.com/jacobian/python-cloudservers
@@ -37,40 +37,45 @@ By way of a quick-start::
 Command-line API
 ----------------
 
-Installing this package gets you a shell command, ``keystone``, that you
-can use to interact with OpenStack's Identity API.
+Installing this package gets you a shell command, ``keystone``, that you can
+use to interact with OpenStack's Identity API.
 
-You'll need to provide your OpenStack tenant, username and password. You can
-do this with the ``--os-tenant-name``, ``--os-username`` and ``--os-password``
+You'll need to provide your OpenStack tenant, username and password. You can do
+this with the ``--os-tenant-name``, ``--os-username`` and ``--os-password``
 params, but it's easier to just set them as environment variables::
 
     export OS_TENANT_NAME=project
     export OS_USERNAME=user
     export OS_PASSWORD=pass
 
-You will also need to define the authentication url with ``--os-auth-url`` and the
-version of the API with ``--os-identity-api-version``.  Or set them as an environment
-variables as well::
+You will also need to define the authentication url with ``--os-auth-url`` and
+the version of the API with ``--os-identity-api-version``.  Or set them as an
+environment variables as well::
 
     export OS_AUTH_URL=http://example.com:5000/v2.0
     export OS_IDENTITY_API_VERSION=2.0
 
-Alternatively, to authenticate to Keystone without a username/password,
-such as when there are no users in the database yet, use the service
-token and endpoint arguemnts.  The service token is set in keystone.conf as
-``admin_token``; set it with ``service_token``.  Note: keep the service token
-secret as it allows total access to Keystone's database.  The admin endpoint is set
-with ``--endpoint`` or ``SERVICE_ENDPOINT``::
+Alternatively, to bypass username/password authentication, you can provide a
+pre-established token. In Keystone, this approach is necessary to bootstrap the
+service with an administrative user, tenant & role (to do so, provide the
+client with the value of your ``admin_token`` defined in ``keystone.conf`` in
+addition to the URL of your admin API deployment, typically on port 35357)::
 
-    export SERVICE_TOKEN=thequickbrownfox-jumpsover-thelazydog
-    export SERVICE_ENDPOINT=http://example.com:35357/v2.0
+    export OS_SERVICE_TOKEN=thequickbrownfox-jumpsover-thelazydog
+    export OS_SERVICE_ENDPOINT=http://example.com:35357/v2.0
 
-Since Keystone can return multiple regions in the Service Catalog, you
-can specify the one you want with ``--region_name`` (or
-``export OS_REGION_NAME``). It defaults to the first in the list returned.
+Since the Identity service can return multiple regions in the service catalog,
+you can specify the one you want with ``--os-region-name`` (or ``export
+OS_REGION_NAME``)::
 
-You'll find complete documentation on the shell by running
-``keystone help``::
+    export OS_REGION_NAME=north
+
+.. WARNING::
+
+    If a region is not specified and multiple regions are returned by the
+    Identity service, the client may not access the same region consistently.
+
+You'll find complete documentation on the shell by running ``keystone help``::
 
     usage: keystone [--os-username <auth-user-name>]
                     [--os-password <auth-password>]
@@ -81,14 +86,13 @@ You'll find complete documentation on the shell by running
                     [--os-token <service-token>]
                     [--os-endpoint <service-endpoint>]
                     [--os-cacert <ca-certificate>] [--os-cert <certificate>]
-                    [--os-key <key>] [--insecure] [--token <service-token>]
-                    [--endpoint <service-endpoint>]
+                    [--os-key <key>] [--insecure]
                     <subcommand> ...
 
     Command-line interface to the OpenStack Identity API.
 
     Positional arguments:
-      <subcommand>
+    <subcommand>
         catalog
         ec2-credentials-create
                             Create EC2-compatibile credentials for user per tenant
@@ -135,36 +139,41 @@ You'll find complete documentation on the shell by running
                             subcommands.
 
     Optional arguments:
-      --os-username <auth-user-name>
-                            Defaults to env[OS_USERNAME]
-      --os-password <auth-password>
-                            Defaults to env[OS_PASSWORD]
-      --os-tenant-name <auth-tenant-name>
-                            Defaults to env[OS_TENANT_NAME]
-      --os-tenant-id <tenant-id>
-                            Defaults to env[OS_TENANT_ID]
-      --os-auth-url <auth-url>
-                            Defaults to env[OS_AUTH_URL]
-      --os-region-name <region-name>
+    --os-username <auth-user-name>
+                            Name used for authentication with the OpenStack
+                            Identity service. Defaults to env[OS_USERNAME]
+    --os-password <auth-password>
+                            Password used for authentication with the OpenStack
+                            Identity service. Defaults to env[OS_PASSWORD]
+    --os-tenant-name <auth-tenant-name>
+                            Tenant to request authorization on. Defaults to
+                            env[OS_TENANT_NAME]
+    --os-tenant-id <tenant-id>
+                            Tenant to request authorization on. Defaults to
+                            env[OS_TENANT_ID]
+    --os-auth-url <auth-url>
+                            Specify the Identity endpoint to use for
+                            authentication. Defaults to env[OS_AUTH_URL]
+    --os-region-name <region-name>
                             Defaults to env[OS_REGION_NAME]
-      --os-identity-api-version <identity-api-version>
+    --os-identity-api-version <identity-api-version>
                             Defaults to env[OS_IDENTITY_API_VERSION] or 2.0
-      --os-token <service-token>
-                            Defaults to env[OS_SERVICE_TOKEN]
-      --os-endpoint <service-endpoint>
+    --os-token <service-token>
+                            Specify an existing token to use instead of retrieving
+                            one via authentication (e.g. with username &
+                            password). Defaults to env[OS_SERVICE_TOKEN]
+    --os-endpoint <service-endpoint>
+                            Specify an endpoint to use instead of retrieving one
+                            from the service catalog (via authentication).
                             Defaults to env[OS_SERVICE_ENDPOINT]
-      --os-cacert <ca-certificate>
+    --os-cacert <ca-certificate>
                             Defaults to env[OS_CACERT]
-      --os-cert <certificate>
+    --os-cert <certificate>
                             Defaults to env[OS_CERT]
-      --os-key <key>        Defaults to env[OS_KEY]
-      --insecure            Explicitly allow keystoneclient to perform "insecure"
+    --os-key <key>        Defaults to env[OS_KEY]
+    --insecure            Explicitly allow keystoneclient to perform "insecure"
                             SSL (https) requests. The server's certificate will
                             not be verified against any certificate authorities.
                             This option should be used with caution.
-      --token <service-token>
-                            Deprecated. use --os-token
-      --endpoint <service-endpoint>
-                            Deprecated. use --os-endpoint
 
     See "keystone help COMMAND" for help on a specific command.
