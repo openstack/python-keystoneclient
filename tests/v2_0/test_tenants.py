@@ -1,7 +1,8 @@
+import copy
 import urlparse
 import json
 
-import httplib2
+import requests
 
 from keystoneclient.v2_0 import tenants
 from tests import utils
@@ -61,16 +62,17 @@ class TenantTests(utils.TestCase):
                 "description": "Like tenant 9, but better.",
             }
         }
-        resp = httplib2.Response({
-            "status": 200,
-            "body": json.dumps(resp_body),
+        resp = utils.TestResponse({
+            "status_code": 200,
+            "text": json.dumps(resp_body),
         })
 
-        httplib2.Http.request(urlparse.urljoin(self.TEST_URL, 'v2.0/tenants'),
-                              'POST',
-                              body=json.dumps(req_body),
-                              headers=self.TEST_POST_HEADERS) \
-            .AndReturn((resp, resp['body']))
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.TEST_POST_HEADERS
+        kwargs['data'] = json.dumps(req_body)
+        requests.request('POST',
+                         urlparse.urljoin(self.TEST_URL, 'v2.0/tenants'),
+                         **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         tenant = self.client.tenants.create(req_body['tenant']['name'],
@@ -82,31 +84,33 @@ class TenantTests(utils.TestCase):
         self.assertEqual(tenant.description, "Like tenant 9, but better.")
 
     def test_delete(self):
-        resp = httplib2.Response({
-            "status": 204,
-            "body": "",
+        resp = utils.TestResponse({
+            "status_code": 204,
+            "text": "",
         })
-        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
-                              'v2.0/tenants/1'),
-                              'DELETE',
-                              headers=self.TEST_REQUEST_HEADERS) \
-            .AndReturn((resp, resp['body']))
+
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.TEST_REQUEST_HEADERS
+        requests.request('DELETE',
+                         urlparse.urljoin(self.TEST_URL, 'v2.0/tenants/1'),
+                         **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         self.client.tenants.delete(1)
 
     def test_get(self):
-        resp = httplib2.Response({
-            "status": 200,
-            "body": json.dumps({
+        resp = utils.TestResponse({
+            "status_code": 200,
+            "text": json.dumps({
                 'tenant': self.TEST_TENANTS['tenants']['values'][2],
             }),
         })
-        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
-                              'v2.0/tenants/1'),
-                              'GET',
-                              headers=self.TEST_REQUEST_HEADERS) \
-            .AndReturn((resp, resp['body']))
+
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.TEST_REQUEST_HEADERS
+        requests.request('GET',
+                         urlparse.urljoin(self.TEST_URL, 'v2.0/tenants/1'),
+                         **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         t = self.client.tenants.get(1)
@@ -115,64 +119,67 @@ class TenantTests(utils.TestCase):
         self.assertEqual(t.name, 'admin')
 
     def test_list(self):
-        resp = httplib2.Response({
-            "status": 200,
-            "body": json.dumps(self.TEST_TENANTS),
+        resp = utils.TestResponse({
+            "status_code": 200,
+            "text": json.dumps(self.TEST_TENANTS),
         })
 
-        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
-                              'v2.0/tenants'),
-                              'GET',
-                              headers=self.TEST_REQUEST_HEADERS) \
-            .AndReturn((resp, resp['body']))
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.TEST_REQUEST_HEADERS
+        requests.request('GET',
+                         urlparse.urljoin(self.TEST_URL, 'v2.0/tenants'),
+                         **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         tenant_list = self.client.tenants.list()
         [self.assertTrue(isinstance(t, tenants.Tenant)) for t in tenant_list]
 
     def test_list_limit(self):
-        resp = httplib2.Response({
-            "status": 200,
-            "body": json.dumps(self.TEST_TENANTS),
+        resp = utils.TestResponse({
+            "status_code": 200,
+            "text": json.dumps(self.TEST_TENANTS),
         })
 
-        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
-                              'v2.0/tenants?limit=1'),
-                              'GET',
-                              headers=self.TEST_REQUEST_HEADERS) \
-            .AndReturn((resp, resp['body']))
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.TEST_REQUEST_HEADERS
+        requests.request('GET',
+                         urlparse.urljoin(self.TEST_URL,
+                         'v2.0/tenants?limit=1'),
+                         **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         tenant_list = self.client.tenants.list(limit=1)
         [self.assertTrue(isinstance(t, tenants.Tenant)) for t in tenant_list]
 
     def test_list_marker(self):
-        resp = httplib2.Response({
-            "status": 200,
-            "body": json.dumps(self.TEST_TENANTS),
+        resp = utils.TestResponse({
+            "status_code": 200,
+            "text": json.dumps(self.TEST_TENANTS),
         })
 
-        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
-                              'v2.0/tenants?marker=1'),
-                              'GET',
-                              headers=self.TEST_REQUEST_HEADERS) \
-            .AndReturn((resp, resp['body']))
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.TEST_REQUEST_HEADERS
+        requests.request('GET',
+                         urlparse.urljoin(self.TEST_URL,
+                         'v2.0/tenants?marker=1'),
+                         **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         tenant_list = self.client.tenants.list(marker=1)
         [self.assertTrue(isinstance(t, tenants.Tenant)) for t in tenant_list]
 
     def test_list_limit_marker(self):
-        resp = httplib2.Response({
-            "status": 200,
-            "body": json.dumps(self.TEST_TENANTS),
+        resp = utils.TestResponse({
+            "status_code": 200,
+            "text": json.dumps(self.TEST_TENANTS),
         })
 
-        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
-                              'v2.0/tenants?marker=1&limit=1'),
-                              'GET',
-                              headers=self.TEST_REQUEST_HEADERS) \
-            .AndReturn((resp, resp['body']))
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.TEST_REQUEST_HEADERS
+        requests.request('GET',
+                         urlparse.urljoin(self.TEST_URL,
+                         'v2.0/tenants?marker=1&limit=1'),
+                         **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         tenant_list = self.client.tenants.list(limit=1, marker=1)
@@ -195,17 +202,18 @@ class TenantTests(utils.TestCase):
                 "description": "I changed you!",
             },
         }
-        resp = httplib2.Response({
-            "status": 200,
-            "body": json.dumps(resp_body),
+        resp = utils.TestResponse({
+            "status_code": 200,
+            "text": json.dumps(resp_body),
         })
 
-        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
-                              'v2.0/tenants/4'),
-                              'POST',
-                              body=json.dumps(req_body),
-                              headers=self.TEST_POST_HEADERS) \
-            .AndReturn((resp, resp['body']))
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.TEST_POST_HEADERS
+        kwargs['data'] = json.dumps(req_body)
+        requests.request('POST',
+                         urlparse.urljoin(self.TEST_URL,
+                         'v2.0/tenants/4'),
+                         **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         tenant = self.client.tenants.update(req_body['tenant']['id'],
@@ -235,17 +243,18 @@ class TenantTests(utils.TestCase):
                 "description": "",
             },
         }
-        resp = httplib2.Response({
-            "status": 200,
-            "body": json.dumps(resp_body),
+        resp = utils.TestResponse({
+            "status_code": 200,
+            "text": json.dumps(resp_body),
         })
 
-        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
-                              'v2.0/tenants/4'),
-                              'POST',
-                              body=json.dumps(req_body),
-                              headers=self.TEST_POST_HEADERS) \
-            .AndReturn((resp, resp['body']))
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.TEST_POST_HEADERS
+        kwargs['data'] = json.dumps(req_body)
+        requests.request('POST',
+                         urlparse.urljoin(self.TEST_URL,
+                         'v2.0/tenants/4'),
+                         **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         tenant = self.client.tenants.update(req_body['tenant']['id'],
@@ -259,31 +268,33 @@ class TenantTests(utils.TestCase):
         self.assertFalse(tenant.enabled)
 
     def test_add_user(self):
-        resp = httplib2.Response({
-            "status": 204,
-            "body": '',
+        resp = utils.TestResponse({
+            "status_code": 204,
+            "text": '',
         })
 
-        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
-                              'v2.0/tenants/4/users/foo/roles/OS-KSADM/barrr'),
-                              'PUT',
-                              headers=self.TEST_REQUEST_HEADERS) \
-            .AndReturn((resp, resp['body']))
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.TEST_REQUEST_HEADERS
+        requests.request('PUT',
+                         urlparse.urljoin(self.TEST_URL,
+                         'v2.0/tenants/4/users/foo/roles/OS-KSADM/barrr'),
+                         **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         self.client.tenants.add_user('4', 'foo', 'barrr')
 
     def test_remove_user(self):
-        resp = httplib2.Response({
-            "status": 204,
-            "body": '',
+        resp = utils.TestResponse({
+            "status_code": 204,
+            "text": '',
         })
 
-        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
-                              'v2.0/tenants/4/users/foo/roles/OS-KSADM/barrr'),
-                              'DELETE',
-                              headers=self.TEST_REQUEST_HEADERS) \
-            .AndReturn((resp, resp['body']))
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.TEST_REQUEST_HEADERS
+        requests.request('DELETE',
+                         urlparse.urljoin(self.TEST_URL,
+                         'v2.0/tenants/4/users/foo/roles/OS-KSADM/barrr'),
+                         **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         self.client.tenants.remove_user('4', 'foo', 'barrr')
@@ -297,16 +308,17 @@ class TenantTests(utils.TestCase):
                 "enabled": False,
             },
         }
-        resp = httplib2.Response({
-            "status": 204,
-            "body": '',
+        resp = utils.TestResponse({
+            "status_code": 204,
+            "text": '',
         })
 
-        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
-                              'v2.0/tenants/4/users/foo/roles/OS-KSADM/barrr'),
-                              'PUT',
-                              headers=self.TEST_REQUEST_HEADERS) \
-            .AndReturn((resp, resp['body']))
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.TEST_REQUEST_HEADERS
+        requests.request('PUT',
+                         urlparse.urljoin(self.TEST_URL,
+                         'v2.0/tenants/4/users/foo/roles/OS-KSADM/barrr'),
+                         **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         # make tenant object with manager
@@ -324,16 +336,17 @@ class TenantTests(utils.TestCase):
                 "enabled": False,
             },
         }
-        resp = httplib2.Response({
-            "status": 204,
-            "body": '',
+        resp = utils.TestResponse({
+            "status_code": 204,
+            "text": '',
         })
 
-        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
-                              'v2.0/tenants/4/users/foo/roles/OS-KSADM/barrr'),
-                              'DELETE',
-                              headers=self.TEST_REQUEST_HEADERS) \
-            .AndReturn((resp, resp['body']))
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.TEST_REQUEST_HEADERS
+        requests.request('DELETE',
+                         urlparse.urljoin(self.TEST_URL,
+                         'v2.0/tenants/4/users/foo/roles/OS-KSADM/barrr'),
+                         **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         # make tenant object with manager

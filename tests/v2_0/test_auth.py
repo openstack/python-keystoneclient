@@ -1,21 +1,11 @@
-import httplib2
+import copy
 import json
+
+import requests
 
 from keystoneclient.v2_0 import client
 from keystoneclient import exceptions
 from tests import utils
-
-
-def to_http_response(resp_dict):
-    """
-    Utility function to convert a python dictionary
-    (e.g. {'status':status, 'body': body, 'headers':headers}
-    to an httplib2 response.
-    """
-    resp = httplib2.Response(resp_dict)
-    for k, v in resp_dict['headers'].items():
-        resp[k] = v
-    return resp
 
 
 class AuthenticateAgainstKeystoneTests(utils.TestCase):
@@ -55,9 +45,9 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         _cred = 'passwordCredentials'
         _pass = 'password'
         self.TEST_REQUEST_BODY[_auth][_cred][_pass] = 'bad_key'
-        resp = httplib2.Response({
-            "status": 401,
-            "body": json.dumps({
+        resp = utils.TestResponse({
+            "status_code": 401,
+            "text": json.dumps({
                 "unauthorized": {
                     "message": "Unauthorized",
                     "code": "401",
@@ -65,11 +55,12 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
             }),
         })
 
-        httplib2.Http.request(self.TEST_URL + "/tokens",
-                              'POST',
-                              body=json.dumps(self.TEST_REQUEST_BODY),
-                              headers=self.TEST_REQUEST_HEADERS) \
-            .AndReturn((resp, resp['body']))
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.TEST_REQUEST_HEADERS
+        kwargs['data'] = json.dumps(self.TEST_REQUEST_BODY)
+        requests.request('POST',
+                         self.TEST_URL + "/tokens",
+                         **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         # Workaround for issue with assertRaises on python2.6
@@ -90,28 +81,30 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
                 "headers": {
                     'location': self.TEST_ADMIN_URL + "/tokens",
                 },
-                "status": 305,
-                "body": "Use proxy",
+                "status_code": 305,
+                "text": "Use proxy",
             },
             {
                 "headers": {},
-                "status": 200,
-                "body": correct_response,
+                "status_code": 200,
+                "text": correct_response,
             },
         ]
-        responses = [(to_http_response(resp), resp['body'])
+        responses = [(utils.TestResponse(resp))
                      for resp in dict_responses]
 
-        httplib2.Http.request(self.TEST_URL + "/tokens",
-                              'POST',
-                              body=json.dumps(self.TEST_REQUEST_BODY),
-                              headers=self.TEST_REQUEST_HEADERS) \
-            .AndReturn(responses[0])
-        httplib2.Http.request(self.TEST_ADMIN_URL + "/tokens",
-                              'POST',
-                              body=json.dumps(self.TEST_REQUEST_BODY),
-                              headers=self.TEST_REQUEST_HEADERS) \
-            .AndReturn(responses[1])
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.TEST_REQUEST_HEADERS
+        kwargs['data'] = json.dumps(self.TEST_REQUEST_BODY)
+        requests.request('POST',
+                         self.TEST_URL + "/tokens",
+                         **kwargs).AndReturn(responses[0])
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.TEST_REQUEST_HEADERS
+        kwargs['data'] = json.dumps(self.TEST_REQUEST_BODY)
+        requests.request('POST',
+                         self.TEST_ADMIN_URL + "/tokens",
+                         **kwargs).AndReturn(responses[1])
         self.mox.ReplayAll()
 
         cs = client.Client(username=self.TEST_USER,
@@ -126,16 +119,17 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
                          self.TEST_RESPONSE_DICT["access"]["token"]["id"])
 
     def test_authenticate_success_password_scoped(self):
-        resp = httplib2.Response({
-            "status": 200,
-            "body": json.dumps(self.TEST_RESPONSE_DICT),
+        resp = utils.TestResponse({
+            "status_code": 200,
+            "text": json.dumps(self.TEST_RESPONSE_DICT),
         })
 
-        httplib2.Http.request(self.TEST_URL + "/tokens",
-                              'POST',
-                              body=json.dumps(self.TEST_REQUEST_BODY),
-                              headers=self.TEST_REQUEST_HEADERS) \
-            .AndReturn((resp, resp['body']))
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.TEST_REQUEST_HEADERS
+        kwargs['data'] = json.dumps(self.TEST_REQUEST_BODY)
+        requests.request('POST',
+                         self.TEST_URL + "/tokens",
+                         **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         cs = client.Client(username=self.TEST_USER,
@@ -151,16 +145,17 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
     def test_authenticate_success_password_unscoped(self):
         del self.TEST_RESPONSE_DICT['access']['serviceCatalog']
         del self.TEST_REQUEST_BODY['auth']['tenantId']
-        resp = httplib2.Response({
-            "status": 200,
-            "body": json.dumps(self.TEST_RESPONSE_DICT),
+        resp = utils.TestResponse({
+            "status_code": 200,
+            "text": json.dumps(self.TEST_RESPONSE_DICT),
         })
 
-        httplib2.Http.request(self.TEST_URL + "/tokens",
-                              'POST',
-                              body=json.dumps(self.TEST_REQUEST_BODY),
-                              headers=self.TEST_REQUEST_HEADERS) \
-            .AndReturn((resp, resp['body']))
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.TEST_REQUEST_HEADERS
+        kwargs['data'] = json.dumps(self.TEST_REQUEST_BODY)
+        requests.request('POST',
+                         self.TEST_URL + "/tokens",
+                         **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         cs = client.Client(username=self.TEST_USER,
@@ -174,16 +169,17 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         del self.TEST_REQUEST_BODY['auth']['passwordCredentials']
         self.TEST_REQUEST_BODY['auth']['token'] = {'id': self.TEST_TOKEN}
         self.TEST_REQUEST_HEADERS['X-Auth-Token'] = self.TEST_TOKEN
-        resp = httplib2.Response({
-            "status": 200,
-            "body": json.dumps(self.TEST_RESPONSE_DICT),
+        resp = utils.TestResponse({
+            "status_code": 200,
+            "text": json.dumps(self.TEST_RESPONSE_DICT),
         })
 
-        httplib2.Http.request(self.TEST_URL + "/tokens",
-                              'POST',
-                              body=json.dumps(self.TEST_REQUEST_BODY),
-                              headers=self.TEST_REQUEST_HEADERS) \
-            .AndReturn((resp, resp['body']))
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.TEST_REQUEST_HEADERS
+        kwargs['data'] = json.dumps(self.TEST_REQUEST_BODY)
+        requests.request('POST',
+                         self.TEST_URL + "/tokens",
+                         **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         cs = client.Client(token=self.TEST_TOKEN,
@@ -201,16 +197,17 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         del self.TEST_RESPONSE_DICT['access']['serviceCatalog']
         self.TEST_REQUEST_BODY['auth']['token'] = {'id': self.TEST_TOKEN}
         self.TEST_REQUEST_HEADERS['X-Auth-Token'] = self.TEST_TOKEN
-        resp = httplib2.Response({
-            "status": 200,
-            "body": json.dumps(self.TEST_RESPONSE_DICT),
+        resp = utils.TestResponse({
+            "status_code": 200,
+            "text": json.dumps(self.TEST_RESPONSE_DICT),
         })
 
-        httplib2.Http.request(self.TEST_URL + "/tokens",
-                              'POST',
-                              body=json.dumps(self.TEST_REQUEST_BODY),
-                              headers=self.TEST_REQUEST_HEADERS) \
-            .AndReturn((resp, resp['body']))
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.TEST_REQUEST_HEADERS
+        kwargs['data'] = json.dumps(self.TEST_REQUEST_BODY)
+        requests.request('POST',
+                         self.TEST_URL + "/tokens",
+                         **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         cs = client.Client(token=self.TEST_TOKEN,

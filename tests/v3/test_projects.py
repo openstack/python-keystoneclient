@@ -1,6 +1,8 @@
-import httplib2
+import copy
 import urlparse
 import uuid
+
+import requests
 
 from keystoneclient.v3 import projects
 from tests.v3 import utils
@@ -26,19 +28,20 @@ class ProjectTests(utils.TestCase, utils.CrudTests):
         ref_list = [self.new_ref(), self.new_ref()]
 
         user_id = uuid.uuid4().hex
-        resp = httplib2.Response({
-            'status': 200,
-            'body': self.serialize(ref_list),
+        resp = utils.TestResponse({
+            "status-code": 200,
+            "text": self.serialize(ref_list),
         })
 
         method = 'GET'
-        httplib2.Http.request(
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.headers[method]
+        requests.request(
+            method,
             urlparse.urljoin(
                 self.TEST_URL,
                 'v3/users/%s/%s' % (user_id, self.collection_key)),
-            method,
-            headers=self.headers[method]) \
-            .AndReturn((resp, resp['body']))
+            **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         returned_list = self.manager.list(user=user_id)
@@ -49,19 +52,20 @@ class ProjectTests(utils.TestCase, utils.CrudTests):
         ref_list = [self.new_ref(), self.new_ref()]
 
         domain_id = uuid.uuid4().hex
-        resp = httplib2.Response({
-            'status': 200,
-            'body': self.serialize(ref_list),
+        resp = utils.TestResponse({
+            "status_code": 200,
+            "text": self.serialize(ref_list),
         })
 
         method = 'GET'
-        httplib2.Http.request(
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.headers[method]
+        requests.request(
+            method,
             urlparse.urljoin(
                 self.TEST_URL,
                 'v3/%s?domain_id=%s' % (self.collection_key, domain_id)),
-            method,
-            headers=self.headers[method]) \
-            .AndReturn((resp, resp['body']))
+            **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         returned_list = self.manager.list(domain=domain_id)

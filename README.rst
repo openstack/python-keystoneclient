@@ -75,6 +75,17 @@ OS_REGION_NAME``)::
     If a region is not specified and multiple regions are returned by the
     Identity service, the client may not access the same region consistently.
 
+If you need to connect to a server that is TLS-enabled (the auth URL begins
+with 'https') and it uses a certificate from a private CA or a self-signed
+certificate you will need to specify the path to an appropriate CA certificate
+to use to validate the server certificate with ``--os-cacert`` or an
+environment variable::
+
+    export OS_CACERT=/etc/ssl/my-root-cert.pem
+
+Certificate verification can be turned off using ``--insecure``. This should
+be used with caution.
+
 You'll find complete documentation on the shell by running ``keystone help``::
 
     usage: keystone [--os-username <auth-user-name>]
@@ -85,8 +96,8 @@ You'll find complete documentation on the shell by running ``keystone help``::
                     [--os-identity-api-version <identity-api-version>]
                     [--os-token <service-token>]
                     [--os-endpoint <service-endpoint>]
-                    [--os-cacert <ca-certificate>] [--os-cert <certificate>]
-                    [--os-key <key>] [--insecure]
+                    [--os-cacert <ca-certificate>] [--insecure]
+                    [--os-cert <certificate>] [--os-key <key>] [--no-cache]
                     <subcommand> ...
 
     Command-line interface to the OpenStack Identity API.
@@ -167,13 +178,14 @@ You'll find complete documentation on the shell by running ``keystone help``::
                             from the service catalog (via authentication).
                             Defaults to env[OS_SERVICE_ENDPOINT]
     --os-cacert <ca-certificate>
-                            Defaults to env[OS_CACERT]
+                            Specify a CA bundle file to use in verifying a TLS
+                            (https) server certificate. Defaults to env[OS_CACERT]
+    --insecure              Explicitly allow keystoneclient to perform "insecure"
+                            TLS (https) requests. The server's certificate will
+                            not be verified against any certificate authorities.
+                            This option should be used with caution.
     --os-cert <certificate>
                             Defaults to env[OS_CERT]
     --os-key <key>        Defaults to env[OS_KEY]
-    --insecure            Explicitly allow keystoneclient to perform "insecure"
-                            SSL (https) requests. The server's certificate will
-                            not be verified against any certificate authorities.
-                            This option should be used with caution.
 
     See "keystone help COMMAND" for help on a specific command.

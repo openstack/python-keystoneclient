@@ -10,9 +10,10 @@ OpenStack Client interface. Handles the REST calls and responses.
 
 import copy
 import logging
+import sys
 import urlparse
 
-import httplib2
+import requests
 
 try:
     import json
@@ -42,9 +43,13 @@ except ImportError:
     keyring_available = False
 
 
-class HTTPClient(httplib2.Http):
+class HTTPClient(object):
 
     USER_AGENT = 'python-keystoneclient'
+
+    requests_config = {
+        'danger_mode': False,
+    }
 
     def __init__(self, username=None, tenant_id=None, tenant_name=None,
                  password=None, auth_url=None, region_name=None, timeout=None,
@@ -52,12 +57,6 @@ class HTTPClient(httplib2.Http):
                  cert=None, insecure=False, original_ip=None, debug=False,
                  auth_ref=None, use_keyring=False, force_new_token=False,
                  stale_duration=None):
-        super(HTTPClient, self).__init__(timeout=timeout, ca_certs=cacert)
-        if cert:
-            if key:
-                self.add_certificate(key=key, cert=cert, domain='')
-            else:
-                self.add_certificate(key=cert, cert=cert, domain='')
         self.version = 'v2.0'
         # set baseline defaults
         self.username = None
@@ -94,10 +93,16 @@ class HTTPClient(httplib2.Http):
         self.password = password
         self.original_ip = original_ip
         self.region_name = region_name
-
-        # httplib2 overrides
-        self.force_exception_to_status_code = True
-        self.disable_ssl_certificate_validation = insecure
+        if cacert:
+            self.verify_cert = cacert
+        else:
+            self.verify_cert = True
+        if insecure:
+            self.verify_cert = False
+        self.cert = cert
+        if cert and key:
+            self.cert = (cert, key,)
+        self.domain = ''
 
         # logging setup
         self.debug_log = debug
@@ -105,6 +110,7 @@ class HTTPClient(httplib2.Http):
             ch = logging.StreamHandler()
             _logger.setLevel(logging.DEBUG)
             _logger.addHandler(ch)
+            self.requests_config['verbose'] = sys.stderr
 
         # keyring setup
         self.use_keyring = use_keyring and keyring_available
@@ -277,13 +283,17 @@ class HTTPClient(httplib2.Http):
             header = ' -H "%s: %s"' % (element, kwargs['headers'][element])
             string_parts.append(header)
 
-        _logger.debug("REQ: %s\n" % "".join(string_parts))
+        _logger.debug("REQ: %s" % "".join(string_parts))
         if 'body' in kwargs:
             _logger.debug("REQ BODY: %s\n" % (kwargs['body']))
 
-    def http_log_resp(self, resp, body):
+    def http_log_resp(self, resp):
         if self.debug_log:
-            _logger.debug("RESP: %s\nRESP BODY: %s\n", resp, body)
+            _logger.debug(
+                "RESP: [%s] %s\nRESP BODY: %s\n",
+                resp.status_code,
+                resp.headers,
+                resp.text)
 
     def serialize(self, entity):
         return json.dumps(entity)
@@ -291,7 +301,7 @@ class HTTPClient(httplib2.Http):
     def request(self, url, method, **kwargs):
         """ Send an http request with the specified characteristics.
 
-        Wrapper around httplib2.Http.request to handle tasks such as
+        Wrapper around requests.request to handle tasks such as
         setting headers, JSON encoding/decoding, and error handling.
         """
         # Copy the kwargs so we can reuse the original in case of redirects
@@ -303,26 +313,37 @@ class HTTPClient(httplib2.Http):
                 self.original_ip, self.USER_AGENT)
         if 'body' in kwargs:
             request_kwargs['headers']['Content-Type'] = 'application/json'
-            request_kwargs['body'] = self.serialize(kwargs['body'])
+            request_kwargs['data'] = self.serialize(kwargs['body'])
+            del request_kwargs['body']
+        if self.cert:
+            request_kwargs['cert'] = self.cert
 
         self.http_log_req((url, method,), request_kwargs)
-        resp, body = super(HTTPClient, self).request(url,
-                                                     method,
-                                                     **request_kwargs)
-        self.http_log_resp(resp, body)
+        resp = requests.request(
+            method,
+            url,
+            verify=self.verify_cert,
+            config=self.requests_config,
+            **request_kwargs)
 
-        if resp.status in (400, 401, 403, 404, 408, 409, 413, 500, 501):
-            _logger.debug("Request returned failure status: %s", resp.status)
-            raise exceptions.from_response(resp, body)
-        elif resp.status in (301, 302, 305):
+        self.http_log_resp(resp)
+
+        if resp.status_code in (400, 401, 403, 404, 408, 409, 413, 500, 501):
+            _logger.debug(
+                "Request returned failure status: %s",
+                resp.status_code)
+            raise exceptions.from_response(resp, resp.text)
+        elif resp.status_code in (301, 302, 305):
             # Redirected. Reissue the request to the new location.
-            return self.request(resp['location'], method, **kwargs)
+            return self.request(resp.headers['location'], method, **kwargs)
 
-        if body:
+        if resp.text:
             try:
-                body = json.loads(body)
+                body = json.loads(resp.text)
             except ValueError:
-                _logger.debug("Could not decode JSON from body: %s" % body)
+                body = None
+                _logger.debug("Could not decode JSON from body: %s"
+                              % resp.text)
         else:
             _logger.debug("No body was returned.")
             body = None

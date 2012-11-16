@@ -1,6 +1,7 @@
+import copy
 import urlparse
 
-import httplib2
+import requests
 
 from tests import utils
 
@@ -17,15 +18,16 @@ class TokenTests(utils.TestCase):
             'User-Agent': 'python-keystoneclient'}
 
     def test_delete(self):
-        resp = httplib2.Response({
-            "status": 204,
-            "body": ""})
+        resp = utils.TestResponse({
+            "status_code": 204,
+            "text": ""})
 
-        req = httplib2.Http.request(
-            urlparse.urljoin(self.TEST_URL, 'v2.0/tokens/1'),
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.TEST_REQUEST_HEADERS
+        requests.request(
             'DELETE',
-            headers=self.TEST_REQUEST_HEADERS)
-        req.AndReturn((resp, resp['body']))
+            urlparse.urljoin(self.TEST_URL, 'v2.0/tokens/1'),
+            **kwargs).AndReturn((resp))
 
         self.mox.ReplayAll()
 

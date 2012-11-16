@@ -1,6 +1,8 @@
-import httplib2
+import copy
 import urlparse
 import uuid
+
+import requests
 
 from keystoneclient import exceptions
 from keystoneclient.v3 import roles
@@ -25,20 +27,21 @@ class RoleTests(utils.TestCase, utils.CrudTests):
         user_id = uuid.uuid4().hex
         domain_id = uuid.uuid4().hex
         ref = self.new_ref()
-        resp = httplib2.Response({
-            'status': 201,
-            'body': '',
+        resp = utils.TestResponse({
+            "status_code": 201,
+            "text": '',
         })
 
         method = 'PUT'
-        httplib2.Http.request(
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.headers[method]
+        requests.request(
+            method,
             urlparse.urljoin(
                 self.TEST_URL,
                 'v3/domains/%s/users/%s/%s/%s' % (
                     domain_id, user_id, self.collection_key, ref['id'])),
-            method,
-            headers=self.headers[method]) \
-            .AndReturn((resp, resp['body']))
+            **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         self.manager.grant(role=ref['id'], domain=domain_id, user=user_id)
@@ -47,20 +50,21 @@ class RoleTests(utils.TestCase, utils.CrudTests):
         user_id = uuid.uuid4().hex
         domain_id = uuid.uuid4().hex
         ref_list = [self.new_ref(), self.new_ref()]
-        resp = httplib2.Response({
-            'status': 200,
-            'body': self.serialize(ref_list),
+        resp = utils.TestResponse({
+            "status_code": 200,
+            "text": self.serialize(ref_list),
         })
 
         method = 'GET'
-        httplib2.Http.request(
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.headers[method]
+        requests.request(
+            method,
             urlparse.urljoin(
                 self.TEST_URL,
                 'v3/domains/%s/users/%s/%s' % (
                     domain_id, user_id, self.collection_key)),
-            method,
-            headers=self.headers[method]) \
-            .AndReturn((resp, resp['body']))
+            **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         self.manager.list(domain=domain_id, user=user_id)
@@ -69,20 +73,21 @@ class RoleTests(utils.TestCase, utils.CrudTests):
         user_id = uuid.uuid4().hex
         domain_id = uuid.uuid4().hex
         ref = self.new_ref()
-        resp = httplib2.Response({
-            'status': 200,
-            'body': '',
+        resp = utils.TestResponse({
+            "status_code": 200,
+            "text": '',
         })
 
         method = 'HEAD'
-        httplib2.Http.request(
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.headers[method]
+        requests.request(
+            method,
             urlparse.urljoin(
                 self.TEST_URL,
                 'v3/domains/%s/users/%s/%s/%s' % (
                     domain_id, user_id, self.collection_key, ref['id'])),
-            method,
-            headers=self.headers[method]) \
-            .AndReturn((resp, resp['body']))
+            **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         self.manager.check(role=ref['id'], domain=domain_id, user=user_id)
@@ -91,20 +96,21 @@ class RoleTests(utils.TestCase, utils.CrudTests):
         user_id = uuid.uuid4().hex
         domain_id = uuid.uuid4().hex
         ref = self.new_ref()
-        resp = httplib2.Response({
-            'status': 204,
-            'body': '',
+        resp = utils.TestResponse({
+            "status_code": 204,
+            "text": '',
         })
 
         method = 'DELETE'
-        httplib2.Http.request(
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.headers[method]
+        requests.request(
+            method,
             urlparse.urljoin(
                 self.TEST_URL,
                 'v3/domains/%s/users/%s/%s/%s' % (
                     domain_id, user_id, self.collection_key, ref['id'])),
-            method,
-            headers=self.headers[method]) \
-            .AndReturn((resp, resp['body']))
+            **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         self.manager.revoke(role=ref['id'], domain=domain_id, user=user_id)
@@ -113,20 +119,21 @@ class RoleTests(utils.TestCase, utils.CrudTests):
         user_id = uuid.uuid4().hex
         project_id = uuid.uuid4().hex
         ref = self.new_ref()
-        resp = httplib2.Response({
-            'status': 201,
-            'body': '',
+        resp = utils.TestResponse({
+            "status_code": 201,
+            "text": '',
         })
 
         method = 'PUT'
-        httplib2.Http.request(
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.headers[method]
+        requests.request(
+            method,
             urlparse.urljoin(
                 self.TEST_URL,
                 'v3/projects/%s/users/%s/%s/%s' % (
                     project_id, user_id, self.collection_key, ref['id'])),
-            method,
-            headers=self.headers[method]) \
-            .AndReturn((resp, resp['body']))
+            **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         self.manager.grant(role=ref['id'], project=project_id, user=user_id)
@@ -135,20 +142,21 @@ class RoleTests(utils.TestCase, utils.CrudTests):
         user_id = uuid.uuid4().hex
         project_id = uuid.uuid4().hex
         ref_list = [self.new_ref(), self.new_ref()]
-        resp = httplib2.Response({
-            'status': 200,
-            'body': self.serialize(ref_list),
+        resp = utils.TestResponse({
+            "status_code": 200,
+            "text": self.serialize(ref_list),
         })
 
         method = 'GET'
-        httplib2.Http.request(
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.headers[method]
+        requests.request(
+            method,
             urlparse.urljoin(
                 self.TEST_URL,
                 'v3/projects/%s/users/%s/%s' % (
                     project_id, user_id, self.collection_key)),
-            method,
-            headers=self.headers[method]) \
-            .AndReturn((resp, resp['body']))
+            **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         self.manager.list(project=project_id, user=user_id)
@@ -157,20 +165,21 @@ class RoleTests(utils.TestCase, utils.CrudTests):
         user_id = uuid.uuid4().hex
         project_id = uuid.uuid4().hex
         ref = self.new_ref()
-        resp = httplib2.Response({
-            'status': 200,
-            'body': '',
+        resp = utils.TestResponse({
+            "status_code": 200,
+            "text": '',
         })
 
         method = 'HEAD'
-        httplib2.Http.request(
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.headers[method]
+        requests.request(
+            method,
             urlparse.urljoin(
                 self.TEST_URL,
                 'v3/projects/%s/users/%s/%s/%s' % (
                     project_id, user_id, self.collection_key, ref['id'])),
-            method,
-            headers=self.headers[method]) \
-            .AndReturn((resp, resp['body']))
+            **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         self.manager.check(role=ref['id'], project=project_id, user=user_id)
@@ -179,20 +188,21 @@ class RoleTests(utils.TestCase, utils.CrudTests):
         user_id = uuid.uuid4().hex
         project_id = uuid.uuid4().hex
         ref = self.new_ref()
-        resp = httplib2.Response({
-            'status': 204,
-            'body': '',
+        resp = utils.TestResponse({
+            "status_code": 204,
+            "text": '',
         })
 
         method = 'DELETE'
-        httplib2.Http.request(
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.headers[method]
+        requests.request(
+            method,
             urlparse.urljoin(
                 self.TEST_URL,
                 'v3/projects/%s/users/%s/%s/%s' % (
                     project_id, user_id, self.collection_key, ref['id'])),
-            method,
-            headers=self.headers[method]) \
-            .AndReturn((resp, resp['body']))
+            **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         self.manager.revoke(role=ref['id'], project=project_id, user=user_id)

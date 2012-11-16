@@ -1,7 +1,8 @@
+import copy
 import urlparse
 import json
 
-import httplib2
+import requests
 
 from keystoneclient.v2_0 import ec2
 from tests import utils
@@ -35,18 +36,19 @@ class EC2Tests(utils.TestCase):
                 "enabled": True,
             }
         }
-        resp = httplib2.Response({
-            "status": 200,
-            "body": json.dumps(resp_body),
+        resp = utils.TestResponse({
+            "status_code": 200,
+            "text": json.dumps(resp_body),
         })
 
         url = urlparse.urljoin(self.TEST_URL,
                                'v2.0/users/%s/credentials/OS-EC2' % user_id)
-        httplib2.Http.request(url,
-                              'POST',
-                              body=json.dumps(req_body),
-                              headers=self.TEST_POST_HEADERS) \
-            .AndReturn((resp, resp['body']))
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.TEST_POST_HEADERS
+        kwargs['data'] = json.dumps(req_body)
+        requests.request('POST',
+                         url,
+                         **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         cred = self.client.ec2.create(user_id, tenant_id)
@@ -68,18 +70,19 @@ class EC2Tests(utils.TestCase):
                 "enabled": True,
             }
         }
-        resp = httplib2.Response({
-            "status": 200,
-            "body": json.dumps(resp_body),
+        resp = utils.TestResponse({
+            "status_code": 200,
+            "text": json.dumps(resp_body),
         })
 
         url = urlparse.urljoin(self.TEST_URL,
                                'v2.0/users/%s/credentials/OS-EC2/%s' %
                                (user_id, 'access'))
-        httplib2.Http.request(url,
-                              'GET',
-                              headers=self.TEST_REQUEST_HEADERS) \
-            .AndReturn((resp, resp['body']))
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.TEST_REQUEST_HEADERS
+        requests.request('GET',
+                         url,
+                         **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         cred = self.client.ec2.get(user_id, 'access')
@@ -113,17 +116,18 @@ class EC2Tests(utils.TestCase):
             }
         }
 
-        resp = httplib2.Response({
-            "status": 200,
-            "body": json.dumps(resp_body),
+        resp = utils.TestResponse({
+            "status_code": 200,
+            "text": json.dumps(resp_body),
         })
 
         url = urlparse.urljoin(self.TEST_URL,
                                'v2.0/users/%s/credentials/OS-EC2' % user_id)
-        httplib2.Http.request(url,
-                              'GET',
-                              headers=self.TEST_REQUEST_HEADERS) \
-            .AndReturn((resp, resp['body']))
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.TEST_REQUEST_HEADERS
+        requests.request('GET',
+                         url,
+                         **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         creds = self.client.ec2.list(user_id)
@@ -138,18 +142,19 @@ class EC2Tests(utils.TestCase):
     def test_delete(self):
         user_id = 'usr'
         access = 'access'
-        resp = httplib2.Response({
-            "status": 204,
-            "body": "",
+        resp = utils.TestResponse({
+            "status_code": 204,
+            "text": "",
         })
 
         url = urlparse.urljoin(self.TEST_URL,
                                'v2.0/users/%s/credentials/OS-EC2/%s' %
                                (user_id, access))
-        httplib2.Http.request(url,
-                              'DELETE',
-                              headers=self.TEST_REQUEST_HEADERS) \
-            .AndReturn((resp, resp['body']))
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.TEST_REQUEST_HEADERS
+        requests.request('DELETE',
+                         url,
+                         **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         self.client.ec2.delete(user_id, access)

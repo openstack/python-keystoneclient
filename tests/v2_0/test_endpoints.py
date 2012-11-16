@@ -1,7 +1,8 @@
+import copy
 import urlparse
 import json
 
-import httplib2
+import requests
 
 from keystoneclient.v2_0 import endpoints
 from tests import utils
@@ -59,17 +60,18 @@ class EndpointTests(utils.TestCase):
             }
         }
 
-        resp = httplib2.Response({
-            "status": 200,
-            "body": json.dumps(resp_body),
+        resp = utils.TestResponse({
+            "status_code": 200,
+            "text": json.dumps(resp_body),
         })
 
-        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
-                              'v2.0/endpoints'),
-                              'POST',
-                              body=json.dumps(req_body),
-                              headers=self.TEST_POST_HEADERS) \
-            .AndReturn((resp, resp['body']))
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.TEST_POST_HEADERS
+        kwargs['data'] = json.dumps(req_body)
+        requests.request('POST',
+                         urlparse.urljoin(self.TEST_URL,
+                         'v2.0/endpoints'),
+                         **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         endpoint = self.client.endpoints.create(
@@ -82,30 +84,32 @@ class EndpointTests(utils.TestCase):
         self.assertTrue(isinstance(endpoint, endpoints.Endpoint))
 
     def test_delete(self):
-        resp = httplib2.Response({
-            "status": 204,
-            "body": "",
+        resp = utils.TestResponse({
+            "status_code": 204,
+            "text": "",
         })
-        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
-                              'v2.0/endpoints/8f953'),
-                              'DELETE',
-                              headers=self.TEST_REQUEST_HEADERS) \
-            .AndReturn((resp, resp['body']))
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.TEST_REQUEST_HEADERS
+        requests.request('DELETE',
+                         urlparse.urljoin(self.TEST_URL,
+                         'v2.0/endpoints/8f953'),
+                         **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         self.client.endpoints.delete('8f953')
 
     def test_list(self):
-        resp = httplib2.Response({
-            "status": 200,
-            "body": json.dumps(self.TEST_ENDPOINTS),
+        resp = utils.TestResponse({
+            "status_code": 200,
+            "text": json.dumps(self.TEST_ENDPOINTS),
         })
 
-        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
-                              'v2.0/endpoints'),
-                              'GET',
-                              headers=self.TEST_REQUEST_HEADERS) \
-            .AndReturn((resp, resp['body']))
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.TEST_REQUEST_HEADERS
+        requests.request('GET',
+                         urlparse.urljoin(self.TEST_URL,
+                         'v2.0/endpoints'),
+                         **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         endpoint_list = self.client.endpoints.list()
