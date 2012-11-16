@@ -275,6 +275,17 @@ class OpenStackIdentityShell(object):
                                        '\n  or credentials, '
                                        '--os-username or env[OS_USERNAME].')
 
+            # user supplied a token and endpoint and at least one other cred
+            if (args.os_token and args.os_endpoint) and (args.os_username or
+                                                         args.os_tenant_id or
+                                                         args.os_tenant_name or
+                                                         args.os_password or
+                                                         args.os_auth_url):
+                msg = ('WARNING: Bypassing authentication using a token & '
+                       'endpoint (authentication credentials are being '
+                       'ignored).')
+                print msg
+
             # if it looks like the user wants to provide a service token
             # but is missing something
             if args.os_token or args.os_endpoint and not (
@@ -291,9 +302,10 @@ class OpenStackIdentityShell(object):
 
             # if it looks like the user wants to provide a credentials
             # but is missing something
-            if ((args.os_username or args.os_password or args.os_auth_url)
-                    and not (args.os_username and args.os_password and
-                             args.os_auth_url)):
+            if (not (args.os_token and args.os_endpoint)
+                and ((args.os_username or args.os_password or args.os_auth_url)
+                and not (args.os_username and args.os_password and
+                         args.os_auth_url))):
                 if not args.os_username:
                     raise exc.CommandError(
                         'Expecting a username provided via either '
