@@ -91,6 +91,15 @@ HTTP_X_ROLE
     *Deprecated* in favor of HTTP_X_ROLES
     This is being renamed, and the new header contains the same data.
 
+OTHER ENVIRONMENT VARIABLES
+---------------------------
+
+keystone.token_info
+    Information about the token discovered in the process of
+    validation.  This may include extended information returned by the
+    Keystone token validation call, as well as basic information about
+    the tenant and user.
+
 """
 
 import datetime
@@ -283,6 +292,7 @@ class AuthProtocol(object):
             self._remove_auth_headers(env)
             user_token = self._get_user_token_from_header(env)
             token_info = self._validate_user_token(user_token)
+            env['keystone.token_info'] = token_info
             user_headers = self._build_user_headers(token_info)
             self._add_headers(env, user_headers)
             return self.app(env, start_response)
