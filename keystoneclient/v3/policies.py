@@ -22,16 +22,12 @@ class Policy(base.Resource):
 
     Attributes:
         * id: a uuid that identifies the policy
-        * endpoint_id: references the endpoint the policy applies to
         * blob: a policy document (blob)
         * type: the mime type of the policy blob
 
     """
-    def update(self, endpoint=None, blob=None, type=None):
+    def update(self, blob=None, type=None):
         kwargs = {
-            'endpoint_id': (base.getid(endpoint)
-                            if endpoint is not None
-                            else self.endpoint_id),
             'blob': blob if blob is not None else self.blob,
             'type': type if type is not None else self.type,
         }
@@ -51,9 +47,8 @@ class PolicyManager(base.CrudManager):
     collection_key = 'policies'
     key = 'policy'
 
-    def create(self, endpoint, blob, type='application/json'):
+    def create(self, blob, type='application/json'):
         return super(PolicyManager, self).create(
-            endpoint_id=base.getid(endpoint),
             blob=blob,
             type=type)
 
@@ -61,14 +56,12 @@ class PolicyManager(base.CrudManager):
         return super(PolicyManager, self).get(
             policy_id=base.getid(policy))
 
-    def list(self, endpoint=None):
-        return super(PolicyManager, self).list(
-            endpoint_id=base.getid(endpoint))
+    def list(self):
+        return super(PolicyManager, self).list()
 
-    def update(self, entity, endpoint=None, blob=None, type=None):
+    def update(self, entity, blob=None, type=None):
         return super(PolicyManager, self).update(
             policy_id=base.getid(entity),
-            endpoint_id=base.getid(endpoint),
             blob=blob,
             type=type)
 
