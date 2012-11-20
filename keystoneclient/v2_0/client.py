@@ -182,11 +182,12 @@ class Client(client.HTTPClient):
             # to determine what to do. Otherwise, load up the service catalog
             self.auth_token = self.auth_ref.auth_token
             if self.auth_ref.scoped:
-                if self.management_url is None:
+                if self.management_url is None \
+                        and self.auth_ref.management_url:
                     self.management_url = self.auth_ref.management_url[0]
                 self.tenant_name = self.auth_ref.tenant_name
                 self.tenant_id = self.auth_ref.tenant_id
-                self.user_id = self.auth_ref.user_id
+            self.user_id = self.auth_ref.user_id
             self._extract_service_catalog(self.auth_url, self.auth_ref)
             return True
         except (exceptions.AuthorizationFailure, exceptions.Unauthorized):
