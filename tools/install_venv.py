@@ -169,7 +169,7 @@ class Suse(Distro):
 
 def get_distro():
     if (os.path.exists('/etc/fedora-release') or
-        os.path.exists('/etc/redhat-release')):
+            os.path.exists('/etc/redhat-release')):
         return Fedora()
     elif os.path.exists('/etc/SuSE-release'):
         return Suse()
@@ -218,7 +218,7 @@ def install_dependencies(venv=VENV):
 
     # Tell the virtual env how to "import nova"
     pthfile = os.path.join(venv, "lib", PY_VERSION, "site-packages",
-                        "keystoneclient.pth")
+                           "keystoneclient.pth")
     f = open(pthfile, 'w')
     f.write("%s\n" % ROOT)
 
@@ -252,7 +252,8 @@ def print_help():
 def parse_args():
     """Parse command-line arguments"""
     parser = optparse.OptionParser()
-    parser.add_option("-n", "--no-site-packages", dest="no_site_packages",
+    parser.add_option(
+        "-n", "--no-site-packages", dest="no_site_packages",
         default=False, action="store_true",
         help="Do not inherit packages from global Python install")
     return parser.parse_args()

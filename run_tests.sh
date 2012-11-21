@@ -78,27 +78,10 @@ function run_pep8 {
   srcfiles="keystoneclient tests"
   # Just run PEP8 in current environment
   #
-  # NOTE(sirp): W602 (deprecated 3-arg raise) is being ignored for the
-  # following reasons:
-  #
-  #  1. It's needed to preserve traceback information when re-raising
-  #     exceptions; this is needed b/c Eventlet will clear exceptions when
-  #     switching contexts.
-  #
-  #  2. There doesn't appear to be an alternative, "pep8-tool" compatible way of doing this
-  #     in Python 2 (in Python 3 `with_traceback` could be used).
-  #
-  #  3. Can find no corroborating evidence that this is deprecated in Python 2
-  #     other than what the PEP8 tool claims. It is deprecated in Python 3, so,
-  #     perhaps the mistake was thinking that the deprecation applied to Python 2
-  #     as well.
-  #
-  # NOTE(henry-nash): Added exlusion of the openstack.common dir (as
-  # is the case in other projects, since some of the common files
-  # don't pass pep8.  Clearly we should come back a fix this
-  #
+  # NOTE(heckj): E125, E126 are being ignored matching other openstack projects
+  # for pep 1.3.3 due to relatively arbitrary line indentation rulings
   ${wrapper} pep8 --repeat --show-pep8 --show-source \
-    --ignore=E202,W602 --exclude=openstack \
+    --ignore=E125,E126 --exclude=.venv,.tox,dist,doc \
     ${srcfiles}
 }
 
