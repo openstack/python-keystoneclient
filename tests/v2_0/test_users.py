@@ -220,3 +220,21 @@ class UserTests(utils.TestCase):
         user = self.client.users.update_password(2, 'swordfish')
         user = self.client.users.update_tenant(2, 1)
         user = self.client.users.update_enabled(2, False)
+
+    def test_update_own_password(self):
+        req_1 = {'user': {'password': 'ABCD', 'original_password': 'DCBA'}}
+
+        resp_1 = {'access': {}}
+        resp_1 = httplib2.Response({'status': 200, 'body': json.dumps(resp_1)})
+
+        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
+                              'v2.0/OS-KSCRUD/users/123'),
+                              'PATCH',
+                              body=json.dumps(req_1),
+                              headers=self.TEST_POST_HEADERS) \
+            .AndReturn((resp_1, resp_1['body']))
+
+        self.mox.ReplayAll()
+
+        self.client.user_id = '123'
+        self.client.users.update_own_password('DCBA', 'ABCD')
