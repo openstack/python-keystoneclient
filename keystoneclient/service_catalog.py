@@ -27,7 +27,7 @@ class ServiceCatalog(object):
         self.catalog = resource_dict
 
     def get_token(self):
-        """Fetch token details fron service catalog.
+        """Fetch token details from service catalog.
 
         Returns a dictionary containing the following::
 
