@@ -15,7 +15,6 @@ class PolicyTests(utils.TestCase, utils.CrudTests):
 
     def new_ref(self, **kwargs):
         kwargs = super(PolicyTests, self).new_ref(**kwargs)
-        kwargs.setdefault('endpoint_id', uuid.uuid4().hex)
         kwargs.setdefault('type', uuid.uuid4().hex)
         kwargs.setdefault('blob', uuid.uuid4().hex)
         return kwargs
