@@ -24,6 +24,7 @@ import httplib2
 import os
 import sys
 
+import keystoneclient
 from keystoneclient import exceptions as exc
 from keystoneclient import utils
 from keystoneclient.v2_0 import shell as shell_v2_0
@@ -62,6 +63,10 @@ class OpenStackIdentityShell(object):
                             '--help',
                             action='store_true',
                             help=argparse.SUPPRESS)
+
+        parser.add_argument('--version',
+                            action='version',
+                            version=keystoneclient.__version__)
 
         parser.add_argument('--debug',
                             default=False,

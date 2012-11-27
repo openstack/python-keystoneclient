@@ -41,5 +41,6 @@ setuptools.setup(
 
     entry_points={
         'console_scripts': ['keystone = keystoneclient.shell:main']
-    }
+    },
+    data_files=[('keystoneclient', ['keystoneclient/versioninfo'])],
 )
