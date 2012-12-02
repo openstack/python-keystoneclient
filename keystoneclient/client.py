@@ -187,14 +187,21 @@ class HTTPClient(httplib2.Http):
         concatenating self.management_url and url and passing in method and
         any associated kwargs. """
 
-        if self.management_url is None:
+        is_management = kwargs.pop('management', True)
+
+        if is_management and self.management_url is None:
             raise exceptions.AuthorizationFailure(
                 'Current authorization does not have a known management url')
+
+        url_to_use = self.auth_url
+        if is_management:
+            url_to_use = self.management_url
+
         kwargs.setdefault('headers', {})
         if self.auth_token:
             kwargs['headers']['X-Auth-Token'] = self.auth_token
 
-        resp, body = self.request(self.management_url + url, method,
+        resp, body = self.request(url_to_use + url, method,
                                   **kwargs)
         return resp, body
 
