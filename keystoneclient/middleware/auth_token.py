@@ -268,7 +268,7 @@ class AuthProtocol(object):
                 import memcache
                 import iso8601
                 LOG.info('Using memcache for caching token')
-                self._cache = memcache.Client(memcache_servers.split(','))
+                self._cache = memcache.Client(memcache_servers)
                 self._iso8601 = iso8601
             except ImportError as e:
                 LOG.warn('disabled caching due to missing libraries %s', e)
