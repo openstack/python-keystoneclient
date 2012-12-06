@@ -50,7 +50,7 @@ class HTTPClient(httplib2.Http):
                  password=None, auth_url=None, region_name=None, timeout=None,
                  endpoint=None, token=None, cacert=None, key=None,
                  cert=None, insecure=False, original_ip=None, debug=False,
-                 auth_ref=None, use_keyring=True, force_new_token=False,
+                 auth_ref=None, use_keyring=False, force_new_token=False,
                  stale_duration=None):
         super(HTTPClient, self).__init__(timeout=timeout, ca_certs=cacert)
         if cert:
