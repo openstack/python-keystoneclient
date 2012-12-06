@@ -94,14 +94,14 @@ class ShellTest(utils.TestCase):
                   '--os-tenant-id 4321 --os-tenant-name wilma '
                   '--os-username betty '
                   '--os-identity-api-version 2.0 '
-                  '--no-cache '
+                  '--os-cache '
                   '--stale-duration 500 '
                   '--force-new-token user-list')
             assert do_tenant_mock.called
             ((a, b), c) = do_tenant_mock.call_args
             actual = (b.os_auth_url, b.os_password, b.os_tenant_id,
                       b.os_tenant_name, b.os_username,
-                      b.os_identity_api_version, b.no_cache,
+                      b.os_identity_api_version, b.os_cache,
                       b.stale_duration, b.force_new_token)
             expect = ('http://1.1.1.1:5000/', 'xyzpdq', '4321',
                       'wilma', 'betty', '2.0', True, '500', True)

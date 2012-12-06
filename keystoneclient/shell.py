@@ -180,13 +180,12 @@ class OpenStackIdentityShell(object):
                                  'against any certificate authorities. This '
                                  'option should be used with caution.')
 
-        parser.add_argument('--no-cache',
-                            default=env('OS_NO_CACHE',
-                                        default=False),
+        parser.add_argument('--os-cache',
+                            default=env('OS_CACHE', default=False),
                             action='store_true',
-                            help='Don\'t use the auth token cache. '
-                                 'Default to env[OS_NO_CACHE]')
-        parser.add_argument('--no_cache',
+                            help='Use the auth token cache. '
+                                 'Default to env[OS_CACHE]')
+        parser.add_argument('--os_cache',
                             help=argparse.SUPPRESS)
 
         parser.add_argument('--force-new-token',
@@ -409,7 +408,7 @@ class OpenStackIdentityShell(object):
                 cert=args.os_cert,
                 insecure=args.insecure,
                 debug=args.debug,
-                use_keyring=(not args.no_cache),
+                use_keyring=args.os_cache,
                 force_new_token=args.force_new_token,
                 stale_duration=args.stale_duration)
 
