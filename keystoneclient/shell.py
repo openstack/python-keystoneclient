@@ -152,7 +152,7 @@ class OpenStackIdentityShell(object):
 
         parser.add_argument('--os-cacert',
                             metavar='<ca-certificate>',
-                            default=env('OS_CA_CERT', default=None),
+                            default=env('OS_CACERT', default=None),
                             help='Defaults to env[OS_CACERT]')
         parser.add_argument('--os_cacert',
                             help=argparse.SUPPRESS)
