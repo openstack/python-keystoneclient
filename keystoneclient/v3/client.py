@@ -19,6 +19,7 @@ from keystoneclient.v2_0 import client
 from keystoneclient.v3 import credentials
 from keystoneclient.v3 import endpoints
 from keystoneclient.v3 import domains
+from keystoneclient.v3 import groups
 from keystoneclient.v3 import policies
 from keystoneclient.v3 import projects
 from keystoneclient.v3 import roles
@@ -68,6 +69,7 @@ class Client(client.Client):
         self.credentials = credentials.CredentialManager(self)
         self.endpoints = endpoints.EndpointManager(self)
         self.domains = domains.DomainManager(self)
+        self.groups = groups.GroupManager(self)
         self.policies = policies.PolicyManager(self)
         self.projects = projects.ProjectManager(self)
         self.roles = roles.RoleManager(self)

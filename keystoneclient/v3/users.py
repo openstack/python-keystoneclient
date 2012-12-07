@@ -33,6 +33,11 @@ class UserManager(base.CrudManager):
     collection_key = 'users'
     key = 'user'
 
+    def _require_user_and_group(self, user, group):
+        if not (user and group):
+            msg = 'Specify both a user and a group'
+            raise exceptions.ValidationError(msg)
+
     def create(self, name, domain=None, project=None, password=None,
                email=None, description=None, enabled=True):
         return super(UserManager, self).create(
@@ -44,8 +49,14 @@ class UserManager(base.CrudManager):
             description=description,
             enabled=enabled)
 
-    def list(self, project=None, domain=None):
+    def list(self, project=None, domain=None, group=None):
+        if group:
+            base_url = '/groups/%s' % base.getid(group)
+        else:
+            base_url = None
+
         return super(UserManager, self).list(
+            base_url=base_url,
             domain_id=base.getid(domain),
             project_id=base.getid(project))
 
@@ -64,6 +75,30 @@ class UserManager(base.CrudManager):
             email=email,
             description=description,
             enabled=enabled)
+
+    def add_to_group(self, user, group):
+        self._require_user_and_group(user, group)
+
+        base_url = '/groups/%s' % base.getid(group)
+        return super(UserManager, self).put(
+            base_url=base_url,
+            user_id=base.getid(user))
+
+    def check_in_group(self, user, group):
+        self._require_user_and_group(user, group)
+
+        base_url = '/groups/%s' % base.getid(group)
+        return super(UserManager, self).head(
+            base_url=base_url,
+            user_id=base.getid(user))
+
+    def remove_from_group(self, user, group):
+        self._require_user_and_group(user, group)
+
+        base_url = '/groups/%s' % base.getid(group)
+        return super(UserManager, self).delete(
+            base_url=base_url,
+            user_id=base.getid(user))
 
     def delete(self, user):
         return super(UserManager, self).delete(
