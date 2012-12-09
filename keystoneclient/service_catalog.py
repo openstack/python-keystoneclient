@@ -73,7 +73,7 @@ class ServiceCatalog(object):
                 if not filter_value or endpoint.get(attr) == filter_value:
                     return endpoint[endpoint_type]
 
-        raise exceptions.EndpointNotFound('Endpoint not found.')
+        raise exceptions.EndpointNotFound('Endpoint not found: %s' % service_type)
 
     def get_endpoints(self, service_type=None, endpoint_type=None):
         """Fetch and filter endpoints for the specified service(s).
