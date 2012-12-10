@@ -95,13 +95,13 @@ You'll find complete documentation on the shell by running ``keystone help``::
     <subcommand>
         catalog
         ec2-credentials-create
-                            Create EC2-compatibile credentials for user per tenant
+                            Create EC2-compatible credentials for user per tenant
         ec2-credentials-delete
-                            Delete EC2-compatibile credentials
+                            Delete EC2-compatible credentials
         ec2-credentials-get
-                            Display EC2-compatibile credentials
+                            Display EC2-compatible credentials
         ec2-credentials-list
-                            List EC2-compatibile credentials for a user
+                            List EC2-compatible credentials for a user
         endpoint-create     Create a new endpoint associated with a service
         endpoint-delete     Delete a service endpoint
         endpoint-get
