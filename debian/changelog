@@ -1,3 +1,9 @@
+python-keystoneclient (1:0.2.0-nebula1) precise; urgency=low
+
+  * Update version to 0.2.0 
+
+ -- Mark Washenberger <mark.washenberger@nebula.com>  Tue, 11 Dec 2012 18:32:20 +0000
+
 python-keystoneclient (2012.1-1+nebula) oneiric; urgency=low
 
   * Update to nebula version
