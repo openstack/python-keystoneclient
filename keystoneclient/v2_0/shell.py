@@ -44,7 +44,8 @@ def require_service_catalog(f):
 def do_user_list(kc, args):
     """List users"""
     users = kc.users.list(tenant_id=args.tenant_id)
-    utils.print_list(users, ['id', 'name', 'enabled', 'email'])
+    utils.print_list(users, ['id', 'name', 'enabled', 'email'],
+                     order_by='name')
 
 
 @utils.arg('id', metavar='<user-id>', help='User ID to display')
