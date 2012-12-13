@@ -668,3 +668,11 @@ class AuthTokenMiddlewareTest(test.NoModule, BaseAuthTokenMiddlewareTest):
         fortyseconds = datetime.datetime.utcnow() + datetime.timedelta(
             seconds=40)
         self.assertFalse(auth_token.will_expire_soon(fortyseconds))
+
+
+class TokenEncodingTest(unittest.TestCase):
+    def test_unquoted_token(self):
+        self.assertEqual('foo%20bar', auth_token.safe_quote('foo bar'))
+
+    def test_quoted_token(self):
+        self.assertEqual('foo%20bar', auth_token.safe_quote('foo%20bar'))

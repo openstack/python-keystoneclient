@@ -109,6 +109,7 @@ import logging
 import os
 import stat
 import time
+import urllib
 import webob
 import webob.exc
 
@@ -175,6 +176,11 @@ def will_expire_soon(expiry):
     """
     soon = (timeutils.utcnow() + datetime.timedelta(seconds=30))
     return expiry < soon
+
+
+def safe_quote(s):
+    """URL-encode strings that are not already URL-encoded."""
+    return urllib.quote(s) if s == urllib.unquote(s) else s
 
 
 class InvalidUserToken(Exception):
@@ -692,9 +698,10 @@ class AuthProtocol(object):
         """
 
         headers = {'X-Auth-Token': self.get_admin_token()}
-        response, data = self._json_request('GET',
-                                            '/v2.0/tokens/%s' % user_token,
-                                            additional_headers=headers)
+        response, data = self._json_request(
+            'GET',
+            '/v2.0/tokens/%s' % safe_quote(user_token),
+            additional_headers=headers)
 
         if response.status == 200:
             self._cache_put(user_token, data)
