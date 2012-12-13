@@ -167,7 +167,8 @@ opts = [
     cfg.StrOpt('cache', default=None),   # env key for the swift cache
     cfg.StrOpt('certfile'),
     cfg.StrOpt('keyfile'),
-    cfg.StrOpt('signing_dir'),
+    cfg.StrOpt('signing_dir',
+               default=os.path.expanduser('~/keystone-signing')),
     cfg.ListOpt('memcache_servers'),
     cfg.IntOpt('token_cache_time', default=300),
 ]
@@ -237,8 +238,6 @@ class AuthProtocol(object):
 
         #signing
         self.signing_dirname = self._conf_get('signing_dir')
-        if self.signing_dirname is None:
-            self.signing_dirname = '%s/keystone-signing' % os.environ['HOME']
         self.LOG.info('Using %s as cache directory for signing certificate' %
                       self.signing_dirname)
         if (os.path.exists(self.signing_dirname) and
