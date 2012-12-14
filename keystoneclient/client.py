@@ -10,6 +10,7 @@ OpenStack Client interface. Handles the REST calls and responses.
 
 import copy
 import logging
+import sys
 import urlparse
 
 import httplib2
@@ -38,7 +39,10 @@ try:
     import keyring
     import pickle
 except ImportError:
-    _logger.warning('Failed to load keyring modules.')
+    if (hasattr(sys.stderr, 'isatty') and sys.stderr.isatty()):
+        print >> sys.stderr, 'Failed to load keyring modules.'
+    else:
+        _logger.warning('Failed to load keyring modules.')
     keyring_available = False
 
 
