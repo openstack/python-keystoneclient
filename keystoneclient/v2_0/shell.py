@@ -319,7 +319,7 @@ def do_user_role_list(kc, args):
 @utils.arg('--tenant-id', metavar='<tenant-id>', help='Tenant ID')
 @utils.arg('--tenant_id', help=argparse.SUPPRESS)
 def do_ec2_credentials_create(kc, args):
-    """Create EC2-compatibile credentials for user per tenant"""
+    """Create EC2-compatible credentials for user per tenant"""
     if not args.tenant_id:
         # use the authenticated tenant id as a default
         args.tenant_id = kc.auth_tenant_id
@@ -335,7 +335,7 @@ def do_ec2_credentials_create(kc, args):
 @utils.arg('--access', metavar='<access-key>', required=True,
            help='Access Key')
 def do_ec2_credentials_get(kc, args):
-    """Display EC2-compatibile credentials"""
+    """Display EC2-compatible credentials"""
     if not args.user_id:
         # use the authenticated user id as a default
         args.user_id = kc.auth_user_id
@@ -347,7 +347,7 @@ def do_ec2_credentials_get(kc, args):
 @utils.arg('--user-id', metavar='<user-id>', help='User ID')
 @utils.arg('--user_id', help=argparse.SUPPRESS)
 def do_ec2_credentials_list(kc, args):
-    """List EC2-compatibile credentials for a user"""
+    """List EC2-compatible credentials for a user"""
     if not args.user_id:
         # use the authenticated user id as a default
         args.user_id = kc.auth_user_id
@@ -367,7 +367,7 @@ def do_ec2_credentials_list(kc, args):
 @utils.arg('--access', metavar='<access-key>', required=True,
            help='Access Key')
 def do_ec2_credentials_delete(kc, args):
-    """Delete EC2-compatibile credentials"""
+    """Delete EC2-compatible credentials"""
     if not args.user_id:
         # use the authenticated user id as a default
         args.user_id = kc.auth_user_id
