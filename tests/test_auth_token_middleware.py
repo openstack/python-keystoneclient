@@ -652,6 +652,32 @@ class AuthTokenMiddlewareTest(test.NoModule, BaseAuthTokenMiddlewareTest):
 
         auth_token.AuthProtocol(FakeApp(), conf)
 
+    def test_use_cache_from_env(self):
+        env = {'swift.cache': 'CACHE_TEST'}
+        conf = {
+            'admin_token': 'admin_token1',
+            'auth_host': 'keystone.example.com',
+            'auth_port': 1234,
+            'cache': 'swift.cache',
+            'memcache_servers': 'localhost:11211',
+        }
+        auth = auth_token.AuthProtocol(FakeApp(), conf)
+        auth._init_cache(env)
+        self.assertEqual(auth._cache, 'CACHE_TEST')
+
+    def test_not_use_cache_from_env(self):
+        self.disable_module('memcache')
+        env = {'swift.cache': 'CACHE_TEST'}
+        conf = {
+            'admin_token': 'admin_token1',
+            'auth_host': 'keystone.example.com',
+            'auth_port': 1234,
+            'memcache_servers': 'localhost:11211',
+        }
+        auth = auth_token.AuthProtocol(FakeApp(), conf)
+        auth._init_cache(env)
+        self.assertEqual(auth._cache, None)
+
     def test_request_prevent_service_catalog_injection(self):
         req = webob.Request.blank('/')
         req.headers['X-Service-Catalog'] = '[]'

@@ -147,6 +147,13 @@ if not CONF:
 # admin_tenant_name = admin
 # admin_user = admin
 # admin_password = badpassword
+
+# when deploy Keystone auth_token middleware with Swift, user may elect
+# to use Swift memcache instead of the local Keystone memcache. Swift memcache
+# is passed in from the request environment and its identified by the
+# 'swift.cache' key. However it could be different, depending on deployment.
+# To use Swift memcache, you must set the 'cache' option to the environment
+# key where the Swift cache object is stored.
 opts = [
     cfg.StrOpt('auth_admin_prefix', default=''),
     cfg.StrOpt('auth_host', default='127.0.0.1'),
@@ -158,6 +165,7 @@ opts = [
     cfg.StrOpt('admin_user'),
     cfg.StrOpt('admin_password'),
     cfg.StrOpt('admin_tenant_name', default='admin'),
+    cfg.StrOpt('cache', default=None),   # env key for the swift cache
     cfg.StrOpt('certfile'),
     cfg.StrOpt('keyfile'),
     cfg.StrOpt('signing_dir'),
@@ -262,23 +270,35 @@ class AuthProtocol(object):
         # Token caching via memcache
         self._cache = None
         self._iso8601 = None
-        memcache_servers = self._conf_get('memcache_servers')
+        self._cache_initialized = False    # cache already initialzied?
         # By default the token will be cached for 5 minutes
         self.token_cache_time = int(self._conf_get('token_cache_time'))
         self._token_revocation_list = None
         self._token_revocation_list_fetched_time = None
         cache_timeout = datetime.timedelta(seconds=0)
         self.token_revocation_list_cache_timeout = cache_timeout
-        if memcache_servers:
-            try:
-                import memcache
-                import iso8601
-                self.LOG.info('Using memcache for caching token')
-                self._cache = memcache.Client(memcache_servers)
-                self._iso8601 = iso8601
-            except ImportError as e:
-                self.LOG.warn(
-                    'disabled caching due to missing libraries %s', e)
+
+    def _init_cache(self, env):
+        cache = self._conf_get('cache')
+        memcache_servers = self._conf_get('memcache_servers')
+        if cache and env.get(cache, None) is not None:
+            # use the cache from the upstream filter
+            self.LOG.info('Using %s memcache for caching token', cache)
+            self._cache = env.get(cache)
+        else:
+            # use Keystone memcache
+            memcache_servers = self._conf_get('memcache_servers')
+            if memcache_servers:
+                try:
+                    import memcache
+                    import iso8601
+                    self.LOG.info('Using Keystone memcache for caching token')
+                    self._cache = memcache.Client(memcache_servers)
+                    self._iso8601 = iso8601
+                except ImportError as e:
+                    msg = 'disabled caching due to missing libraries %s' % (e)
+                    self.LOG.warn(msg)
+        self._cache_initialized = True
 
     def _conf_get(self, name):
         # try config from paste-deploy first
@@ -295,6 +315,11 @@ class AuthProtocol(object):
 
         """
         self.LOG.debug('Authenticating user token')
+
+        # initialize memcache if we haven't done so
+        if not self._cache_initialized:
+            self._init_cache(env)
+
         try:
             self._remove_auth_headers(env)
             user_token = self._get_user_token_from_header(env)
