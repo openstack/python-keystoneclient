@@ -151,7 +151,7 @@ def do_user_delete(kc, args):
 def do_tenant_list(kc, args):
     """List all tenants"""
     tenants = kc.tenants.list()
-    utils.print_list(tenants, ['id', 'name', 'enabled'])
+    utils.print_list(tenants, ['id', 'name', 'enabled'], order_by='name')
 
 
 @utils.arg('id', metavar='<tenant-id>', help='Tenant ID to display')
@@ -223,7 +223,8 @@ def do_service_create(kc, args):
 def do_service_list(kc, args):
     """List all services in Service Catalog"""
     services = kc.services.list()
-    utils.print_list(services, ['id', 'name', 'type', 'description'])
+    utils.print_list(services, ['id', 'name', 'type', 'description'],
+                     order_by='name')
 
 
 @utils.arg('id', metavar='<service-id>', help='Service ID to display')
@@ -242,7 +243,7 @@ def do_service_delete(kc, args):
 def do_role_list(kc, args):
     """List all roles"""
     roles = kc.roles.list()
-    utils.print_list(roles, ['id', 'name'])
+    utils.print_list(roles, ['id', 'name'], order_by='name')
 
 
 @utils.arg('id', metavar='<role-id>', help='Role ID to display')
@@ -311,7 +312,8 @@ def do_user_role_list(kc, args):
         role.user_id = args.user_id
         role.tenant_id = args.tenant_id
 
-    utils.print_list(roles, ['id', 'name', 'user_id', 'tenant_id'])
+    utils.print_list(roles, ['id', 'name', 'user_id', 'tenant_id'],
+                     order_by='name')
 
 
 @utils.arg('--user-id', metavar='<user-id>', help='User ID')
