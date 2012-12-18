@@ -137,7 +137,6 @@ except ImportError:
 if not CONF:
     from keystoneclient.openstack.common import cfg
     CONF = cfg.CONF
-LOG = logging.getLogger(__name__)
 
 # alternative middleware configuration in the main application's
 # configuration file e.g. in nova.conf
@@ -199,7 +198,8 @@ class AuthProtocol(object):
     """Auth Middleware that handles authenticating client calls."""
 
     def __init__(self, app, conf):
-        LOG.info('Starting keystone auth_token middleware')
+        self.LOG = logging.getLogger(conf.get('log_name', __name__))
+        self.LOG.info('Starting keystone auth_token middleware')
         self.conf = conf
         self.app = app
 
@@ -232,8 +232,8 @@ class AuthProtocol(object):
         self.signing_dirname = self._conf_get('signing_dir')
         if self.signing_dirname is None:
             self.signing_dirname = '%s/keystone-signing' % os.environ['HOME']
-        LOG.info('Using %s as cache directory for signing certificate' %
-                 self.signing_dirname)
+        self.LOG.info('Using %s as cache directory for signing certificate' %
+                      self.signing_dirname)
         if (os.path.exists(self.signing_dirname) and
                 not os.access(self.signing_dirname, os.W_OK)):
                 raise ConfigurationError("unable to access signing dir %s" %
@@ -273,11 +273,12 @@ class AuthProtocol(object):
             try:
                 import memcache
                 import iso8601
-                LOG.info('Using memcache for caching token')
+                self.LOG.info('Using memcache for caching token')
                 self._cache = memcache.Client(memcache_servers)
                 self._iso8601 = iso8601
             except ImportError as e:
-                LOG.warn('disabled caching due to missing libraries %s', e)
+                self.LOG.warn(
+                    'disabled caching due to missing libraries %s', e)
 
     def _conf_get(self, name):
         # try config from paste-deploy first
@@ -293,7 +294,7 @@ class AuthProtocol(object):
         we can't authenticate.
 
         """
-        LOG.debug('Authenticating user token')
+        self.LOG.debug('Authenticating user token')
         try:
             self._remove_auth_headers(env)
             user_token = self._get_user_token_from_header(env)
@@ -305,15 +306,16 @@ class AuthProtocol(object):
 
         except InvalidUserToken:
             if self.delay_auth_decision:
-                LOG.info('Invalid user token - deferring reject downstream')
+                self.LOG.info(
+                    'Invalid user token - deferring reject downstream')
                 self._add_headers(env, {'X-Identity-Status': 'Invalid'})
                 return self.app(env, start_response)
             else:
-                LOG.info('Invalid user token - rejecting request')
+                self.LOG.info('Invalid user token - rejecting request')
                 return self._reject_request(env, start_response)
 
         except ServiceError as e:
-            LOG.critical('Unable to obtain admin token: %s' % e)
+            self.LOG.critical('Unable to obtain admin token: %s' % e)
             resp = webob.exc.HTTPServiceUnavailable()
             return resp(env, start_response)
 
@@ -336,8 +338,8 @@ class AuthProtocol(object):
             'X-Tenant',
             'X-Role',
         )
-        LOG.debug('Removing headers from request environment: %s' %
-                  ','.join(auth_headers))
+        self.LOG.debug('Removing headers from request environment: %s' %
+                       ','.join(auth_headers))
         self._remove_headers(env, auth_headers)
 
     def _get_user_token_from_header(self, env):
@@ -353,7 +355,8 @@ class AuthProtocol(object):
         if token:
             return token
         else:
-            LOG.warn("Unable to find authentication token in headers: %s", env)
+            self.LOG.warn(
+                "Unable to find authentication token in headers: %s", env)
             raise InvalidUserToken('Unable to find token in headers')
 
     def _reject_request(self, env, start_response):
@@ -414,7 +417,7 @@ class AuthProtocol(object):
             response = conn.getresponse()
             body = response.read()
         except Exception as e:
-            LOG.error('HTTP connection exception: %s' % e)
+            self.LOG.error('HTTP connection exception: %s' % e)
             raise ServiceError('Unable to communicate with keystone')
         finally:
             conn.close()
@@ -454,7 +457,7 @@ class AuthProtocol(object):
             response = conn.getresponse()
             body = response.read()
         except Exception as e:
-            LOG.error('HTTP connection exception: %s' % e)
+            self.LOG.error('HTTP connection exception: %s' % e)
             raise ServiceError('Unable to communicate with keystone')
         finally:
             conn.close()
@@ -462,7 +465,7 @@ class AuthProtocol(object):
         try:
             data = jsonutils.loads(body)
         except ValueError:
-            LOG.debug('Keystone did not return json-encoded body')
+            self.LOG.debug('Keystone did not return json-encoded body')
             data = {}
 
         return response, data
@@ -496,10 +499,12 @@ class AuthProtocol(object):
             datetime_expiry = timeutils.parse_isotime(expiry)
             return (token, timeutils.normalize_time(datetime_expiry))
         except (AssertionError, KeyError):
-            LOG.warn("Unexpected response from keystone service: %s", data)
+            self.LOG.warn(
+                "Unexpected response from keystone service: %s", data)
             raise ServiceError('invalid json response')
         except (ValueError):
-            LOG.warn("Unable to parse expiration time from token: %s", data)
+            self.LOG.warn(
+                "Unable to parse expiration time from token: %s", data)
             raise ServiceError('invalid json response')
 
     def _validate_user_token(self, user_token, retry=True):
@@ -525,9 +530,9 @@ class AuthProtocol(object):
             self._cache_put(token_id, data)
             return data
         except Exception as e:
-            LOG.debug('Token validation failure.', exc_info=True)
+            self.LOG.debug('Token validation failure.', exc_info=True)
             self._cache_store_invalid(user_token)
-            LOG.warn("Authorization failed for token %s", user_token)
+            self.LOG.warn("Authorization failed for token %s", user_token)
             raise InvalidUserToken('Token authorization failed')
 
     def _build_user_headers(self, token_info):
@@ -642,15 +647,15 @@ class AuthProtocol(object):
             key = 'tokens/%s' % token
             cached = self._cache.get(key)
             if cached == 'invalid':
-                LOG.debug('Cached Token %s is marked unauthorized', token)
+                self.LOG.debug('Cached Token %s is marked unauthorized', token)
                 raise InvalidUserToken('Token authorization failed')
             if cached:
                 data, expires = cached
                 if time.time() < float(expires):
-                    LOG.debug('Returning cached token %s', token)
+                    self.LOG.debug('Returning cached token %s', token)
                     return data
                 else:
-                    LOG.debug('Cached Token %s seems expired', token)
+                    self.LOG.debug('Cached Token %s seems expired', token)
 
     def _cache_put(self, token, data):
         """Put token data into the cache.
@@ -664,9 +669,9 @@ class AuthProtocol(object):
                 timestamp = data['access']['token']['expires']
                 expires = self._iso8601.parse_date(timestamp).strftime('%s')
             else:
-                LOG.error('invalid token format')
+                self.LOG.error('invalid token format')
                 return
-            LOG.debug('Storing %s token in memcache', token)
+            self.LOG.debug('Storing %s token in memcache', token)
             self._cache.set(key,
                             (data, expires),
                             time=self.token_cache_time)
@@ -675,7 +680,8 @@ class AuthProtocol(object):
         """Store invalid token in cache."""
         if self._cache:
             key = 'tokens/%s' % token
-            LOG.debug('Marking token %s as unauthorized in memcache', token)
+            self.LOG.debug(
+                'Marking token %s as unauthorized in memcache', token)
             self._cache.set(key,
                             'invalid',
                             time=self.token_cache_time)
@@ -710,20 +716,21 @@ class AuthProtocol(object):
             # FIXME(ja): I'm assuming the 404 status means that user_token is
             #            invalid - not that the admin_token is invalid
             self._cache_store_invalid(user_token)
-            LOG.warn("Authorization failed for token %s", user_token)
+            self.LOG.warn("Authorization failed for token %s", user_token)
             raise InvalidUserToken('Token authorization failed')
         if response.status == 401:
-            LOG.info('Keystone rejected admin token %s, resetting', headers)
+            self.LOG.info(
+                'Keystone rejected admin token %s, resetting', headers)
             self.admin_token = None
         else:
-            LOG.error('Bad response code while validating token: %s' %
-                      response.status)
+            self.LOG.error('Bad response code while validating token: %s' %
+                           response.status)
         if retry:
-            LOG.info('Retrying validation')
+            self.LOG.info('Retrying validation')
             return self._validate_user_token(user_token, False)
         else:
-            LOG.warn("Invalid user token: %s. Keystone response: %s.",
-                     user_token, data)
+            self.LOG.warn("Invalid user token: %s. Keystone response: %s.",
+                          user_token, data)
 
             raise InvalidUserToken()
 
@@ -737,8 +744,8 @@ class AuthProtocol(object):
         token_id = utils.hash_signed_token(signed_text)
         for revoked_id in revoked_ids:
             if token_id == revoked_id:
-                LOG.debug('Token %s is marked as having been revoked',
-                          token_id)
+                self.LOG.debug('Token %s is marked as having been revoked',
+                               token_id)
                 return True
         return False
 
@@ -820,8 +827,9 @@ class AuthProtocol(object):
                                             additional_headers=headers)
         if response.status == 401:
             if retry:
-                LOG.info('Keystone rejected admin token %s, resetting admin '
-                         'token', headers)
+                self.LOG.info(
+                    'Keystone rejected admin token %s, resetting admin token',
+                    headers)
                 self.admin_token = None
                 return self.fetch_revocation_list(retry=False)
         if response.status != 200:
@@ -839,7 +847,8 @@ class AuthProtocol(object):
             certfile.write(data)
             certfile.close()
         except (AssertionError, KeyError):
-            LOG.warn("Unexpected response from keystone service: %s", data)
+            self.LOG.warn(
+                "Unexpected response from keystone service: %s", data)
             raise ServiceError('invalid json response')
 
     def fetch_ca_cert(self):
@@ -851,7 +860,8 @@ class AuthProtocol(object):
             certfile.write(data)
             certfile.close()
         except (AssertionError, KeyError):
-            LOG.warn("Unexpected response from keystone service: %s", data)
+            self.LOG.warn(
+                "Unexpected response from keystone service: %s", data)
             raise ServiceError('invalid json response')
 
 
