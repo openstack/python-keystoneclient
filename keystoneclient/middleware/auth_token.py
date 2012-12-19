@@ -110,7 +110,6 @@ import os
 import stat
 import time
 import urllib
-import webob
 import webob.exc
 
 from keystoneclient.openstack.common import jsonutils
