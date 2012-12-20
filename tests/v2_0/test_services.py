@@ -1,7 +1,8 @@
+import copy
 import urlparse
 import json
 
-import httplib2
+import requests
 
 from keystoneclient.v2_0 import services
 from tests import utils
@@ -54,17 +55,18 @@ class ServiceTests(utils.TestCase):
                 "id": 3,
             }
         }
-        resp = httplib2.Response({
-            "status": 200,
-            "body": json.dumps(resp_body),
+        resp = utils.TestResponse({
+            "status_code": 200,
+            "text": json.dumps(resp_body),
         })
 
-        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
-                              'v2.0/OS-KSADM/services'),
-                              'POST',
-                              body=json.dumps(req_body),
-                              headers=self.TEST_POST_HEADERS) \
-            .AndReturn((resp, resp['body']))
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.TEST_POST_HEADERS
+        kwargs['data'] = json.dumps(req_body)
+        requests.request('POST',
+                         urlparse.urljoin(self.TEST_URL,
+                         'v2.0/OS-KSADM/services'),
+                         **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         service = self.client.services.create(
@@ -76,30 +78,34 @@ class ServiceTests(utils.TestCase):
         self.assertEqual(service.name, req_body['OS-KSADM:service']['name'])
 
     def test_delete(self):
-        resp = httplib2.Response({
-            "status": 200,
-            "body": "",
+        resp = utils.TestResponse({
+            "status_code": 200,
+            "text": "",
         })
-        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
-                              'v2.0/OS-KSADM/services/1'),
-                              'DELETE',
-                              headers=self.TEST_REQUEST_HEADERS) \
-            .AndReturn((resp, resp['body']))
+
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.TEST_REQUEST_HEADERS
+        requests.request('DELETE',
+                         urlparse.urljoin(self.TEST_URL,
+                         'v2.0/OS-KSADM/services/1'),
+                         **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         self.client.services.delete(1)
 
     def test_get(self):
         test_services = self.TEST_SERVICES['OS-KSADM:services']['values'][0]
-        resp = httplib2.Response({
-            "status": 200,
-            "body": json.dumps({'OS-KSADM:service': test_services}),
+        resp = utils.TestResponse({
+            "status_code": 200,
+            "text": json.dumps({'OS-KSADM:service': test_services}),
         })
-        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
-                              'v2.0/OS-KSADM/services/1'),
-                              'GET',
-                              headers=self.TEST_REQUEST_HEADERS) \
-            .AndReturn((resp, resp['body']))
+
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.TEST_REQUEST_HEADERS
+        requests.request('GET',
+                         urlparse.urljoin(self.TEST_URL,
+                         'v2.0/OS-KSADM/services/1'),
+                         **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         service = self.client.services.get(1)
@@ -109,16 +115,17 @@ class ServiceTests(utils.TestCase):
         self.assertEqual(service.type, 'compute')
 
     def test_list(self):
-        resp = httplib2.Response({
-            "status": 200,
-            "body": json.dumps(self.TEST_SERVICES),
+        resp = utils.TestResponse({
+            "status_code": 200,
+            "text": json.dumps(self.TEST_SERVICES),
         })
 
-        httplib2.Http.request(urlparse.urljoin(self.TEST_URL,
-                              'v2.0/OS-KSADM/services'),
-                              'GET',
-                              headers=self.TEST_REQUEST_HEADERS) \
-            .AndReturn((resp, resp['body']))
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.TEST_REQUEST_HEADERS
+        requests.request('GET',
+                         urlparse.urljoin(self.TEST_URL,
+                         'v2.0/OS-KSADM/services'),
+                         **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
         service_list = self.client.services.list()

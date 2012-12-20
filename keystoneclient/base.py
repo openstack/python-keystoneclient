@@ -82,7 +82,7 @@ class Manager(object):
 
     def _head(self, url):
         resp, body = self.api.head(url)
-        return resp.status == 204
+        return resp.status_code == 204
 
     def _create(self, url, body, response_key, return_raw=False):
         resp, body = self.api.post(url, body=body)

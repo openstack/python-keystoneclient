@@ -1,6 +1,7 @@
 import os
 import mock
-import httplib2
+
+import requests
 
 from keystoneclient import shell as openstack_shell
 from keystoneclient.v2_0 import shell as shell_v2_0
@@ -41,11 +42,6 @@ class ShellTest(utils.TestCase):
 
     def test_help_unknown_command(self):
         self.assertRaises(exceptions.CommandError, shell, 'help foofoo')
-
-    def test_debug(self):
-        httplib2.debuglevel = 0
-        shell('--debug help')
-        assert httplib2.debuglevel == 1
 
     def test_shell_args(self):
         do_tenant_mock = mock.MagicMock()

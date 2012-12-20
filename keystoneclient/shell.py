@@ -20,7 +20,6 @@ Command-line interface to the OpenStack Identity API.
 
 import argparse
 import getpass
-import httplib2
 import os
 import sys
 
@@ -153,9 +152,20 @@ class OpenStackIdentityShell(object):
         parser.add_argument('--os-cacert',
                             metavar='<ca-certificate>',
                             default=env('OS_CACERT', default=None),
-                            help='Defaults to env[OS_CACERT]')
+                            help='Specify a CA bundle file to use in '
+                                 'verifying a TLS (https) server certificate. '
+                                 'Defaults to env[OS_CACERT]')
         parser.add_argument('--os_cacert',
                             help=argparse.SUPPRESS)
+
+        parser.add_argument('--insecure',
+                            default=False,
+                            action="store_true",
+                            help='Explicitly allow keystoneclient to perform '
+                                 '"insecure" TLS (https) requests. The '
+                                 'server\'s certificate will not be verified '
+                                 'against any certificate authorities. This '
+                                 'option should be used with caution.')
 
         parser.add_argument('--os-cert',
                             metavar='<certificate>',
@@ -170,15 +180,6 @@ class OpenStackIdentityShell(object):
                             help='Defaults to env[OS_KEY]')
         parser.add_argument('--os_key',
                             help=argparse.SUPPRESS)
-
-        parser.add_argument('--insecure',
-                            default=False,
-                            action="store_true",
-                            help='Explicitly allow keystoneclient to perform '
-                                 '"insecure" SSL (https) requests. The '
-                                 'server\'s certificate will not be verified '
-                                 'against any certificate authorities. This '
-                                 'option should be used with caution.')
 
         parser.add_argument('--os-cache',
                             default=env('OS_CACHE', default=False),
@@ -296,10 +297,6 @@ class OpenStackIdentityShell(object):
 
         # Parse args again and call whatever callback was selected
         args = subcommand_parser.parse_args(argv)
-
-        # Deal with global arguments
-        if args.debug:
-            httplib2.debuglevel = 1
 
         # Short-circuit and deal with help command right away.
         if args.func == self.do_help:
@@ -472,8 +469,5 @@ def main():
         OpenStackIdentityShell().main(sys.argv[1:])
 
     except Exception as e:
-        if httplib2.debuglevel == 1:
-            raise  # dump stack.
-        else:
-            print >> sys.stderr, e
+        print >> sys.stderr, e
         sys.exit(1)

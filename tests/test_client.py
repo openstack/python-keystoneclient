@@ -1,21 +1,25 @@
-import httplib2
+import copy
 import json
 import mock
+
+import requests
 
 from keystoneclient.v2_0 import client
 from tests import client_fixtures
 from tests import utils
 
 
-fake_response = httplib2.Response({"status": 200})
-fake_body = json.dumps(client_fixtures.PROJECT_SCOPED_TOKEN)
-mock_request = mock.Mock(return_value=(fake_response, fake_body))
+fake_response = utils.TestResponse({
+    "status_code": 200,
+    "text": json.dumps(client_fixtures.PROJECT_SCOPED_TOKEN)
+})
+mock_request = mock.Mock(return_value=(fake_response))
 
 
 class KeystoneclientTest(utils.TestCase):
 
     def test_scoped_init(self):
-        with mock.patch.object(httplib2.Http, "request", mock_request):
+        with mock.patch.object(requests, "request", mock_request):
             cl = client.Client(username='exampleuser',
                                password='password',
                                auth_url='http://somewhere/')
@@ -23,7 +27,7 @@ class KeystoneclientTest(utils.TestCase):
             self.assertTrue(cl.auth_ref.scoped)
 
     def test_auth_ref_load(self):
-        with mock.patch.object(httplib2.Http, "request", mock_request):
+        with mock.patch.object(requests, "request", mock_request):
             cl = client.Client(username='exampleuser',
                                password='password',
                                auth_url='http://somewhere/')

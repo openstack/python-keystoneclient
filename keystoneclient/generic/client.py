@@ -84,7 +84,7 @@ class Client(client.HTTPClient):
             resp, body = httpclient.request(url, "GET",
                                             headers={'Accept':
                                                      'application/json'})
-            if resp.status in (200, 204):  # in some cases we get No Content
+            if resp.status_code in (200, 204):  # some cases we get No Content
                 try:
                     results = {}
                     if 'version' in body:
@@ -113,10 +113,10 @@ class Client(client.HTTPClient):
                     return results
                 except KeyError:
                     raise exceptions.AuthorizationFailure()
-            elif resp.status == 305:
+            elif resp.status_code == 305:
                 return self._check_keystone_versions(resp['location'])
             else:
-                raise exceptions.from_response(resp, body)
+                raise exceptions.from_response(resp, resp.text)
         except Exception as e:
             _logger.exception(e)
 
@@ -145,7 +145,7 @@ class Client(client.HTTPClient):
             resp, body = httpclient.request("%sextensions" % url, "GET",
                                             headers={'Accept':
                                                      'application/json'})
-            if resp.status in (200, 204):  # in some cases we get No Content
+            if resp.status_code in (200, 204):  # some cases we get No Content
                 try:
                     results = {}
                     if 'extensions' in body:
@@ -171,10 +171,10 @@ class Client(client.HTTPClient):
                     return results
                 except KeyError:
                     raise exceptions.AuthorizationFailure()
-            elif resp.status == 305:
+            elif resp.status_code == 305:
                 return self._check_keystone_extensions(resp['location'])
             else:
-                raise exceptions.from_response(resp, body)
+                raise exceptions.from_response(resp, resp.text)
         except Exception as e:
             _logger.exception(e)
 

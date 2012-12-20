@@ -1,13 +1,17 @@
-import httplib2
+import copy
 import mock
+
+import requests
 
 from keystoneclient import client
 from tests import utils
 
 
-FAKE_RESPONSE = httplib2.Response({"status": 200})
-FAKE_BODY = '{"hi": "there"}'
-MOCK_REQUEST = mock.Mock(return_value=(FAKE_RESPONSE, FAKE_BODY))
+FAKE_RESPONSE = utils.TestResponse({
+    "status_code": 200,
+    "text": '{"hi": "there"}',
+})
+MOCK_REQUEST = mock.Mock(return_value=(FAKE_RESPONSE))
 
 
 def get_client():
@@ -29,26 +33,38 @@ class ClientTest(utils.TestCase):
     def test_get(self):
         cl = get_authed_client()
 
-        with mock.patch.object(httplib2.Http, "request", MOCK_REQUEST):
+        with mock.patch.object(requests, "request", MOCK_REQUEST):
             with mock.patch('time.time', mock.Mock(return_value=1234)):
                 resp, body = cl.get("/hi")
                 headers = {"X-Auth-Token": "token",
                            "User-Agent": cl.USER_AGENT}
-                MOCK_REQUEST.assert_called_with("https://127.0.0.1:5000/hi",
-                                                "GET", headers=headers)
+                kwargs = copy.copy(self.TEST_REQUEST_BASE)
+                kwargs['cert'] = ('cert.pem', 'key.pem')
+                kwargs['verify'] = 'ca.pem'
+                MOCK_REQUEST.assert_called_with(
+                    "GET",
+                    "https://127.0.0.1:5000/hi",
+                    headers=headers,
+                    **kwargs)
                 # Automatic JSON parsing
                 self.assertEqual(body, {"hi": "there"})
 
     def test_post(self):
         cl = get_authed_client()
 
-        with mock.patch.object(httplib2.Http, "request", MOCK_REQUEST):
+        with mock.patch.object(requests, "request", MOCK_REQUEST):
             cl.post("/hi", body=[1, 2, 3])
             headers = {
                 "X-Auth-Token": "token",
                 "Content-Type": "application/json",
                 "User-Agent": cl.USER_AGENT
             }
-            MOCK_REQUEST.assert_called_with("https://127.0.0.1:5000/hi",
-                                            "POST", headers=headers,
-                                            body='[1, 2, 3]')
+            kwargs = copy.copy(self.TEST_REQUEST_BASE)
+            kwargs['cert'] = ('cert.pem', 'key.pem')
+            kwargs['verify'] = 'ca.pem'
+            MOCK_REQUEST.assert_called_with(
+                "POST",
+                "https://127.0.0.1:5000/hi",
+                headers=headers,
+                data='[1, 2, 3]',
+                **kwargs)

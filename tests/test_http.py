@@ -1,14 +1,17 @@
-import httplib2
 import mock
+
+import requests
 
 from keystoneclient import client
 from keystoneclient import exceptions
 from tests import utils
 
 
-fake_response = httplib2.Response({"status": 200})
-fake_body = '{"hi": "there"}'
-mock_request = mock.Mock(return_value=(fake_response, fake_body))
+FAKE_RESPONSE = utils.TestResponse({
+    "status_code": 200,
+    "text": '{"hi": "there"}',
+})
+MOCK_REQUEST = mock.Mock(return_value=(FAKE_RESPONSE))
 
 
 def get_client():
@@ -36,39 +39,47 @@ class ClientTest(utils.TestCase):
     def test_get(self):
         cl = get_authed_client()
 
-        with mock.patch.object(httplib2.Http, "request", mock_request):
+        with mock.patch.object(requests, "request", MOCK_REQUEST):
             with mock.patch('time.time', mock.Mock(return_value=1234)):
                 resp, body = cl.get("/hi")
                 headers = {"X-Auth-Token": "token",
                            "User-Agent": cl.USER_AGENT}
-                mock_request.assert_called_with("http://127.0.0.1:5000/hi",
-                                                "GET", headers=headers)
+                MOCK_REQUEST.assert_called_with(
+                    "GET",
+                    "http://127.0.0.1:5000/hi",
+                    headers=headers,
+                    **self.TEST_REQUEST_BASE)
                 # Automatic JSON parsing
                 self.assertEqual(body, {"hi": "there"})
 
     def test_get_error(self):
         cl = get_authed_client()
 
-        fake_err_response = httplib2.Response({"status": 400})
-        fake_err_body = 'Some evil plaintext string'
-        err_mock_request = mock.Mock(return_value=(fake_err_response,
-                                                   fake_err_body))
+        fake_err_response = utils.TestResponse({
+            "status_code": 400,
+            "text": 'Some evil plaintext string',
+        })
+        err_MOCK_REQUEST = mock.Mock(return_value=(fake_err_response))
 
-        with mock.patch.object(httplib2.Http, "request", err_mock_request):
+        with mock.patch.object(requests, "request", err_MOCK_REQUEST):
             self.assertRaises(exceptions.BadRequest, cl.get, '/hi')
 
     def test_post(self):
         cl = get_authed_client()
 
-        with mock.patch.object(httplib2.Http, "request", mock_request):
+        with mock.patch.object(requests, "request", MOCK_REQUEST):
             cl.post("/hi", body=[1, 2, 3])
             headers = {
                 "X-Auth-Token": "token",
                 "Content-Type": "application/json",
                 "User-Agent": cl.USER_AGENT
             }
-            mock_request.assert_called_with("http://127.0.0.1:5000/hi", "POST",
-                                            headers=headers, body='[1, 2, 3]')
+            MOCK_REQUEST.assert_called_with(
+                "POST",
+                "http://127.0.0.1:5000/hi",
+                headers=headers,
+                data='[1, 2, 3]',
+                **self.TEST_REQUEST_BASE)
 
     def test_forwarded_for(self):
         ORIGINAL_IP = "10.100.100.1"
@@ -76,10 +87,10 @@ class ClientTest(utils.TestCase):
                                tenant_id="tenant", auth_url="auth_test",
                                original_ip=ORIGINAL_IP)
 
-        with mock.patch.object(httplib2.Http, "request", mock_request):
+        with mock.patch.object(requests, "request", MOCK_REQUEST):
             res = cl.request('/', 'GET')
 
-            args, kwargs = mock_request.call_args
+            args, kwargs = MOCK_REQUEST.call_args
             self.assertIn(
                 ('Forwarded', "for=%s;by=%s" % (ORIGINAL_IP, cl.USER_AGENT)),
                 kwargs['headers'].items())

@@ -130,15 +130,15 @@ _code_map = dict((c.http_status, c) for c in [BadRequest,
 def from_response(response, body):
     """
     Return an instance of an ClientException or subclass
-    based on an httplib2 response.
+    based on an requests response.
 
     Usage::
 
-        resp, body = http.request(...)
-        if resp.status != 200:
-            raise exception_from_response(resp, body)
+        resp = requests.request(...)
+        if resp.status_code != 200:
+            raise exception_from_response(resp, resp.text)
     """
-    cls = _code_map.get(response.status, ClientException)
+    cls = _code_map.get(response.status_code, ClientException)
     if body:
         if hasattr(body, 'keys'):
             error = body[body.keys()[0]]
@@ -149,6 +149,6 @@ def from_response(response, body):
             # probably couldn't communicate with Keystone at all.
             message = "Unable to communicate with identity service: %s." % body
             details = None
-        return cls(code=response.status, message=message, details=details)
+        return cls(code=response.status_code, message=message, details=details)
     else:
-        return cls(code=response.status)
+        return cls(code=response.status_code)
