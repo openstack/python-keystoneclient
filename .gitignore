@@ -8,6 +8,7 @@ cover
 *~
 .tox
 AUTHORS
+ChangeLog
 build
 dist
 python_keystoneclient.egg-info
