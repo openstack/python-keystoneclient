@@ -19,7 +19,7 @@ import iso8601
 import os
 import string
 import tempfile
-import unittest2 as unittest
+import testtools
 
 import webob
 
@@ -335,9 +335,10 @@ class FakeApp(object):
         return resp(env, start_response)
 
 
-class BaseAuthTokenMiddlewareTest(unittest.TestCase):
+class BaseAuthTokenMiddlewareTest(testtools.TestCase):
 
     def setUp(self, expected_env=None):
+        super(BaseAuthTokenMiddlewareTest, self).setUp()
         expected_env = expected_env or {}
 
         conf = {
@@ -537,8 +538,8 @@ class AuthTokenMiddlewareTest(test.NoModule, BaseAuthTokenMiddlewareTest):
 
     def test_verify_signed_token_raises_exception_for_revoked_token(self):
         self.middleware.token_revocation_list = self.get_revocation_list_json()
-        with self.assertRaises(auth_token.InvalidUserToken):
-            self.middleware.verify_signed_token(REVOKED_TOKEN)
+        self.assertRaises(auth_token.InvalidUserToken,
+                          self.middleware.verify_signed_token, REVOKED_TOKEN)
 
     def test_verify_signed_token_succeeds_for_unrevoked_token(self):
         self.middleware.token_revocation_list = self.get_revocation_list_json()
@@ -579,8 +580,8 @@ class AuthTokenMiddlewareTest(test.NoModule, BaseAuthTokenMiddlewareTest):
 
     def test_invalid_revocation_list_raises_service_error(self):
         globals()['SIGNED_REVOCATION_LIST'] = "{}"
-        with self.assertRaises(auth_token.ServiceError):
-            self.middleware.fetch_revocation_list()
+        self.assertRaises(auth_token.ServiceError,
+                          self.middleware.fetch_revocation_list)
 
     def test_fetch_revocation_list(self):
         fetched_list = jsonutils.loads(self.middleware.fetch_revocation_list())
@@ -696,7 +697,7 @@ class AuthTokenMiddlewareTest(test.NoModule, BaseAuthTokenMiddlewareTest):
         self.assertFalse(auth_token.will_expire_soon(fortyseconds))
 
 
-class TokenEncodingTest(unittest.TestCase):
+class TokenEncodingTest(testtools.TestCase):
     def test_unquoted_token(self):
         self.assertEqual('foo%20bar', auth_token.safe_quote('foo bar'))
 

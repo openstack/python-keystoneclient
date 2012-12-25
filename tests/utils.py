@@ -2,12 +2,12 @@ import time
 
 import mox
 import requests
-import unittest2 as unittest
+import testtools
 
 from keystoneclient.v2_0 import client
 
 
-class TestCase(unittest.TestCase):
+class TestCase(testtools.TestCase):
     TEST_TENANT_ID = '1'
     TEST_TENANT_NAME = 'aTenant'
     TEST_TOKEN = 'aToken'
@@ -82,12 +82,12 @@ class TestCase(unittest.TestCase):
 
     def tearDown(self):
         time.time = self._original_time
-        super(TestCase, self).tearDown()
         self.mox.UnsetStubs()
         self.mox.VerifyAll()
+        super(TestCase, self).tearDown()
 
 
-class UnauthenticatedTestCase(unittest.TestCase):
+class UnauthenticatedTestCase(testtools.TestCase):
     """ Class used as base for unauthenticated calls """
     TEST_ROOT_URL = 'http://127.0.0.1:5000/'
     TEST_URL = '%s%s' % (TEST_ROOT_URL, 'v2.0')
@@ -107,9 +107,9 @@ class UnauthenticatedTestCase(unittest.TestCase):
 
     def tearDown(self):
         time.time = self._original_time
-        super(UnauthenticatedTestCase, self).tearDown()
         self.mox.UnsetStubs()
         self.mox.VerifyAll()
+        super(UnauthenticatedTestCase, self).tearDown()
 
 
 class TestResponse(requests.Response):

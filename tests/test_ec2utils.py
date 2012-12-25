@@ -14,20 +14,18 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import unittest2 as unittest
+import testtools
+
 from keystoneclient.contrib.ec2.utils import Ec2Signer
 
 
-class Ec2SignerTest(unittest.TestCase):
+class Ec2SignerTest(testtools.TestCase):
 
     def setUp(self):
         super(Ec2SignerTest, self).setUp()
         self.access = '966afbde20b84200ae4e62e09acf46b2'
         self.secret = '89cdf9e94e2643cab35b8b8ac5a51f83'
         self.signer = Ec2Signer(self.secret)
-
-    def tearDown(self):
-        super(Ec2SignerTest, self).tearDown()
 
     def test_generate_0(self):
         """Test generate function for v0 signature"""

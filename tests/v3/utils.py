@@ -6,7 +6,7 @@ import urlparse
 
 import mox
 import requests
-import unittest2 as unittest
+import testtools
 
 from keystoneclient.v3 import client
 
@@ -31,7 +31,7 @@ class TestClient(client.Client):
         return json.dumps(entity, sort_keys=True)
 
 
-class TestCase(unittest.TestCase):
+class TestCase(testtools.TestCase):
     TEST_TENANT_NAME = 'aTenant'
     TEST_TOKEN = 'aToken'
     TEST_USER = 'test'
@@ -58,12 +58,12 @@ class TestCase(unittest.TestCase):
 
     def tearDown(self):
         time.time = self._original_time
-        super(TestCase, self).tearDown()
         self.mox.UnsetStubs()
         self.mox.VerifyAll()
+        super(TestCase, self).tearDown()
 
 
-class UnauthenticatedTestCase(unittest.TestCase):
+class UnauthenticatedTestCase(testtools.TestCase):
     """ Class used as base for unauthenticated calls """
     TEST_ROOT_URL = 'http://127.0.0.1:5000/'
     TEST_URL = '%s%s' % (TEST_ROOT_URL, 'v3')
@@ -83,12 +83,12 @@ class UnauthenticatedTestCase(unittest.TestCase):
 
     def tearDown(self):
         time.time = self._original_time
-        super(UnauthenticatedTestCase, self).tearDown()
         self.mox.UnsetStubs()
         self.mox.VerifyAll()
+        super(UnauthenticatedTestCase, self).tearDown()
 
 
-class CrudTests(object):
+class CrudTests(testtools.TestCase):
     key = None
     collection_key = None
     model = None
