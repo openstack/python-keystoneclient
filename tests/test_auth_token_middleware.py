@@ -22,6 +22,7 @@ import sys
 import tempfile
 import testtools
 
+import fixtures
 import webob
 
 from keystoneclient.common import cms
@@ -31,12 +32,13 @@ from keystoneclient.middleware import memcache_crypt
 from keystoneclient.openstack.common import memorycache
 from keystoneclient.openstack.common import jsonutils
 from keystoneclient.openstack.common import timeutils
-from keystoneclient.middleware import test
 
 
-CERTDIR = test.rootdir('examples', 'pki', 'certs')
-KEYDIR = test.rootdir('examples', 'pki', 'private')
-CMSDIR = test.rootdir('examples', 'pki', 'cms')
+ROOTDIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+
+CERTDIR = os.path.join(ROOTDIR, "examples/pki/certs")
+KEYDIR = os.path.join(ROOTDIR, "examples/pki/private")
+CMSDIR = os.path.join(ROOTDIR, "examples/pki/cms")
 SIGNING_CERT = os.path.join(CERTDIR, 'signing_cert.pem')
 SIGNING_KEY = os.path.join(KEYDIR, 'signing_key.pem')
 CA = os.path.join(CERTDIR, 'ca.pem')
@@ -239,95 +241,96 @@ EXPECTED_V2_DEFAULT_ENV_RESPONSE = {
 FAKE_RESPONSE_STACK = []
 
 
+# @TODO(mordred) This should become a testresources resource attached to the
+#                class
 # The data for these tests are signed using openssl and are stored in files
 # in the signing subdirectory.  In order to keep the values consistent between
 # the tests and the signed documents, we read them in for use in the tests.
-def setUpModule(self):
-    signing_path = CMSDIR
-    with open(os.path.join(signing_path, 'auth_token_scoped.pem')) as f:
-        self.SIGNED_TOKEN_SCOPED = cms.cms_to_token(f.read())
-    with open(os.path.join(signing_path, 'auth_token_unscoped.pem')) as f:
-        self.SIGNED_TOKEN_UNSCOPED = cms.cms_to_token(f.read())
-    with open(os.path.join(signing_path, 'auth_v3_token_scoped.pem')) as f:
-        self.SIGNED_v3_TOKEN_SCOPED = cms.cms_to_token(f.read())
-    with open(os.path.join(signing_path, 'auth_token_revoked.pem')) as f:
-        self.REVOKED_TOKEN = cms.cms_to_token(f.read())
-    self.REVOKED_TOKEN_HASH = utils.hash_signed_token(self.REVOKED_TOKEN)
-    with open(os.path.join(signing_path, 'auth_v3_token_revoked.pem')) as f:
-        self.REVOKED_v3_TOKEN = cms.cms_to_token(f.read())
-    self.REVOKED_v3_TOKEN_HASH = utils.hash_signed_token(self.REVOKED_v3_TOKEN)
-    with open(os.path.join(signing_path, 'revocation_list.json')) as f:
-        self.REVOCATION_LIST = jsonutils.loads(f.read())
-    with open(os.path.join(signing_path, 'revocation_list.pem')) as f:
-        self.VALID_SIGNED_REVOCATION_LIST = jsonutils.dumps(
-            {'signed': f.read()})
-    self.SIGNED_TOKEN_SCOPED_KEY = (
-        cms.cms_hash_token(self.SIGNED_TOKEN_SCOPED))
-    self.SIGNED_TOKEN_UNSCOPED_KEY = (
-        cms.cms_hash_token(self.SIGNED_TOKEN_UNSCOPED))
-    self.SIGNED_v3_TOKEN_SCOPED_KEY = (
-        cms.cms_hash_token(self.SIGNED_v3_TOKEN_SCOPED))
+signing_path = CMSDIR
+with open(os.path.join(signing_path, 'auth_token_scoped.pem')) as f:
+    SIGNED_TOKEN_SCOPED = cms.cms_to_token(f.read())
+with open(os.path.join(signing_path, 'auth_token_unscoped.pem')) as f:
+    SIGNED_TOKEN_UNSCOPED = cms.cms_to_token(f.read())
+with open(os.path.join(signing_path, 'auth_v3_token_scoped.pem')) as f:
+    SIGNED_v3_TOKEN_SCOPED = cms.cms_to_token(f.read())
+with open(os.path.join(signing_path, 'auth_token_revoked.pem')) as f:
+    REVOKED_TOKEN = cms.cms_to_token(f.read())
+REVOKED_TOKEN_HASH = utils.hash_signed_token(REVOKED_TOKEN)
+with open(os.path.join(signing_path, 'auth_v3_token_revoked.pem')) as f:
+    REVOKED_v3_TOKEN = cms.cms_to_token(f.read())
+REVOKED_v3_TOKEN_HASH = utils.hash_signed_token(REVOKED_v3_TOKEN)
+with open(os.path.join(signing_path, 'revocation_list.json')) as f:
+    REVOCATION_LIST = jsonutils.loads(f.read())
+with open(os.path.join(signing_path, 'revocation_list.pem')) as f:
+    VALID_SIGNED_REVOCATION_LIST = jsonutils.dumps(
+        {'signed': f.read()})
+SIGNED_TOKEN_SCOPED_KEY =\
+    cms.cms_hash_token(SIGNED_TOKEN_SCOPED)
+SIGNED_TOKEN_UNSCOPED_KEY =\
+    cms.cms_hash_token(SIGNED_TOKEN_UNSCOPED)
+SIGNED_v3_TOKEN_SCOPED_KEY = (
+    cms.cms_hash_token(SIGNED_v3_TOKEN_SCOPED))
 
-    self.TOKEN_RESPONSES[self.SIGNED_TOKEN_SCOPED_KEY] = {
-        'access': {
-            'token': {
-                'id': self.SIGNED_TOKEN_SCOPED_KEY,
-            },
-            'user': {
-                'id': 'user_id1',
-                'name': 'user_name1',
-                'tenantId': 'tenant_id1',
-                'tenantName': 'tenant_name1',
-                'roles': [
-                    {'name': 'role1'},
-                    {'name': 'role2'},
-                ],
-            },
+TOKEN_RESPONSES[SIGNED_TOKEN_SCOPED_KEY] = {
+    'access': {
+        'token': {
+            'id': SIGNED_TOKEN_SCOPED_KEY,
         },
-    }
-
-    self.TOKEN_RESPONSES[SIGNED_TOKEN_UNSCOPED_KEY] = {
-        'access': {
-            'token': {
-                'id': SIGNED_TOKEN_UNSCOPED_KEY,
-            },
-            'user': {
-                'id': 'user_id1',
-                'name': 'user_name1',
-                'roles': [
-                    {'name': 'role1'},
-                    {'name': 'role2'},
-                ],
-            },
+        'user': {
+            'id': 'user_id1',
+            'name': 'user_name1',
+            'tenantId': 'tenant_id1',
+            'tenantName': 'tenant_name1',
+            'roles': [
+                {'name': 'role1'},
+                {'name': 'role2'},
+            ],
         },
     },
+}
 
-    self.TOKEN_RESPONSES[self.SIGNED_v3_TOKEN_SCOPED_KEY] = {
+TOKEN_RESPONSES[SIGNED_TOKEN_UNSCOPED_KEY] = {
+    'access': {
         'token': {
-            'expires': '2020-01-01T00:00:10.000123Z',
-            'user': {
-                'id': 'user_id1',
-                'name': 'user_name1',
-                'domain': {
-                    'id': 'domain_id1',
-                    'name': 'domain_name1'
-                }
-            },
-            'project': {
-                'id': 'tenant_id1',
-                'name': 'tenant_name1',
-                'domain': {
-                    'id': 'domain_id1',
-                    'name': 'domain_name1'
-                }
-            },
+            'id': SIGNED_TOKEN_UNSCOPED_KEY,
+        },
+        'user': {
+            'id': 'user_id1',
+            'name': 'user_name1',
             'roles': [
-                    {'name': 'role1'},
-                    {'name': 'role2'}
+                {'name': 'role1'},
+                {'name': 'role2'},
             ],
-            'catalog': {}
-        }
+        },
+    },
+}
+
+TOKEN_RESPONSES[SIGNED_v3_TOKEN_SCOPED_KEY] = {
+    'token': {
+        'expires': '2020-01-01T00:00:10.000123Z',
+        'user': {
+            'id': 'user_id1',
+            'name': 'user_name1',
+            'domain': {
+                'id': 'domain_id1',
+                'name': 'domain_name1'
+            }
+        },
+        'project': {
+            'id': 'tenant_id1',
+            'name': 'tenant_name1',
+            'domain': {
+                'id': 'domain_id1',
+                'name': 'domain_name1'
+            }
+        },
+        'roles': [
+                {'name': 'role1'},
+                {'name': 'role2'}
+        ],
+        'catalog': {}
     }
+}
 
 VERSION_LIST_v3 = {
     "versions": {
@@ -360,6 +363,53 @@ VERSION_LIST_v2 = {
         ]
     }
 }
+
+
+class NoModuleFinder(object):
+    """ Disallow further imports of 'module' """
+
+    def __init__(self, module):
+        self.module = module
+
+    def find_module(self, fullname, path):
+        if fullname == self.module or fullname.startswith(self.module + '.'):
+            raise ImportError
+
+
+class DisableModuleFixture(fixtures.Fixture):
+    """A fixture to provide support for unloading/disabling modules."""
+
+    def __init__(self, module, *args, **kw):
+        super(DisableModuleFixture, self).__init__(*args, **kw)
+        self.module = module
+        self._finders = []
+        self._cleared_modules = {}
+
+    def tearDown(self):
+        super(DisableModuleFixture, self).tearDown()
+        for finder in self._finders:
+            sys.meta_path.remove(finder)
+        sys.modules.update(self._cleared_modules)
+
+    def clear_module(self):
+        cleared_modules = {}
+        for fullname in sys.modules.keys():
+            if (fullname == self.module or
+                    fullname.startswith(self.module + '.')):
+                cleared_modules[fullname] = sys.modules.pop(fullname)
+        return cleared_modules
+
+    def setUp(self):
+        """Ensure ImportError for the specified module."""
+
+        super(DisableModuleFixture, self).setUp()
+
+        # Clear 'module' references in sys.modules
+        self._cleared_modules.update(self.clear_module())
+
+        finder = NoModuleFinder(self.module)
+        self._finders.append(finder)
+        sys.meta_path.insert(0, finder)
 
 
 class FakeSwiftMemcacheRing(memorycache.Client):
@@ -741,7 +791,36 @@ class DiabloAuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
         self.assertTrue('keystone.token_info' in req.environ)
 
 
-class AuthTokenMiddlewareTest(test.NoModule, BaseAuthTokenMiddlewareTest):
+class NoMemcacheAuthToken(BaseAuthTokenMiddlewareTest):
+
+    def setUp(self):
+        super(NoMemcacheAuthToken, self).setUp()
+        self.useFixture(DisableModuleFixture('memcache'))
+
+    def test_nomemcache(self):
+        conf = {
+            'admin_token': 'admin_token1',
+            'auth_host': 'keystone.example.com',
+            'auth_port': 1234,
+            'memcache_servers': 'localhost:11211',
+        }
+
+        auth_token.AuthProtocol(FakeApp(), conf)
+
+    def test_not_use_cache_from_env(self):
+        env = {'swift.cache': 'CACHE_TEST'}
+        conf = {
+            'auth_host': 'keystone.example.com',
+            'auth_port': 1234,
+            'auth_admin_prefix': '/testadmin',
+            'memcache_servers': 'localhost:11211'
+        }
+        self.set_middleware(conf=conf)
+        self.middleware._init_cache(env)
+        self.assertNotEqual(self.middleware._cache, 'CACHE_TEST')
+
+
+class AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
 
     def test_init_does_not_call_http(self):
         conf = {
@@ -975,17 +1054,6 @@ class AuthTokenMiddlewareTest(test.NoModule, BaseAuthTokenMiddlewareTest):
         self.middleware._cache_initialized = True
         self.test_memcache_set_expired()
 
-    def test_nomemcache(self):
-        self.disable_module('memcache')
-
-        conf = {
-            'auth_host': 'keystone.example.com',
-            'auth_port': 1234,
-            'auth_admin_prefix': '/testadmin',
-            'memcache_servers': 'localhost:11211'
-        }
-        self.set_middleware(conf=conf)
-
     def test_use_cache_from_env(self):
         env = {'swift.cache': 'CACHE_TEST'}
         conf = {
@@ -998,18 +1066,6 @@ class AuthTokenMiddlewareTest(test.NoModule, BaseAuthTokenMiddlewareTest):
         self.set_middleware(conf=conf)
         self.middleware._init_cache(env)
         self.assertEqual(self.middleware._cache, 'CACHE_TEST')
-
-    def test_not_use_cache_from_env(self):
-        env = {'swift.cache': 'CACHE_TEST'}
-        conf = {
-            'auth_host': 'keystone.example.com',
-            'auth_port': 1234,
-            'auth_admin_prefix': '/testadmin',
-            'memcache_servers': 'localhost:11211'
-        }
-        self.set_middleware(conf=conf)
-        self.middleware._init_cache(env)
-        self.assertNotEqual(self.middleware._cache, 'CACHE_TEST')
 
     def test_will_expire_soon(self):
         tenseconds = datetime.datetime.utcnow() + datetime.timedelta(
@@ -1176,7 +1232,7 @@ class AuthTokenMiddlewareTest(test.NoModule, BaseAuthTokenMiddlewareTest):
                           datetime.timedelta(seconds=24))
 
 
-class v2AuthTokenMiddlewareTest(test.NoModule, BaseAuthTokenMiddlewareTest):
+class v2AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
     """ v2 token specific tests.
 
     There are some differences between how the auth-token middleware handles

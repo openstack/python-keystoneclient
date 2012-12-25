@@ -37,7 +37,6 @@ setuptools.setup(
     cmdclass=setup.get_cmdclass(),
 
     tests_require=tests_require,
-    test_suite="nose.collector",
 
     entry_points={
         'console_scripts': ['keystone = keystoneclient.shell:main']
