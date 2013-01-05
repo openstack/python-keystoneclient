@@ -1,4 +1,4 @@
 argparse
 prettytable
-requests<1.0
+requests>=0.8.8,<1.0
 simplejson
