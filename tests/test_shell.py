@@ -1,6 +1,7 @@
 import os
 import mock
 
+import fixtures
 import requests
 
 from keystoneclient import shell as openstack_shell
@@ -18,27 +19,27 @@ DEFAULT_AUTH_URL = 'http://127.0.0.1:5000/v2.0/'
 
 class ShellTest(utils.TestCase):
 
+    FAKE_ENV = {
+        'OS_USERNAME': DEFAULT_USERNAME,
+        'OS_PASSWORD': DEFAULT_PASSWORD,
+        'OS_TENANT_ID': DEFAULT_TENANT_ID,
+        'OS_TENANT_NAME': DEFAULT_TENANT_NAME,
+        'OS_AUTH_URL': DEFAULT_AUTH_URL,
+    }
+
     # Patch os.environ to avoid required auth info.
     def setUp(self):
-        global _old_env
-        fake_env = {
-            'OS_USERNAME': DEFAULT_USERNAME,
-            'OS_PASSWORD': DEFAULT_PASSWORD,
-            'OS_TENANT_ID': DEFAULT_TENANT_ID,
-            'OS_TENANT_NAME': DEFAULT_TENANT_NAME,
-            'OS_AUTH_URL': DEFAULT_AUTH_URL,
-        }
-        _old_env, os.environ = os.environ, fake_env.copy()
+
+        super(ShellTest, self).setUp()
+        for var in self.FAKE_ENV:
+            self.useFixture(fixtures.EnvironmentVariable(var,
+                            self.FAKE_ENV[var]))
 
         # Make a fake shell object, a helping wrapper to call it, and a quick
         # way of asserting that certain API calls were made.
         global shell, _shell, assert_called, assert_called_anytime
         _shell = openstack_shell.OpenStackIdentityShell()
         shell = lambda cmd: _shell.main(cmd.split())
-
-    def tearDown(self):
-        global _old_env
-        os.environ = _old_env
 
     def test_help_unknown_command(self):
         self.assertRaises(exceptions.CommandError, shell, 'help foofoo')
