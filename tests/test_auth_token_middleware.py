@@ -610,6 +610,25 @@ class AuthTokenMiddlewareTest(test.NoModule, BaseAuthTokenMiddlewareTest):
         self.assertEqual(self.response_headers['WWW-Authenticate'],
                          'Keystone uri=\'https://keystone.example.com:1234\'')
 
+    def test_request_no_token_log_message(self):
+        class FakeLog(object):
+            def __init__(self):
+                self.msg = None
+                self.debugmsg = None
+
+            def warn(self, msg=None, *args, **kwargs):
+                self.msg = msg
+
+            def debug(self, msg=None, *args, **kwargs):
+                self.debugmsg = msg
+
+        self.middleware.LOG = FakeLog()
+        self.middleware.delay_auth_decision = False
+        self.assertRaises(auth_token.InvalidUserToken,
+                          self.middleware._get_user_token_from_header, {})
+        self.assertIsNotNone(self.middleware.LOG.msg)
+        self.assertIsNotNone(self.middleware.LOG.debugmsg)
+
     def test_request_blank_token(self):
         req = webob.Request.blank('/')
         req.headers['X-Auth-Token'] = ''

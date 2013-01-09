@@ -375,8 +375,10 @@ class AuthProtocol(object):
         if token:
             return token
         else:
-            self.LOG.warn(
-                "Unable to find authentication token in headers: %s", env)
+            if not self.delay_auth_decision:
+                self.LOG.warn("Unable to find authentication token"
+                              " in headers")
+                self.LOG.debug("Headers: %s", env)
             raise InvalidUserToken('Unable to find token in headers')
 
     def _reject_request(self, env, start_response):
