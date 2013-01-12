@@ -60,6 +60,11 @@ class HTTPClient(object):
                  cert=None, insecure=False, original_ip=None, debug=False,
                  auth_ref=None, use_keyring=False, force_new_token=False,
                  stale_duration=None):
+        """Construct a new http client
+
+        @param: timeout the request libary timeout in seconds (default None)
+
+        """
         self.version = 'v2.0'
         # set baseline defaults
         self.username = None
@@ -69,6 +74,10 @@ class HTTPClient(object):
         self.token = None
         self.auth_token = None
         self.management_url = None
+        if timeout is not None:
+            self.timeout = float(timeout)
+        else:
+            self.timeout = None
         # if loading from a dictionary passed in via auth_ref,
         # load values from AccessInfo parsing that dictionary
         self.auth_ref = access.AccessInfo(**auth_ref) if auth_ref else None
@@ -320,6 +329,8 @@ class HTTPClient(object):
             del request_kwargs['body']
         if self.cert:
             request_kwargs['cert'] = self.cert
+        if self.timeout is not None:
+            request_kwargs.setdefault('timeout', self.timeout)
 
         self.http_log_req((url, method,), request_kwargs)
         resp = requests.request(

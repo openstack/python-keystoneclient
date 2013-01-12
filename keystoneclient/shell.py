@@ -33,6 +33,20 @@ from keystoneclient.generic import shell as shell_generic
 from keystoneclient.contrib.bootstrap import shell as shell_bootstrap
 
 
+def positive_non_zero_float(argument_value):
+    if argument_value is None:
+        return None
+    try:
+        value = float(argument_value)
+    except ValueError:
+        msg = "%s must be a float" % argument_value
+        raise argparse.ArgumentTypeError(msg)
+    if value <= 0:
+        msg = "%s must be greater than 0" % argument_value
+        raise argparse.ArgumentTypeError(msg)
+    return value
+
+
 def env(*vars, **kwargs):
     """Search for the first defined of possibly many env vars
 
@@ -49,8 +63,11 @@ def env(*vars, **kwargs):
 
 class OpenStackIdentityShell(object):
 
+    def __init__(self, parser_class=argparse.ArgumentParser):
+        self.parser_class = parser_class
+
     def get_base_parser(self):
-        parser = argparse.ArgumentParser(
+        parser = self.parser_class(
             prog='keystone',
             description=__doc__.strip(),
             epilog='See "keystone help COMMAND" '
@@ -73,6 +90,12 @@ class OpenStackIdentityShell(object):
                             default=False,
                             action='store_true',
                             help=argparse.SUPPRESS)
+
+        parser.add_argument('--timeout',
+                            default=600,
+                            type=positive_non_zero_float,
+                            metavar='<seconds>',
+                            help="Set request timeout (in seconds)")
 
         parser.add_argument('--os-username',
                             metavar='<auth-user-name>',
@@ -385,7 +408,8 @@ class OpenStackIdentityShell(object):
                                                  key=args.os_key,
                                                  cert=args.os_cert,
                                                  insecure=args.insecure,
-                                                 debug=args.debug)
+                                                 debug=args.debug,
+                                                 timeout=args.timeout)
         else:
             token = None
             if args.os_token and args.os_endpoint:
@@ -407,7 +431,8 @@ class OpenStackIdentityShell(object):
                 debug=args.debug,
                 use_keyring=args.os_cache,
                 force_new_token=args.force_new_token,
-                stale_duration=args.stale_duration)
+                stale_duration=args.stale_duration,
+                timeout=args.timeout)
 
         try:
             args.func(self.cs, args)
