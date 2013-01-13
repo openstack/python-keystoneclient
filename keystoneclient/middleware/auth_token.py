@@ -267,7 +267,6 @@ class AuthProtocol(object):
 
         # Token caching via memcache
         self._cache = None
-        self._iso8601 = None
         self._cache_initialized = False    # cache already initialzied?
         # By default the token will be cached for 5 minutes
         self.token_cache_time = int(self._conf_get('token_cache_time'))
@@ -289,10 +288,8 @@ class AuthProtocol(object):
             if memcache_servers:
                 try:
                     import memcache
-                    import iso8601
                     self.LOG.info('Using Keystone memcache for caching token')
                     self._cache = memcache.Client(memcache_servers)
-                    self._iso8601 = iso8601
                 except ImportError as e:
                     msg = 'disabled caching due to missing libraries %s' % (e)
                     self.LOG.warn(msg)
@@ -690,7 +687,7 @@ class AuthProtocol(object):
             key = 'tokens/%s' % token
             if 'token' in data.get('access', {}):
                 timestamp = data['access']['token']['expires']
-                expires = self._iso8601.parse_date(timestamp).strftime('%s')
+                expires = timeutils.parse_isotime(timestamp).strftime('%s')
             else:
                 self.LOG.error('invalid token format')
                 return
