@@ -124,11 +124,15 @@ class ManagerWithFind(Manager):
         the Python side.
         """
         rl = self.findall(**kwargs)
-        try:
-            return rl[0]
-        except IndexError:
+        num = len(rl)
+
+        if num == 0:
             msg = "No %s matching %s." % (self.resource_class.__name__, kwargs)
             raise exceptions.NotFound(404, msg)
+        elif num > 1:
+            raise exceptions.NoUniqueMatch
+        else:
+            return rl[0]
 
     def findall(self, **kwargs):
         """

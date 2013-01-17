@@ -48,10 +48,10 @@ def do_user_list(kc, args):
                      order_by='name')
 
 
-@utils.arg('id', metavar='<user-id>', help='User ID to display')
+@utils.arg('user', metavar='<user>', help='Name or ID of user to display')
 def do_user_get(kc, args):
     """Display user details."""
-    user = kc.users.get(args.id)
+    user = utils.find_resource(kc.users, args.user)
     utils.print_dict(user._info)
 
 
@@ -80,7 +80,7 @@ def do_user_create(kc, args):
            help='Desired new email address')
 @utils.arg('--enabled', metavar='<true|false>',
            help='Enable or disable user')
-@utils.arg('id', metavar='<user-id>', help='User ID to update')
+@utils.arg('user', metavar='<user>', help='Name or ID of user to update')
 def do_user_update(kc, args):
     """Update user's name, email, and enabled status"""
     kwargs = {}
@@ -95,8 +95,9 @@ def do_user_update(kc, args):
         print "User not updated, no arguments present."
         return
 
+    user = utils.find_resource(kc.users, args.user)
     try:
-        kc.users.update(args.id, **kwargs)
+        kc.users.update(user, **kwargs)
         print 'User has been updated.'
     except Exception as e:
         print 'Unable to update user: %s' % e
@@ -104,10 +105,12 @@ def do_user_update(kc, args):
 
 @utils.arg('--pass', metavar='<password>', dest='passwd', required=True,
            help='Desired new password')
-@utils.arg('id', metavar='<user-id>', help='User ID to update')
+@utils.arg('user', metavar='<user>',
+           help='Name or ID of user to update password')
 def do_user_password_update(kc, args):
     """Update user password"""
-    kc.users.update_password(args.id, args.passwd)
+    user = utils.find_resource(kc.users, args.user)
+    kc.users.update_password(user, args.passwd)
 
 
 @utils.arg('--current-password', metavar='<current-password>',
@@ -142,10 +145,11 @@ def do_password_update(kc, args):
               "to match your new password"
 
 
-@utils.arg('id', metavar='<user-id>', help='User ID to delete')
+@utils.arg('user', metavar='<user>', help='Name or ID of user to delete')
 def do_user_delete(kc, args):
     """Delete user"""
-    kc.users.delete(args.id)
+    user = utils.find_resource(kc.users, args.user)
+    kc.users.delete(user)
 
 
 def do_tenant_list(kc, args):
@@ -154,10 +158,11 @@ def do_tenant_list(kc, args):
     utils.print_list(tenants, ['id', 'name', 'enabled'], order_by='name')
 
 
-@utils.arg('id', metavar='<tenant-id>', help='Tenant ID to display')
+@utils.arg('tenant', metavar='<tenant>',
+           help='Name or ID of tenant to display')
 def do_tenant_get(kc, args):
     """Display tenant details"""
-    tenant = kc.tenants.get(args.id)
+    tenant = utils.find_resource(kc.tenants, args.tenant)
     utils.print_dict(tenant._info)
 
 
@@ -181,10 +186,10 @@ def do_tenant_create(kc, args):
            help='Desired new description of tenant')
 @utils.arg('--enabled', metavar='<true|false>',
            help='Enable or disable tenant')
-@utils.arg('id', metavar='<tenant-id>', help='Tenant ID to update')
+@utils.arg('tenant', metavar='<tenant>', help='Name or ID of tenant to update')
 def do_tenant_update(kc, args):
     """Update tenant name, description, enabled status"""
-    tenant = kc.tenants.get(args.id)
+    tenant = utils.find_resource(kc.tenants, args.tenant)
     kwargs = {}
     if args.name:
         kwargs.update({'name': args.name})
@@ -199,10 +204,11 @@ def do_tenant_update(kc, args):
     tenant.update(**kwargs)
 
 
-@utils.arg('id', metavar='<tenant-id>', help='Tenant ID to delete')
+@utils.arg('tenant', metavar='<tenant>', help='Name or ID of tenant to delete')
 def do_tenant_delete(kc, args):
     """Delete tenant"""
-    kc.tenants.delete(args.id)
+    tenant = utils.find_resource(kc.tenants, args.tenant)
+    kc.tenants.delete(tenant)
 
 
 @utils.arg('--name', metavar='<name>', required=True,
@@ -227,17 +233,20 @@ def do_service_list(kc, args):
                      order_by='name')
 
 
-@utils.arg('id', metavar='<service-id>', help='Service ID to display')
+@utils.arg('service', metavar='<service>',
+           help='Name or ID of service to display')
 def do_service_get(kc, args):
     """Display service from Service Catalog"""
-    service = kc.services.get(args.id)
+    service = utils.find_resource(kc.services, args.service)
     utils.print_dict(service._info)
 
 
-@utils.arg('id', metavar='<service-id>', help='Service ID to delete')
+@utils.arg('service', metavar='<service>',
+           help='Name or ID of service to delete')
 def do_service_delete(kc, args):
     """Delete service from Service Catalog"""
-    kc.services.delete(args.id)
+    service = utils.find_resource(kc.services, args.service)
+    kc.services.delete(service.id)
 
 
 def do_role_list(kc, args):
@@ -246,10 +255,10 @@ def do_role_list(kc, args):
     utils.print_list(roles, ['id', 'name'], order_by='name')
 
 
-@utils.arg('id', metavar='<role-id>', help='Role ID to display')
+@utils.arg('role', metavar='<role>', help='Name or ID of role to display')
 def do_role_get(kc, args):
     """Display role details"""
-    role = kc.roles.get(args.id)
+    role = utils.find_resource(kc.roles, args.role)
     utils.print_dict(role._info)
 
 
@@ -261,56 +270,82 @@ def do_role_create(kc, args):
     utils.print_dict(role._info)
 
 
-@utils.arg('id', metavar='<role-id>', help='Role ID to delete')
+@utils.arg('role', metavar='<role>', help='Name or ID of role to delete')
 def do_role_delete(kc, args):
     """Delete role"""
-    kc.roles.delete(args.id)
+    role = utils.find_resource(kc.roles, args.role)
+    kc.roles.delete(role)
 
 
-# TODO(jakedahn): refactor this to allow role, user, and tenant names.
-@utils.arg('--user-id', '--user_id', metavar='<user-id>', required=True,
-           help='User ID')
-@utils.arg('--role-id', '--role_id', metavar='<role-id>', required=True,
-           help='Role ID')
-@utils.arg('--tenant-id', metavar='<tenant-id>', help='Tenant ID')
+@utils.arg('--user', '--user-id', '--user_id', metavar='<user>',
+           required=True, help='Name or ID of user')
+@utils.arg('--role', '--role-id', '--role_id', metavar='<role>',
+           required=True, help='Name or ID of role')
+@utils.arg('--tenant', '--tenant-id', metavar='<tenant>',
+           help='Name or ID of tenant')
 @utils.arg('--tenant_id', help=argparse.SUPPRESS)
 def do_user_role_add(kc, args):
     """Add role to user"""
-    kc.roles.add_user_role(args.user_id, args.role_id, args.tenant_id)
+    user = utils.find_resource(kc.users, args.user)
+    role = utils.find_resource(kc.roles, args.role)
+    if args.tenant:
+        tenant = utils.find_resource(kc.tenants, args.tenant)
+    elif args.tenant_id:
+        tenant = args.tenant_id
+    else:
+        tenant = None
+    kc.roles.add_user_role(user, role, tenant)
 
 
-# TODO(jakedahn): refactor this to allow role, user, and tenant names.
-@utils.arg('--user-id', '--user_id', metavar='<user-id>', required=True,
-           help='User ID')
-@utils.arg('--role-id', '--role_id', metavar='<role-id>', required=True,
-           help='Role ID')
-@utils.arg('--tenant-id', metavar='<tenant-id>', help='Tenant ID')
+@utils.arg('--user', '--user-id', '--user_id', metavar='<user>',
+           required=True, help='Name or ID of user')
+@utils.arg('--role', '--role-id', '--role_id', metavar='<role>',
+           required=True, help='Name or ID of role')
+@utils.arg('--tenant', '--tenant-id', metavar='<tenant>',
+           help='Name or ID of tenant')
 @utils.arg('--tenant_id', help=argparse.SUPPRESS)
 def do_user_role_remove(kc, args):
     """Remove role from user"""
-    kc.roles.remove_user_role(args.user_id, args.role_id, args.tenant_id)
+    user = utils.find_resource(kc.users, args.user)
+    role = utils.find_resource(kc.roles, args.role)
+    if args.tenant:
+        tenant = utils.find_resource(kc.tenants, args.tenant)
+    elif args.tenant_id:
+        tenant = args.tenant_id
+    else:
+        tenant = None
+    kc.roles.remove_user_role(user, role, tenant)
 
 
-@utils.arg('--user-id', metavar='<user-id>',
+@utils.arg('--user', '--user-id', metavar='<user>',
            help='List roles granted to a user')
 @utils.arg('--user_id', help=argparse.SUPPRESS)
-@utils.arg('--tenant-id', metavar='<tenant-id>',
+@utils.arg('--tenant', '--tenant-id', metavar='<tenant>',
            help='List roles granted on a tenant')
 @utils.arg('--tenant_id', help=argparse.SUPPRESS)
 def do_user_role_list(kc, args):
     """List roles granted to a user"""
-    if not args.tenant_id:
+    if args.tenant:
+        tenant_id = utils.find_resource(kc.tenants, args.tenant).id
+    elif args.tenant_id:
+        tenant_id = args.tenant_id
+    else:
         # use the authenticated tenant id as a default
-        args.tenant_id = kc.auth_tenant_id
-    if not args.user_id:
+        tenant_id = kc.auth_tenant_id
+
+    if args.user:
+        user_id = utils.find_resource(kc.users, args.user).id
+    elif args.user_id:
+        user_id = args.user_id
+    else:
         # use the authenticated user id as a default
-        args.user_id = kc.auth_user_id
-    roles = kc.roles.roles_for_user(user=args.user_id, tenant=args.tenant_id)
+        user_id = kc.auth_user_id
+    roles = kc.roles.roles_for_user(user=user_id, tenant=tenant_id)
 
     # this makes the command output a bit more intuitive
     for role in roles:
-        role.user_id = args.user_id
-        role.tenant_id = args.tenant_id
+        role.user_id = user_id
+        role.tenant_id = tenant_id
 
     utils.print_list(roles, ['id', 'name', 'user_id', 'tenant_id'],
                      order_by='name')
