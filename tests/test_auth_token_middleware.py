@@ -766,7 +766,7 @@ class AuthTokenMiddlewareTest(test.NoModule, BaseAuthTokenMiddlewareTest):
             auth._protect_cache_value('token',
                                       TOKEN_RESPONSES[UUID_TOKEN_DEFAULT])
         self.assertEqual('{ENCRYPT:AES256}', encrypted_data[:16])
-        self.assertDictEqual(
+        self.assertEqual(
             TOKEN_RESPONSES[UUID_TOKEN_DEFAULT],
             auth._unprotect_cache_value('token', encrypted_data))
         # should return None if unable to decrypt
@@ -792,7 +792,7 @@ class AuthTokenMiddlewareTest(test.NoModule, BaseAuthTokenMiddlewareTest):
         self.assertEqual(
             signed_data[:10],
             expected)
-        self.assertDictEqual(
+        self.assertEqual(
             TOKEN_RESPONSES[UUID_TOKEN_DEFAULT],
             auth._unprotect_cache_value('mykey', signed_data))
         # should return None on corrupted data
