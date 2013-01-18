@@ -226,6 +226,13 @@ def do_service_list(kc, args):
     utils.print_list(services, ['id', 'name', 'type', 'description'],
                      order_by='name')
 
+@utils.arg('name', metavar='<service-name>', help='Service Name to show ID')
+def do_service_id(kc, args):
+    services = kc.services.list()
+    for service in services:
+        if getattr(service,'name','') == args.name:
+           print getattr(service,'id','')
+           return
 
 @utils.arg('id', metavar='<service-id>', help='Service ID to display')
 def do_service_get(kc, args):
