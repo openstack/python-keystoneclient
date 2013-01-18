@@ -492,3 +492,20 @@ def do_policy_create(kc, args):
     policy = kc.policies.create(blob, args.tenant_id,args.type)
     utils.print_dict(policy._info)
 
+@utils.arg('id', metavar='<policy-id>', help='Policy ID to display')
+def do_policy_get(kc, args):
+    """Display policy details."""
+    policy = kc.policies.get(args.id)
+    utils.print_dict(policy._info)
+
+@utils.arg('id', metavar='<policy-id>', help='Policy ID to delete')
+def do_policy_delete(kc, args):
+    """Delete policy"""
+    kc.policies.delete(args.id)
+
+@utils.arg('id', metavar='<tenant-id>', help='Tenant ID to display')
+def do_policy_list(kc, args):
+    """Display Policies associated with a tenant"""
+    policies = kc.policies.list(args.id)
+    utils.print_list(policies, ['id', 'blob', 'type', 'tenant_id'],
+                     order_by='id')

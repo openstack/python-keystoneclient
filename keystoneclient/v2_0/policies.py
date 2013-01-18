@@ -33,18 +33,25 @@ class PolicyManager(base.ManagerWithFind):
     collection_key = 'policies'
     key = 'policy'
 
-    def create(self, blob, tenant_id, mime_type='application/json'):
+    def create(self, blob, tenant_id, type):
         """
         Create a Policy.
         """
-        params = {"policy": {"type": mime_type,
+        params = {"policy": {"type": type if type else 'application/json',
                            "tenant_id": tenant_id,
                            "blob": blob,}}
+        print params
         return self._create('/policies', params, "policy")
 
     def get(self, policy):
         return self._get("/policies/%s" % base.getid(policy), "policy")
 
     def delete(self, policy):
-        return super(PolicyManager, self).delete(
-            policy_id=base.getid(policy))
+        """
+        Delete a policy.
+        """
+        return self._delete("/policies/%s" % base.getid(policy))
+    
+    def list(self, tenant_id):
+        return self._list("/policies/tenant/%s" % tenant_id,
+                              "policies")
