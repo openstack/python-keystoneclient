@@ -14,3 +14,7 @@ dist
 python_keystoneclient.egg-info
 keystoneclient/versioninfo
 doc/source/api
+
+
+.project
+.pydevproject

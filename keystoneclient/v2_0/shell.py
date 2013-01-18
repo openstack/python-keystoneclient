@@ -473,3 +473,22 @@ def do_token_get(kc, args):
     """Display the current user token"""
     utils.print_dict(kc.service_catalog.get_token(),
                      wrap=int(args.wrap))
+
+@utils.arg('--policy', metavar='<policy-blob>', required=True,
+           help='File contains the policy')
+@utils.arg('--tenant-id', metavar='<tenant-id>',
+           help='New policy default tenant')
+#@utils.arg('--tenant_id', help=argparse.SUPPRESS)
+@utils.arg('--type', metavar='<Mime-Type>',
+           help='Encoding type of policy')
+def do_policy_create(kc, args):
+    """Create new user"""
+    try:
+        with open(args.policy,"r") as f:
+            blob = f.readlines()
+    except IOError as e:
+        print "I/O error({0}): {1}".format(e.errno, e.strerror)
+
+    policy = kc.policies.create(blob, args.tenant_id,args.type)
+    utils.print_dict(policy._info)
+
