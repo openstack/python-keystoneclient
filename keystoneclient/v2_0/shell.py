@@ -476,9 +476,8 @@ def do_token_get(kc, args):
 
 @utils.arg('--policy', metavar='<policy-blob>', required=True,
            help='File contains the policy')
-@utils.arg('--tenant-id', metavar='<tenant-id>',
-           help='New policy default tenant')
-#@utils.arg('--tenant_id', help=argparse.SUPPRESS)
+@utils.arg('--role-id', metavar='<role-id>',
+           help='New policy role')
 @utils.arg('--type', metavar='<Mime-Type>',
            help='Encoding type of policy')
 def do_policy_create(kc, args):
@@ -489,7 +488,7 @@ def do_policy_create(kc, args):
     except IOError as e:
         print "I/O error({0}): {1}".format(e.errno, e.strerror)
 
-    policy = kc.policies.create(blob, args.tenant_id,args.type)
+    policy = kc.policies.create(blob, args.role_id,args.type)
     utils.print_dict(policy._info)
 
 @utils.arg('id', metavar='<policy-id>', help='Policy ID to display')
@@ -503,9 +502,14 @@ def do_policy_delete(kc, args):
     """Delete policy"""
     kc.policies.delete(args.id)
 
-@utils.arg('id', metavar='<tenant-id>', help='Tenant ID to display')
+@utils.arg('id', metavar='<role-id>', help='Role Id whose policies should be displayed ')
+def do_role_policy_get(kc, args):
+    """Delete policy"""
+    policy = kc.policies.get_role_policy(args.id)
+    utils.print_dict(policy._info)
+
 def do_policy_list(kc, args):
     """Display Policies associated with a tenant"""
-    policies = kc.policies.list(args.id)
-    utils.print_list(policies, ['id', 'blob', 'type', 'tenant_id'],
+    policies = kc.policies.list()
+    utils.print_list(policies, ['id', 'blob', 'type', 'role_id'],
                      order_by='id')
