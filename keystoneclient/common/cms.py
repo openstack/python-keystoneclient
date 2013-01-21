@@ -42,7 +42,11 @@ def cms_verify(formatted, signing_cert_file_name, ca_file_name):
     retcode = process.poll()
     if retcode:
         LOG.error('Verify error: %s' % err)
-        raise subprocess.CalledProcessError(retcode, "openssl", output=err)
+        # NOTE(dmllr): Python 2.6 compatibility:
+        # CalledProcessError did not have output keyword argument
+        e = subprocess.CalledProcessError(retcode, "openssl")
+        e.output = err
+        raise e
     return output
 
 
