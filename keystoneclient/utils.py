@@ -15,6 +15,16 @@ def arg(*args, **kwargs):
         return func
     return _decorator
 
+def convert(string):
+    if isinstance(string, dict):
+        return {convert(key): convert(value) for key, value in string.iteritems()}
+    elif isinstance(string, list):
+        return [convert(element) for element in string]
+    elif isinstance(string, unicode):
+        return string.encode('utf-8')
+    else:
+        return string
+
 
 def pretty_choice_list(l):
     return ', '.join("'%s'" % i for i in l)
@@ -60,7 +70,7 @@ def print_dict(d, wrap=0):
     for (prop, value) in d.iteritems():
         if value is None:
             value = ''
-        value = _word_wrap(value, max_length=wrap)
+        value = _word_wrap(str(value), max_length=wrap)
         pt.add_row([prop, value])
     print pt.get_string(sortby='Property')
 

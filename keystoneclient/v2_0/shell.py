@@ -474,6 +474,7 @@ def do_token_get(kc, args):
     utils.print_dict(kc.service_catalog.get_token(),
                      wrap=int(args.wrap))
 
+
 @utils.arg('--policy', metavar='<policy-blob>', required=True,
            help='File contains the policy')
 @utils.arg('--role-id', metavar='<role-id>',
@@ -482,20 +483,20 @@ def do_token_get(kc, args):
            help='Encoding type of policy')
 def do_policy_create(kc, args):
     """Create new user"""
+    import json
     try:
         with open(args.policy,"r") as f:
-            blob = f.readlines()
+            blob = json.load(f)
     except IOError as e:
         print "I/O error({0}): {1}".format(e.errno, e.strerror)
-
     policy = kc.policies.create(blob, args.role_id,args.type)
-    utils.print_dict(policy._info)
+    utils.print_dict(policy._info,100)
 
 @utils.arg('id', metavar='<policy-id>', help='Policy ID to display')
 def do_policy_get(kc, args):
     """Display policy details."""
     policy = kc.policies.get(args.id)
-    utils.print_dict(policy._info)
+    utils.print_dict(policy._info,100)
 
 @utils.arg('id', metavar='<policy-id>', help='Policy ID to delete')
 def do_policy_delete(kc, args):
@@ -504,9 +505,8 @@ def do_policy_delete(kc, args):
 
 @utils.arg('id', metavar='<role-id>', help='Role Id whose policies should be displayed ')
 def do_role_policy_get(kc, args):
-    """Delete policy"""
     policy = kc.policies.get_role_policy(args.id)
-    utils.print_dict(policy._info)
+    utils.print_dict(policy._info,100)
 
 def do_policy_list(kc, args):
     """Display Policies associated with a tenant"""

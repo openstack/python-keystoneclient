@@ -40,14 +40,14 @@ class PolicyManager(base.ManagerWithFind):
         params = {"policy": {"type": type if type else 'application/json',
                            "role_id": tenant_id,
                            "blob": blob,}}
-        print params
         return self._create('/policies', params, "policy")
 
     def get(self, policy):
         return self._get("/policies/%s" % base.getid(policy), "policy")
 
-    def get_role_policy(self, role):
-        return self._get("/policies/role/%s" % base.getid(role), "policy")
+    def get_role_policy(self, role_id):
+        return self._get("/policies/role/%s" % role_id, "policy")
+        
 
     def delete(self, policy):
         """
