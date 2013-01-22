@@ -40,6 +40,7 @@ class AccessInfoTest(utils.TestCase):
         auth_ref = access.AccessInfo(UNSCOPED_TOKEN['access'])
         self.assertFalse(auth_ref.will_expire_soon(stale_duration=120))
         self.assertTrue(auth_ref.will_expire_soon(stale_duration=300))
+        self.assertFalse(auth_ref.will_expire_soon())
 
     def test_building_scoped_accessinfo(self):
         auth_ref = access.AccessInfo(PROJECT_SCOPED_TOKEN['access'])
