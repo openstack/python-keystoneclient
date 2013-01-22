@@ -84,8 +84,9 @@ class Manager(object):
         resp, body = self.api.head(url)
         return resp.status_code == 204
 
-    def _create(self, url, body, response_key, return_raw=False):
-        resp, body = self.api.post(url, body=body)
+    def _create(self, url, body, response_key, return_raw=False,
+                management=True):
+        resp, body = self.api.post(url, body=body, management=management)
         if return_raw:
             return body[response_key]
         return self.resource_class(self, body[response_key])

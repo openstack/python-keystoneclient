@@ -144,7 +144,7 @@ class HTTPClient(object):
         del self.auth_token_from_user
 
     def authenticate(self, username=None, password=None, tenant_name=None,
-                     tenant_id=None, auth_url=None, token=None):
+                     tenant_id=None, token=None):
         """ Authenticate user.
 
         Uses the data provided at instantiation to authenticate against
@@ -177,7 +177,6 @@ class HTTPClient(object):
         * if force_new_token is true
 
         """
-        auth_url = auth_url or self.auth_url
         username = username or self.username
         password = password or self.password
         tenant_name = tenant_name or self.tenant_name
@@ -189,7 +188,7 @@ class HTTPClient(object):
                 and not self.auth_ref.will_expire_soon(self.stale_duration)):
                 token = self.auth_ref.auth_token
 
-        (keyring_key, auth_ref) = self.get_auth_ref_from_keyring(auth_url,
+        (keyring_key, auth_ref) = self.get_auth_ref_from_keyring(self.auth_url,
                                                                  username,
                                                                  tenant_name,
                                                                  tenant_id,
@@ -197,8 +196,7 @@ class HTTPClient(object):
         new_token_needed = False
         if auth_ref is None or self.force_new_token:
             new_token_needed = True
-            raw_token = self.get_raw_token_from_identity_service(auth_url,
-                                                                 username,
+            raw_token = self.get_raw_token_from_identity_service(username,
                                                                  password,
                                                                  tenant_name,
                                                                  tenant_id,
@@ -402,8 +400,11 @@ class HTTPClient(object):
             url_to_use = self.management_url
 
         kwargs.setdefault('headers', {})
-        if self.auth_token:
-            kwargs['headers']['X-Auth-Token'] = self.auth_token
+        if (self.auth_ref
+            and not self.auth_ref.will_expire_soon(self.stale_duration)):
+            kwargs['headers']['X-Auth-Token'] = self.auth_ref.auth_token
+        elif self.auth_token_from_user:
+            kwargs['headers']['X-Auth-Token'] = self.auth_token_from_user
 
         resp, body = self.request(url_to_use + url, method,
                                   **kwargs)

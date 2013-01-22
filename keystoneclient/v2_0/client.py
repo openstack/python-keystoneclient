@@ -154,7 +154,7 @@ class Client(client.HTTPClient):
             self.user_id = self.auth_ref.user_id
         self._extract_service_catalog(self.auth_url, self.auth_ref)
 
-    def get_raw_token_from_identity_service(self, auth_url, username=None,
+    def get_raw_token_from_identity_service(self, username=None,
                                             password=None, tenant_name=None,
                                             tenant_id=None, token=None):
         """ Authenticate against the Keystone API.
@@ -166,41 +166,18 @@ class Client(client.HTTPClient):
 
         """
         try:
-            return self._base_authN(auth_url,
-                                    username=username,
-                                    tenant_id=tenant_id,
-                                    tenant_name=tenant_name,
-                                    password=password,
-                                    token=token)
+            return self.tokens.authenticate(username=username,
+                                            tenant_id=tenant_id,
+                                            tenant_name=tenant_name,
+                                            password=password,
+                                            token=token,
+                                            return_raw=True)
         except (exceptions.AuthorizationFailure, exceptions.Unauthorized):
             _logger.debug("Authorization Failed.")
             raise
         except Exception as e:
             raise exceptions.AuthorizationFailure("Authorization Failed: "
                                                   "%s" % e)
-
-    def _base_authN(self, auth_url, username=None, password=None,
-                    tenant_name=None, tenant_id=None, token=None):
-        """ Takes a username, password, and optionally a tenant_id or
-        tenant_name to get an authentication token from keystone.
-        May also take a token and a tenant_id to re-scope a token
-        to a tenant."""
-        headers = {}
-        url = auth_url + "/tokens"
-        if token:
-            headers['X-Auth-Token'] = token
-            params = {"auth": {"token": {"id": token}}}
-        elif username and password:
-            params = {"auth": {"passwordCredentials": {"username": username,
-                                                       "password": password}}}
-        else:
-            raise ValueError('A username and password or token is required.')
-        if tenant_id:
-            params['auth']['tenantId'] = tenant_id
-        elif tenant_name:
-            params['auth']['tenantName'] = tenant_name
-        resp, body = self.request(url, 'POST', body=params, headers=headers)
-        return body['access']
 
     # TODO(heckj): remove entirely in favor of access.AccessInfo and
     # associated methods
