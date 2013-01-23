@@ -134,6 +134,17 @@ class AccessInfo(dict):
         """ Synonym for project_id """
         return self.tenant_id
 
+    def _get_identity_endpoint(self, endpoint_type):
+        if not self.get('serviceCatalog'):
+            return
+
+        identity_services = [x for x in self['serviceCatalog']
+                             if x['type'] == 'identity']
+        return tuple(endpoint[endpoint_type]
+                     for svc in identity_services
+                     for endpoint in svc['endpoints']
+                     if endpoint_type in endpoint)
+
     @property
     def auth_url(self):
         """ Returns a tuple of URLs from publicURL and adminURL for the service
@@ -143,17 +154,7 @@ class AccessInfo(dict):
 
         :returns: tuple of urls
         """
-        return_list = []
-        if 'serviceCatalog' in self and self['serviceCatalog']:
-            identity_services = [x for x in self['serviceCatalog']
-                                 if x['type'] == 'identity']
-            for svc in identity_services:
-                for endpoint in svc['endpoints']:
-                    if 'publicURL' in endpoint:
-                        return_list.append(endpoint['publicURL'])
-        if len(return_list) > 0:
-            return tuple(return_list)
-        return None
+        return self._get_identity_endpoint('publicURL')
 
     @property
     def management_url(self):
@@ -163,14 +164,4 @@ class AccessInfo(dict):
 
         :returns: tuple of urls
         """
-        return_list = []
-        if 'serviceCatalog' in self and self['serviceCatalog']:
-            identity_services = [x for x in self['serviceCatalog']
-                                 if x['type'] == 'identity']
-            for svc in identity_services:
-                for endpoint in svc['endpoints']:
-                    if 'adminURL' in endpoint:
-                        return_list.append(endpoint['adminURL'])
-        if len(return_list) > 0:
-            return tuple(return_list)
-        return None
+        return self._get_identity_endpoint('adminURL')
