@@ -28,9 +28,6 @@ class AccessInfo(dict):
     """An object for encapsulating a raw authentication token from keystone
     and helper methods for extracting useful values from that token."""
 
-    def __init__(self, *args, **kwargs):
-        dict.__init__(self, *args, **kwargs)
-
     def will_expire_soon(self, stale_duration=None):
         """ Determines if expiration is about to occur.
 
