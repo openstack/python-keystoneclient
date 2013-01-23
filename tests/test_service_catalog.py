@@ -74,7 +74,20 @@ SERVICE_CATALOG = {
                     "href":"https://identity.north.host/v2.0/"
                            "endpoints?marker=2"
                 }]
-            }
+            },
+            {
+                "name": "Image Servers",
+                "type": "image",
+                "endpoints": [
+                    {"publicURL": "https://image.north.host/v1/",
+                     "internalURL": "https://image-internal.north.host/v1/",
+                     "region": "North"},
+                    {"publicURL": "https://image.south.host/v1/",
+                     "internalURL": "https://image-internal.south.host/v1/",
+                     "region": "South"}
+                ],
+                "endpoints_links": []
+            },
         ],
         "serviceCatalog_links": [{
             "rel": "next",
@@ -107,6 +120,16 @@ class ServiceCatalogTest(utils.TestCase):
         self.assertEquals(public_ep['compute'][1]['versionId'], '1.1')
         self.assertEquals(public_ep['compute'][1]['internalURL'],
                           "https://compute.north.host/v1.1/3456")
+
+    def test_service_catalog_regions(self):
+        sc = service_catalog.ServiceCatalog(SERVICE_CATALOG['access'],
+                                            region_name="North")
+        url = sc.url_for(service_type='image', endpoint_type='publicURL')
+        self.assertEquals(url, "https://image.north.host/v1/")
+        sc = service_catalog.ServiceCatalog(SERVICE_CATALOG['access'],
+                                            region_name="South")
+        url = sc.url_for(service_type='image', endpoint_type='internalURL')
+        self.assertEquals(url, "https://image-internal.south.host/v1/")
 
     def test_token(self):
         sc = service_catalog.ServiceCatalog(SERVICE_CATALOG['access'])
