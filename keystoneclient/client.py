@@ -71,7 +71,6 @@ class HTTPClient(object):
         self.tenant_id = None
         self.tenant_name = None
         self.auth_url = None
-        self.token = None
         self.auth_token = None
         self.management_url = None
         if timeout is not None:
