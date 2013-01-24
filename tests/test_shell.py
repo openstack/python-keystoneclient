@@ -1,4 +1,5 @@
-import os
+import argparse
+import json
 import mock
 
 import fixtures
@@ -17,6 +18,11 @@ DEFAULT_TENANT_NAME = 'tenant_name'
 DEFAULT_AUTH_URL = 'http://127.0.0.1:5000/v2.0/'
 
 
+class NoExitArgumentParser(argparse.ArgumentParser):
+    def error(self, message):
+        raise exceptions.CommandError(message)
+
+
 class ShellTest(utils.TestCase):
 
     FAKE_ENV = {
@@ -26,6 +32,10 @@ class ShellTest(utils.TestCase):
         'OS_TENANT_NAME': DEFAULT_TENANT_NAME,
         'OS_AUTH_URL': DEFAULT_AUTH_URL,
     }
+
+    def _tolerant_shell(self, cmd):
+        t_shell = openstack_shell.OpenStackIdentityShell(NoExitArgumentParser)
+        t_shell.main(cmd.split())
 
     # Patch os.environ to avoid required auth info.
     def setUp(self):
@@ -291,6 +301,34 @@ class ShellTest(utils.TestCase):
                         do_shell_mock):
             shell('ec2-credentials-delete')
             assert do_shell_mock.called
+
+    def test_timeout_parse_invalid_type(self):
+        for f in ['foobar', 'xyz']:
+            cmd = '--timeout %s endpoint-create' % (f)
+            self.assertRaises(exceptions.CommandError,
+                              self._tolerant_shell, cmd)
+
+    def test_timeout_parse_invalid_number(self):
+        for f in [-1, 0]:
+            cmd = '--timeout %s endpoint-create' % (f)
+            self.assertRaises(exceptions.CommandError,
+                              self._tolerant_shell, cmd)
+
+    def test_do_timeout(self):
+        response_mock = mock.MagicMock()
+        response_mock.status_code = 200
+        response_mock.text = json.dumps({
+            'endpoints': [],
+        })
+        request_mock = mock.MagicMock(return_value=response_mock)
+        with mock.patch('requests.request', request_mock):
+            shell(('--timeout 2 --os-token=blah  --os-endpoint=blah'
+                   ' --os-auth-url=blah.com endpoint-list'))
+            request_mock.assert_called_with(mock.ANY, mock.ANY,
+                                            timeout=2,
+                                            headers=mock.ANY,
+                                            verify=mock.ANY,
+                                            config=mock.ANY)
 
     def test_do_endpoints(self):
         do_shell_mock = mock.MagicMock()
