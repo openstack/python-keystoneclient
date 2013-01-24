@@ -287,8 +287,8 @@ class HTTPClient(object):
             string_parts.append(header)
 
         _logger.debug("REQ: %s" % "".join(string_parts))
-        if 'body' in kwargs:
-            _logger.debug("REQ BODY: %s\n" % (kwargs['body']))
+        if 'data' in kwargs:
+            _logger.debug("REQ BODY: %s\n" % (kwargs['data']))
 
     def http_log_resp(self, resp):
         if self.debug_log:
