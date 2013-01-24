@@ -18,6 +18,7 @@ import datetime
 import iso8601
 import os
 import string
+import sys
 import tempfile
 import testtools
 
@@ -401,6 +402,33 @@ class BaseAuthTokenMiddlewareTest(testtools.TestCase):
     def start_fake_response(self, status, headers):
         self.response_status = int(status.split(' ', 1)[0])
         self.response_headers = dict(headers)
+
+
+if tuple(sys.version_info)[0:2] < (2, 7):
+
+    # 2.6 doesn't have the assert dict equals so make sure that it exists
+    class AdjustedBaseAuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
+        def assertIsInstance(self, obj, cls, msg=None):
+            """Same as self.assertTrue(isinstance(obj, cls)), with a nicer
+            default message."""
+            if not isinstance(obj, cls):
+                standardMsg = '%s is not an instance of %r' % (obj, cls)
+                self.fail(self._formatMessage(msg, standardMsg))
+
+        def assertDictEqual(self, d1, d2, msg=None):
+            # Simple version taken from 2.7
+            self.assertIsInstance(d1, dict,
+                                  'First argument is not a dictionary')
+            self.assertIsInstance(d2, dict,
+                                  'Second argument is not a dictionary')
+            if d1 != d2:
+                if msg:
+                    self.fail(msg)
+                else:
+                    standardMsg = '%r != %r' % (d1, d2)
+                    self.fail(standardMsg)
+
+    BaseAuthTokenMiddlewareTest = AdjustedBaseAuthTokenMiddlewareTest
 
 
 class StackResponseAuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
