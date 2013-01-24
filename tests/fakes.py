@@ -6,7 +6,7 @@ wrong the tests might raise AssertionError. I've indicated in comments the
 places where actual behavior differs from the spec.
 """
 
-from keystoneclient import service_catalog
+from keystoneclient import access
 
 
 def assert_has_keys(dict, required=[], optional=[]):
@@ -67,7 +67,7 @@ class FakeClient(object):
         cl_obj.auth_user_id = '1'
         cl_obj.tenant_id = '1'
         cl_obj.auth_tenant_id = '1'
-        cl_obj.service_catalog = service_catalog.ServiceCatalog({
+        cl_obj.auth_ref = access.AccessInfo({
             "token": {
                 "expires": "2012-02-05T00:00:00",
                 "id": "887665443383838",

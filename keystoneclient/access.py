@@ -18,7 +18,7 @@
 import datetime
 
 from keystoneclient.openstack.common import timeutils
-
+from keystoneclient import service_catalog
 
 # gap, in seconds, to determine whether the given token is about to expire
 STALE_TOKEN_DURATION = 30
@@ -27,6 +27,14 @@ STALE_TOKEN_DURATION = 30
 class AccessInfo(dict):
     """An object for encapsulating a raw authentication token from keystone
     and helper methods for extracting useful values from that token."""
+
+    def __init__(self, *args, **kwargs):
+        super(AccessInfo, self).__init__(*args, **kwargs)
+        self.service_catalog = service_catalog.ServiceCatalog(
+            resource_dict=self, region_name=self.get('region_name'))
+
+    def has_service_catalog(self):
+        return 'serviceCatalog' in self
 
     def will_expire_soon(self, stale_duration=None):
         """ Determines if expiration is about to occur.
