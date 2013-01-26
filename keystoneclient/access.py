@@ -21,7 +21,7 @@ from keystoneclient.openstack.common import timeutils
 
 
 # gap, in seconds, to determine whether the given token is about to expire
-STALE_TOKEN_DURATION = '30'
+STALE_TOKEN_DURATION = 30
 
 
 class AccessInfo(dict):
@@ -34,7 +34,8 @@ class AccessInfo(dict):
         :return: boolean : true if expiration is within the given duration
 
         """
-        stale_duration = stale_duration or TALE_TOKEN_DURATION
+        stale_duration = (STALE_TOKEN_DURATION if stale_duration is None
+                          else stale_duration)
         norm_expires = timeutils.normalize_time(self.expires)
         # (gyee) should we move auth_token.will_expire_soon() to timeutils
         # instead of duplicating code here?
