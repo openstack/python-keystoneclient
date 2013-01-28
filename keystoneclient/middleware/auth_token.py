@@ -793,9 +793,8 @@ class AuthProtocol(object):
                 'Marking token %s as unauthorized in memcache', token)
             self._cache_store(token, 'invalid')
 
-    def cert_file_missing(self, called_proc_err, file_name):
-        return (called_proc_err.output.find(file_name)
-                and not os.path.exists(file_name))
+    def cert_file_missing(self, proc_output, file_name):
+        return (file_name in proc_output and not os.path.exists(file_name))
 
     def verify_uuid_token(self, user_token, retry=True):
         """Authenticate user token with keystone.
@@ -867,10 +866,11 @@ class AuthProtocol(object):
                 output = cms.cms_verify(data, self.signing_cert_file_name,
                                         self.ca_file_name)
             except cms.subprocess.CalledProcessError as err:
-                if self.cert_file_missing(err, self.signing_cert_file_name):
+                if self.cert_file_missing(err.output,
+                                          self.signing_cert_file_name):
                     self.fetch_signing_cert()
                     continue
-                if self.cert_file_missing(err, self.ca_file_name):
+                if self.cert_file_missing(err.output, self.ca_file_name):
                     self.fetch_ca_cert()
                     continue
                 raise err
