@@ -357,7 +357,6 @@ class HTTPClient(object):
         """ Makes an authenticated request to keystone endpoint by
         concatenating self.management_url and url and passing in method and
         any associated kwargs. """
-
         is_management = kwargs.pop('management', True)
 
         if is_management and self.management_url is None:

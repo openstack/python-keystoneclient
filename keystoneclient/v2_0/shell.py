@@ -486,10 +486,10 @@ def do_policy_create(kc, args):
     import json
     try:
         with open(args.policy,"r") as f:
-            blob = json.load(f)
+            blob = json.load(f,object_hook=utils.convert)
     except IOError as e:
         print "I/O error({0}): {1}".format(e.errno, e.strerror)
-    policy = kc.policies.create(blob, args.role_id,args.type)
+    policy = kc.policies.create(json.dumps(blob), args.role_id,args.type)
     utils.print_dict(policy._info,100)
 
 @utils.arg('id', metavar='<policy-id>', help='Policy ID to display')
@@ -511,5 +511,5 @@ def do_role_policy_get(kc, args):
 def do_policy_list(kc, args):
     """Display Policies associated with a tenant"""
     policies = kc.policies.list()
-    utils.print_list(policies, ['id', 'blob', 'type', 'role_id'],
+    utils.print_list(policies, ['id', 'type', 'role_id'],
                      order_by='id')

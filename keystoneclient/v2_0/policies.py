@@ -10,6 +10,7 @@ class Policy(base.Resource):
         * id: a uuid that identifies the policy
         * blob: a policy document (blob)
         * type: the mime type of the policy blob
+        * timestamp: the last modification timestamp
 
     """
     def update(self, blob=None, type=None):

@@ -15,15 +15,19 @@ def arg(*args, **kwargs):
         return func
     return _decorator
 
-def convert(string):
-    if isinstance(string, dict):
-        return {convert(key): convert(value) for key, value in string.iteritems()}
-    elif isinstance(string, list):
-        return [convert(element) for element in string]
-    elif isinstance(string, unicode):
-        return string.encode('utf-8')
+def convert(input):
+    if isinstance(input, dict):
+        ret = {}
+        for key in input:
+            key = key.encode('ascii')
+            ret[key] = convert(input.get(key))
+    elif isinstance(input, list):
+        ret = []
+        for i in range(len(input)):
+            ret.append(convert(input[i]))
     else:
-        return string
+        ret = input.encode('ascii')
+    return ret
 
 
 def pretty_choice_list(l):
