@@ -208,7 +208,8 @@ class Client(client.HTTPClient):
     # associated methods
     def _extract_service_catalog(self, url, body):
         """ Set the client's service catalog from the response data. """
-        self.service_catalog = service_catalog.ServiceCatalog(body)
+        self.service_catalog = service_catalog.ServiceCatalog(
+            body, region_name=self.region_name)
         try:
             sc = self.service_catalog.get_token()
             # Save these since we have them and they'll be useful later
