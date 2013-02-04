@@ -161,9 +161,9 @@ opts = [
     cfg.StrOpt('auth_protocol', default='https'),
     cfg.StrOpt('auth_uri', default=None),
     cfg.BoolOpt('delay_auth_decision', default=False),
-    cfg.StrOpt('admin_token'),
+    cfg.StrOpt('admin_token', secret=True),
     cfg.StrOpt('admin_user'),
-    cfg.StrOpt('admin_password'),
+    cfg.StrOpt('admin_password', secret=True),
     cfg.StrOpt('admin_tenant_name', default='admin'),
     cfg.StrOpt('cache', default=None),   # env key for the swift cache
     cfg.StrOpt('certfile'),
@@ -173,7 +173,7 @@ opts = [
     cfg.ListOpt('memcache_servers'),
     cfg.IntOpt('token_cache_time', default=300),
     cfg.StrOpt('memcache_security_strategy', default=None),
-    cfg.StrOpt('memcache_secret_key', default=None),
+    cfg.StrOpt('memcache_secret_key', default=None, secret=True),
 ]
 CONF.register_opts(opts, group='keystone_authtoken')
 
