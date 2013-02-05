@@ -341,7 +341,7 @@ class HTTPClient(object):
 
         self.http_log_resp(resp)
 
-        if resp.status_code in (400, 401, 403, 404, 408, 409, 413, 500, 501):
+        if resp.status_code >= 400:
             _logger.debug(
                 "Request returned failure status: %s",
                 resp.status_code)

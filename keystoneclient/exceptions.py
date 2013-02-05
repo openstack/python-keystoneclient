@@ -79,6 +79,14 @@ class NotFound(ClientException):
     message = "Not found"
 
 
+class MethodNotAllowed(ClientException):
+    """
+    HTTP 405 - Method not allowed
+    """
+    http_status = 405
+    message = "Method not allowed"
+
+
 class Conflict(ClientException):
     """
     HTTP 409 - Conflict
@@ -122,6 +130,7 @@ _code_map = dict((c.http_status, c) for c in [BadRequest,
                                               Unauthorized,
                                               Forbidden,
                                               NotFound,
+                                              MethodNotAllowed,
                                               OverLimit,
                                               HTTPNotImplemented,
                                               ServiceUnavailable])
