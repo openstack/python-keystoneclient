@@ -50,10 +50,6 @@ class HTTPClient(object):
 
     USER_AGENT = 'python-keystoneclient'
 
-    requests_config = {
-        'danger_mode': False,
-    }
-
     def __init__(self, username=None, tenant_id=None, tenant_name=None,
                  password=None, auth_url=None, region_name=None, timeout=None,
                  endpoint=None, token=None, cacert=None, key=None,
@@ -121,7 +117,8 @@ class HTTPClient(object):
             ch = logging.StreamHandler()
             _logger.setLevel(logging.DEBUG)
             _logger.addHandler(ch)
-            self.requests_config['verbose'] = sys.stderr
+            if hasattr(requests, logging):
+                requests.logging.getLogger(requests.__name__).addHandler(ch)
 
         # keyring setup
         self.use_keyring = use_keyring and keyring_available
@@ -336,7 +333,6 @@ class HTTPClient(object):
             method,
             url,
             verify=self.verify_cert,
-            config=self.requests_config,
             **request_kwargs)
 
         self.http_log_resp(resp)

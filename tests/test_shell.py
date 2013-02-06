@@ -327,8 +327,7 @@ class ShellTest(utils.TestCase):
             request_mock.assert_called_with(mock.ANY, mock.ANY,
                                             timeout=2,
                                             headers=mock.ANY,
-                                            verify=mock.ANY,
-                                            config=mock.ANY)
+                                            verify=mock.ANY)
 
     def test_do_endpoints(self):
         do_shell_mock = mock.MagicMock()
