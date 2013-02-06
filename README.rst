@@ -141,8 +141,8 @@ You'll find complete documentation on the shell by running ``keystone help``::
         user-role-list      List roles granted to a user
         user-role-remove    Remove role from user
         user-update         Update user's name, email, and enabled status
-        discover            Discover Keystone servers and show authentication
-                            protocols and
+        discover            Discover Keystone servers, supported API versions and
+                            extensions.
         bootstrap           Grants a new role to a new user on a new tenant, after
                             creating each.
         bash-completion     Prints all of the commands and options to stdout.
