@@ -23,9 +23,7 @@ CLIENT_CLASS = client.Client
 
 @utils.unauthenticated
 def do_discover(cs, args):
-    """
-    Discover Keystone servers and show authentication protocols and
-    extensions supported.
+    """Discover Keystone servers, supported API versions and extensions.
 
     Usage::
 
