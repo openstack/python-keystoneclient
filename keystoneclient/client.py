@@ -117,7 +117,7 @@ class HTTPClient(object):
             ch = logging.StreamHandler()
             _logger.setLevel(logging.DEBUG)
             _logger.addHandler(ch)
-            if hasattr(requests, logging):
+            if hasattr(requests, 'logging'):
                 requests.logging.getLogger(requests.__name__).addHandler(ch)
 
         # keyring setup
