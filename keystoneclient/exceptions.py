@@ -33,6 +33,11 @@ class EmptyCatalog(Exception):
     pass
 
 
+class NoUniqueMatch(Exception):
+    """Unable to find unique resource"""
+    pass
+
+
 class ClientException(Exception):
     """
     The base exception class for all exceptions this library raises.
