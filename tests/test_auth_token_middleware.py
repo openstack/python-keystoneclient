@@ -33,9 +33,9 @@ from keystoneclient.openstack.common import timeutils
 from keystoneclient.middleware import test
 
 
-CERTDIR = test.rootdir("python-keystoneclient/examples/pki/certs")
-KEYDIR = test.rootdir("python-keystoneclient/examples/pki/private")
-CMSDIR = test.rootdir("python-keystoneclient/examples/pki/cms")
+CERTDIR = test.rootdir('examples', 'pki', 'certs')
+KEYDIR = test.rootdir('examples', 'pki', 'private')
+CMSDIR = test.rootdir('examples', 'pki', 'cms')
 SIGNING_CERT = os.path.join(CERTDIR, 'signing_cert.pem')
 SIGNING_KEY = os.path.join(KEYDIR, 'signing_key.pem')
 CA = os.path.join(CERTDIR, 'ca.pem')
@@ -389,8 +389,6 @@ class BaseAuthTokenMiddlewareTest(testtools.TestCase):
         signed_list = 'SIGNED_REVOCATION_LIST'
         valid_signed_list = 'VALID_SIGNED_REVOCATION_LIST'
         globals()[signed_list] = globals()[valid_signed_list]
-
-        super(BaseAuthTokenMiddlewareTest, self).setUp()
 
     def tearDown(self):
         super(BaseAuthTokenMiddlewareTest, self).tearDown()
