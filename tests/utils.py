@@ -8,6 +8,8 @@ from keystoneclient.v2_0 import client
 
 
 class TestCase(testtools.TestCase):
+    TEST_DOMAIN_ID = '1'
+    TEST_DOMAIN_NAME = 'aDomain'
     TEST_TENANT_ID = '1'
     TEST_TENANT_NAME = 'aTenant'
     TEST_TOKEN = 'aToken'

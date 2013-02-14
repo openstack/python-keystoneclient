@@ -3,7 +3,7 @@ import datetime
 from keystoneclient import access
 from keystoneclient.openstack.common import timeutils
 from tests import utils
-from tests import client_fixtures
+from tests.v2_0 import client_fixtures
 
 UNSCOPED_TOKEN = client_fixtures.UNSCOPED_TOKEN
 PROJECT_SCOPED_TOKEN = client_fixtures.PROJECT_SCOPED_TOKEN
@@ -11,7 +11,7 @@ PROJECT_SCOPED_TOKEN = client_fixtures.PROJECT_SCOPED_TOKEN
 
 class AccessInfoTest(utils.TestCase):
     def test_building_unscoped_accessinfo(self):
-        auth_ref = access.AccessInfo(UNSCOPED_TOKEN['access'])
+        auth_ref = access.AccessInfo.factory(body=UNSCOPED_TOKEN)
 
         self.assertTrue(auth_ref)
         self.assertIn('token', auth_ref)
@@ -30,6 +30,8 @@ class AccessInfoTest(utils.TestCase):
         self.assertEquals(auth_ref.management_url, None)
 
         self.assertFalse(auth_ref.scoped)
+        self.assertFalse(auth_ref.domain_scoped)
+        self.assertFalse(auth_ref.project_scoped)
 
         self.assertEquals(auth_ref.expires, timeutils.parse_isotime(
                           UNSCOPED_TOKEN['access']['token']['expires']))
@@ -37,13 +39,13 @@ class AccessInfoTest(utils.TestCase):
     def test_will_expire_soon(self):
         expires = timeutils.utcnow() + datetime.timedelta(minutes=5)
         UNSCOPED_TOKEN['access']['token']['expires'] = expires.isoformat()
-        auth_ref = access.AccessInfo(UNSCOPED_TOKEN['access'])
+        auth_ref = access.AccessInfo.factory(body=UNSCOPED_TOKEN)
         self.assertFalse(auth_ref.will_expire_soon(stale_duration=120))
         self.assertTrue(auth_ref.will_expire_soon(stale_duration=300))
         self.assertFalse(auth_ref.will_expire_soon())
 
     def test_building_scoped_accessinfo(self):
-        auth_ref = access.AccessInfo(PROJECT_SCOPED_TOKEN['access'])
+        auth_ref = access.AccessInfo.factory(body=PROJECT_SCOPED_TOKEN)
 
         self.assertTrue(auth_ref)
         self.assertIn('token', auth_ref)
@@ -68,3 +70,5 @@ class AccessInfoTest(utils.TestCase):
                           ('http://admin:35357/v2.0',))
 
         self.assertTrue(auth_ref.scoped)
+        self.assertTrue(auth_ref.project_scoped)
+        self.assertFalse(auth_ref.domain_scoped)

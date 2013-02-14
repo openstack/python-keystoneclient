@@ -48,40 +48,160 @@ class HTTPClient(object):
                  endpoint=None, token=None, cacert=None, key=None,
                  cert=None, insecure=False, original_ip=None, debug=False,
                  auth_ref=None, use_keyring=False, force_new_token=False,
-                 stale_duration=None):
+                 stale_duration=None, user_id=None, user_domain_id=None,
+                 user_domain_name=None, domain_id=None, domain_name=None,
+                 project_id=None, project_name=None, project_domain_id=None,
+                 project_domain_name=None):
         """Construct a new http client
 
-        @param: timeout the request libary timeout in seconds (default None)
+        :param string user_id: User ID for authentication. (optional)
+        :param string username: Username for authentication. (optional)
+        :param string user_domain_id: User's domain ID for authentication.
+                                      (optional)
+        :param string user_domain_name: User's domain name for authentication.
+                                        (optional)
+        :param string password: Password for authentication. (optional)
+        :param string domain_id: Domain ID for domain scoping. (optional)
+        :param string domain_name: Domain name for domain scoping. (optional)
+        :param string project_id: Project ID for project scoping. (optional)
+        :param string project_name: Project name for project scoping.
+                                    (optional)
+        :param string project_domain_id: Project's domain ID for project
+                                         scoping. (optional)
+        :param string project_domain_name: Project's domain name for project
+                                           scoping. (optional)
+        :param string auth_url: Identity service endpoint for authorization.
+        :param string region_name: Name of a region to select when choosing an
+                                   endpoint from the service catalog.
+        :param integer timeout: Allows customization of the timeout for client
+                            http requests. (optional)
+        :param string endpoint: A user-supplied endpoint URL for the identity
+                                service.  Lazy-authentication is possible for
+                                API service calls if endpoint is set at
+                                instantiation. (optional)
+        :param string token: Token for authentication. (optional)
+        :param string cacert: Path to the Privacy Enhanced Mail (PEM) file
+                              which contains the trusted authority X.509
+                              certificates needed to established SSL connection
+                              with the identity service. (optional)
+        :param string key: Path to the Privacy Enhanced Mail (PEM) file which
+                           contains the unencrypted client private key needed
+                           to established two-way SSL connection with the
+                           identity service. (optional)
+        :param string cert: Path to the Privacy Enhanced Mail (PEM) file which
+                            contains the corresponding X.509 client certificate
+                            needed to established two-way SSL connection with
+                            the identity service. (optional)
+        :param boolean insecure: Does not perform X.509 certificate validation
+                                 when establishing SSL connection with identity
+                                 service. default: False (optional)
+        :param string original_ip: The original IP of the requesting user
+                                   which will be sent to identity service in a
+                                   'Forwarded' header. (optional)
+        :param boolean debug: Enables debug logging of all request and
+                              responses to identity service.
+                              default False (optional)
+        :param dict auth_ref: To allow for consumers of the client to manage
+                              their own caching strategy, you may initialize a
+                              client with a previously captured auth_reference
+                              (token). If there are keyword arguments passed
+                              that also exist in auth_ref, the value from the
+                              argument will take precedence.
+        :param boolean use_keyring: Enables caching auth_ref into keyring.
+                                    default: False (optional)
+        :param boolean force_new_token: Keyring related parameter, forces
+                                       request for new token.
+                                       default: False (optional)
+        :param integer stale_duration: Gap in seconds to determine if token
+                                       from keyring is about to expire.
+                                       default: 30 (optional)
+        :param string tenant_name: Tenant name. (optional)
+                                   The tenant_name keyword argument is
+                                   deprecated, use project_name instead.
+        :param string tenant_id: Tenant id. (optional)
+                                 The tenant_id keyword argument is
+                                 deprecated, use project_id instead.
 
         """
-        self.version = 'v2.0'
         # set baseline defaults
+
+        self.user_id = None
         self.username = None
-        self.tenant_id = None
-        self.tenant_name = None
+        self.user_domain_id = None
+        self.user_domain_name = None
+
+        self.domain_id = None
+        self.domain_name = None
+
+        self.project_id = None
+        self.project_name = None
+        self.project_domain_id = None
+        self.project_domain_name = None
+
         self.auth_url = None
         self.management_url = None
-        if timeout is not None:
-            self.timeout = float(timeout)
-        else:
-            self.timeout = None
+        self.timeout = float(timeout) if timeout is not None else None
+
         # if loading from a dictionary passed in via auth_ref,
         # load values from AccessInfo parsing that dictionary
-        self.auth_ref = access.AccessInfo(**auth_ref) if auth_ref else None
-        if self.auth_ref:
+        if auth_ref:
+            self.auth_ref = access.AccessInfo.factory(**auth_ref)
+            self.version = self.auth_ref.version
+            self.user_id = self.auth_ref.user_id
             self.username = self.auth_ref.username
-            self.tenant_id = self.auth_ref.tenant_id
-            self.tenant_name = self.auth_ref.tenant_name
+            self.user_domain_id = self.auth_ref.user_domain_id
+            self.domain_id = self.auth_ref.domain_id
+            self.domain_name = self.auth_ref.domain_name
+            self.project_id = self.auth_ref.project_id
+            self.project_name = self.auth_ref.project_name
+            self.project_domain_id = self.auth_ref.project_domain_id
             self.auth_url = self.auth_ref.auth_url[0]
             self.management_url = self.auth_ref.management_url[0]
+            self.auth_token = self.auth_ref.auth_token
+        else:
+            self.auth_ref = None
+
         # allow override of the auth_ref defaults from explicit
         # values provided to the client
+
+        # apply deprecated variables first, so modern variables override them
+        if tenant_id:
+            self.project_id = tenant_id
+        if tenant_name:
+            self.project_name = tenant_name
+
+        # user-related attributes
+        self.password = password
+        if user_id:
+            self.user_id = user_id
         if username:
             self.username = username
-        if tenant_id:
-            self.tenant_id = tenant_id
-        if tenant_name:
-            self.tenant_name = tenant_name
+        if user_domain_id:
+            self.user_domain_id = user_domain_id
+        elif not (user_id or user_domain_name):
+            self.user_domain_id = 'default'
+        if user_domain_name:
+            self.user_domain_name = user_domain_name
+
+        # domain-related attributes
+        if domain_id:
+            self.domain_id = domain_id
+        if domain_name:
+            self.domain_name = domain_name
+
+        # project-related attributes
+        if project_id:
+            self.project_id = project_id
+        if project_name:
+            self.project_name = project_name
+        if project_domain_id:
+            self.project_domain_id = project_domain_id
+        elif not (project_id or project_domain_name):
+            self.project_domain_id = 'default'
+        if project_domain_name:
+            self.project_domain_name = project_domain_name
+
+        # endpoint selection
         if auth_url:
             self.auth_url = auth_url.rstrip('/')
         if token:
@@ -90,9 +210,9 @@ class HTTPClient(object):
             self.auth_token_from_user = None
         if endpoint:
             self.management_url = endpoint.rstrip('/')
-        self.password = password
-        self.original_ip = original_ip
         self.region_name = region_name
+
+        self.original_ip = original_ip
         if cacert:
             self.verify_cert = cacert
         else:
@@ -138,19 +258,54 @@ class HTTPClient(object):
     def auth_token(self):
         del self.auth_token_from_user
 
+    @property
+    def service_catalog(self):
+        """Returns this client's service catalog."""
+        return self.auth_ref.service_catalog
+
+    def has_service_catalog(self):
+        """Returns True if this client provides a service catalog."""
+        return self.auth_ref.has_service_catalog()
+
+    @property
+    def tenant_id(self):
+        """Provide read-only backwards compatibility for tenant_id.
+           This is deprecated, use project_id instead.
+        """
+        return self.project_id
+
+    @property
+    def tenant_name(self):
+        """Provide read-only backwards compatibility for tenant_name.
+           This is deprecated, use project_name instead.
+        """
+        return self.project_name
+
     def authenticate(self, username=None, password=None, tenant_name=None,
-                     tenant_id=None, auth_url=None, token=None):
-        """ Authenticate user.
+                     tenant_id=None, auth_url=None, token=None,
+                     user_id=None, domain_name=None, domain_id=None,
+                     project_name=None, project_id=None, user_domain_id=None,
+                     user_domain_name=None, project_domain_id=None,
+                     project_domain_name=None):
+        """Authenticate user.
 
         Uses the data provided at instantiation to authenticate against
-        the Keystone server. This may use either a username and password
+        the Identity server. This may use either a username and password
         or token for authentication. If a tenant name or id was provided
         then the resulting authenticated client will be scoped to that
         tenant and contain a service catalog of available endpoints.
 
         With the v2.0 API, if a tenant name or ID is not provided, the
-        authenication token returned will be 'unscoped' and limited in
+        authentication token returned will be 'unscoped' and limited in
         capabilities until a fully-scoped token is acquired.
+
+        With the v3 API, if a domain name or id was provided then the resulting
+        authenticated client will be scoped to that domain. If a project name
+        or ID is not provided, and the authenticating user has a default
+        project configured, the authentication token returned will be 'scoped'
+        to the default project. Otherwise, the authentication token returned
+        will be 'unscoped' and limited in capabilities until a fully-scoped
+        token is acquired.
 
         If successful, sets the self.auth_ref and self.auth_token with
         the returned token. If not already set, will also set
@@ -173,10 +328,18 @@ class HTTPClient(object):
 
         """
         auth_url = auth_url or self.auth_url
+        user_id = user_id or self.user_id
         username = username or self.username
         password = password or self.password
-        tenant_name = tenant_name or self.tenant_name
-        tenant_id = tenant_id or self.tenant_id
+
+        user_domain_id = user_domain_id or self.user_domain_id
+        user_domain_name = user_domain_name or self.user_domain_name
+        domain_id = domain_id or self.domain_id
+        domain_name = domain_name or self.domain_name
+        project_id = project_id or tenant_id or self.project_id
+        project_name = project_name or tenant_name or self.project_name
+        project_domain_id = project_domain_id or self.project_domain_id
+        project_domain_name = project_domain_name or self.project_domain_name
 
         if not token:
             token = self.auth_token_from_user
@@ -184,21 +347,27 @@ class HTTPClient(object):
                     self.auth_ref.will_expire_soon(self.stale_duration)):
                 token = self.auth_ref.auth_token
 
-        (keyring_key, auth_ref) = self.get_auth_ref_from_keyring(auth_url,
-                                                                 username,
-                                                                 tenant_name,
-                                                                 tenant_id,
-                                                                 token)
+        kwargs = {
+            'auth_url': auth_url,
+            'user_id': user_id,
+            'username': username,
+            'user_domain_id': user_domain_id,
+            'user_domain_name': user_domain_name,
+            'domain_id': domain_id,
+            'domain_name': domain_name,
+            'project_id': project_id,
+            'project_name': project_name,
+            'project_domain_id': project_domain_id,
+            'project_domain_name': project_domain_name,
+            'token': token
+        }
+        (keyring_key, auth_ref) = self.get_auth_ref_from_keyring(**kwargs)
         new_token_needed = False
         if auth_ref is None or self.force_new_token:
             new_token_needed = True
-            raw_token = self.get_raw_token_from_identity_service(auth_url,
-                                                                 username,
-                                                                 password,
-                                                                 tenant_name,
-                                                                 tenant_id,
-                                                                 token)
-            self.auth_ref = access.AccessInfo(**raw_token)
+            kwargs['password'] = password
+            resp, body = self.get_raw_token_from_identity_service(**kwargs)
+            self.auth_ref = access.AccessInfo.factory(resp, body)
         else:
             self.auth_ref = auth_ref
         self.process_token()
@@ -206,23 +375,18 @@ class HTTPClient(object):
             self.store_auth_ref_into_keyring(keyring_key)
         return True
 
-    def _build_keyring_key(self, auth_url, username, tenant_name,
-                           tenant_id, token):
-        """ Create a unique key for keyring.
+    def _build_keyring_key(self, **kwargs):
+        """Create a unique key for keyring.
 
         Used to store and retrieve auth_ref from keyring.
 
-        """
-        keys = [auth_url, username, tenant_name, tenant_id, token]
-        for index, key in enumerate(keys):
-            if key is None:
-                keys[index] = '?'
-        keyring_key = '/'.join(keys)
-        return keyring_key
+        Returns a slash-separated string of values ordered by key name.
 
-    def get_auth_ref_from_keyring(self, auth_url, username, tenant_name,
-                                  tenant_id, token):
-        """ Retrieve auth_ref from keyring.
+        """
+        return '/'.join([kwargs[k] or '?' for k in sorted(kwargs.keys())])
+
+    def get_auth_ref_from_keyring(self, **kwargs):
+        """Retrieve auth_ref from keyring.
 
         If auth_ref is found in keyring, (keyring_key, auth_ref) is returned.
         Otherwise, (keyring_key, None) is returned.
@@ -234,9 +398,7 @@ class HTTPClient(object):
         keyring_key = None
         auth_ref = None
         if self.use_keyring:
-            keyring_key = self._build_keyring_key(auth_url, username,
-                                                  tenant_name, tenant_id,
-                                                  token)
+            keyring_key = self._build_keyring_key(**kwargs)
             try:
                 auth_ref = keyring.get_password("keystoneclient_auth",
                                                 keyring_key)
@@ -252,7 +414,7 @@ class HTTPClient(object):
         return (keyring_key, auth_ref)
 
     def store_auth_ref_into_keyring(self, keyring_key):
-        """ Store auth_ref into keyring.
+        """Store auth_ref into keyring.
 
         """
         if self.use_keyring:
@@ -264,30 +426,36 @@ class HTTPClient(object):
                 _logger.warning("Failed to store token into keyring %s" % (e))
 
     def process_token(self):
-        """ Extract and process information from the new auth_ref.
+        """Extract and process information from the new auth_ref.
 
         """
         raise NotImplementedError
 
     def get_raw_token_from_identity_service(self, auth_url, username=None,
                                             password=None, tenant_name=None,
-                                            tenant_id=None, token=None):
-        """ Authenticate against the Identity API and get a token.
+                                            tenant_id=None, token=None,
+                                            user_id=None, user_domain_id=None,
+                                            user_domain_name=None,
+                                            domain_id=None, domain_name=None,
+                                            project_id=None, project_name=None,
+                                            project_domain_id=None,
+                                            project_domain_name=None):
+        """Authenticate against the Identity API and get a token.
 
         Not implemented here because auth protocols should be API
         version-specific.
 
         Expected to authenticate or validate an existing authentication
         reference already associated with the client. Invoking this call
-        *always* makes a call to the Keystone.
+        *always* makes a call to the Identity service.
 
-        :returns: ``raw token``
+        :returns: (``resp``, ``body``)
 
         """
         raise NotImplementedError
 
     def _extract_service_catalog(self, url, body):
-        """ Set the client's service catalog from the response data.
+        """Set the client's service catalog from the response data.
 
         Not implemented here because data returned may be API
         version-specific.
@@ -334,7 +502,7 @@ class HTTPClient(object):
         return self.auth_ref.has_service_catalog()
 
     def request(self, url, method, **kwargs):
-        """ Send an http request with the specified characteristics.
+        """Send an http request with the specified characteristics.
 
         Wrapper around requests.request to handle tasks such as
         setting headers, JSON encoding/decoding, and error handling.
@@ -392,9 +560,10 @@ class HTTPClient(object):
         return resp, body
 
     def _cs_request(self, url, method, **kwargs):
-        """ Makes an authenticated request to keystone endpoint by
+        """Makes an authenticated request to keystone endpoint by
         concatenating self.management_url and url and passing in method and
-        any associated kwargs. """
+        any associated kwargs.
+        """
 
         is_management = kwargs.pop('management', True)
 

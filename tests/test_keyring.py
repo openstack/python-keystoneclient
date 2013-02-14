@@ -4,7 +4,7 @@ import unittest
 from keystoneclient import access
 from keystoneclient import client
 from keystoneclient.openstack.common import timeutils
-from tests import client_fixtures
+from tests.v2_0 import client_fixtures
 from tests import utils
 
 try:
@@ -65,11 +65,12 @@ class KeyringTest(utils.TestCase):
         cl = client.HTTPClient(username=USERNAME, password=PASSWORD,
                                tenant_id=TENANT_ID, auth_url=AUTH_URL)
 
-        (keyring_key, auth_ref) = cl.get_auth_ref_from_keyring(AUTH_URL,
-                                                               USERNAME,
-                                                               TENANT,
-                                                               TENANT_ID,
-                                                               TOKEN)
+        (keyring_key, auth_ref) = cl.get_auth_ref_from_keyring(
+            auth_url=AUTH_URL,
+            username=USERNAME,
+            tenant_name=TENANT,
+            tenant_id=TENANT_ID,
+            token=TOKEN)
 
         self.assertIsNone(keyring_key)
         self.assertIsNone(auth_ref)
@@ -78,49 +79,57 @@ class KeyringTest(utils.TestCase):
         cl = client.HTTPClient(username=USERNAME, password=PASSWORD,
                                tenant_id=TENANT_ID, auth_url=AUTH_URL)
 
-        keyring_key = cl._build_keyring_key(AUTH_URL, USERNAME,
-                                            TENANT, TENANT_ID,
-                                            TOKEN)
+        keyring_key = cl._build_keyring_key(auth_url=AUTH_URL,
+                                            username=USERNAME,
+                                            tenant_name=TENANT,
+                                            tenant_id=TENANT_ID,
+                                            token=TOKEN)
 
         self.assertEqual(keyring_key,
                          '%s/%s/%s/%s/%s' %
-                         (AUTH_URL, USERNAME, TENANT, TENANT_ID, TOKEN))
+                         (AUTH_URL, TENANT_ID, TENANT, TOKEN, USERNAME))
 
     def test_set_and_get_keyring_expired(self):
         cl = client.HTTPClient(username=USERNAME, password=PASSWORD,
                                tenant_id=TENANT_ID, auth_url=AUTH_URL,
                                use_keyring=True)
-        keyring_key = cl._build_keyring_key(AUTH_URL, USERNAME,
-                                            TENANT, TENANT_ID,
-                                            TOKEN)
+        keyring_key = cl._build_keyring_key(auth_url=AUTH_URL,
+                                            username=USERNAME,
+                                            tenant_name=TENANT,
+                                            tenant_id=TENANT_ID,
+                                            token=TOKEN)
 
-        cl.auth_ref = access.AccessInfo(PROJECT_SCOPED_TOKEN['access'])
+        cl.auth_ref = access.AccessInfo.factory(body=PROJECT_SCOPED_TOKEN)
         expired = timeutils.utcnow() - datetime.timedelta(minutes=30)
         cl.auth_ref['token']['expires'] = timeutils.isotime(expired)
         cl.store_auth_ref_into_keyring(keyring_key)
-        (keyring_key, auth_ref) = cl.get_auth_ref_from_keyring(AUTH_URL,
-                                                               USERNAME,
-                                                               TENANT,
-                                                               TENANT_ID,
-                                                               TOKEN)
+        (keyring_key, auth_ref) = cl.get_auth_ref_from_keyring(
+            auth_url=AUTH_URL,
+            username=USERNAME,
+            tenant_name=TENANT,
+            tenant_id=TENANT_ID,
+            token=TOKEN)
         self.assertIsNone(auth_ref)
 
     def test_set_and_get_keyring(self):
         cl = client.HTTPClient(username=USERNAME, password=PASSWORD,
                                tenant_id=TENANT_ID, auth_url=AUTH_URL,
                                use_keyring=True)
-        keyring_key = cl._build_keyring_key(AUTH_URL, USERNAME,
-                                            TENANT, TENANT_ID,
-                                            TOKEN)
+        keyring_key = cl._build_keyring_key(auth_url=AUTH_URL,
+                                            username=USERNAME,
+                                            tenant_name=TENANT,
+                                            tenant_id=TENANT_ID,
+                                            token=TOKEN)
 
-        cl.auth_ref = access.AccessInfo(PROJECT_SCOPED_TOKEN['access'])
+        cl.auth_ref = access.AccessInfo.factory(body=PROJECT_SCOPED_TOKEN)
         expires = timeutils.utcnow() + datetime.timedelta(minutes=30)
         cl.auth_ref['token']['expires'] = timeutils.isotime(expires)
         cl.store_auth_ref_into_keyring(keyring_key)
-        (keyring_key, auth_ref) = cl.get_auth_ref_from_keyring(AUTH_URL,
-                                                               USERNAME,
-                                                               TENANT,
-                                                               TENANT_ID,
-                                                               TOKEN)
+        (keyring_key, auth_ref) = cl.get_auth_ref_from_keyring(
+            auth_url=AUTH_URL,
+            username=USERNAME,
+            tenant_name=TENANT,
+            tenant_id=TENANT_ID,
+            token=TOKEN)
         self.assertEqual(auth_ref.auth_token, TOKEN)
         self.assertEqual(auth_ref.username, USERNAME)

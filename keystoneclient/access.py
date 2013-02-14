@@ -20,13 +20,41 @@ import datetime
 from keystoneclient.openstack.common import timeutils
 from keystoneclient import service_catalog
 
+
 # gap, in seconds, to determine whether the given token is about to expire
 STALE_TOKEN_DURATION = 30
 
 
 class AccessInfo(dict):
-    """An object for encapsulating a raw authentication token from keystone
-    and helper methods for extracting useful values from that token."""
+    """Encapsulates a raw authentication token from keystone.
+
+    Provides helper methods for extracting useful values from that token.
+
+    """
+
+    @classmethod
+    def factory(cls, resp=None, body=None, **kwargs):
+        """Create AccessInfo object given a successful auth response & body
+           or a user-provided dict.
+        """
+        if body is not None or len(kwargs):
+            if AccessInfoV3.is_valid(body, **kwargs):
+                token = None
+                if resp:
+                    token = resp.headers['X-Subject-Token']
+                if body:
+                    return AccessInfoV3(token, **body['token'])
+                else:
+                    return AccessInfoV3(token, **kwargs)
+            elif AccessInfoV2.is_valid(body, **kwargs):
+                if body:
+                    return AccessInfoV2(**body['access'])
+                else:
+                    return AccessInfoV2(**kwargs)
+            else:
+                raise NotImplementedError('Unrecognized auth response')
+        else:
+            return AccessInfoV2(**kwargs)
 
     def __init__(self, *args, **kwargs):
         super(AccessInfo, self).__init__(*args, **kwargs)
@@ -37,7 +65,7 @@ class AccessInfo(dict):
         return 'serviceCatalog' in self
 
     def will_expire_soon(self, stale_duration=None):
-        """ Determines if expiration is about to occur.
+        """Determines if expiration is about to occur.
 
         :return: boolean : true if expiration is within the given duration
 
@@ -51,71 +79,243 @@ class AccessInfo(dict):
                 seconds=stale_duration))
         return norm_expires < soon
 
-    @property
-    def expires(self):
-        """ Returns the token expiration (as datetime object)
+    @classmethod
+    def is_valid(cls, body, **kwargs):
+        """Determines if processing v2 or v3 token given a successful
+        auth body or a user-provided dict.
 
-        :returns: datetime
-
+        :return: boolean : true if auth body matches implementing class
         """
-        return timeutils.parse_isotime(self['token']['expires'])
+        raise NotImplementedError()
+
+    def has_service_catalog(self):
+        """Returns true if the authorization token has a service catalog.
+
+        :returns: boolean
+        """
+        raise NotImplementedError()
 
     @property
     def auth_token(self):
-        """ Returns the token_id associated with the auth request, to be used
+        """Returns the token_id associated with the auth request, to be used
         in headers for authenticating OpenStack API requests.
 
         :returns: str
         """
-        return self['token'].get('id', None)
+        raise NotImplementedError()
+
+    @property
+    def expires(self):
+        """Returns the token expiration (as datetime object)
+
+        :returns: datetime
+        """
+        raise NotImplementedError()
 
     @property
     def username(self):
-        """ Returns the username associated with the authentication request.
+        """Returns the username associated with the authentication request.
         Follows the pattern defined in the V2 API of first looking for 'name',
         returning that if available, and falling back to 'username' if name
         is unavailable.
 
         :returns: str
         """
-        name = self['user'].get('name', None)
-        if name:
-            return name
-        else:
-            return self['user'].get('username', None)
+        raise NotImplementedError()
 
     @property
     def user_id(self):
-        """ Returns the user id associated with the authentication request.
+        """Returns the user id associated with the authentication request.
 
         :returns: str
         """
-        return self['user'].get('id', None)
+        raise NotImplementedError()
 
     @property
-    def tenant_name(self):
-        """ Returns the tenant (project) name associated with the
-        authentication request.
+    def user_domain_id(self):
+        """Returns the domain id of the user associated with the authentication
+           request.
 
+           For v2, it always returns 'default' which maybe different from the
+           Keystone configuration.
         :returns: str
         """
-        tenant_dict = self['token'].get('tenant', None)
-        if tenant_dict:
-            return tenant_dict.get('name', None)
-        return None
+        raise NotImplementedError()
+
+    @property
+    def domain_name(self):
+        """Returns the domain name associated with the authentication token.
+
+        :returns: str or None (if no domain associated with the token)
+        """
+        raise NotImplementedError()
+
+    @property
+    def domain_id(self):
+        """Returns the domain id associated with the authentication token.
+
+        :returns: str or None (if no domain associated with the token)
+        """
+        raise NotImplementedError()
 
     @property
     def project_name(self):
-        """ Synonym for tenant_name """
-        return self.tenant_name
+        """Returns the project name associated with the authentication request.
+
+        :returns: str or None (if no project associated with the token)
+        """
+        raise NotImplementedError()
+
+    @property
+    def tenant_name(self):
+        """Synonym for project_name"""
+        return self.project_name
 
     @property
     def scoped(self):
         """ Returns true if the authorization token was scoped to a tenant
-        (project), and contains a populated service catalog.
+            (project), and contains a populated service catalog.
+
+            This is deprecated, use project_scoped instead.
 
         :returns: bool
         """
+        raise NotImplementedError()
+
+    @property
+    def project_scoped(self):
+        """ Returns true if the authorization token was scoped to a tenant
+            (project).
+
+        :returns: bool
+        """
+        raise NotImplementedError()
+
+    @property
+    def domain_scoped(self):
+        """ Returns true if the authorization token was scoped to a domain.
+
+        :returns: bool
+        """
+        raise NotImplementedError()
+
+    @property
+    def project_id(self):
+        """Returns the project ID associated with the authentication
+        request, or None if the authentication request wasn't scoped to a
+        project.
+
+        :returns: str or None ((if no project associated with the token)
+        """
+        raise NotImplementedError()
+
+    @property
+    def tenant_id(self):
+        """Synonym for project_id """
+        return self.project_id
+
+    @property
+    def project_domain_id(self):
+        """Returns the domain id of the project associated with the
+           authentication request.
+
+           For v2, it always returns 'default' which maybe different from the
+           keystone configuration.
+        :returns: str
+        """
+        raise NotImplementedError()
+
+    @property
+    def auth_url(self):
+        """Returns a tuple of URLs from publicURL and adminURL for the service
+        'identity' from the service catalog associated with the authorization
+        request. If the authentication request wasn't scoped to a tenant
+        (project), this property will return None.
+
+        :returns: tuple of urls
+        """
+        raise NotImplementedError()
+
+    @property
+    def management_url(self):
+        """Returns the first adminURL for 'identity' from the service catalog
+        associated with the authorization request, or None if the
+        authentication request wasn't scoped to a tenant (project).
+
+        :returns: tuple of urls
+        """
+        raise NotImplementedError()
+
+    @property
+    def version(self):
+        """Returns the version of the auth token from identity service.
+
+        :returns: str
+        """
+        return self.get('version')
+
+
+class AccessInfoV2(AccessInfo):
+    """An object for encapsulating a raw v2 auth token from identity
+       service.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(AccessInfo, self).__init__(*args, **kwargs)
+        self.update(version='v2.0')
+        self.service_catalog = service_catalog.ServiceCatalog.factory(
+            resource_dict=self,
+            token=self['token']['id'],
+            region_name=self.get('region_name'))
+
+    @classmethod
+    def is_valid(cls, body, **kwargs):
+        if body:
+            return 'access' in body
+        elif kwargs:
+            return kwargs.get('version') == 'v2.0'
+        else:
+            return False
+
+    def has_service_catalog(self):
+        return 'serviceCatalog' in self
+
+    @property
+    def auth_token(self):
+        return self['token']['id']
+
+    @property
+    def expires(self):
+        return timeutils.parse_isotime(self['token']['expires'])
+
+    @property
+    def username(self):
+        return self['user'].get('name', self['user'].get('username'))
+
+    @property
+    def user_id(self):
+        return self['user']['id']
+
+    @property
+    def user_domain_id(self):
+        return 'default'
+
+    @property
+    def domain_name(self):
+        return None
+
+    @property
+    def domain_id(self):
+        return None
+
+    @property
+    def project_name(self):
+        tenant_dict = self['token'].get('tenant', None)
+        if tenant_dict:
+            return tenant_dict.get('name', None)
+
+    @property
+    def scoped(self):
         if ('serviceCatalog' in self
                 and self['serviceCatalog']
                 and 'tenant' in self['token']):
@@ -123,51 +323,143 @@ class AccessInfo(dict):
         return False
 
     @property
-    def tenant_id(self):
-        """ Returns the tenant (project) id associated with the authentication
-        request, or None if the authentication request wasn't scoped to a
-        tenant (project).
+    def project_scoped(self):
+        return 'tenant' in self['token']
 
-        :returns: str
-        """
+    @property
+    def domain_scoped(self):
+        return False
+
+    @property
+    def project_id(self):
         tenant_dict = self['token'].get('tenant', None)
         if tenant_dict:
             return tenant_dict.get('id', None)
         return None
 
     @property
-    def project_id(self):
-        """ Synonym for project_id """
-        return self.tenant_id
-
-    def _get_identity_endpoint(self, endpoint_type):
-        if not self.get('serviceCatalog'):
-            return
-
-        identity_services = [x for x in self['serviceCatalog']
-                             if x['type'] == 'identity']
-        return tuple(endpoint[endpoint_type]
-                     for svc in identity_services
-                     for endpoint in svc['endpoints']
-                     if endpoint_type in endpoint)
+    def project_domain_id(self):
+        if self.project_id:
+            return 'default'
 
     @property
     def auth_url(self):
-        """ Returns a tuple of URLs from publicURL and adminURL for the service
-        'identity' from the service catalog associated with the authorization
-        request. If the authentication request wasn't scoped to a tenant
-        (project), this property will return None.
-
-        :returns: tuple of urls
-        """
-        return self._get_identity_endpoint('publicURL')
+        if self.service_catalog:
+            return self.service_catalog.get_urls(service_type='identity',
+                                                 endpoint_type='publicURL')
+        else:
+            return None
 
     @property
     def management_url(self):
-        """ Returns the first adminURL for 'identity' from the service catalog
-        associated with the authorization request, or None if the
-        authentication request wasn't scoped to a tenant (project).
+        if self.service_catalog:
+            return self.service_catalog.get_urls(service_type='identity',
+                                                 endpoint_type='adminURL')
+        else:
+            return None
 
-        :returns: tuple of urls
-        """
-        return self._get_identity_endpoint('adminURL')
+
+class AccessInfoV3(AccessInfo):
+    """An object for encapsulating a raw v3 auth token from identity
+       service.
+    """
+
+    def __init__(self, token, *args, **kwargs):
+        super(AccessInfo, self).__init__(*args, **kwargs)
+        self.update(version='v3')
+        self.service_catalog = service_catalog.ServiceCatalog.factory(
+            resource_dict=self,
+            token=token,
+            region_name=self.get('region_name'))
+        if token:
+            self.update(auth_token=token)
+
+    @classmethod
+    def is_valid(cls, body, **kwargs):
+        if body:
+            return 'token' in body
+        elif kwargs:
+            return kwargs.get('version') == 'v3'
+        else:
+            return False
+
+    def has_service_catalog(self):
+        return 'catalog' in self
+
+    @property
+    def auth_token(self):
+        return self['auth_token']
+
+    @property
+    def expires(self):
+        return timeutils.parse_isotime(self['expires_at'])
+
+    @property
+    def user_id(self):
+        return self['user']['id']
+
+    @property
+    def user_domain_id(self):
+        return self['user']['domain']['id']
+
+    @property
+    def username(self):
+        return self['user']['name']
+
+    @property
+    def domain_name(self):
+        domain = self.get('domain')
+        if domain:
+            return domain['name']
+
+    @property
+    def domain_id(self):
+        domain = self.get('domain')
+        if domain:
+            return domain['id']
+
+    @property
+    def project_id(self):
+        project = self.get('project')
+        if project:
+            return project['id']
+
+    @property
+    def project_domain_id(self):
+        project = self.get('project')
+        if project:
+            return project['domain']['id']
+
+    @property
+    def project_name(self):
+        project = self.get('project')
+        if project:
+            return project['name']
+
+    @property
+    def scoped(self):
+        return ('catalog' in self and self['catalog'] and 'project' in self)
+
+    @property
+    def project_scoped(self):
+        return 'project' in self
+
+    @property
+    def domain_scoped(self):
+        return 'domain' in self
+
+    @property
+    def auth_url(self):
+        if self.service_catalog:
+            return self.service_catalog.get_urls(service_type='identity',
+                                                 endpoint_type='public')
+        else:
+            return None
+
+    @property
+    def management_url(self):
+        if self.service_catalog:
+            return self.service_catalog.get_urls(service_type='identity',
+                                                 endpoint_type='admin')
+        else:
+            return None

@@ -1,8 +1,8 @@
 import copy
 import json
-import uuid
 import time
 import urlparse
+import uuid
 
 import mox
 import requests
@@ -32,6 +32,9 @@ class TestClient(client.Client):
 
 
 class TestCase(testtools.TestCase):
+    TEST_DOMAIN_ID = '1'
+    TEST_DOMAIN_NAME = 'aDomain'
+    TEST_TENANT_ID = '1'
     TEST_TENANT_NAME = 'aTenant'
     TEST_TOKEN = 'aToken'
     TEST_USER = 'test'
@@ -42,6 +45,84 @@ class TestCase(testtools.TestCase):
     TEST_REQUEST_BASE = {
         'verify': True,
     }
+
+    TEST_SERVICE_CATALOG = [{
+        "endpoints": [{
+            "url": "http://cdn.admin-nets.local:8774/v1.0/",
+            "region": "RegionOne",
+            "interface": "public"
+        }, {
+            "url": "http://127.0.0.1:8774/v1.0",
+            "region": "RegionOne",
+            "interface": "internal"
+        }, {
+            "url": "http://cdn.admin-nets.local:8774/v1.0",
+            "region": "RegionOne",
+            "interface": "admin"
+        }],
+        "type": "nova_compat"
+    }, {
+        "endpoints": [{
+            "url": "http://nova/novapi/public",
+            "region": "RegionOne",
+            "interface": "public"
+        }, {
+            "url": "http://nova/novapi/internal",
+            "region": "RegionOne",
+            "interface": "internal"
+        }, {
+            "url": "http://nova/novapi/admin",
+            "region": "RegionOne",
+            "interface": "admin"
+        }],
+        "type": "compute"
+    }, {
+        "endpoints": [{
+            "url": "http://glance/glanceapi/public",
+            "region": "RegionOne",
+            "interface": "public"
+        }, {
+            "url": "http://glance/glanceapi/internal",
+            "region": "RegionOne",
+            "interface": "internal"
+        }, {
+            "url": "http://glance/glanceapi/admin",
+            "region": "RegionOne",
+            "interface": "admin"
+        }],
+        "type": "image",
+        "name": "glance"
+    }, {
+        "endpoints": [{
+            "url": "http://127.0.0.1:5000/v3",
+            "region": "RegionOne",
+            "interface": "public"
+        }, {
+            "url": "http://127.0.0.1:5000/v3",
+            "region": "RegionOne",
+            "interface": "internal"
+        }, {
+            "url": "http://127.0.0.1:35357/v3",
+            "region": "RegionOne",
+            "interface": "admin"
+        }],
+        "type": "identity"
+    }, {
+        "endpoints": [{
+            "url": "http://swift/swiftapi/public",
+            "region": "RegionOne",
+            "interface": "public"
+        }, {
+            "url": "http://swift/swiftapi/internal",
+            "region": "RegionOne",
+            "interface": "internal"
+        }, {
+            "url": "http://swift/swiftapi/admin",
+            "region": "RegionOne",
+            "interface": "admin"
+        }],
+        "type": "object-store"
+    }]
 
     def setUp(self):
         super(TestCase, self).setUp()

@@ -65,37 +65,46 @@ class FakeClient(object):
     def authenticate(self, cl_obj):
         cl_obj.user_id = '1'
         cl_obj.auth_user_id = '1'
-        cl_obj.tenant_id = '1'
+        cl_obj.project_id = '1'
         cl_obj.auth_tenant_id = '1'
-        cl_obj.auth_ref = access.AccessInfo({
-            "token": {
-                "expires": "2012-02-05T00:00:00",
-                "id": "887665443383838",
-                "tenant": {
+        cl_obj.auth_ref = access.AccessInfo.factory(None, {
+            "access": {
+                "token": {
+                    "expires": "2012-02-05T00:00:00",
+                    "id": "887665443383838",
+                    "tenant": {
+                        "id": "1",
+                        "name": "customer-x"
+                    }
+                },
+                "serviceCatalog": [{
+                    "endpoints": [{
+                        "adminURL": "http://swift.admin-nets.local:8080/",
+                        "region": "RegionOne",
+                        "internalURL": "http://127.0.0.1:8080/v1/AUTH_1",
+                        "publicURL":
+                        "http://swift.publicinternets.com/v1/AUTH_1"
+                    }],
+                    "type": "object-store",
+                    "name": "swift"
+                }, {
+                    "endpoints": [{
+                        "adminURL": "http://cdn.admin-nets.local/v1.1/1",
+                        "region": "RegionOne",
+                        "internalURL": "http://127.0.0.1:7777/v1.1/1",
+                        "publicURL": "http://cdn.publicinternets.com/v1.1/1"
+                    }],
+                    "type": "object-store",
+                    "name": "cdn"
+                }],
+                "user": {
                     "id": "1",
-                    "name": "customer-x"}},
-            "serviceCatalog": [
-                {"endpoints": [
-                    {"adminURL": "http://swift.admin-nets.local:8080/",
-                     "region": "RegionOne",
-                     "internalURL": "http://127.0.0.1:8080/v1/AUTH_1",
-                     "publicURL":
-                     "http://swift.publicinternets.com/v1/AUTH_1"}],
-                "type": "object-store",
-                "name": "swift"},
-            {"endpoints": [
-                {"adminURL": "http://cdn.admin-nets.local/v1.1/1",
-                 "region": "RegionOne",
-                 "internalURL": "http://127.0.0.1:7777/v1.1/1",
-                 "publicURL": "http://cdn.publicinternets.com/v1.1/1"}],
-                "type": "object-store",
-                "name": "cdn"}],
-            "user": {
-            "id": "1",
-            "roles": [
-                {"tenantId": "1",
-                 "id": "3",
-                 "name": "Member"}],
-                "name": "joeuser"}
-        }
-        )
+                    "roles": [{
+                        "tenantId": "1",
+                        "id": "3",
+                        "name": "Member"
+                    }],
+                    "name": "joeuser"
+                }
+            }
+        })
