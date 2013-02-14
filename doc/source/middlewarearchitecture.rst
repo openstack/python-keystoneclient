@@ -184,6 +184,8 @@ Configuration Options
 * ``delay_auth_decision``: (optional, default `0`) (off). If on, the middleware
   will not reject invalid auth requests, but will delegate that decision to
   downstream WSGI components.
+* ``http_connect_timeout``: (optional, default `python default` allow increase
+  the timeout when validating token by http).
 * ``auth_port``: (optional, default `35357`) the port used to validate tokens
 * ``auth_protocol``: (optional, default `https`)
 * ``auth_uri``: (optional, defaults to `auth_protocol`://`auth_host`:`auth_port`)
