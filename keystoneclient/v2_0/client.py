@@ -14,7 +14,6 @@
 #    under the License.
 import logging
 
-from keystoneclient import access
 from keystoneclient import client
 from keystoneclient import exceptions
 from keystoneclient import service_catalog
