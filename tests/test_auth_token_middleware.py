@@ -290,7 +290,7 @@ class FakeHTTPConnection(object):
 
     last_requested_url = ''
 
-    def __init__(self, *args):
+    def __init__(self, *args, **kwargs):
         self.send_valid_revocation_list = True
 
     def request(self, method, path, **kwargs):

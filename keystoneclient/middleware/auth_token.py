@@ -161,6 +161,7 @@ opts = [
     cfg.StrOpt('auth_protocol', default='https'),
     cfg.StrOpt('auth_uri', default=None),
     cfg.BoolOpt('delay_auth_decision', default=False),
+    cfg.BoolOpt('http_connect_timeout', default=None),
     cfg.StrOpt('admin_token', secret=True),
     cfg.StrOpt('admin_user'),
     cfg.StrOpt('admin_password', secret=True),
@@ -287,6 +288,9 @@ class AuthProtocol(object):
         self._token_revocation_list_fetched_time = None
         cache_timeout = datetime.timedelta(seconds=0)
         self.token_revocation_list_cache_timeout = cache_timeout
+        http_connect_timeout_cfg = self._conf_get('http_connect_timeout')
+        self.http_connect_timeout = (http_connect_timeout_cfg and
+                                     int(http_connect_timeout_cfg))
 
     def _assert_valid_memcache_protection_config(self):
         if self._memcache_security_strategy:
@@ -439,12 +443,14 @@ class AuthProtocol(object):
 
     def _get_http_connection(self):
         if self.auth_protocol == 'http':
-            return self.http_client_class(self.auth_host, self.auth_port)
+            return self.http_client_class(self.auth_host, self.auth_port,
+                                          timeout=self.http_connect_timeout)
         else:
             return self.http_client_class(self.auth_host,
                                           self.auth_port,
                                           self.key_file,
-                                          self.cert_file)
+                                          self.cert_file,
+                                          timeout=self.http_connect_timeout)
 
     def _http_request(self, method, path):
         """HTTP request helper used to make unspecified content type requests.
