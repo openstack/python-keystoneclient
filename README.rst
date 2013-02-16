@@ -153,7 +153,7 @@ You'll find complete documentation on the shell by running ``keystone help``::
                             subcommands.
 
     Optional arguments:
-    --version               show program's version number and exit
+    --version               Shows the client version and exits
     --timeout <seconds>     Set request timeout (in seconds)
     --os-username <auth-user-name>
                             Name used for authentication with the OpenStack
@@ -192,11 +192,11 @@ You'll find complete documentation on the shell by running ``keystone help``::
     --os-cert <certificate>
                             Defaults to env[OS_CERT]
     --os-key <key>          Defaults to env[OS_KEY]
-    --os-cache              Use the auth token cache. Default to env[OS_CACHE]
-    --force-new-token       If keyring is available and in used, token will always
-                            be stored and fetched from the keyring, until the
-                            token has expired. Use this option to request a new
-                            token and replace the existing one in keyring.
+    --os-cache              Use the auth token cache. Defaults to env[OS_CACHE]
+    --force-new-token       If the keyring is available and in use, token will
+                            always be stored and fetched from the keyring until
+                            the token has expired. Use this option to request a
+                            new token and replace the existing one in the keyring.
     --stale-duration <seconds>
                             Stale duration (in seconds) used to determine whether
                             a token has expired when retrieving it from keyring.
