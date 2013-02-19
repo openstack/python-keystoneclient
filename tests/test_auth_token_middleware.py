@@ -363,7 +363,7 @@ class FakeApp(object):
 class BaseAuthTokenMiddlewareTest(testtools.TestCase):
 
     def setUp(self, expected_env=None):
-        super(BaseAuthTokenMiddlewareTest, self).setUp()
+        testtools.TestCase.setUp(self)
         expected_env = expected_env or {}
 
         conf = {
@@ -390,10 +390,8 @@ class BaseAuthTokenMiddlewareTest(testtools.TestCase):
         valid_signed_list = 'VALID_SIGNED_REVOCATION_LIST'
         globals()[signed_list] = globals()[valid_signed_list]
 
-        super(BaseAuthTokenMiddlewareTest, self).setUp()
-
     def tearDown(self):
-        super(BaseAuthTokenMiddlewareTest, self).tearDown()
+        testtools.TestCase.tearDown(self)
         try:
             os.remove(self.middleware.revoked_file_name)
         except OSError:
