@@ -146,7 +146,6 @@ class Client(client.HTTPClient):
         # if we got a response without a service catalog, set the local
         # list of tenants for introspection, and leave to client user
         # to determine what to do. Otherwise, load up the service catalog
-        self.auth_token = self.auth_ref.auth_token
         if self.auth_ref.scoped:
             if self.management_url is None and self.auth_ref.management_url:
                 self.management_url = self.auth_ref.management_url[0]

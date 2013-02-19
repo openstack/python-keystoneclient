@@ -67,7 +67,6 @@ class HTTPClient(object):
         self.tenant_id = None
         self.tenant_name = None
         self.auth_url = None
-        self.auth_token = None
         self.management_url = None
         if timeout is not None:
             self.timeout = float(timeout)
@@ -82,7 +81,6 @@ class HTTPClient(object):
             self.tenant_name = self.auth_ref.tenant_name
             self.auth_url = self.auth_ref.auth_url[0]
             self.management_url = self.auth_ref.management_url[0]
-            self.auth_token = self.auth_ref.auth_token
         # allow override of the auth_ref defaults from explicit
         # values provided to the client
         if username:
@@ -94,7 +92,9 @@ class HTTPClient(object):
         if auth_url:
             self.auth_url = auth_url.rstrip('/')
         if token:
-            self.auth_token = token
+            self.auth_token_from_user = token
+        else:
+            self.auth_token_from_user = None
         if endpoint:
             self.management_url = endpoint.rstrip('/')
         self.password = password
@@ -125,6 +125,23 @@ class HTTPClient(object):
         self.force_new_token = force_new_token
         self.stale_duration = stale_duration or access.STALE_TOKEN_DURATION
         self.stale_duration = int(self.stale_duration)
+
+    @property
+    def auth_token(self):
+        if self.auth_token_from_user:
+            return self.auth_token_from_user
+        if self.auth_ref:
+            if self.auth_ref.will_expire_soon(self.stale_duration):
+                self.authenticate()
+            return self.auth_ref.auth_token
+
+    @auth_token.setter
+    def auth_token(self, value):
+        self.auth_token_from_user = value
+
+    @auth_token.deleter
+    def auth_token(selef):
+        del self.auth_token_from_user
 
     def authenticate(self, username=None, password=None, tenant_name=None,
                      tenant_id=None, auth_url=None, token=None):
@@ -165,7 +182,12 @@ class HTTPClient(object):
         password = password or self.password
         tenant_name = tenant_name or self.tenant_name
         tenant_id = tenant_id or self.tenant_id
-        token = token or self.auth_token
+
+        if not token:
+            token = self.auth_token_from_user
+            if (not token and self.auth_ref
+                and not self.auth_ref.will_expire_soon(self.stale_duration)):
+                token = self.auth_ref.auth_token
 
         (keyring_key, auth_ref) = self.get_auth_ref_from_keyring(auth_url,
                                                                  username,
@@ -224,7 +246,7 @@ class HTTPClient(object):
                                                 keyring_key)
                 if auth_ref:
                     auth_ref = pickle.loads(auth_ref)
-                    if auth_ref.will_expire_soon(self.stale_duration):
+                    if self.auth_ref.will_expire_soon(self.stale_duration):
                         # token has expired, don't use it
                         auth_ref = None
             except Exception as e:
