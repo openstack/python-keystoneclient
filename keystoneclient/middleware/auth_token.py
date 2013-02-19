@@ -119,23 +119,20 @@ from keystoneclient.middleware import memcache_crypt
 from keystoneclient.openstack.common import timeutils
 
 CONF = None
-try:
-    from openstack.common import cfg
-    CONF = cfg.CONF
-except ImportError:
-    # cfg is not a library yet, try application copies
-    for app in 'nova', 'glance', 'quantum', 'cinder':
-        try:
-            cfg = __import__('%s.openstack.common.cfg' % app,
-                             fromlist=['%s.openstack.common' % app])
-            # test which application middleware is running in
-            if hasattr(cfg, 'CONF') and 'config_file' in cfg.CONF:
-                CONF = cfg.CONF
-                break
-        except ImportError:
-            pass
+# to pass gate before oslo-config is deployed everywhere,
+# try application copies first
+for app in 'nova', 'glance', 'quantum', 'cinder':
+    try:
+        cfg = __import__('%s.openstack.common.cfg' % app,
+                         fromlist=['%s.openstack.common' % app])
+        # test which application middleware is running in
+        if hasattr(cfg, 'CONF') and 'config_file' in cfg.CONF:
+            CONF = cfg.CONF
+            break
+    except ImportError:
+        pass
 if not CONF:
-    from keystoneclient.openstack.common import cfg
+    from oslo.config import cfg
     CONF = cfg.CONF
 
 # alternative middleware configuration in the main application's
