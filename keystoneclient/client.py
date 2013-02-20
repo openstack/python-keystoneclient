@@ -140,7 +140,7 @@ class HTTPClient(object):
         self.auth_token_from_user = value
 
     @auth_token.deleter
-    def auth_token(selef):
+    def auth_token(self):
         del self.auth_token_from_user
 
     def authenticate(self, username=None, password=None, tenant_name=None,
