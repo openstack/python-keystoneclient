@@ -3,4 +3,4 @@ iso8601>=0.1.4
 prettytable
 requests>=0.8.8
 simplejson
-http://tarballs.openstack.org/oslo-config/oslo-config-2013.1b3.tar.gz#egg=oslo-config
+http://tarballs.openstack.org/oslo-config/oslo-config-2013.1b4.tar.gz#egg=oslo-config
