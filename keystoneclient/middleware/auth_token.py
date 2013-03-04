@@ -61,35 +61,69 @@ HTTP_X_IDENTITY_STATUS
     The underlying service will only see a value of 'Invalid' if the Middleware
     is configured to run in 'delay_auth_decision' mode
 
-HTTP_X_TENANT_ID
-    Identity service managed unique identifier, string
+HTTP_X_DOMAIN_ID
+    Identity service managed unique identifier, string. Only present if
+    this is a domain-scoped token.
 
-HTTP_X_TENANT_NAME
-    Unique tenant identifier, string
+HTTP_X_DOMAIN_NAME
+    Unique domain name, string. Only present if this is a domain-scoped token.
+
+HTTP_X_PROJECT_ID
+    Identity service managed unique identifier, string. Only present if
+    this is a project-scoped token.
+
+HTTP_X_PROJECT_NAME
+    Project name, unique within owning domain, string. Only present if
+    this is a project-scoped token.
+
+HTTP_X_PROJECT_DOMAIN_ID
+    Identity service managed unique identifier of owning domain of
+    project, string.  Only present if this is a project-scoped token.
+
+HTTP_X_PROJECT_DOMAIN_NAME
+    Name of owning domain of project, string. Only present if this is a
+    project-scoped token.
 
 HTTP_X_USER_ID
     Identity-service managed unique identifier, string
 
 HTTP_X_USER_NAME
-    Unique user identifier, string
+    User identifier, unique within owning domain, string
+
+HTTP_X_USER_DOMAIN_ID
+    Identity service managed unique identifier of owning domain of user, string
+
+HTTP_X_USER_DOMAIN_NAME
+    Name of owning domain of user, string
 
 HTTP_X_ROLES
-    Comma delimited list of case-sensitive Roles
+    Comma delimited list of case-sensitive role names
 
 HTTP_X_SERVICE_CATALOG
     json encoded keystone service catalog (optional).
 
+HTTP_X_TENANT_ID
+    *Deprecated* in favor of HTTP_X_PROJECT_ID
+    Identity service managed unique identifier, string. For v3 tokens, this
+    will be set to the same value as HTTP_X_PROJECT_ID
+
+HTTP_X_TENANT_NAME
+    *Deprecated* in favor of HTTP_X_PROJECT_NAME
+    Project identifier, unique within owning domain, string. For v3 tokens,
+    this will be set to the same value as HTTP_X_PROJECT_NAME
+
 HTTP_X_TENANT
     *Deprecated* in favor of HTTP_X_TENANT_ID and HTTP_X_TENANT_NAME
-    Keystone-assigned unique identifier, deprecated
+    Keystone-assigned unique identifier, string. For v3 tokens, this
+    will be set to the same value as HTTP_X_PROJECT_ID
 
 HTTP_X_USER
     *Deprecated* in favor of HTTP_X_USER_ID and HTTP_X_USER_NAME
-    Unique user name, string
+    User name, unique within owning domain, string
 
 HTTP_X_ROLE
     *Deprecated* in favor of HTTP_X_ROLES
-    This is being renamed, and the new header contains the same data.
+    Will contain the same values as HTTP_X_ROLES.
 
 OTHER ENVIRONMENT VARIABLES
 ---------------------------
@@ -157,8 +191,10 @@ opts = [
     cfg.IntOpt('auth_port', default=35357),
     cfg.StrOpt('auth_protocol', default='https'),
     cfg.StrOpt('auth_uri', default=None),
+    cfg.StrOpt('auth_version', default=None),
     cfg.BoolOpt('delay_auth_decision', default=False),
     cfg.BoolOpt('http_connect_timeout', default=None),
+    cfg.StrOpt('http_handler', default=None),
     cfg.StrOpt('admin_token', secret=True),
     cfg.StrOpt('admin_user'),
     cfg.StrOpt('admin_password', secret=True),
@@ -171,9 +207,11 @@ opts = [
     cfg.ListOpt('memcache_servers'),
     cfg.IntOpt('token_cache_time', default=300),
     cfg.StrOpt('memcache_security_strategy', default=None),
-    cfg.StrOpt('memcache_secret_key', default=None, secret=True),
+    cfg.StrOpt('memcache_secret_key', default=None, secret=True)
 ]
 CONF.register_opts(opts, group='keystone_authtoken')
+
+LIST_OF_VERSIONS_TO_ATTEMPT = ['v3.0', 'v2.0']
 
 
 def will_expire_soon(expiry):
@@ -221,10 +259,17 @@ class AuthProtocol(object):
         self.auth_host = self._conf_get('auth_host')
         self.auth_port = int(self._conf_get('auth_port'))
         self.auth_protocol = self._conf_get('auth_protocol')
-        if self.auth_protocol == 'http':
-            self.http_client_class = httplib.HTTPConnection
+        if not self._conf_get('http_handler'):
+            if self.auth_protocol == 'http':
+                self.http_client_class = httplib.HTTPConnection
+            else:
+                self.http_client_class = httplib.HTTPSConnection
         else:
-            self.http_client_class = httplib.HTTPSConnection
+            # Really only used for unit testing, since we need to
+            # have a fake handler set up before we issue an http
+            # request to get the list of versions supported by the
+            # server at the end of this initialization
+            self.http_client_class = self._conf_get('http_handler')
 
         self.auth_admin_prefix = self._conf_get('auth_admin_prefix')
         self.auth_uri = self._conf_get('auth_uri')
@@ -289,6 +334,9 @@ class AuthProtocol(object):
         self.http_connect_timeout = (http_connect_timeout_cfg and
                                      int(http_connect_timeout_cfg))
 
+        # Determine the highest api version we can use.
+        self.auth_version = self._choose_api_version()
+
     def _assert_valid_memcache_protection_config(self):
         if self._memcache_security_strategy:
             if self._memcache_security_strategy not in ('MAC', 'ENCRYPT'):
@@ -325,6 +373,60 @@ class AuthProtocol(object):
             return self.conf[name]
         else:
             return CONF.keystone_authtoken[name]
+
+    def _choose_api_version(self):
+        """ Determine the api version that we should use."""
+
+        # If the configuration specifies an auth_version we will just
+        # assume that is correct and use it.  We could, of course, check
+        # that this version is supported by the server, but in case
+        # there are some problems in the field, we want as little code
+        # as possible in the way of letting auth_token talk to the
+        # server.
+        if self._conf_get('auth_version'):
+            version_to_use = self._conf_get('auth_version')
+            self.LOG.info('Auth Token proceeding with requested %s apis',
+                          version_to_use)
+        else:
+            version_to_use = None
+            versions_supported_by_server = self._get_supported_versions()
+            if versions_supported_by_server:
+                for version in LIST_OF_VERSIONS_TO_ATTEMPT:
+                    if version in versions_supported_by_server:
+                        version_to_use = version
+                        break
+            if version_to_use:
+                self.LOG.info('Auth Token confirmed use of %s apis',
+                              version_to_use)
+            else:
+                self.LOG.error(
+                    'Attempted versions [%s] not in list supported by '
+                    'server [%s]',
+                    ', '.join(LIST_OF_VERSIONS_TO_ATTEMPT),
+                    ', '.join(versions_supported_by_server))
+                raise ServiceError('No compatible apis supported by server')
+        return version_to_use
+
+    def _get_supported_versions(self):
+        versions = []
+        response, data = self._json_request('GET', '/')
+        if response.status != 300:
+            self.LOG.error('Unable to get version info from keystone: %s' %
+                           response.status)
+            raise ServiceError('Unable to get version info from keystone')
+        else:
+            try:
+                for version in data['versions']['values']:
+                    versions.append(version['id'])
+            except KeyError:
+                self.LOG.error(
+                    'Invalid version response format from server', data)
+                raise ServiceError('Unable to parse version response '
+                                   'from keystone')
+
+        self.LOG.debug('Server reports support for api versions: %s',
+                       ', '.join(versions))
+        return versions
 
     def __call__(self, env, start_response):
         """Handle incoming request.
@@ -371,14 +473,22 @@ class AuthProtocol(object):
         """
         auth_headers = (
             'X-Identity-Status',
-            'X-Tenant-Id',
-            'X-Tenant-Name',
+            'X-Domain-Id',
+            'X-Domain-Name',
+            'X-Project-Id',
+            'X-Project-Name',
+            'X-Project-Domain-Id',
+            'X-Project-Domain-Name',
             'X-User-Id',
             'X-User-Name',
+            'X-User-Domain-Id',
+            'X-User-Domain-Name',
             'X-Roles',
             'X-Service-Catalog',
             # Deprecated
             'X-User',
+            'X-Tenant-Id',
+            'X-Tenant-Name',
             'X-Tenant',
             'X-Role',
         )
@@ -459,7 +569,6 @@ class AuthProtocol(object):
 
         """
         conn = self._get_http_connection()
-
         try:
             conn.request(method, path)
             response = conn.getresponse()
@@ -509,7 +618,6 @@ class AuthProtocol(object):
             raise ServiceError('Unable to communicate with keystone')
         finally:
             conn.close()
-
         try:
             data = jsonutils.loads(body)
         except ValueError:
@@ -523,6 +631,10 @@ class AuthProtocol(object):
 
         :return token id upon success
         :raises ServerError when unable to communicate with keystone
+
+        Irrespective of the auth version we are going to use for the
+        user token, for simplicity we always use a v2 admin token to
+        validate the user token.
 
         """
         params = {
@@ -588,26 +700,35 @@ class AuthProtocol(object):
 
         Build headers that represent authenticated user:
          * X_IDENTITY_STATUS: Confirmed or Invalid
-         * X_TENANT_ID: id of tenant if tenant is present
-         * X_TENANT_NAME: name of tenant if tenant is present
+         * X_DOMAIN_ID: id of domain, if token is scoped to a domain
+         * X_DOMAIN_NAME: name of domain, if token is scoped to a domain
+         * X_PROJECT_ID: id of project, if token is scoped to a project
+         * X_PROJECT_NAME: name of project, if token is scoped to a project
+         * X_PROJECT_DOMAIN_ID: id of owning domain of project, if
+           token is scoped to a project
+         * X_PROJECT_DOMAIN_NAME: name of owning domain of project, if
+           token is scoped to a project
          * X_USER_ID: id of user
          * X_USER_NAME: name of user
+         * X_USER_DOMAIN_ID: id of owning domain of user
+         * X_USER_DOMAIN_NAME: name of owning domain of user
          * X_ROLES: list of roles
          * X_SERVICE_CATALOG: service catalog
 
-        Additional (deprecated) headers include:
+        Additional (deprecated) headers:
          * X_USER: name of user
-         * X_TENANT: For legacy compatibility before we had ID and Name
+         * X_TENANT_ID: id of tenant (which is equivilent to project),
+           if token is scoped to a project
+         * X_TENANT_NAME: name of tenant (which is equivilent to project),
+           if token is scoped to a project
+         * X_TENANT: For legacy compatibility before we had ID and Name, this
+           is will be the same as X_TENANT_NAME
          * X_ROLE: list of roles
 
         :param token_info: token object returned by keystone on authentication
         :raise InvalidUserToken when unable to parse token object
 
         """
-        user = token_info['access']['user']
-        token = token_info['access']['token']
-        roles = ','.join([role['name'] for role in user.get('roles', [])])
-
         def get_tenant_info():
             """Returns a (tenant_id, tenant_name) tuple from context."""
             def essex():
@@ -619,7 +740,7 @@ class AuthProtocol(object):
                 return (token['tenantId'], token['tenantId'])
 
             def default_tenant():
-                """Assume the user's default tenant."""
+                """Pre-grizzly, assume the user's default tenant."""
                 return (user['tenantId'], user['tenantName'])
 
             for method in [essex, pre_diablo, default_tenant]:
@@ -630,26 +751,72 @@ class AuthProtocol(object):
 
             raise InvalidUserToken('Unable to determine tenancy.')
 
-        tenant_id, tenant_name = get_tenant_info()
+        # For clarity. set all those attributes that are optional in
+        # either a v2 or v3 token to None first
+        domain_id = None
+        domain_name = None
+        project_id = None
+        project_name = None
+        user_domain_id = None
+        user_domain_name = None
+        project_domain_id = None
+        project_domain_name = None
+
+        if 'access' in token_info:
+            #v2 token
+            user = token_info['access']['user']
+            token = token_info['access']['token']
+            roles = ','.join([role['name'] for role in user.get('roles', [])])
+            catalog_root = token_info['access']
+            catalog_key = 'serviceCatalog'
+            project_id, project_name = get_tenant_info()
+        else:
+            #v3 token
+            token = token_info['token']
+            user = token['user']
+            user_domain_id = user['domain']['id']
+            user_domain_name = user['domain']['name']
+            roles = (','.join([role['name']
+                     for role in token.get('roles', [])]))
+            catalog_root = token
+            catalog_key = 'catalog'
+            # For v3, the server will put in the default project if there is
+            # one, so no need for us to add it here (like we do for a v2 token)
+            if 'domain' in token:
+                domain_id = token['domain']['id']
+                domain_name = token['domain']['name']
+            elif 'project' in token:
+                project_id = token['project']['id']
+                project_name = token['project']['name']
+                project_domain_id = token['project']['domain']['id']
+                project_domain_name = token['project']['domain']['name']
 
         user_id = user['id']
         user_name = user['name']
 
         rval = {
             'X-Identity-Status': 'Confirmed',
-            'X-Tenant-Id': tenant_id,
-            'X-Tenant-Name': tenant_name,
+            'X-Domain-Id': domain_id,
+            'X-Domain-Name': domain_name,
+            'X-Project-Id': project_id,
+            'X-Project-Name': project_name,
+            'X-Project-Domain-Id': project_domain_id,
+            'X-Project-Domain-Name': project_domain_name,
             'X-User-Id': user_id,
             'X-User-Name': user_name,
+            'X-User-Domain-Id': user_domain_id,
+            'X-User-Domain-Name': user_domain_name,
             'X-Roles': roles,
             # Deprecated
             'X-User': user_name,
-            'X-Tenant': tenant_name,
+            'X-Tenant-Id': project_id,
+            'X-Tenant-Name': project_name,
+            'X-Tenant': project_name,
             'X-Role': roles,
         }
 
         try:
-            catalog = token_info['access']['serviceCatalog']
+            catalog = catalog_root[catalog_key]
             rval['X-Service-Catalog'] = jsonutils.dumps(catalog)
         except KeyError:
             pass
@@ -781,11 +948,15 @@ class AuthProtocol(object):
         """
         if self._cache and data:
             if 'token' in data.get('access', {}):
+                # It's a v2 token
                 timestamp = data['access']['token']['expires']
-                expires = timeutils.parse_isotime(timestamp).strftime('%s')
+            elif 'token' in data:
+                # It's a v3 token
+                timestamp = data['token']['expires']
             else:
                 self.LOG.error('invalid token format')
                 return
+            expires = timeutils.parse_isotime(timestamp).strftime('%s')
             self.LOG.debug('Storing %s token in memcache', token)
             self._cache_store(token, data, expires)
 
@@ -811,12 +982,19 @@ class AuthProtocol(object):
         :raise ServiceError if unable to authenticate token
 
         """
-
-        headers = {'X-Auth-Token': self.get_admin_token()}
-        response, data = self._json_request(
-            'GET',
-            '/v2.0/tokens/%s' % safe_quote(user_token),
-            additional_headers=headers)
+        if self.auth_version == 'v3.0':
+            headers = {'X-Auth-Token': self.get_admin_token(),
+                       'X-Subject-Token': safe_quote(user_token)}
+            response, data = self._json_request(
+                'GET',
+                '/v3/auth/tokens',
+                additional_headers=headers)
+        else:
+            headers = {'X-Auth-Token': self.get_admin_token()}
+            response, data = self._json_request(
+                'GET',
+                '/v2.0/tokens/%s' % safe_quote(user_token),
+                additional_headers=headers)
 
         if response.status == 200:
             self._cache_put(user_token, data)
@@ -910,6 +1088,7 @@ class AuthProtocol(object):
         timeout = (self.token_revocation_list_fetched_time +
                    self.token_revocation_list_cache_timeout)
         list_is_current = timeutils.utcnow() < timeout
+
         if list_is_current:
             # Load the list from disk if required
             if not self._token_revocation_list:
