@@ -33,17 +33,17 @@ from keystoneclient import exceptions
 _logger = logging.getLogger(__name__)
 
 
-# keyring init
-keyring_available = True
-try:
-    import keyring
-    import pickle
-except ImportError:
-    if (hasattr(sys.stderr, 'isatty') and sys.stderr.isatty()):
-        print >> sys.stderr, 'Failed to load keyring modules.'
-    else:
-        _logger.warning('Failed to load keyring modules.')
-    keyring_available = False
+def try_import_keyring():
+    try:
+        import keyring
+        import pickle
+        return True
+    except ImportError:
+        if (hasattr(sys.stderr, 'isatty') and sys.stderr.isatty()):
+            print >> sys.stderr, 'Failed to load keyring modules.'
+        else:
+            _logger.warning('Failed to load keyring modules.')
+        return False
 
 
 class HTTPClient(object):
@@ -121,7 +121,7 @@ class HTTPClient(object):
                 requests.logging.getLogger(requests.__name__).addHandler(ch)
 
         # keyring setup
-        self.use_keyring = use_keyring and keyring_available
+        self.use_keyring = use_keyring and try_import_keyring()
         self.force_new_token = force_new_token
         self.stale_duration = stale_duration or access.STALE_TOKEN_DURATION
         self.stale_duration = int(self.stale_duration)
