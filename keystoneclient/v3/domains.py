@@ -33,14 +33,11 @@ class DomainManager(base.CrudManager):
     collection_key = 'domains'
     key = 'domain'
 
-    def create(self, name, description=None, enabled=True,
-               private_project_names=False, private_user_names=False):
+    def create(self, name, description=None, enabled=True):
         return super(DomainManager, self).create(
             name=name,
             description=description,
-            enabled=enabled,
-            private_project_names=private_project_names,
-            private_user_names=private_user_names)
+            enabled=enabled)
 
     def get(self, domain):
         return super(DomainManager, self).get(
@@ -49,15 +46,12 @@ class DomainManager(base.CrudManager):
     def list(self):
         return super(DomainManager, self).list()
 
-    def update(self, domain, name=None, description=None, enabled=True,
-               private_project_names=False, private_user_names=False):
+    def update(self, domain, name=None, description=None, enabled=True):
         return super(DomainManager, self).update(
             domain_id=base.getid(domain),
             name=name,
             description=description,
-            enabled=enabled,
-            private_project_names=private_project_names,
-            private_user_names=private_user_names)
+            enabled=enabled)
 
     def delete(self, domain):
         return super(DomainManager, self).delete(

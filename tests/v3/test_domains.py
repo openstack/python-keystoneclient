@@ -17,6 +17,4 @@ class DomainTests(utils.TestCase, utils.CrudTests):
         kwargs = super(DomainTests, self).new_ref(**kwargs)
         kwargs.setdefault('enabled', True)
         kwargs.setdefault('name', uuid.uuid4().hex)
-        kwargs.setdefault('private_project_names', False)
-        kwargs.setdefault('private_user_names', False)
         return kwargs
