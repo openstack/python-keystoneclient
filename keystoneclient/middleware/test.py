@@ -22,7 +22,7 @@ import os
 import sys
 
 
-ROOTDIR = os.path.dirname(os.path.abspath(os.curdir))
+ROOTDIR = os.path.abspath(os.curdir)
 
 
 def rootdir(*p):
