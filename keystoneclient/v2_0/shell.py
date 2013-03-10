@@ -57,12 +57,12 @@ def do_user_get(kc, args):
 
 @utils.arg('--name', metavar='<user-name>', required=True,
            help='New user name (must be unique)')
-@utils.arg('--tenant-id', metavar='<tenant-id>',
+@utils.arg('--tenant-id', metavar='<tenant-id>', 
            help='New user default tenant')
 @utils.arg('--tenant_id', help=argparse.SUPPRESS)
 @utils.arg('--pass', metavar='<pass>', dest='passwd',
            help='New user password')
-@utils.arg('--email', metavar='<email>',
+@utils.arg('--email', metavar='<email>',required=True,
            help='New user email address')
 @utils.arg('--enabled', metavar='<true|false>', default=True,
            help='Initial user enabled status (default true)')
