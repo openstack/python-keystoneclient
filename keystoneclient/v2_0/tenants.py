@@ -35,19 +35,17 @@ class Tenant(base.Resource):
     def delete(self):
         return self.manager.delete(self)
 
-    def update(self, name=None, description=None, enabled=None):
+    def update(self, kwargs):
         # Preserve the existing settings; keystone legacy resets these?
-        new_name = name if name else self.name
-        if description is not None:
-            new_description = description
-        else:
-            new_description = self.description
-        new_enabled = enabled if enabled is not None else self.enabled
-
+#        new_name = name if name else self.name
+#        new_description = description if description else self.description
+#        new_enabled = enabled if enabled is not None else self.enabled
+       
         try:
-            retval = self.manager.update(self.id, tenant_name=new_name,
-                                         description=new_description,
-                                         enabled=new_enabled)
+#            retval = self.manager.update(self.id, tenant_name=new_name,
+#                                         description=new_description,
+#                                         enabled=new_enabled)
+            retval = self.manager.update(self.id,kwargs)
             self = retval
         except Exception:
             retval = None
@@ -74,7 +72,7 @@ class TenantManager(base.ManagerWithFind):
     def get(self, tenant_id):
         return self._get("/tenants/%s" % tenant_id, "tenant")
 
-    def create(self, tenant_name, description=None, enabled=True):
+    def create(self, tenant_name, description=None, enabled=True, props=None):
         """
         Create a new tenant.
 
@@ -82,6 +80,8 @@ class TenantManager(base.ManagerWithFind):
         params = {"tenant": {"name": tenant_name,
                              "description": description,
                              "enabled": enabled}}
+        if props:
+            params['tenant'].update(dict([arg.split('=') for arg in props]))
 
         return self._create('/tenants', params, "tenant")
 
@@ -107,29 +107,22 @@ class TenantManager(base.ManagerWithFind):
         if params:
             query = "?" + urllib.urlencode(params)
 
-        reset = 0
-        if self.api.management_url is None:
-            # special casing to allow tenant lists on the auth_url
-            # for unscoped tokens
-            reset = 1
-            self.api.management_url = self.api.auth_url
-        tenant_list = self._list("/tenants%s" % query, "tenants")
-        if reset:
-            self.api.management_url = None
-        return tenant_list
+        return self._list("/tenants%s" % query, "tenants")
 
-    def update(self, tenant_id, tenant_name=None, description=None,
-               enabled=None):
+    def update(self, tenant_id, kwargs):
         """
         Update a tenant with a new name and description.
         """
         body = {"tenant": {'id': tenant_id}}
-        if tenant_name is not None:
-            body['tenant']['name'] = tenant_name
-        if enabled is not None:
-            body['tenant']['enabled'] = enabled
-        if description is not None:
-            body['tenant']['description'] = description
+#        if tenant_name is not None:
+#                body['tenant']['name'] = tenant_name
+#        if enabled is not None:
+#                body['tenant']['enabled'] = enabled
+#        if description:
+#                body['tenant']['description'] = description
+#        if props:
+#                body['tenant'].update(props)
+        body['tenant'].update(kwargs)
         # Keystone's API uses a POST rather than a PUT here.
         return self._create("/tenants/%s" % tenant_id, body, "tenant")
 
