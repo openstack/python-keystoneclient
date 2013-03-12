@@ -16,7 +16,7 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         self.TEST_RESPONSE_DICT = {
             "access": {
                 "token": {
-                    "expires": "2999-01-01T00:00:10Z",
+                    "expires": "2020-01-01T00:00:10.000123Z",
                     "id": self.TEST_TOKEN,
                     "tenant": {
                         "id": self.TEST_TENANT_ID
@@ -71,7 +71,7 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         self.mox.ResetAll()
         TEST_TOKEN = "abcdef"
         self.TEST_RESPONSE_DICT['access']['token']['expires'] = \
-            "2999-01-01T00:00:10Z"
+            '2020-01-01T00:00:10.000123Z'
         self.TEST_RESPONSE_DICT['access']['token']['id'] = TEST_TOKEN
 
         resp = utils.TestResponse({

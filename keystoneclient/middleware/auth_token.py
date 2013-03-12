@@ -934,7 +934,7 @@ class AuthProtocol(object):
             if self._token_is_v2(data):
                 timestamp = data['access']['token']['expires']
             elif self._token_is_v3(data):
-                timestamp = data['token']['expires']
+                timestamp = data['token']['expires_at']
             else:
                 self.LOG.error('invalid token format')
                 return
