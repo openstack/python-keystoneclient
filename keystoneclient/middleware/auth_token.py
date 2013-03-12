@@ -211,7 +211,7 @@ opts = [
 ]
 CONF.register_opts(opts, group='keystone_authtoken')
 
-LIST_OF_VERSIONS_TO_ATTEMPT = ['v3.0', 'v2.0']
+LIST_OF_VERSIONS_TO_ATTEMPT = ['v2.0', 'v3.0']
 
 
 def will_expire_soon(expiry):

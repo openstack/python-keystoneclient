@@ -1323,6 +1323,7 @@ class v3AuthTokenMiddlewareTest(AuthTokenMiddlewareTest):
             'revoked_token_hash': REVOKED_v3_TOKEN_HASH
         }
         super(v3AuthTokenMiddlewareTest, self).setUp(
+                auth_version='v3.0',
                 fake_app=v3FakeApp,
                 fake_http=v3FakeHTTPConnection,
                 token_dict=token_dict,
@@ -1355,7 +1356,7 @@ class v3AuthTokenMiddlewareTest(AuthTokenMiddlewareTest):
                          v3FakeHTTPConnection.last_requested_url)
 
     def test_domain_scoped_uuid_request(self):
-        # Modify items comapred to default token for a domain scope
+        # Modify items compared to default token for a domain scope
         delta_expected_env = {
             'HTTP_X_DOMAIN_ID': 'domain_id1',
             'HTTP_X_DOMAIN_NAME': 'domain_name1',
