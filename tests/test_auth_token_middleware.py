@@ -542,6 +542,13 @@ class v3FakeHTTPConnection(FakeHTTPConnection):
         self.resp = FakeHTTPResponse(status, body)
 
 
+class RaisingHTTPConnection(FakeHTTPConnection):
+    """ An HTTPConnection that always raises."""
+
+    def request(self, method, path, **kwargs):
+        raise AssertionError("HTTP request was called.")
+
+
 class FakeApp(object):
     """This represents a WSGI app protected by the auth_token middleware."""
     def __init__(self, expected_env=None):
@@ -787,6 +794,14 @@ class DiabloAuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
 
 
 class AuthTokenMiddlewareTest(test.NoModule, BaseAuthTokenMiddlewareTest):
+
+    def test_init_does_not_call_http(self):
+        conf = {
+            'auth_host': 'keystone.example.com',
+            'auth_port': 1234
+        }
+        self.set_fake_http(RaisingHTTPConnection)
+        self.set_middleware(conf=conf, fake_http=RaisingHTTPConnection)
 
     def assert_valid_last_url(self, token_id):
         # Default version (v2) has id in the token, override this
