@@ -333,9 +333,7 @@ class AuthProtocol(object):
         http_connect_timeout_cfg = self._conf_get('http_connect_timeout')
         self.http_connect_timeout = (http_connect_timeout_cfg and
                                      int(http_connect_timeout_cfg))
-
-        # Determine the highest api version we can use.
-        self.auth_version = self._choose_api_version()
+        self.auth_version = None
 
     def _assert_valid_memcache_protection_config(self):
         if self._memcache_security_strategy:
@@ -982,6 +980,10 @@ class AuthProtocol(object):
         :raise ServiceError if unable to authenticate token
 
         """
+        # Determine the highest api version we can use.
+        if not self.auth_version:
+            self.auth_version = self._choose_api_version()
+
         if self.auth_version == 'v3.0':
             headers = {'X-Auth-Token': self.get_admin_token(),
                        'X-Subject-Token': safe_quote(user_token)}
