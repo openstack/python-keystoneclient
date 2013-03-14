@@ -359,25 +359,25 @@ class HTTPClient(object):
 
         self.http_log_resp(resp)
 
-        if resp.status_code >= 400:
-            _logger.debug(
-                "Request returned failure status: %s",
-                resp.status_code)
-            raise exceptions.from_response(resp, resp.text)
-        elif resp.status_code in (301, 302, 305):
-            # Redirected. Reissue the request to the new location.
-            return self.request(resp.headers['location'], method, **kwargs)
-
         if resp.text:
             try:
                 body = json.loads(resp.text)
-            except ValueError:
+            except (ValueError, TypeError):
                 body = None
                 _logger.debug("Could not decode JSON from body: %s"
                               % resp.text)
         else:
             _logger.debug("No body was returned.")
             body = None
+
+        if resp.status_code >= 400:
+            _logger.debug(
+                "Request returned failure status: %s",
+                resp.status_code)
+            raise exceptions.from_response(resp, body or resp.text)
+        elif resp.status_code in (301, 302, 305):
+            # Redirected. Reissue the request to the new location.
+            return self.request(resp.headers['location'], method, **kwargs)
 
         return resp, body
 
