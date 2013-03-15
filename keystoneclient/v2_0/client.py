@@ -156,6 +156,9 @@ class Client(client.HTTPClient):
             self.tenant_name = self.auth_ref.tenant_name
             self.tenant_id = self.auth_ref.tenant_id
             self.user_id = self.auth_ref.user_id
+        else:
+            if self.management_url is None and self.auth_ref.public_url:
+                self.management_url = self.auth_ref.public_url[0]
         self._extract_service_catalog(self.auth_url, self.auth_ref)
 
     def get_raw_token_from_identity_service(self, auth_url, username=None,

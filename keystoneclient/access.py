@@ -174,3 +174,24 @@ class AccessInfo(dict):
         if len(return_list) > 0:
             return tuple(return_list)
         return None
+    
+    @property
+    def public_url(self):
+        """ Returns the first publicURL for 'identity' from the service catalog
+        associated with the authorization request, or None if the
+        authentication request wasn't scoped to a tenant (project).
+
+        :returns: tuple of urls
+        """
+        return_list = []
+        if 'serviceCatalog' in self and self['serviceCatalog']:
+            identity_services = [x for x in self['serviceCatalog']
+                                 if x['type'] == 'identity']
+            for svc in identity_services:
+                for endpoint in svc['endpoints']:
+                    if 'publicURL' in endpoint:
+                        return_list.append(endpoint['publicURL'])
+        if len(return_list) > 0:
+            return tuple(return_list)
+        return None
+    

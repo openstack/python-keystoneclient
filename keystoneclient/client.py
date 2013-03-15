@@ -358,7 +358,7 @@ class HTTPClient(object):
         concatenating self.management_url and url and passing in method and
         any associated kwargs. """
         is_management = kwargs.pop('management', True)
-
+        print self.management_url
         if is_management and self.management_url is None:
             raise exceptions.AuthorizationFailure(
                 'Current authorization does not have a known management url')
