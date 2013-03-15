@@ -63,26 +63,30 @@ HTTP_X_IDENTITY_STATUS
 
 HTTP_X_DOMAIN_ID
     Identity service managed unique identifier, string. Only present if
-    this is a domain-scoped token.
+    this is a domain-scoped v3 token.
 
 HTTP_X_DOMAIN_NAME
-    Unique domain name, string. Only present if this is a domain-scoped token.
+    Unique domain name, string. Only present if this is a domain-scoped
+    v3 token.
 
 HTTP_X_PROJECT_ID
     Identity service managed unique identifier, string. Only present if
-    this is a project-scoped token.
+    this is a project-scoped v3 token, or a tenant-scoped v2 token.
 
 HTTP_X_PROJECT_NAME
     Project name, unique within owning domain, string. Only present if
-    this is a project-scoped token.
+    this is a project-scoped v3 token, or a tenant-scoped v2 token.
 
 HTTP_X_PROJECT_DOMAIN_ID
     Identity service managed unique identifier of owning domain of
-    project, string.  Only present if this is a project-scoped token.
+    project, string.  Only present if this is a project-scoped v3 token. If
+    this variable is set, this indicates that the PROJECT_NAME can only
+    be assumed to be unique within this domain.
 
 HTTP_X_PROJECT_DOMAIN_NAME
     Name of owning domain of project, string. Only present if this is a
-    project-scoped token.
+    project-scoped v3 token. If this variable is set, this indicates that
+    the PROJECT_NAME can only be assumed to be unique within this domain.
 
 HTTP_X_USER_ID
     Identity-service managed unique identifier, string
@@ -91,10 +95,14 @@ HTTP_X_USER_NAME
     User identifier, unique within owning domain, string
 
 HTTP_X_USER_DOMAIN_ID
-    Identity service managed unique identifier of owning domain of user, string
+    Identity service managed unique identifier of owning domain of
+    user, string. If this variable is set, this indicates that the USER_NAME
+    can only be assumed to be unique within this domain.
 
 HTTP_X_USER_DOMAIN_NAME
-    Name of owning domain of user, string
+    Name of owning domain of user, string. If this variable is set, this
+    indicates that the USER_NAME can only be assumed to be unique within
+    this domain.
 
 HTTP_X_ROLES
     Comma delimited list of case-sensitive role names
@@ -696,35 +704,17 @@ class AuthProtocol(object):
             self.LOG.warn("Authorization failed for token %s", user_token)
             raise InvalidUserToken('Token authorization failed')
 
+    def _token_is_v2(self, token_info):
+        return ('access' in token_info)
+
+    def _token_is_v3(self, token_info):
+        return ('token' in token_info)
+
     def _build_user_headers(self, token_info):
         """Convert token object into headers.
 
-        Build headers that represent authenticated user:
-         * X_IDENTITY_STATUS: Confirmed or Invalid
-         * X_DOMAIN_ID: id of domain, if token is scoped to a domain
-         * X_DOMAIN_NAME: name of domain, if token is scoped to a domain
-         * X_PROJECT_ID: id of project, if token is scoped to a project
-         * X_PROJECT_NAME: name of project, if token is scoped to a project
-         * X_PROJECT_DOMAIN_ID: id of owning domain of project, if
-           token is scoped to a project
-         * X_PROJECT_DOMAIN_NAME: name of owning domain of project, if
-           token is scoped to a project
-         * X_USER_ID: id of user
-         * X_USER_NAME: name of user
-         * X_USER_DOMAIN_ID: id of owning domain of user
-         * X_USER_DOMAIN_NAME: name of owning domain of user
-         * X_ROLES: list of roles
-         * X_SERVICE_CATALOG: service catalog
-
-        Additional (deprecated) headers:
-         * X_USER: name of user
-         * X_TENANT_ID: id of tenant (which is equivilent to project),
-           if token is scoped to a project
-         * X_TENANT_NAME: name of tenant (which is equivilent to project),
-           if token is scoped to a project
-         * X_TENANT: For legacy compatibility before we had ID and Name, this
-           is will be the same as X_TENANT_NAME
-         * X_ROLE: list of roles
+        Build headers that represent authenticated user - see main
+        doc info at start of file for details of headers to be defined.
 
         :param token_info: token object returned by keystone on authentication
         :raise InvalidUserToken when unable to parse token object
@@ -763,8 +753,7 @@ class AuthProtocol(object):
         project_domain_id = None
         project_domain_name = None
 
-        if 'access' in token_info:
-            #v2 token
+        if self._token_is_v2(token_info):
             user = token_info['access']['user']
             token = token_info['access']['token']
             roles = ','.join([role['name'] for role in user.get('roles', [])])
@@ -948,11 +937,9 @@ class AuthProtocol(object):
         quick check of token freshness on retrieval.
         """
         if self._cache and data:
-            if 'token' in data.get('access', {}):
-                # It's a v2 token
+            if self._token_is_v2(data):
                 timestamp = data['access']['token']['expires']
-            elif 'token' in data:
-                # It's a v3 token
+            elif self._token_is_v3(data):
                 timestamp = data['token']['expires']
             else:
                 self.LOG.error('invalid token format')
