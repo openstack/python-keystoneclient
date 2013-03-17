@@ -44,6 +44,9 @@ class CredentialManager(base.CrudManager):
         return super(CredentialManager, self).get(
             credential_id=base.getid(credential))
 
+    def list(self):
+        return super(CredentialManager, self).list()
+
     def update(self, credential, user, type=None, data=None, project=None):
         return super(CredentialManager, self).update(
             credential_id=base.getid(credential),

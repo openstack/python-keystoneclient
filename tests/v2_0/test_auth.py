@@ -1,10 +1,12 @@
 import copy
+from datetime import timedelta
 import json
 
 import requests
 
 from keystoneclient.v2_0 import client
 from keystoneclient import exceptions
+from keystoneclient.openstack.common import timeutils
 from tests import utils
 
 
@@ -14,7 +16,7 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         self.TEST_RESPONSE_DICT = {
             "access": {
                 "token": {
-                    "expires": "12345",
+                    "expires": "2999-01-01T00:00:10Z",
                     "id": self.TEST_TOKEN,
                     "tenant": {
                         "id": self.TEST_TENANT_ID
@@ -39,6 +41,49 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
             'Content-Type': 'application/json',
             'User-Agent': 'python-keystoneclient',
         }
+
+    def test_authenticate_success_expired(self):
+        # Build an expired token
+        self.TEST_RESPONSE_DICT['access']['token']['expires'] = \
+            (timeutils.utcnow() - timedelta(1)).isoformat()
+        resp = utils.TestResponse({
+            "status_code": 200,
+            "text": json.dumps(self.TEST_RESPONSE_DICT),
+        })
+
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.TEST_REQUEST_HEADERS
+        kwargs['data'] = json.dumps(self.TEST_REQUEST_BODY)
+        requests.request('POST',
+                         self.TEST_URL + "/tokens",
+                         **kwargs).AndReturn((resp))
+        self.mox.ReplayAll()
+
+        cs = client.Client(tenant_id=self.TEST_TENANT_ID,
+                           auth_url=self.TEST_URL,
+                           username=self.TEST_USER,
+                           password=self.TEST_TOKEN)
+        self.assertEqual(cs.management_url,
+                         self.TEST_RESPONSE_DICT["access"]["serviceCatalog"][3]
+                         ['endpoints'][0]["adminURL"])
+
+        # Build a new response
+        self.mox.ResetAll()
+        TEST_TOKEN = "abcdef"
+        self.TEST_RESPONSE_DICT['access']['token']['expires'] = \
+            "2999-01-01T00:00:10Z"
+        self.TEST_RESPONSE_DICT['access']['token']['id'] = TEST_TOKEN
+
+        resp = utils.TestResponse({
+            "status_code": 200,
+            "text": json.dumps(self.TEST_RESPONSE_DICT),
+        })
+        requests.request('POST',
+                         self.TEST_URL + "/tokens",
+                         **kwargs).AndReturn((resp))
+        self.mox.ReplayAll()
+
+        self.assertEqual(cs.auth_token, TEST_TOKEN)
 
     def test_authenticate_failure(self):
         _auth = 'auth'

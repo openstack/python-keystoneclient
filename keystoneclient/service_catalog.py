@@ -23,8 +23,9 @@ from keystoneclient import exceptions
 class ServiceCatalog(object):
     """Helper methods for dealing with a Keystone Service Catalog."""
 
-    def __init__(self, resource_dict):
+    def __init__(self, resource_dict, region_name=None):
         self.catalog = resource_dict
+        self.region_name = region_name
 
     def get_token(self):
         """Fetch token details from service catalog.
@@ -70,10 +71,14 @@ class ServiceCatalog(object):
 
             endpoints = service['endpoints']
             for endpoint in endpoints:
+                if self.region_name and \
+                    endpoint.get('region') != self.region_name:
+                    continue
                 if not filter_value or endpoint.get(attr) == filter_value:
                     return endpoint[endpoint_type]
 
-        raise exceptions.EndpointNotFound('Endpoint not found.')
+        raise exceptions.EndpointNotFound('%s endpoint for %s not found.' %
+                                          (endpoint_type, service_type))
 
     def get_endpoints(self, service_type=None, endpoint_type=None):
         """Fetch and filter endpoints for the specified service(s).

@@ -21,15 +21,12 @@ from keystoneclient.openstack.common import timeutils
 
 
 # gap, in seconds, to determine whether the given token is about to expire
-STALE_TOKEN_DURATION = '30'
+STALE_TOKEN_DURATION = 30
 
 
 class AccessInfo(dict):
     """An object for encapsulating a raw authentication token from keystone
     and helper methods for extracting useful values from that token."""
-
-    def __init__(self, *args, **kwargs):
-        dict.__init__(self, *args, **kwargs)
 
     def will_expire_soon(self, stale_duration=None):
         """ Determines if expiration is about to occur.
@@ -37,7 +34,8 @@ class AccessInfo(dict):
         :return: boolean : true if expiration is within the given duration
 
         """
-        stale_duration = stale_duration or TALE_TOKEN_DURATION
+        stale_duration = (STALE_TOKEN_DURATION if stale_duration is None
+                          else stale_duration)
         norm_expires = timeutils.normalize_time(self.expires)
         # (gyee) should we move auth_token.will_expire_soon() to timeutils
         # instead of duplicating code here?
@@ -134,6 +132,17 @@ class AccessInfo(dict):
         """ Synonym for project_id """
         return self.tenant_id
 
+    def _get_identity_endpoint(self, endpoint_type):
+        if not self.get('serviceCatalog'):
+            return
+
+        identity_services = [x for x in self['serviceCatalog']
+                             if x['type'] == 'identity']
+        return tuple(endpoint[endpoint_type]
+                     for svc in identity_services
+                     for endpoint in svc['endpoints']
+                     if endpoint_type in endpoint)
+
     @property
     def auth_url(self):
         """ Returns a tuple of URLs from publicURL and adminURL for the service
@@ -143,17 +152,7 @@ class AccessInfo(dict):
 
         :returns: tuple of urls
         """
-        return_list = []
-        if 'serviceCatalog' in self and self['serviceCatalog']:
-            identity_services = [x for x in self['serviceCatalog']
-                                 if x['type'] == 'identity']
-            for svc in identity_services:
-                for endpoint in svc['endpoints']:
-                    if 'publicURL' in endpoint:
-                        return_list.append(endpoint['publicURL'])
-        if len(return_list) > 0:
-            return tuple(return_list)
-        return None
+        return self._get_identity_endpoint('publicURL')
 
     @property
     def management_url(self):
@@ -163,35 +162,5 @@ class AccessInfo(dict):
 
         :returns: tuple of urls
         """
-        return_list = []
-        if 'serviceCatalog' in self and self['serviceCatalog']:
-            identity_services = [x for x in self['serviceCatalog']
-                                 if x['type'] == 'identity']
-            for svc in identity_services:
-                for endpoint in svc['endpoints']:
-                    if 'adminURL' in endpoint:
-                        return_list.append(endpoint['adminURL'])
-        if len(return_list) > 0:
-            return tuple(return_list)
-        return None
-    
-    @property
-    def public_url(self):
-        """ Returns the first publicURL for 'identity' from the service catalog
-        associated with the authorization request, or None if the
-        authentication request wasn't scoped to a tenant (project).
+        return self._get_identity_endpoint('adminURL')
 
-        :returns: tuple of urls
-        """
-        return_list = []
-        if 'serviceCatalog' in self and self['serviceCatalog']:
-            identity_services = [x for x in self['serviceCatalog']
-                                 if x['type'] == 'identity']
-            for svc in identity_services:
-                for endpoint in svc['endpoints']:
-                    if 'publicURL' in endpoint:
-                        return_list.append(endpoint['publicURL'])
-        if len(return_list) > 0:
-            return tuple(return_list)
-        return None
-    

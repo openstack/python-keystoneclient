@@ -33,26 +33,22 @@ from keystoneclient import exceptions
 _logger = logging.getLogger(__name__)
 
 
-# keyring init
-keyring_available = True
-try:
-    import keyring
-    import pickle
-except ImportError:
-    if (hasattr(sys.stderr, 'isatty') and sys.stderr.isatty()):
-        print >> sys.stderr, 'Failed to load keyring modules.'
-    else:
-        _logger.warning('Failed to load keyring modules.')
-    keyring_available = False
+def try_import_keyring():
+    try:
+        import keyring
+        import pickle
+        return True
+    except ImportError:
+        if (hasattr(sys.stderr, 'isatty') and sys.stderr.isatty()):
+            print >> sys.stderr, 'Failed to load keyring modules.'
+        else:
+            _logger.warning('Failed to load keyring modules.')
+        return False
 
 
 class HTTPClient(object):
 
     USER_AGENT = 'python-keystoneclient'
-
-    requests_config = {
-        'danger_mode': False,
-    }
 
     def __init__(self, username=None, tenant_id=None, tenant_name=None,
                  password=None, auth_url=None, region_name=None, timeout=None,
@@ -60,15 +56,22 @@ class HTTPClient(object):
                  cert=None, insecure=False, original_ip=None, debug=False,
                  auth_ref=None, use_keyring=False, force_new_token=False,
                  stale_duration=None):
+        """Construct a new http client
+
+        @param: timeout the request libary timeout in seconds (default None)
+
+        """
         self.version = 'v2.0'
         # set baseline defaults
         self.username = None
         self.tenant_id = None
         self.tenant_name = None
         self.auth_url = None
-        self.token = None
-        self.auth_token = None
         self.management_url = None
+        if timeout is not None:
+            self.timeout = float(timeout)
+        else:
+            self.timeout = None
         # if loading from a dictionary passed in via auth_ref,
         # load values from AccessInfo parsing that dictionary
         self.auth_ref = access.AccessInfo(**auth_ref) if auth_ref else None
@@ -78,7 +81,6 @@ class HTTPClient(object):
             self.tenant_name = self.auth_ref.tenant_name
             self.auth_url = self.auth_ref.auth_url[0]
             self.management_url = self.auth_ref.management_url[0]
-            self.auth_token = self.auth_ref.auth_token
         # allow override of the auth_ref defaults from explicit
         # values provided to the client
         if username:
@@ -90,7 +92,9 @@ class HTTPClient(object):
         if auth_url:
             self.auth_url = auth_url.rstrip('/')
         if token:
-            self.auth_token = token
+            self.auth_token_from_user = token
+        else:
+            self.auth_token_from_user = None
         if endpoint:
             self.management_url = endpoint.rstrip('/')
         self.password = password
@@ -113,13 +117,31 @@ class HTTPClient(object):
             ch = logging.StreamHandler()
             _logger.setLevel(logging.DEBUG)
             _logger.addHandler(ch)
-            self.requests_config['verbose'] = sys.stderr
+            if hasattr(requests, 'logging'):
+                requests.logging.getLogger(requests.__name__).addHandler(ch)
 
         # keyring setup
-        self.use_keyring = use_keyring and keyring_available
+        self.use_keyring = use_keyring and try_import_keyring()
         self.force_new_token = force_new_token
         self.stale_duration = stale_duration or access.STALE_TOKEN_DURATION
         self.stale_duration = int(self.stale_duration)
+
+    @property
+    def auth_token(self):
+        if self.auth_token_from_user:
+            return self.auth_token_from_user
+        if self.auth_ref:
+            if self.auth_ref.will_expire_soon(self.stale_duration):
+                self.authenticate()
+            return self.auth_ref.auth_token
+
+    @auth_token.setter
+    def auth_token(self, value):
+        self.auth_token_from_user = value
+
+    @auth_token.deleter
+    def auth_token(self):
+        del self.auth_token_from_user
 
     def authenticate(self, username=None, password=None, tenant_name=None,
                      tenant_id=None, auth_url=None, token=None):
@@ -160,7 +182,12 @@ class HTTPClient(object):
         password = password or self.password
         tenant_name = tenant_name or self.tenant_name
         tenant_id = tenant_id or self.tenant_id
-        token = token or self.auth_token
+
+        if not token:
+            token = self.auth_token_from_user
+            if (not token and self.auth_ref
+                and not self.auth_ref.will_expire_soon(self.stale_duration)):
+                token = self.auth_ref.auth_token
 
         (keyring_key, auth_ref) = self.get_auth_ref_from_keyring(auth_url,
                                                                  username,
@@ -219,7 +246,7 @@ class HTTPClient(object):
                                                 keyring_key)
                 if auth_ref:
                     auth_ref = pickle.loads(auth_ref)
-                    if auth_ref.will_expire_soon(self.stale_duration):
+                    if self.auth_ref.will_expire_soon(self.stale_duration):
                         # token has expired, don't use it
                         auth_ref = None
             except Exception as e:
@@ -287,8 +314,8 @@ class HTTPClient(object):
             string_parts.append(header)
 
         _logger.debug("REQ: %s" % "".join(string_parts))
-        if 'body' in kwargs:
-            _logger.debug("REQ BODY: %s\n" % (kwargs['body']))
+        if 'data' in kwargs:
+            _logger.debug("REQ BODY: %s\n" % (kwargs['data']))
 
     def http_log_resp(self, resp):
         if self.debug_log:
@@ -320,18 +347,19 @@ class HTTPClient(object):
             del request_kwargs['body']
         if self.cert:
             request_kwargs['cert'] = self.cert
+        if self.timeout is not None:
+            request_kwargs.setdefault('timeout', self.timeout)
 
         self.http_log_req((url, method,), request_kwargs)
         resp = requests.request(
             method,
             url,
             verify=self.verify_cert,
-            config=self.requests_config,
             **request_kwargs)
 
         self.http_log_resp(resp)
 
-        if resp.status_code in (400, 401, 403, 404, 408, 409, 413, 500, 501):
+        if resp.status_code >= 400:
             _logger.debug(
                 "Request returned failure status: %s",
                 resp.status_code)

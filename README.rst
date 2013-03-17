@@ -88,7 +88,8 @@ be used with caution.
 
 You'll find complete documentation on the shell by running ``keystone help``::
 
-    usage: keystone [--os-username <auth-user-name>]
+    usage: keystone [--version] [--timeout <seconds>]
+                    [--os-username <auth-user-name>]
                     [--os-password <auth-password>]
                     [--os-tenant-name <auth-tenant-name>]
                     [--os-tenant-id <tenant-id>] [--os-auth-url <auth-url>]
@@ -97,7 +98,8 @@ You'll find complete documentation on the shell by running ``keystone help``::
                     [--os-token <service-token>]
                     [--os-endpoint <service-endpoint>]
                     [--os-cacert <ca-certificate>] [--insecure]
-                    [--os-cert <certificate>] [--os-key <key>] [--no-cache]
+                    [--os-cert <certificate>] [--os-key <key>] [--os-cache]
+                    [--force-new-token] [--stale-duration <seconds>]
                     <subcommand> ...
 
     Command-line interface to the OpenStack Identity API.
@@ -117,6 +119,7 @@ You'll find complete documentation on the shell by running ``keystone help``::
         endpoint-delete     Delete a service endpoint
         endpoint-get
         endpoint-list       List configured service endpoints
+        password-update     Update own password
         role-create         Create new role
         role-delete         Delete role
         role-get            Display role details
@@ -141,8 +144,8 @@ You'll find complete documentation on the shell by running ``keystone help``::
         user-role-list      List roles granted to a user
         user-role-remove    Remove role from user
         user-update         Update user's name, email, and enabled status
-        discover            Discover Keystone servers and show authentication
-                            protocols and
+        discover            Discover Keystone servers, supported API versions and
+                            extensions.
         bootstrap           Grants a new role to a new user on a new tenant, after
                             creating each.
         bash-completion     Prints all of the commands and options to stdout.
@@ -150,6 +153,8 @@ You'll find complete documentation on the shell by running ``keystone help``::
                             subcommands.
 
     Optional arguments:
+    --version               Shows the client version and exits
+    --timeout <seconds>     Set request timeout (in seconds)
     --os-username <auth-user-name>
                             Name used for authentication with the OpenStack
                             Identity service. Defaults to env[OS_USERNAME]
@@ -186,6 +191,16 @@ You'll find complete documentation on the shell by running ``keystone help``::
                             This option should be used with caution.
     --os-cert <certificate>
                             Defaults to env[OS_CERT]
-    --os-key <key>        Defaults to env[OS_KEY]
+    --os-key <key>          Defaults to env[OS_KEY]
+    --os-cache              Use the auth token cache. Defaults to env[OS_CACHE]
+    --force-new-token       If the keyring is available and in use, token will
+                            always be stored and fetched from the keyring until
+                            the token has expired. Use this option to request a
+                            new token and replace the existing one in the keyring.
+    --stale-duration <seconds>
+                            Stale duration (in seconds) used to determine whether
+                            a token has expired when retrieving it from keyring.
+                            This is useful in mitigating process or network
+                            delays. Default is 30 seconds.
 
     See "keystone help COMMAND" for help on a specific command.

@@ -43,7 +43,10 @@ class DomainManager(base.CrudManager):
         return super(DomainManager, self).get(
             domain_id=base.getid(domain))
 
-    def update(self, domain, name=None, description=None, enabled=None):
+    def list(self):
+        return super(DomainManager, self).list()
+
+    def update(self, domain, name=None, description=None, enabled=True):
         return super(DomainManager, self).update(
             domain_id=base.getid(domain),
             name=name,

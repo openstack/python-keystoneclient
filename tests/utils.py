@@ -17,7 +17,6 @@ class TestCase(testtools.TestCase):
     TEST_ROOT_ADMIN_URL = 'http://127.0.0.1:35357/'
     TEST_ADMIN_URL = '%s%s' % (TEST_ROOT_ADMIN_URL, 'v2.0')
     TEST_REQUEST_BASE = {
-        'config': {'danger_mode': False},
         'verify': True,
     }
 
@@ -94,7 +93,6 @@ class UnauthenticatedTestCase(testtools.TestCase):
     TEST_ROOT_ADMIN_URL = 'http://127.0.0.1:35357/'
     TEST_ADMIN_URL = '%s%s' % (TEST_ROOT_ADMIN_URL, 'v2.0')
     TEST_REQUEST_BASE = {
-        'config': {'danger_mode': False},
         'verify': True,
     }
 

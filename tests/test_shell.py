@@ -1,20 +1,31 @@
+import argparse
+import cStringIO
+import json
 import os
-import mock
+import requests
+import sys
+import uuid
 
 import fixtures
-import requests
+import mock
+import testtools
+from testtools import matchers
 
+from keystoneclient import exceptions
 from keystoneclient import shell as openstack_shell
 from keystoneclient.v2_0 import shell as shell_v2_0
-from keystoneclient import exceptions
 from tests import utils
-
 
 DEFAULT_USERNAME = 'username'
 DEFAULT_PASSWORD = 'password'
 DEFAULT_TENANT_ID = 'tenant_id'
 DEFAULT_TENANT_NAME = 'tenant_name'
 DEFAULT_AUTH_URL = 'http://127.0.0.1:5000/v2.0/'
+
+
+class NoExitArgumentParser(argparse.ArgumentParser):
+    def error(self, message):
+        raise exceptions.CommandError(message)
 
 
 class ShellTest(utils.TestCase):
@@ -26,6 +37,10 @@ class ShellTest(utils.TestCase):
         'OS_TENANT_NAME': DEFAULT_TENANT_NAME,
         'OS_AUTH_URL': DEFAULT_AUTH_URL,
     }
+
+    def _tolerant_shell(self, cmd):
+        t_shell = openstack_shell.OpenStackIdentityShell(NoExitArgumentParser)
+        t_shell.main(cmd.split())
 
     # Patch os.environ to avoid required auth info.
     def setUp(self):
@@ -42,7 +57,80 @@ class ShellTest(utils.TestCase):
         shell = lambda cmd: _shell.main(cmd.split())
 
     def test_help_unknown_command(self):
+        self.assertRaises(exceptions.CommandError, shell, 'help %s'
+                          % uuid.uuid4().hex)
+
+    def shell(self, argstr):
+        orig = sys.stdout
+        clean_env = {}
+        _old_env, os.environ = os.environ, clean_env.copy()
+        try:
+            sys.stdout = cStringIO.StringIO()
+            _shell = openstack_shell.OpenStackIdentityShell()
+            _shell.main(argstr.split())
+        except SystemExit:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            self.assertEqual(exc_value.code, 0)
+        finally:
+            out = sys.stdout.getvalue()
+            sys.stdout.close()
+            sys.stdout = orig
+            os.environ = _old_env
+        return out
+
+    def test_help_unknown_command(self):
         self.assertRaises(exceptions.CommandError, shell, 'help foofoo')
+
+    def test_help_no_args(self):
+        do_tenant_mock = mock.MagicMock()
+        with mock.patch('keystoneclient.shell.OpenStackIdentityShell.do_help',
+                        do_tenant_mock):
+            self.shell('')
+            assert do_tenant_mock.called
+
+    def test_help(self):
+        required = 'usage:'
+        help_text = self.shell('help')
+        self.assertThat(help_text,
+                        matchers.MatchesRegex(required))
+
+    def test_help_command(self):
+        required = 'usage: keystone user-create'
+        help_text = self.shell('help user-create')
+        self.assertThat(help_text,
+                        matchers.MatchesRegex(required))
+
+    def test_auth_no_credentials(self):
+        with testtools.ExpectedException(
+            exceptions.CommandError,
+            'Expecting authentication method'):
+            self.shell('user-list')
+
+    def test_auth_password_authurl_no_username(self):
+        with testtools.ExpectedException(
+            exceptions.CommandError,
+            'Expecting a username provided via either'):
+            self.shell('--os-password=%s --os-auth-url=%s user-list'
+                       % (uuid.uuid4().hex, uuid.uuid4().hex))
+
+    def test_auth_username_password_no_authurl(self):
+        with testtools.ExpectedException(
+            exceptions.CommandError,
+            'Expecting an auth URL via either'):
+            self.shell('--os-password=%s --os-username=%s user-list'
+                       % (uuid.uuid4().hex, uuid.uuid4().hex))
+
+    def test_token_no_endpoint(self):
+        with testtools.ExpectedException(
+            exceptions.CommandError,
+            'Expecting an endpoint provided'):
+            self.shell('--token=%s user-list' % uuid.uuid4().hex)
+
+    def test_endpoint_no_token(self):
+        with testtools.ExpectedException(
+            exceptions.CommandError,
+            'Expecting a token provided'):
+            self.shell('--endpoint=http://10.0.0.1:5000/v2.0/ user-list')
 
     def test_shell_args(self):
         do_tenant_mock = mock.MagicMock()
@@ -291,6 +379,33 @@ class ShellTest(utils.TestCase):
                         do_shell_mock):
             shell('ec2-credentials-delete')
             assert do_shell_mock.called
+
+    def test_timeout_parse_invalid_type(self):
+        for f in ['foobar', 'xyz']:
+            cmd = '--timeout %s endpoint-create' % (f)
+            self.assertRaises(exceptions.CommandError,
+                              self._tolerant_shell, cmd)
+
+    def test_timeout_parse_invalid_number(self):
+        for f in [-1, 0]:
+            cmd = '--timeout %s endpoint-create' % (f)
+            self.assertRaises(exceptions.CommandError,
+                              self._tolerant_shell, cmd)
+
+    def test_do_timeout(self):
+        response_mock = mock.MagicMock()
+        response_mock.status_code = 200
+        response_mock.text = json.dumps({
+            'endpoints': [],
+        })
+        request_mock = mock.MagicMock(return_value=response_mock)
+        with mock.patch('requests.request', request_mock):
+            shell(('--timeout 2 --os-token=blah  --os-endpoint=blah'
+                   ' --os-auth-url=blah.com endpoint-list'))
+            request_mock.assert_called_with(mock.ANY, mock.ANY,
+                                            timeout=2,
+                                            headers=mock.ANY,
+                                            verify=mock.ANY)
 
     def test_do_endpoints(self):
         do_shell_mock = mock.MagicMock()

@@ -13,10 +13,11 @@ class Policy(base.Resource):
         * timestamp: the last modification timestamp
 
     """
-    def update(self, blob=None, type=None):
+    def update(self, blob=None, type=None, service_id=None):
         kwargs = {
             'blob': blob if blob is not None else self.blob,
             'type': type if type is not None else self.type,
+            'service_id': service_id if service_id is not None else self.service_id
         }
 
         try:
@@ -39,16 +40,12 @@ class PolicyManager(base.ManagerWithFind):
         Create a Policy.
         """
         params = {"policy": {"type": type if type else 'application/json',
-                           "role_id": tenant_id,
+                           "service_id": tenant_id,
                            "blob": blob,}}
         return self._create('/policies', params, "policy")
 
     def get(self, policy):
         return self._get("/policies/%s" % base.getid(policy), "policy")
-
-    def get_role_policy(self, role_id):
-        return self._get("/policies/role/%s" % role_id, "policy")
-        
 
     def delete(self, policy):
         """

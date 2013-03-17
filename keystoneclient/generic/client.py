@@ -84,7 +84,11 @@ class Client(client.HTTPClient):
             resp, body = httpclient.request(url, "GET",
                                             headers={'Accept':
                                                      'application/json'})
-            if resp.status_code in (200, 204):  # some cases we get No Content
+            # Multiple Choices status code is returned by the root
+            # identity endpoint, with references to one or more
+            # Identity API versions -- v3 spec
+            # some cases we get No Content
+            if resp.status_code in (200, 204, 300):
                 try:
                     results = {}
                     if 'version' in body:

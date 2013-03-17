@@ -203,7 +203,7 @@ function check_openssl {
 }
 
 function gen_sample_cms {
-  for json_file in "${CMS_DIR}/auth_token_revoked.json" "${CMS_DIR}/auth_token_unscoped.json" "${CMS_DIR}/auth_token_scoped.json" "${CMS_DIR}/revocation_list.json"
+  for json_file in "${CMS_DIR}/auth_token_revoked.json" "${CMS_DIR}/auth_token_unscoped.json" "${CMS_DIR}/auth_token_scoped.json" "${CMS_DIR}/revocation_list.json" "${CMS_DIR}/auth_v3_token_scoped.json" "${CMS_DIR}/auth_v3_token_revoked.json"
   do
     openssl cms -sign -in $json_file -nosmimecap -signer $CERTS_DIR/signing_cert.pem -inkey $PRIVATE_DIR/signing_key.pem -outform PEM -nodetach -nocerts -noattr -out ${json_file/.json/.pem}
   done
