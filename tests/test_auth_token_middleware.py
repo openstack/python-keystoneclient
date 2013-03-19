@@ -625,8 +625,6 @@ class BaseAuthTokenMiddlewareTest(testtools.TestCase):
         self.middleware = auth_token.AuthProtocol(fake_app(expected_env), conf)
         self.middleware._iso8601 = iso8601
         self.middleware.revoked_file_name = tempfile.mkstemp()[1]
-        cache_timeout = datetime.timedelta(days=1)
-        self.middleware.token_revocation_list_cache_timeout = cache_timeout
         self.middleware.token_revocation_list = jsonutils.dumps(
             {"revoked": [], "extra": "success"})
 
@@ -748,7 +746,8 @@ class AuthTokenMiddlewareTest(test.NoModule, BaseAuthTokenMiddlewareTest):
     def test_init_does_not_call_http(self):
         conf = {
             'auth_host': 'keystone.example.com',
-            'auth_port': 1234
+            'auth_port': 1234,
+            'revocation_cache_time': 1
         }
         self.set_fake_http(RaisingHTTPConnection)
         self.set_middleware(conf=conf, fake_http=RaisingHTTPConnection)
@@ -1164,6 +1163,17 @@ class AuthTokenMiddlewareTest(test.NoModule, BaseAuthTokenMiddlewareTest):
             'memcache_secret_key': ''
         }
         self.assertRaises(Exception, self.set_middleware, conf)
+
+    def test_config_revocation_cache_timeout(self):
+        conf = {
+                'auth_host': 'keystone.example.com',
+                'auth_port': 1234,
+                'auth_admin_prefix': '/testadmin',
+                'revocation_cache_time': 24
+        }
+        middleware = auth_token.AuthProtocol(self.fake_app, conf)
+        self.assertEquals(middleware.token_revocation_list_cache_timeout,
+                          datetime.timedelta(seconds=24))
 
 
 class v2AuthTokenMiddlewareTest(test.NoModule, BaseAuthTokenMiddlewareTest):

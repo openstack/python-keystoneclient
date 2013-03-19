@@ -215,6 +215,7 @@ opts = [
                default=os.path.expanduser('~/keystone-signing')),
     cfg.ListOpt('memcache_servers'),
     cfg.IntOpt('token_cache_time', default=300),
+    cfg.IntOpt('revocation_cache_time', default=1),
     cfg.StrOpt('memcache_security_strategy', default=None),
     cfg.StrOpt('memcache_secret_key', default=None, secret=True)
 ]
@@ -337,8 +338,8 @@ class AuthProtocol(object):
         self.token_cache_time = int(self._conf_get('token_cache_time'))
         self._token_revocation_list = None
         self._token_revocation_list_fetched_time = None
-        cache_timeout = datetime.timedelta(seconds=0)
-        self.token_revocation_list_cache_timeout = cache_timeout
+        self.token_revocation_list_cache_timeout = datetime.timedelta(
+            seconds=self._conf_get('revocation_cache_time'))
         http_connect_timeout_cfg = self._conf_get('http_connect_timeout')
         self.http_connect_timeout = (http_connect_timeout_cfg and
                                      int(http_connect_timeout_cfg))
