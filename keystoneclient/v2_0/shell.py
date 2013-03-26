@@ -227,6 +227,13 @@ def do_service_delete(kc, args):
     service = utils.find_resource(kc.services, args.service)
     kc.services.delete(service.id)
 
+@utils.arg('name', metavar='<service-name>', help='Service Name to show ID')
+def do_service_id(kc, args):
+    services = kc.services.list()
+    for service in services:
+        if getattr(service,'name','') == args.name:
+           print getattr(service,'id','')
+           return
 
 def do_role_list(kc, args):
     """List all roles"""

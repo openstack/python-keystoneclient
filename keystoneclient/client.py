@@ -257,7 +257,6 @@ class HTTPClient(object):
 
     def store_auth_ref_into_keyring(self, keyring_key):
         """ Store auth_ref into keyring.
-
         """
         if self.use_keyring:
             try:
