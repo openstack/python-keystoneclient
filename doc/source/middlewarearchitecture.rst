@@ -196,15 +196,16 @@ Configuration Options
 Caching for improved response
 -----------------------------
 
-In order to prevent every service request, the middleware may be configured
-to utilize a cache, and the keystone API returns the tokens with an
-expiration (configurable in duration on the keystone service). The middleware
-supports memcache based caching.
+In order to prevent excessive requests and validations, the middleware uses an
+in-memory cache for the tokens the keystone API returns. Keep in mind that
+invalidated tokens may continue to work if they are still in the token cache,
+so token_cache_time is configurable. For larger deployments, the middleware
+also supports memcache based caching.
 
 * ``memcache_servers``: (optonal) if defined, the memcache server(s) to use for
   cacheing. It will be ignored if Swift MemcacheRing is used instead.
-* ``token_cache_time``: (optional, default 300 seconds) Only valid if
-  memcache_servers is defined.
+* ``token_cache_time``: (optional, default 300 seconds) Set to -1 to disable
+  caching completely.
 
 When deploying auth_token middleware with Swift, user may elect
 to use Swift MemcacheRing instead of the local Keystone memcache.

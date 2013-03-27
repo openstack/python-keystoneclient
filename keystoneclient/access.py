@@ -163,4 +163,3 @@ class AccessInfo(dict):
         :returns: tuple of urls
         """
         return self._get_identity_endpoint('adminURL')
-

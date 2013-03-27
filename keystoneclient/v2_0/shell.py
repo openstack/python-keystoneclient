@@ -87,6 +87,16 @@ def do_user_update(kc, args):
     except Exception, e:
         print 'Unable to update user: %s' % e
 
+@utils.arg('--pass', metavar='<password>', dest='passwd', required=True,
+           help='Desired new password')
+@utils.arg('user', metavar='<user>',
+           help='Name or ID of user to update password')
+def do_user_password_update(kc, args):
+    """Update user password"""
+    user = utils.find_resource(kc.users, args.user)
+    kc.users.update_password(user, args.passwd)
+
+
 @utils.arg('--current-password', metavar='<current-password>',
            dest='currentpasswd', required=False, help='Current password, '
                 'Defaults to the password as set by --os-password or '
@@ -165,7 +175,7 @@ def do_tenant_create(kc, args):
            help='Enable or disable tenant')
 @utils.arg('--props', metavar='IP-<region>', required=False, nargs='+',
            help= 'Additional properties for Tenant. List in <key>=<value> format')
-@utils.arg('id', metavar='<tenant-id>', help='Tenant ID to update')
+@utils.arg('tenant', metavar='<tenant>', help='Name or ID of tenant to update')
 def do_tenant_update(kc, args):
     """Update tenant name, description, enabled status"""
     tenant = utils.find_resource(kc.tenants, args.tenant)

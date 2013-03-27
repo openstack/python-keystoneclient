@@ -28,6 +28,7 @@ from keystoneclient.common import cms
 from keystoneclient import utils
 from keystoneclient.middleware import auth_token
 from keystoneclient.middleware import memcache_crypt
+from keystoneclient.openstack.common import memorycache
 from keystoneclient.openstack.common import jsonutils
 from keystoneclient.openstack.common import timeutils
 from keystoneclient.middleware import test
@@ -328,6 +329,7 @@ def setUpModule(self):
         }
     }
 
+
 VERSION_LIST_v3 = {
     "versions": {
         "values": [
@@ -360,26 +362,13 @@ VERSION_LIST_v2 = {
     }
 }
 
+>>>>>>> .merge_file_WSqOdA
 
-class FakeMemcache(object):
-    def __init__(self):
-        self.set_key = None
-        self.set_value = None
-        self.token_expiration = None
-        self.token_key = SIGNED_TOKEN_SCOPED_KEY
-
-    def get(self, key):
-        data = TOKEN_RESPONSES[self.token_key].copy()
-        if not data or key != "tokens/%s" % self.token_key:
-            return
-        if not self.token_expiration:
-            dt = datetime.datetime.now() + datetime.timedelta(minutes=5)
-            self.token_expiration = dt.strftime("%s")
-        return (data, str(self.token_expiration))
-
-    def set(self, key, value, time=None):
-        self.set_value = value
-        self.set_key = key
+class FakeSwiftMemcacheRing(memorycache.Client):
+    # NOTE(vish): swift memcache uses param timeout instead of time
+    def set(self, key, value, timeout=0, min_compress_len=0):
+        sup = super(FakeSwiftMemcacheRing, self)
+        sup.set(key, value, timeout, min_compress_len)
 
 
 class v3FakeMemcache(FakeMemcache):
@@ -599,15 +588,13 @@ class BaseAuthTokenMiddlewareTest(testtools.TestCase):
     configured for receiving v2 or v3 tokens, with the
     choice being made by passing configuration data into
     Setup().
-
     The base class will, by default, run all the tests
     expecting v2 token formats.  Child classes can override
     this to specify, for instance, v3 format.
 
     """
     def setUp(self, expected_env=None, auth_version=None,
-              fake_app=None, fake_http=None, token_dict=None,
-              fake_memcache=None, fake_memcache_ring=None):
+              fake_app=None, fake_http=None, token_dict=None):
         testtools.TestCase.setUp(self)
         expected_env = expected_env or {}
 
@@ -639,10 +626,6 @@ class BaseAuthTokenMiddlewareTest(testtools.TestCase):
 
         self.response_status = None
         self.response_headers = None
-
-        self.fake_memcache = fake_memcache or FakeMemcache
-        self.fake_memcache_ring = fake_memcache_ring or FakeSwiftMemcacheRing
-
         signed_list = 'SIGNED_REVOCATION_LIST'
         valid_signed_list = 'VALID_SIGNED_REVOCATION_LIST'
         globals()[signed_list] = globals()[valid_signed_list]
@@ -675,8 +658,6 @@ class BaseAuthTokenMiddlewareTest(testtools.TestCase):
         self.middleware = auth_token.AuthProtocol(fake_app(expected_env), conf)
         self.middleware._iso8601 = iso8601
         self.middleware.revoked_file_name = tempfile.mkstemp()[1]
-        cache_timeout = datetime.timedelta(days=1)
-        self.middleware.token_revocation_list_cache_timeout = cache_timeout
         self.middleware.token_revocation_list = jsonutils.dumps(
             {"revoked": [], "extra": "success"})
 
@@ -798,7 +779,8 @@ class AuthTokenMiddlewareTest(test.NoModule, BaseAuthTokenMiddlewareTest):
     def test_init_does_not_call_http(self):
         conf = {
             'auth_host': 'keystone.example.com',
-            'auth_port': 1234
+            'auth_port': 1234,
+            'revocation_cache_time': 1
         }
         self.set_fake_http(RaisingHTTPConnection)
         self.set_middleware(conf=conf, fake_http=RaisingHTTPConnection)
@@ -978,44 +960,53 @@ class AuthTokenMiddlewareTest(test.NoModule, BaseAuthTokenMiddlewareTest):
         self.assertEqual(self.response_headers['WWW-Authenticate'],
                          "Keystone uri='https://keystone.example.com:1234'")
 
+    def _get_cached_token(self, token):
+        token_id = cms.cms_hash_token(token)
+        # NOTE(vish): example tokens are expired so skip the expiration check.
+        key = self.middleware._get_cache_key(token_id)
+        cached = self.middleware._cache.get(key)
+        return self.middleware._unprotect_cache_value(token, cached)
+
     def test_memcache(self):
         req = webob.Request.blank('/')
-        req.headers['X-Auth-Token'] = (
-            self.token_dict['signed_token_scoped'])
-        self.middleware._cache = self.fake_memcache()
-        self.middleware._use_keystone_cache = True
+        token = self.token_dict['signed_token_scoped']
+        req.headers['X-Auth-Token'] = token
         self.middleware(req.environ, self.start_fake_response)
-        self.assertEqual(self.middleware._cache.set_value, None)
+        self.assertNotEqual(self._get_cached_token(token), None)
 
     def test_memcache_set_invalid(self):
         req = webob.Request.blank('/')
-        req.headers['X-Auth-Token'] = 'invalid-token'
-        self.middleware._cache = self.fake_memcache()
-        self.middleware._use_keystone_cache = True
+        token = 'invalid-token'
+        req.headers['X-Auth-Token'] = token
         self.middleware(req.environ, self.start_fake_response)
-        self.assertEqual(self.middleware._cache.set_value, "invalid")
+        self.assertEqual(self._get_cached_token(token), "invalid")
 
     def test_memcache_set_expired(self):
+        token_cache_time = 10
+        conf = {
+            'token_cache_time': token_cache_time,
+            'signing_dir': CERTDIR,
+        }
+        self.set_middleware(conf=conf)
         req = webob.Request.blank('/')
-        req.headers['X-Auth-Token'] = (
-            self.token_dict['signed_token_scoped'])
-        self.middleware._cache = self.fake_memcache()
-        self.middleware._use_keystone_cache = True
-        expired = datetime.datetime.now() - datetime.timedelta(minutes=1)
-        self.middleware._cache.token_expiration = float(expired.strftime("%s"))
-        self.middleware(req.environ, self.start_fake_response)
-        self.assertEqual(len(self.middleware._cache.set_value), 2)
+        token = self.token_dict['signed_token_scoped']
+        req.headers['X-Auth-Token'] = token
+        try:
+            now = datetime.datetime.utcnow()
+            timeutils.set_time_override(now)
+            self.middleware(req.environ, self.start_fake_response)
+            self.assertNotEqual(self._get_cached_token(token), None)
+            expired = now + datetime.timedelta(seconds=token_cache_time)
+            timeutils.set_time_override(expired)
+            self.assertEqual(self._get_cached_token(token), None)
+        finally:
+            timeutils.clear_time_override()
 
     def test_swift_memcache_set_expired(self):
-        req = webob.Request.blank('/')
-        req.headers['X-Auth-Token'] = (
-            self.token_dict['signed_token_scoped'])
-        self.middleware._cache = self.fake_memcache_ring()
+        self.middleware._cache = FakeSwiftMemcacheRing()
         self.middleware._use_keystone_cache = False
-        expired = datetime.datetime.now() - datetime.timedelta(minutes=1)
-        self.middleware._cache.token_expiration = float(expired.strftime("%s"))
-        self.middleware(req.environ, self.start_fake_response)
-        self.assertEqual(len(self.middleware._cache.set_value), 2)
+        self.middleware._cache_initialized = True
+        self.test_memcache_set_expired()
 
     def test_nomemcache(self):
         self.disable_module('memcache')
@@ -1042,7 +1033,6 @@ class AuthTokenMiddlewareTest(test.NoModule, BaseAuthTokenMiddlewareTest):
         self.assertEqual(self.middleware._cache, 'CACHE_TEST')
 
     def test_not_use_cache_from_env(self):
-        self.disable_module('memcache')
         env = {'swift.cache': 'CACHE_TEST'}
         conf = {
             'auth_host': 'keystone.example.com',
@@ -1052,7 +1042,7 @@ class AuthTokenMiddlewareTest(test.NoModule, BaseAuthTokenMiddlewareTest):
         }
         self.set_middleware(conf=conf)
         self.middleware._init_cache(env)
-        self.assertEqual(self.middleware._cache, None)
+        self.assertNotEqual(self.middleware._cache, 'CACHE_TEST')
 
     def test_will_expire_soon(self):
         tenseconds = datetime.datetime.utcnow() + datetime.timedelta(
@@ -1207,6 +1197,17 @@ class AuthTokenMiddlewareTest(test.NoModule, BaseAuthTokenMiddlewareTest):
         }
         self.assertRaises(Exception, self.set_middleware, conf)
 
+    def test_config_revocation_cache_timeout(self):
+        conf = {
+                'auth_host': 'keystone.example.com',
+                'auth_port': 1234,
+                'auth_admin_prefix': '/testadmin',
+                'revocation_cache_time': 24
+        }
+        middleware = auth_token.AuthProtocol(self.fake_app, conf)
+        self.assertEquals(middleware.token_revocation_list_cache_timeout,
+                          datetime.timedelta(seconds=24))
+
 
 class v2AuthTokenMiddlewareTest(test.NoModule, BaseAuthTokenMiddlewareTest):
     """ v2 token specific tests.
@@ -1341,9 +1342,7 @@ class v3AuthTokenMiddlewareTest(AuthTokenMiddlewareTest):
                 auth_version='v3.0',
                 fake_app=v3FakeApp,
                 fake_http=v3FakeHTTPConnection,
-                token_dict=token_dict,
-                fake_memcache=v3FakeMemcache,
-                fake_memcache_ring=v3FakeSwiftMemcacheRing)
+                token_dict=token_dict)
 
     def assert_valid_last_url(self, token_id):
         # Token ID is not part of the url in v3, so override

@@ -158,6 +158,7 @@ from keystoneclient.openstack.common import jsonutils
 from keystoneclient.common import cms
 from keystoneclient import utils
 from keystoneclient.middleware import memcache_crypt
+from keystoneclient.openstack.common import memorycache
 from keystoneclient.openstack.common import timeutils
 
 CONF = None
@@ -214,6 +215,7 @@ opts = [
                default=os.path.expanduser('~/keystone-signing')),
     cfg.ListOpt('memcache_servers'),
     cfg.IntOpt('token_cache_time', default=300),
+    cfg.IntOpt('revocation_cache_time', default=1),
     cfg.StrOpt('memcache_security_strategy', default=None),
     cfg.StrOpt('memcache_secret_key', default=None, secret=True)
 ]
@@ -336,8 +338,8 @@ class AuthProtocol(object):
         self.token_cache_time = int(self._conf_get('token_cache_time'))
         self._token_revocation_list = None
         self._token_revocation_list_fetched_time = None
-        cache_timeout = datetime.timedelta(seconds=0)
-        self.token_revocation_list_cache_timeout = cache_timeout
+        self.token_revocation_list_cache_timeout = datetime.timedelta(
+            seconds=self._conf_get('revocation_cache_time'))
         http_connect_timeout_cfg = self._conf_get('http_connect_timeout')
         self.http_connect_timeout = (http_connect_timeout_cfg and
                                      int(http_connect_timeout_cfg))
@@ -361,16 +363,8 @@ class AuthProtocol(object):
             self._cache = env.get(cache)
         else:
             # use Keystone memcache
-            memcache_servers = self._conf_get('memcache_servers')
-            if memcache_servers:
-                try:
-                    import memcache
-                    self.LOG.info('Using Keystone memcache for caching token')
-                    self._cache = memcache.Client(memcache_servers)
-                    self._use_keystone_cache = True
-                except ImportError as e:
-                    msg = 'disabled caching due to missing libraries %s' % (e)
-                    self.LOG.warn(msg)
+            self._cache = memorycache.get_client(memcache_servers)
+            self._use_keystone_cache = True
         self._cache_initialized = True
 
     def _conf_get(self, name):
@@ -989,12 +983,8 @@ class AuthProtocol(object):
                 additional_headers=headers)
 
         if response.status == 200:
-            self._cache_put(user_token, data)
             return data
         if response.status == 404:
-            # FIXME(ja): I'm assuming the 404 status means that user_token is
-            #            invalid - not that the admin_token is invalid
-            self._cache_store_invalid(user_token)
             self.LOG.warn("Authorization failed for token %s", user_token)
             raise InvalidUserToken('Token authorization failed')
         if response.status == 401:
