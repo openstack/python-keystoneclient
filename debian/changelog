@@ -1,3 +1,9 @@
+python-keystoneclient (1:0.2.3-nebula1) precise; urgency=low
+
+  * Update version to 0.2.3 
+
+ -- Brian Waldon <brian.waldon@nebula.com>  Tue, 02 Apr 2013 00:00:00 +0000
+
 python-keystoneclient (1:0.2.0-nebula1) precise; urgency=low
 
   * Update version to 0.2.0 

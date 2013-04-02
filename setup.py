@@ -14,7 +14,7 @@ tests_require = setup.parse_requirements(['tools/test-requires'])
 
 setuptools.setup(
     name="python-keystoneclient",
-    version='0.2.0',
+    version='0.2.3',
     description="Client library for OpenStack Identity API (Keystone)",
     long_description=read('README.rst'),
     url='https://github.com/openstack/python-keystoneclient',
