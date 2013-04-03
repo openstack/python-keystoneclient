@@ -27,6 +27,36 @@ class Ec2SignerTest(testtools.TestCase):
         self.secret = '89cdf9e94e2643cab35b8b8ac5a51f83'
         self.signer = Ec2Signer(self.secret)
 
+    def tearDown(self):
+        super(Ec2SignerTest, self).tearDown()
+
+    def test_v4_creds_header(self):
+        auth_str = 'AWS4-HMAC-SHA256 blah'
+        credentials = {'host': '127.0.0.1',
+                       'verb': 'GET',
+                       'path': '/v1/',
+                       'params': {},
+                       'headers': {'Authorization': auth_str}}
+        self.assertTrue(self.signer._v4_creds(credentials))
+
+    def test_v4_creds_param(self):
+        credentials = {'host': '127.0.0.1',
+                       'verb': 'GET',
+                       'path': '/v1/',
+                       'params': {'X-Amz-Algorithm': 'AWS4-HMAC-SHA256'},
+                       'headers': {}}
+        self.assertTrue(self.signer._v4_creds(credentials))
+
+    def test_v4_creds_false(self):
+        credentials = {'host': '127.0.0.1',
+                       'verb': 'GET',
+                       'path': '/v1/',
+                       'params': {'SignatureVersion': '0',
+                                  'AWSAccessKeyId': self.access,
+                                  'Timestamp': '2012-11-27T11:47:02Z',
+                                  'Action': 'Foo'}}
+        self.assertFalse(self.signer._v4_creds(credentials))
+
     def test_generate_0(self):
         """Test generate function for v0 signature"""
         credentials = {'host': '127.0.0.1',
@@ -39,8 +69,6 @@ class Ec2SignerTest(testtools.TestCase):
         signature = self.signer.generate(credentials)
         expected = 'SmXQEZAUdQw5glv5mX8mmixBtas='
         self.assertEqual(signature, expected)
-
-        pass
 
     def test_generate_1(self):
         """Test generate function for v1 signature"""
@@ -74,4 +102,44 @@ class Ec2SignerTest(testtools.TestCase):
         self.signer.hmac_256 = None
         signature = self.signer.generate(credentials)
         expected = 'ZqCxMI4ZtTXWI175743mJ0hy/Gc='
+        self.assertEqual(signature, expected)
+
+    def test_generate_v4(self):
+        """
+        Test v4 generator with data from AWS docs example, see:
+        http://docs.aws.amazon.com/general/latest/gr/
+        sigv4-create-canonical-request.html
+        and
+        http://docs.aws.amazon.com/general/latest/gr/
+        sigv4-signed-request-examples.html
+        """
+        # Create a new signer object with the AWS example key
+        secret = 'wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY'
+        signer = Ec2Signer(secret)
+
+        body_hash = ('b6359072c78d70ebee1e81adcbab4f0'
+                     '1bf2c23245fa365ef83fe8f1f955085e2')
+        auth_str = ('AWS4-HMAC-SHA256 '
+                    'Credential=AKIAIOSFODNN7EXAMPLE/20110909/'
+                    'us-east-1/iam/aws4_request,'
+                    'SignedHeaders=content-type;host;x-amz-date,')
+        headers = {'Content-type':
+                   'application/x-www-form-urlencoded; charset=utf-8',
+                   'X-Amz-Date': '20110909T233600Z',
+                   'Host': 'iam.amazonaws.com',
+                   'Authorization': auth_str}
+        # Note the example in the AWS docs is inconsistent, previous
+        # examples specify no query string, but the final POST example
+        # does, apparently incorrectly since an empty parameter list
+        # aligns all steps and the final signature with the examples
+        params = {}
+        credentials = {'host': 'iam.amazonaws.com',
+                       'verb': 'POST',
+                       'path': '/',
+                       'params': params,
+                       'headers': headers,
+                       'body_hash': body_hash}
+        signature = signer.generate(credentials)
+        expected = ('ced6826de92d2bdeed8f846f0bf508e8'
+                    '559e98e4b0199114b84c54174deb456c')
         self.assertEqual(signature, expected)
