@@ -351,11 +351,16 @@ class HTTPClient(object):
             request_kwargs.setdefault('timeout', self.timeout)
 
         self.http_log_req((url, method,), request_kwargs)
-        resp = requests.request(
-            method,
-            url,
-            verify=self.verify_cert,
-            **request_kwargs)
+
+        try:
+            resp = requests.request(
+                method,
+                url,
+                verify=self.verify_cert,
+                **request_kwargs)
+        except requests.ConnectionError:
+            msg = 'Unable to establish connection to %s' % url
+            raise exceptions.ClientException(msg)
 
         self.http_log_resp(resp)
 
