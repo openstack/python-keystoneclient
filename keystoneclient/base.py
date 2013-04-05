@@ -263,6 +263,28 @@ class CrudManager(Manager):
         return self._delete(
             self.build_url(**kwargs))
 
+    def find(self, base_url=None, **kwargs):
+        """
+        Find a single item with attributes matching ``**kwargs``.
+        """
+        kwargs = self._filter_kwargs(kwargs)
+
+        rl = self._list(
+            '%(base_url)s%(query)s' % {
+                'base_url': self.build_url(base_url=base_url, **kwargs),
+                'query': '?%s' % urllib.urlencode(kwargs) if kwargs else '',
+            },
+            self.collection_key)
+        num = len(rl)
+
+        if num == 0:
+            msg = "No %s matching %s." % (self.resource_class.__name__, kwargs)
+            raise exceptions.NotFound(404, msg)
+        elif num > 1:
+            raise exceptions.NoUniqueMatch
+        else:
+            return rl[0]
+
 
 class Resource(object):
     """
