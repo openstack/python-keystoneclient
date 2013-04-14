@@ -136,6 +136,7 @@ _code_map = dict((c.http_status, c) for c in [BadRequest,
                                               Forbidden,
                                               NotFound,
                                               MethodNotAllowed,
+                                              Conflict,
                                               OverLimit,
                                               HTTPNotImplemented,
                                               ServiceUnavailable])
