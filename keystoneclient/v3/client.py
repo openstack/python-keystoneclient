@@ -63,7 +63,7 @@ class Client(client.Client):
     """
 
     def __init__(self, endpoint=None, **kwargs):
-        """ Initialize a new client for the Keystone v2.0 API. """
+        """ Initialize a new client for the Keystone v3.0 API. """
         super(Client, self).__init__(endpoint=endpoint, **kwargs)
 
         self.credentials = credentials.CredentialManager(self)
