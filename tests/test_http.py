@@ -1,3 +1,4 @@
+import json
 import mock
 
 import requests
@@ -52,7 +53,7 @@ class ClientTest(utils.TestCase):
                 # Automatic JSON parsing
                 self.assertEqual(body, {"hi": "there"})
 
-    def test_get_error(self):
+    def test_get_error_with_plaintext_resp(self):
         cl = get_authed_client()
 
         fake_err_response = utils.TestResponse({
@@ -63,6 +64,30 @@ class ClientTest(utils.TestCase):
 
         with mock.patch.object(requests, "request", err_MOCK_REQUEST):
             self.assertRaises(exceptions.BadRequest, cl.get, '/hi')
+
+    def test_get_error_with_json_resp(self):
+        cl = get_authed_client()
+        err_response = {
+            "error": {
+                "code": 400,
+                "title": "Error title",
+                "message": "Error message string"
+            }
+        }
+        fake_err_response = utils.TestResponse({
+            "status_code": 400,
+            "text": json.dumps(err_response)
+        })
+        err_MOCK_REQUEST = mock.Mock(return_value=(fake_err_response))
+
+        with mock.patch.object(requests, "request", err_MOCK_REQUEST):
+            exc_raised = False
+            try:
+                cl.get('/hi')
+            except exceptions.BadRequest as exc:
+                exc_raised = True
+                self.assertEqual(exc.message, "Error message string")
+            self.assertTrue(exc_raised, 'Exception not raised.')
 
     def test_post(self):
         cl = get_authed_client()
