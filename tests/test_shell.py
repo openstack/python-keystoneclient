@@ -78,9 +78,6 @@ class ShellTest(utils.TestCase):
             os.environ = _old_env
         return out
 
-    def test_help_unknown_command(self):
-        self.assertRaises(exceptions.CommandError, shell, 'help foofoo')
-
     def test_help_no_args(self):
         do_tenant_mock = mock.MagicMock()
         with mock.patch('keystoneclient.shell.OpenStackIdentityShell.do_help',

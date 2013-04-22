@@ -381,12 +381,6 @@ class FakeHTTPClient(fakes.FakeClient):
                 "id": "1"}}
         return (200, body)
 
-    def post_OS_KSADM_roles(self, **kw):
-        body = {"role":
-               {"name": "new-role",
-                "id": "1"}}
-        return (200, body)
-
     def get_OS_KSADM_roles(self, **kw):
         body = {"roles": [
                 {"id": "10", "name": "admin"},
