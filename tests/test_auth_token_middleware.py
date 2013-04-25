@@ -1061,7 +1061,7 @@ class AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
             'auth_port': 1234,
             'auth_admin_prefix': '/testadmin',
             'cache': 'swift.cache',
-            'memcache_servers': 'localhost:11211'
+            'memcache_servers': ['localhost:11211']
         }
         self.set_middleware(conf=conf)
         self.middleware._init_cache(env)
@@ -1080,7 +1080,7 @@ class AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
             'auth_host': 'keystone.example.com',
             'auth_port': 1234,
             'auth_admin_prefix': '/testadmin',
-            'memcache_servers': 'localhost:11211',
+            'memcache_servers': ['localhost:11211'],
             'memcache_security_strategy': 'encrypt',
             'memcache_secret_key': 'mysecret'
         }
@@ -1103,7 +1103,7 @@ class AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
             'auth_host': 'keystone.example.com',
             'auth_port': 1234,
             'auth_admin_prefix': '/testadmin',
-            'memcache_servers': 'localhost:11211',
+            'memcache_servers': ['localhost:11211'],
             'memcache_security_strategy': 'mac',
             'memcache_secret_key': 'mysecret'
         }
@@ -1127,7 +1127,7 @@ class AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
             'auth_host': 'keystone.example.com',
             'auth_port': 1234,
             'auth_admin_prefix': '/testadmin',
-            'memcache_servers': 'localhost:11211',
+            'memcache_servers': ['localhost:11211'],
             'memcache_secret_key': 'mysecret'
         }
         self.set_middleware(conf=conf)
@@ -1143,7 +1143,7 @@ class AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
             'auth_host': 'keystone.example.com',
             'auth_port': 1234,
             'auth_admin_prefix': '/testadmin',
-            'memcache_servers': 'localhost:11211',
+            'memcache_servers': ['localhost:11211'],
             'memcache_secret_key': 'mysecret'
         }
         self.set_middleware(conf=conf)
@@ -1154,7 +1154,7 @@ class AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
             'auth_host': 'keystone.example.com',
             'auth_port': 1234,
             'auth_admin_prefix': '/testadmin',
-            'memcache_servers': 'localhost:11211',
+            'memcache_servers': ['localhost:11211'],
             'memcache_security_strategy': 'mac',
             'memcache_secret_key': 'mysecret'
         }
@@ -1165,7 +1165,7 @@ class AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
             'auth_host': 'keystone.example.com',
             'auth_port': 1234,
             'auth_admin_prefix': '/testadmin',
-            'memcache_servers': 'localhost:11211',
+            'memcache_servers': ['localhost:11211'],
             'memcache_security_strategy': 'Encrypt',
             'memcache_secret_key': 'abc!'
         }
@@ -1179,7 +1179,7 @@ class AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
             'auth_host': 'keystone.example.com',
             'auth_port': 1234,
             'auth_admin_prefix': '/testadmin',
-            'memcache_servers': 'localhost:11211',
+            'memcache_servers': ['localhost:11211'],
             'memcache_security_strategy': 'Encrypt'
         }
         self.assertRaises(Exception, self.set_middleware, conf)
@@ -1188,7 +1188,7 @@ class AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
             'auth_host': 'keystone.example.com',
             'auth_port': 1234,
             'auth_admin_prefix': '/testadmin',
-            'memcache_servers': 'localhost:11211',
+            'memcache_servers': ['localhost:11211'],
             'memcache_security_strategy': 'whatever'
         }
         self.assertRaises(Exception, self.set_middleware, conf)
@@ -1197,7 +1197,7 @@ class AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
             'auth_host': 'keystone.example.com',
             'auth_port': 1234,
             'auth_admin_prefix': '/testadmin',
-            'memcache_servers': 'localhost:11211',
+            'memcache_servers': ['localhost:11211'],
             'memcache_security_strategy': 'mac'
         }
         self.assertRaises(Exception, self.set_middleware, conf)
@@ -1205,7 +1205,7 @@ class AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
             'auth_host': 'keystone.example.com',
             'auth_port': 1234,
             'auth_admin_prefix': '/testadmin',
-            'memcache_servers': 'localhost:11211',
+            'memcache_servers': ['localhost:11211'],
             'memcache_security_strategy': 'Encrypt',
             'memcache_secret_key': ''
         }
@@ -1214,7 +1214,7 @@ class AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
             'auth_host': 'keystone.example.com',
             'auth_port': 1234,
             'auth_admin_prefix': '/testadmin',
-            'memcache_servers': 'localhost:11211',
+            'memcache_servers': ['localhost:11211'],
             'memcache_security_strategy': 'mAc',
             'memcache_secret_key': ''
         }
