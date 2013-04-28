@@ -299,8 +299,9 @@ class OpenStackIdentityShell(object):
             subparser.add_argument('-h', '--help', action='help',
                                    help=argparse.SUPPRESS)
             self.subcommands[command] = subparser
+            group = subparser.add_argument_group(title='Arguments')
             for (args, kwargs) in arguments:
-                subparser.add_argument(*args, **kwargs)
+                group.add_argument(*args, **kwargs)
             subparser.set_defaults(func=callback)
 
     def main(self, argv):
