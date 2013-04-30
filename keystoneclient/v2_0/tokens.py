@@ -34,8 +34,15 @@ class TokenManager(base.ManagerWithFind):
             params['auth']['tenantId'] = tenant_id
         elif tenant_name:
             params['auth']['tenantName'] = tenant_name
-        return self._create('/tokens', params, "access",
-                            return_raw=return_raw, management=False)
+        reset = 0
+        if self.api.management_url is None:
+            reset = 1
+            self.api.management_url = self.api.auth_url
+        token_ref = self._create('/tokens', params, "access",
+                                 return_raw=return_raw)
+        if reset:
+            self.api.management_url = None
+        return token_ref
 
     def delete(self, token):
         return self._delete("/tokens/%s" % base.getid(token))
