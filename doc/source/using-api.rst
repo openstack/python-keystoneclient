@@ -29,6 +29,10 @@ You create a valid ``keystoneclient.v2_0.client.Client`` object by passing
 authentication data to the constructor. Authentication and examples of common
 tasks are provided below.
 
+You can generally expect that when the client needs to propogate an exception
+it will raise an instance of subclass of
+``keystoneclient.exceptions.ClientException``
+
 Authenticating
 ==============
 

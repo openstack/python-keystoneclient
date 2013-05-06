@@ -75,3 +75,9 @@ Docstrings
   :returns: description of the return value
 
   """
+
+Exceptions
+----------
+
+When dealing with exceptions from underlying libraries, translate those
+exceptions to an instance or subclass of ClientException.
