@@ -164,11 +164,11 @@ class UserTests(utils.TestCase):
         kwargs['headers'] = self.TEST_REQUEST_HEADERS
         requests.request(
             'GET',
-            urlparse.urljoin(self.TEST_URL, 'v2.0/users?marker=1'),
+            urlparse.urljoin(self.TEST_URL, 'v2.0/users?marker=foo'),
             **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
-        user_list = self.client.users.list(marker=1)
+        user_list = self.client.users.list(marker='foo')
         [self.assertTrue(isinstance(u, users.User)) for u in user_list]
 
     def test_list_limit_marker(self):
@@ -181,11 +181,11 @@ class UserTests(utils.TestCase):
         kwargs['headers'] = self.TEST_REQUEST_HEADERS
         requests.request(
             'GET',
-            urlparse.urljoin(self.TEST_URL, 'v2.0/users?marker=1&limit=1'),
+            urlparse.urljoin(self.TEST_URL, 'v2.0/users?marker=foo&limit=1'),
             **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
-        user_list = self.client.users.list(limit=1, marker=1)
+        user_list = self.client.users.list(limit=1, marker='foo')
         [self.assertTrue(isinstance(u, users.User)) for u in user_list]
 
     def test_update(self):

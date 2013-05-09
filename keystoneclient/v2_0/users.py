@@ -124,7 +124,7 @@ class UserManager(base.ManagerWithFind):
         if limit:
             params['limit'] = int(limit)
         if marker:
-            params['marker'] = int(marker)
+            params['marker'] = marker
 
         query = ""
         if params:
