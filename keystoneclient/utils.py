@@ -1,5 +1,7 @@
-import uuid
+import getpass
 import hashlib
+import sys
+import uuid
 
 import prettytable
 
@@ -128,3 +130,22 @@ def hash_signed_token(signed_text):
     hash_ = hashlib.md5()
     hash_.update(signed_text)
     return hash_.hexdigest()
+
+
+def prompt_for_password():
+    """
+     Prompt user for password if not provided so the password
+     doesn't show up in the bash history.
+    """
+    if not (hasattr(sys.stdin, 'isatty') and sys.stdin.isatty()):
+        # nothing to do
+        return
+
+    while True:
+        try:
+            new_passwd = getpass.getpass('New Password: ')
+            rep_passwd = getpass.getpass('Repeat New Password: ')
+            if new_passwd == rep_passwd:
+                return new_passwd
+        except EOFError:
+            return
