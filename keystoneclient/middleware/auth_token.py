@@ -150,6 +150,7 @@ import json
 import logging
 import os
 import stat
+import tempfile
 import time
 import urllib
 import webob.exc
@@ -211,8 +212,7 @@ opts = [
     cfg.StrOpt('cache', default=None),   # env key for the swift cache
     cfg.StrOpt('certfile'),
     cfg.StrOpt('keyfile'),
-    cfg.StrOpt('signing_dir',
-               default=os.path.expanduser('~/keystone-signing')),
+    cfg.StrOpt('signing_dir'),
     cfg.ListOpt('memcache_servers'),
     cfg.IntOpt('token_cache_time', default=300),
     cfg.IntOpt('revocation_cache_time', default=1),
@@ -292,8 +292,10 @@ class AuthProtocol(object):
         self.cert_file = self._conf_get('certfile')
         self.key_file = self._conf_get('keyfile')
 
-        #signing
+        # signing
         self.signing_dirname = self._conf_get('signing_dir')
+        if self.signing_dirname is None:
+            self.signing_dirname = tempfile.mkdtemp(prefix='keystone-signing-')
         self.LOG.info('Using %s as cache directory for signing certificate' %
                       self.signing_dirname)
         if os.path.exists(self.signing_dirname):
