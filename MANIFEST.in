@@ -3,7 +3,6 @@ include AUTHORS HACKING LICENSE
 include ChangeLog
 include run_tests.sh tox.ini
 include python-keystoneclient
-include keystoneclient/versioninfo
 recursive-include doc *
 recursive-include tests *
 recursive-include tools *
