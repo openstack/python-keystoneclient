@@ -1,4 +1,6 @@
 .coverage
+.testrepository
+subunit.log
 .venv
 *,cover
 cover
