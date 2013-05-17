@@ -4,6 +4,7 @@ import json
 
 import requests
 
+from keystoneclient import exceptions
 from keystoneclient.v2_0 import tenants
 from tests import utils
 
@@ -82,6 +83,41 @@ class TenantTests(utils.TestCase):
         self.assertEqual(tenant.id, 4)
         self.assertEqual(tenant.name, "tenantX")
         self.assertEqual(tenant.description, "Like tenant 9, but better.")
+
+    def test_duplicate_create(self):
+        req_body = {
+            "tenant": {
+                "name": "tenantX",
+                "description": "The duplicate tenant.",
+                "enabled": True
+            },
+        }
+        resp_body = {
+            "error": {
+                "message": "Conflict occurred attempting to store project.",
+                "code": 409,
+                "title": "Conflict",
+            }
+        }
+        resp = utils.TestResponse({
+            "status_code": 409,
+            "text": json.dumps(resp_body),
+        })
+
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.TEST_POST_HEADERS
+        kwargs['data'] = json.dumps(req_body)
+        requests.request('POST',
+                         urlparse.urljoin(self.TEST_URL, 'v2.0/tenants'),
+                         **kwargs).AndReturn((resp))
+        self.mox.ReplayAll()
+
+        def create_duplicate_tenant():
+            self.client.tenants.create(req_body['tenant']['name'],
+                                       req_body['tenant']['description'],
+                                       req_body['tenant']['enabled'])
+
+        self.assertRaises(exceptions.Conflict, create_duplicate_tenant)
 
     def test_delete(self):
         resp = utils.TestResponse({
