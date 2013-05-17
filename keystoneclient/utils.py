@@ -21,7 +21,8 @@ def pretty_choice_list(l):
 
 
 def print_list(objs, fields, formatters={}, order_by=None):
-    pt = prettytable.PrettyTable([f for f in fields], caching=False)
+    pt = prettytable.PrettyTable([f for f in fields],
+                                 caching=False, print_empty=False)
     pt.aligns = ['l' for f in fields]
 
     for o in objs:
@@ -55,7 +56,8 @@ def print_dict(d, wrap=0):
 
     Wrap values to max_length wrap if wrap>0
     """
-    pt = prettytable.PrettyTable(['Property', 'Value'], caching=False)
+    pt = prettytable.PrettyTable(['Property', 'Value'],
+                                 caching=False, print_empty=False)
     pt.aligns = ['l', 'l']
     for (prop, value) in d.iteritems():
         if value is None:
