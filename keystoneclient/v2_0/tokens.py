@@ -18,7 +18,7 @@ class Token(base.Resource):
         return self._info['token'].get('tenant', None)
 
 
-class TokenManager(base.ManagerWithFind):
+class TokenManager(base.Manager):
     resource_class = Token
 
     def authenticate(self, username=None, tenant_id=None, tenant_name=None,

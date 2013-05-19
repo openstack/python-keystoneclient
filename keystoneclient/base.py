@@ -18,6 +18,7 @@
 Base utilities to build API operation managers and objects on top of.
 """
 
+import abc
 import urllib
 
 from keystoneclient import exceptions
@@ -116,6 +117,13 @@ class ManagerWithFind(Manager):
     """
     Like a `Manager`, but with additional `find()`/`findall()` methods.
     """
+
+    __metaclass__ = abc.ABCMeta
+
+    @abc.abstractmethod
+    def list(self):
+        pass
+
     def find(self, **kwargs):
         """
         Find a single item with attributes matching ``**kwargs``.
