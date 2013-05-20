@@ -74,13 +74,16 @@ class RoleManager(base.CrudManager):
         return super(RoleManager, self).get(
             role_id=base.getid(role))
 
-    def list(self, user=None, group=None, domain=None, project=None):
+    def list(self, user=None, group=None, domain=None, project=None, **kwargs):
         """Lists roles and role grants.
 
-        If no arguments are provided, all roles in the system will be listed.
+        If no arguments are provided, all roles in the system will be
+        listed.
 
         If a user or group is specified, you must also specify either a
-        domain or project to list role grants on that pair.
+        domain or project to list role grants on that pair. And if
+        ``**kwargs`` are provided, then also filter roles with
+        attributes matching ``**kwargs``.
         """
 
         if user or group:
@@ -89,7 +92,8 @@ class RoleManager(base.CrudManager):
 
             return super(RoleManager, self).list(
                 base_url=self._role_grants_base_url(user, group,
-                                                    domain, project))
+                                                    domain, project),
+                **kwargs)
 
         return super(RoleManager, self).list()
 

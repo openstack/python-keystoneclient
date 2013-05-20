@@ -49,7 +49,15 @@ class UserManager(base.CrudManager):
             description=description,
             enabled=enabled)
 
-    def list(self, project=None, domain=None, group=None):
+    def list(self, project=None, domain=None, group=None, **kwargs):
+        """List users.
+
+        If project, domain or group are provided, then filter
+        users with those attributes.
+
+        If ``**kwargs`` are provided, then filter users with
+        attributes matching ``**kwargs``.
+        """
         if group:
             base_url = '/groups/%s' % base.getid(group)
         else:
@@ -58,7 +66,8 @@ class UserManager(base.CrudManager):
         return super(UserManager, self).list(
             base_url=base_url,
             domain_id=base.getid(domain),
-            project_id=base.getid(project))
+            project_id=base.getid(project),
+            **kwargs)
 
     def get(self, user):
         return super(UserManager, self).get(

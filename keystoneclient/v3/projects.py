@@ -58,11 +58,20 @@ class ProjectManager(base.CrudManager):
             description=description,
             enabled=enabled)
 
-    def list(self, domain=None, user=None):
+    def list(self, domain=None, user=None, **kwargs):
+        """List projects.
+
+        If domain or user are provided, then filter projects with
+        those attributes.
+
+        If ``**kwargs`` are provided, then filter projects with
+        attributes matching ``**kwargs``.
+        """
         base_url = '/users/%s' % base.getid(user) if user else None
         return super(ProjectManager, self).list(
             base_url=base_url,
-            domain_id=base.getid(domain))
+            domain_id=base.getid(domain),
+            **kwargs)
 
     def get(self, project):
         return super(ProjectManager, self).get(

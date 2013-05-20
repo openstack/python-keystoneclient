@@ -61,14 +61,20 @@ class EndpointManager(base.CrudManager):
         return super(EndpointManager, self).get(
             endpoint_id=base.getid(endpoint))
 
-    def list(self, service=None, name=None, interface=None, region=None,
-             enabled=None):
+    def list(self, service=None, interface=None, region=None,
+             enabled=None, **kwargs):
+        """List endpoints.
+
+        If ``**kwargs`` are provided, then filter endpoints with
+        attributes matching ``**kwargs``.
+        """
         self._validate_interface(interface)
         return super(EndpointManager, self).list(
             service_id=base.getid(service),
             interface=interface,
             region=region,
-            enabled=enabled)
+            enabled=enabled,
+            **kwargs)
 
     def update(self, endpoint, service=None, url=None, name=None,
                interface=None, region=None, enabled=None):
