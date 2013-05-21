@@ -453,7 +453,7 @@ def do_endpoint_list(kc, args):
     """List configured service endpoints"""
     endpoints = kc.endpoints.list()
     utils.print_list(endpoints,
-                     ['id', 'region', 'publicurl', 'internalurl', 'adminurl'])
+                     ['id','service_id', 'region', 'publicurl', 'internalurl', 'adminurl'])
 
 
 @utils.arg('--region', metavar='<endpoint-region>',
