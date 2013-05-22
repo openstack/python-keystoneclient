@@ -69,10 +69,10 @@ SERVICE_CATALOG = {
                      "versionInfo": "https://compute.north.host/v1.1/",
                      "versionList": "https://compute.north.host/"}
                 ],
-                "endpoints_links":[{
-                    "rel":"next",
-                    "href":"https://identity.north.host/v2.0/"
-                           "endpoints?marker=2"
+                "endpoints_links": [{
+                    "rel": "next",
+                    "href": "https://identity.north.host/v2.0/"
+                            "endpoints?marker=2"
                 }]
             },
             {
