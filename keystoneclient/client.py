@@ -113,7 +113,7 @@ class HTTPClient(object):
 
         # logging setup
         self.debug_log = debug
-        if self.debug_log:
+        if self.debug_log and not _logger.handlers:
             ch = logging.StreamHandler()
             _logger.setLevel(logging.DEBUG)
             _logger.addHandler(ch)
