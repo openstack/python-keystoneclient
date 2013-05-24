@@ -210,6 +210,22 @@ class ShellTest(utils.TestCase):
             self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
 
             # New-style options
+            # Test case with one --tenant args present: ec2 creds
+            shell('user-create --name=foo '
+                  '--pass=secrete --tenant=BARRR --enabled=true')
+            assert do_uc_mock.called
+            ((a, b), c) = do_uc_mock.call_args
+            actual = (b.os_auth_url, b.os_password, b.os_tenant_id,
+                      b.os_tenant_name, b.os_username,
+                      b.os_identity_api_version)
+            expect = (DEFAULT_AUTH_URL, DEFAULT_PASSWORD, DEFAULT_TENANT_ID,
+                      DEFAULT_TENANT_NAME, DEFAULT_USERNAME, '')
+            self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
+            actual = (b.tenant, b.name, b.passwd, b.enabled)
+            expect = ('BARRR', 'foo', 'secrete', 'true')
+            self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
+
+            # New-style options
             # Test case with one --tenant-id args present: ec2 creds
             shell('user-create --name=foo '
                   '--pass=secrete --tenant-id=BARRR --enabled=true')
@@ -221,7 +237,7 @@ class ShellTest(utils.TestCase):
             expect = (DEFAULT_AUTH_URL, DEFAULT_PASSWORD, DEFAULT_TENANT_ID,
                       DEFAULT_TENANT_NAME, DEFAULT_USERNAME, '')
             self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
-            actual = (b.tenant_id, b.name, b.passwd, b.enabled)
+            actual = (b.tenant, b.name, b.passwd, b.enabled)
             expect = ('BARRR', 'foo', 'secrete', 'true')
             self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
 
@@ -253,7 +269,7 @@ class ShellTest(utils.TestCase):
             expect = (DEFAULT_AUTH_URL, DEFAULT_PASSWORD, 'ostenant',
                       DEFAULT_TENANT_NAME, DEFAULT_USERNAME, '')
             self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
-            actual = (b.tenant_id, b.name, b.passwd, b.enabled)
+            actual = (b.tenant, b.name, b.passwd, b.enabled)
             expect = ('BARRR', 'foo', 'secrete', 'true')
             self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
 
@@ -420,7 +436,7 @@ class ShellTest(utils.TestCase):
             expect = (DEFAULT_AUTH_URL, DEFAULT_PASSWORD, DEFAULT_TENANT_ID,
                       DEFAULT_TENANT_NAME, DEFAULT_USERNAME, '')
             self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
-            actual = (b.service_id, b.publicurl, b.adminurl)
+            actual = (b.service, b.publicurl, b.adminurl)
             expect = ('2',
                       'http://example.com:1234/go',
                       'http://example.com:9876/adm')
@@ -439,7 +455,26 @@ class ShellTest(utils.TestCase):
             expect = (DEFAULT_AUTH_URL, DEFAULT_PASSWORD, DEFAULT_TENANT_ID,
                       DEFAULT_TENANT_NAME, DEFAULT_USERNAME, '')
             self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
-            actual = (b.service_id, b.publicurl, b.adminurl)
+            actual = (b.service, b.publicurl, b.adminurl)
+            expect = ('3',
+                      'http://example.com:4321/go',
+                      'http://example.com:9876/adm')
+            self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
+
+            # New-style options
+            # Test create args
+            shell('endpoint-create '
+                  '--service=3 --publicurl=http://example.com:4321/go '
+                  '--adminurl=http://example.com:9876/adm')
+            assert do_shell_mock.called
+            ((a, b), c) = do_shell_mock.call_args
+            actual = (b.os_auth_url, b.os_password, b.os_tenant_id,
+                      b.os_tenant_name, b.os_username,
+                      b.os_identity_api_version)
+            expect = (DEFAULT_AUTH_URL, DEFAULT_PASSWORD, DEFAULT_TENANT_ID,
+                      DEFAULT_TENANT_NAME, DEFAULT_USERNAME, '')
+            self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
+            actual = (b.service, b.publicurl, b.adminurl)
             expect = ('3',
                       'http://example.com:4321/go',
                       'http://example.com:9876/adm')
