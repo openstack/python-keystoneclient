@@ -1,13 +1,10 @@
 import cStringIO
-import mock
 import os
 import stubout
 import sys
 from testtools import matchers
 
-from keystoneclient import exceptions
 from keystoneclient import client
-from keystoneclient.v2_0 import client as client_v2_0
 
 from tests.v2_0 import fakes
 from tests import utils

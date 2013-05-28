@@ -80,9 +80,9 @@ class Client(client.HTTPClient):
 
         >>> from keystoneclient.v2_0 import client
         >>> keystone = client.Client(username=USER,
-                                     password=PASS,
-                                     tenant_name=TENANT_NAME,
-                                     auth_url=KEYSTONE_URL)
+        ...                          password=PASS,
+        ...                          tenant_name=TENANT_NAME,
+        ...                          auth_url=KEYSTONE_URL)
         >>> keystone.tenants.list()
         ...
         >>> user = keystone.users.get(USER_ID)
@@ -95,9 +95,9 @@ class Client(client.HTTPClient):
 
         >>> from keystoneclient.v2_0 import client
         >>> keystone = client.Client(username=USER,
-                                     password=PASS,
-                                     tenant_name=TENANT_NAME,
-                                     auth_url=KEYSTONE_URL)
+        ...                          password=PASS,
+        ...                          tenant_name=TENANT_NAME,
+        ...                          auth_url=KEYSTONE_URL)
         >>> auth_ref = keystone.auth_ref
         >>> # pickle or whatever you like here
         >>> new_client = client.Client(auth_ref=auth_ref)
@@ -111,8 +111,8 @@ class Client(client.HTTPClient):
 
         >>> from keystoneclient.v2_0 import client
         >>> admin_client = client.Client(
-                token='12345secret7890',
-                endpoint='http://localhost:35357/v2.0')
+        ...     token='12345secret7890',
+        ...     endpoint='http://localhost:35357/v2.0')
         >>> keystone.tenants.list()
 
     """

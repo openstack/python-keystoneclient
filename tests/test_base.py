@@ -1,8 +1,4 @@
-import mock
-import mox
-
 from keystoneclient import base
-from keystoneclient import exceptions
 from keystoneclient.v2_0 import roles
 from tests import utils
 

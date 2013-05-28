@@ -1,4 +1,3 @@
-import testtools
 import uuid
 
 from keystoneclient.v3 import endpoints

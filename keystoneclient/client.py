@@ -35,8 +35,8 @@ _logger = logging.getLogger(__name__)
 
 def try_import_keyring():
     try:
-        import keyring
-        import pickle
+        import keyring  # noqa
+        import pickle  # noqa
         return True
     except ImportError:
         if (hasattr(sys.stderr, 'isatty') and sys.stderr.isatty()):
