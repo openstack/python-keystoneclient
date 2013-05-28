@@ -255,6 +255,9 @@ with open(os.path.join(signing_path, 'auth_v3_token_scoped.pem')) as f:
     SIGNED_v3_TOKEN_SCOPED = cms.cms_to_token(f.read())
 with open(os.path.join(signing_path, 'auth_token_revoked.pem')) as f:
     REVOKED_TOKEN = cms.cms_to_token(f.read())
+with open(os.path.join(signing_path,
+          'auth_token_scoped_expired.pem')) as f:
+    SIGNED_TOKEN_SCOPED_EXPIRED = cms.cms_to_token(f.read())
 REVOKED_TOKEN_HASH = utils.hash_signed_token(REVOKED_TOKEN)
 with open(os.path.join(signing_path, 'auth_v3_token_revoked.pem')) as f:
     REVOKED_v3_TOKEN = cms.cms_to_token(f.read())
@@ -464,7 +467,7 @@ class BaseFakeHTTPConnection(object):
         body = jsonutils.dumps({
             'access': {
                 'token': {'id': 'admin_token2',
-                          'expires': '2012-10-03T16:58:01Z'}
+                          'expires': '2022-10-03T16:58:01Z'}
             },
         })
         return status, body
@@ -621,6 +624,7 @@ class BaseAuthTokenMiddlewareTest(testtools.TestCase):
                 'uuid_token_default': UUID_TOKEN_DEFAULT,
                 'uuid_token_unscoped': UUID_TOKEN_UNSCOPED,
                 'signed_token_scoped': SIGNED_TOKEN_SCOPED,
+                'signed_token_scoped_expired': SIGNED_TOKEN_SCOPED_EXPIRED,
                 'revoked_token': REVOKED_TOKEN,
                 'revoked_token_hash': REVOKED_TOKEN_HASH
             }
@@ -1020,6 +1024,13 @@ class AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
         self.middleware(req.environ, self.start_fake_response)
         self.assertNotEqual(self._get_cached_token(token), None)
 
+    def test_expired(self):
+        req = webob.Request.blank('/')
+        token = self.token_dict['signed_token_scoped_expired']
+        req.headers['X-Auth-Token'] = token
+        self.middleware(req.environ, self.start_fake_response)
+        self.assertEqual(self.response_status, 401)
+
     def test_memcache_set_invalid(self):
         req = webob.Request.blank('/')
         token = 'invalid-token'
@@ -1358,6 +1369,7 @@ class v3AuthTokenMiddlewareTest(AuthTokenMiddlewareTest):
             'uuid_token_default': v3_UUID_TOKEN_DEFAULT,
             'uuid_token_unscoped': v3_UUID_TOKEN_UNSCOPED,
             'signed_token_scoped': SIGNED_v3_TOKEN_SCOPED,
+            'signed_token_scoped_expired': SIGNED_TOKEN_SCOPED_EXPIRED,
             'revoked_token': REVOKED_v3_TOKEN,
             'revoked_token_hash': REVOKED_v3_TOKEN_HASH
         }

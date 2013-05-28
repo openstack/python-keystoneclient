@@ -697,7 +697,8 @@ class AuthProtocol(object):
                 data = json.loads(verified)
             else:
                 data = self.verify_uuid_token(user_token, retry)
-            self._cache_put(token_id, data)
+            expires = self._confirm_token_not_expired(data)
+            self._cache_put(token_id, data, expires)
             return data
         except Exception as e:
             self.LOG.debug('Token validation failure.', exc_info=True)
@@ -931,23 +932,31 @@ class AuthProtocol(object):
                             data_to_store,
                             timeout=self.token_cache_time)
 
-    def _cache_put(self, token, data):
+    def _confirm_token_not_expired(self, data):
+        if not data:
+            raise InvalidUserToken('Token authorization failed')
+        if self._token_is_v2(data):
+            timestamp = data['access']['token']['expires']
+        elif self._token_is_v3(data):
+            timestamp = data['token']['expires_at']
+        else:
+            raise InvalidUserToken('Token authorization failed')
+        expires = timeutils.parse_isotime(timestamp).strftime('%s')
+        if time.time() >= float(expires):
+            self.LOG.debug('Token expired a %s', timestamp)
+            raise InvalidUserToken('Token authorization failed')
+        return expires
+
+    def _cache_put(self, token, data, expires):
         """ Put token data into the cache.
 
         Stores the parsed expire date in cache allowing
         quick check of token freshness on retrieval.
+
         """
-        if self._cache and data:
-            if self._token_is_v2(data):
-                timestamp = data['access']['token']['expires']
-            elif self._token_is_v3(data):
-                timestamp = data['token']['expires_at']
-            else:
-                self.LOG.error('invalid token format')
-                return
-            expires = timeutils.parse_isotime(timestamp).strftime('%s')
-            self.LOG.debug('Storing %s token in memcache', token)
-            self._cache_store(token, data, expires)
+        if self._cache:
+                self.LOG.debug('Storing %s token in memcache', token)
+                self._cache_store(token, data, expires)
 
     def _cache_store_invalid(self, token):
         """Store invalid token in cache."""
