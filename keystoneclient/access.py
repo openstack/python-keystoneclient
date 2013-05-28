@@ -109,8 +109,8 @@ class AccessInfo(dict):
         :returns: bool
         """
         if ('serviceCatalog' in self
-            and self['serviceCatalog']
-            and 'tenant' in self['token']):
+                and self['serviceCatalog']
+                and 'tenant' in self['token']):
             return True
         return False
 

@@ -325,8 +325,8 @@ TOKEN_RESPONSES[SIGNED_v3_TOKEN_SCOPED_KEY] = {
             }
         },
         'roles': [
-                {'name': 'role1'},
-                {'name': 'role2'}
+            {'name': 'role1'},
+            {'name': 'role2'}
         ],
         'catalog': {}
     }
@@ -1222,10 +1222,10 @@ class AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
 
     def test_config_revocation_cache_timeout(self):
         conf = {
-                'auth_host': 'keystone.example.com',
-                'auth_port': 1234,
-                'auth_admin_prefix': '/testadmin',
-                'revocation_cache_time': 24
+            'auth_host': 'keystone.example.com',
+            'auth_port': 1234,
+            'auth_admin_prefix': '/testadmin',
+            'revocation_cache_time': 24
         }
         middleware = auth_token.AuthProtocol(self.fake_app, conf)
         self.assertEquals(middleware.token_revocation_list_cache_timeout,
@@ -1362,10 +1362,10 @@ class v3AuthTokenMiddlewareTest(AuthTokenMiddlewareTest):
             'revoked_token_hash': REVOKED_v3_TOKEN_HASH
         }
         super(v3AuthTokenMiddlewareTest, self).setUp(
-                auth_version='v3.0',
-                fake_app=v3FakeApp,
-                fake_http=v3FakeHTTPConnection,
-                token_dict=token_dict)
+            auth_version='v3.0',
+            fake_app=v3FakeApp,
+            fake_http=v3FakeHTTPConnection,
+            token_dict=token_dict)
 
     def assert_valid_last_url(self, token_id):
         # Token ID is not part of the url in v3, so override

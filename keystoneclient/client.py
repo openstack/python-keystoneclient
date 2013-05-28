@@ -185,8 +185,8 @@ class HTTPClient(object):
 
         if not token:
             token = self.auth_token_from_user
-            if (not token and self.auth_ref
-                and not self.auth_ref.will_expire_soon(self.stale_duration)):
+            if (not token and self.auth_ref and not
+                    self.auth_ref.will_expire_soon(self.stale_duration)):
                 token = self.auth_ref.auth_token
 
         (keyring_key, auth_ref) = self.get_auth_ref_from_keyring(auth_url,

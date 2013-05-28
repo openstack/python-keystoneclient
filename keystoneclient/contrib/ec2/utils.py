@@ -63,7 +63,7 @@ class Ec2Signer(object):
             # the query params list, check X-Amz-Algorithm=AWS4-HMAC-SHA256
             try:
                 if (credentials['params']['X-Amz-Algorithm'] ==
-                    'AWS4-HMAC-SHA256'):
+                        'AWS4-HMAC-SHA256'):
                     return True
             except KeyError:
                 pass
@@ -182,7 +182,7 @@ class Ec2Signer(object):
             try:
                 auth_str = headers['Authorization']
                 param_str = auth_str.partition(
-                                '%s=' % param_name)[2].split(',')[0]
+                    '%s=' % param_name)[2].split(',')[0]
             except KeyError:
                 param_str = params.get('X-Amz-%s' % param_name)
             return param_str
