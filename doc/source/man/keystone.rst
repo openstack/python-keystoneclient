@@ -1,12 +1,25 @@
-The :program:`keystone` shell utility
-=====================================
+=======================================
+:program:`keystone` command line utility
+=======================================
 
 .. program:: keystone
 .. highlight:: bash
 
+SYNOPSIS
+========
 
-The :program:`keystone` shell utility interacts with OpenStack Identity API
-from the command line. It supports the entirety of the OpenStack Identity API.
+:program:`keystone` [options] <command> [command-options]
+
+:program:`keystone help`
+
+:program:`keystone help` <command>
+
+
+DESCRIPTION
+===========
+
+The :program:`keystone` command line utility interacts with services providing
+OpenStack Identity API (e.g. Keystone).
 
 To communicate with the API, you will need to be authenticated - and the
 :program:`keystone` provides multiple options for this.
@@ -32,9 +45,10 @@ If you already have accounts, you can use your OpenStack username and
 password. You can do this with the :option:`--os-username`,
 :option:`--os-password`.
 
-Keystone allows a user to be associated with one or more tenants. To specify
-the tenant for which you want to authorize against, you may optionally
-specify a :option:`--os-tenant-id` or :option:`--os-tenant-name`.
+Keystone allows a user to be associated with one or more projects which are
+historically called tenants.  To specify the project for which you want to
+authorize against, you may optionally specify a :option:`--os-tenant-id` or
+:option:`--os-tenant-name`.
 
 Instead of using options, it is easier to just set them as environment
 variables:
@@ -49,7 +63,7 @@ variables:
 
 .. envvar:: OS_TENANT_NAME
 
-    Name of Keystone Tenant.
+    Name of Keystone project.
 
 .. envvar:: OS_TENANT_ID
 
@@ -90,10 +104,47 @@ For example, in Bash you'd use::
     export OS_CERT=/etc/keystone/yourpublickey.pem
     export OS_KEY=/etc/keystone/yourprivatekey.pem
 
-From there, all shell commands take the form::
 
-    keystone <command> [arguments...]
+OPTIONS
+=======
 
-Run :program:`keystone help` to get a full list of all possible commands,
-and run :program:`keystone help <command>` to get detailed help for that
-command.
+To get a list of available commands and options run::
+
+    keystone help
+
+To get usage and options of a command::
+
+    keystone help <command>
+
+
+EXAMPLES
+========
+
+Get information about endpoint-create command::
+
+    keystone help endpoint-create
+
+View endpoints of OpenStack services::
+
+    keystone catalog
+
+Create a 'service' project::
+
+    keystone tenant-create --name=service
+
+Create service user for nova::
+
+    keystone user-create --name=nova \
+                         --tenant_id=<project ID> \
+                         --email=nova@nothing.com
+
+View roles::
+
+    keystone role-list
+
+
+BUGS
+====
+
+Keystone client is hosted in Launchpad so you can view current bugs at
+https://bugs.launchpad.net/python-keystoneclient/.
