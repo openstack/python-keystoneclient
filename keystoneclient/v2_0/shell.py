@@ -36,6 +36,9 @@ def require_service_catalog(f):
             raise Exception(msg)
         return f(kc, args)
 
+    # Change __doc__ attribute back to origin function's __doc__
+    wrapped.__doc__ = f.__doc__
+
     return wrapped
 
 
