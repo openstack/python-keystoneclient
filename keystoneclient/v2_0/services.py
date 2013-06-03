@@ -41,6 +41,13 @@ class ServiceManager(base.ManagerWithFind):
                                      'type': service_type,
                                      'description': description}}
         return self._create("/OS-KSADM/services", body, "OS-KSADM:service")
+    
+    def get_service(self, name):
+        """ Get the ID of a Service """
+        services = self.list()
+        for service in services:
+            if getattr(service, 'name','')== name:
+               return getattr(service, 'id', '')    
 
     def delete(self, id):
         """Delete a service"""
