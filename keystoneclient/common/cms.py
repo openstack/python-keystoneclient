@@ -21,7 +21,7 @@ def _ensure_subprocess():
             else:
                 import subprocess
         except ImportError:
-            import subprocess
+            import subprocess  # noqa
 
 
 def cms_verify(formatted, signing_cert_file_name, ca_file_name):

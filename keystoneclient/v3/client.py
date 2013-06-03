@@ -52,9 +52,10 @@ class Client(client.Client):
 
         >>> from keystoneclient.v3 import client
         >>> keystone = client.Client(username=USER,
-                                     password=PASS,
-                                     tenant_name=TENANT_NAME,
-                                     auth_url=KEYSTONE_URL)
+        ...                          password=PASS,
+        ...                          tenant_name=TENANT_NAME,
+        ...                          auth_url=KEYSTONE_URL)
+        ...
         >>> keystone.tenants.list()
         ...
         >>> user = keystone.users.get(USER_ID)

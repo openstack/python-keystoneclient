@@ -2,7 +2,6 @@ import argparse
 import cStringIO
 import json
 import os
-import requests
 import sys
 import uuid
 
