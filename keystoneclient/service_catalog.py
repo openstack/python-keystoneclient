@@ -71,8 +71,8 @@ class ServiceCatalog(object):
 
             endpoints = service['endpoints']
             for endpoint in endpoints:
-                if self.region_name and \
-                    endpoint.get('region') != self.region_name:
+                if (self.region_name and
+                        endpoint.get('region') != self.region_name):
                     continue
                 if not filter_value or endpoint.get(attr) == filter_value:
                     return endpoint[endpoint_type]
