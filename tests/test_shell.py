@@ -98,7 +98,7 @@ class ShellTest(utils.TestCase):
 
     def test_auth_no_credentials(self):
         with testtools.ExpectedException(
-                exceptions.CommandError, 'Expecting authentication method'):
+                exceptions.CommandError, 'Expecting'):
             self.shell('user-list')
 
     def test_auth_password_authurl_no_username(self):

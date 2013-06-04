@@ -304,6 +304,60 @@ class OpenStackIdentityShell(object):
                 group.add_argument(*args, **kwargs)
             subparser.set_defaults(func=callback)
 
+    def auth_check(self, args):
+        if args.os_token or args.os_endpoint:
+            if not args.os_token:
+                raise exc.CommandError(
+                    'Expecting a token provided via either --os-token or '
+                    'env[OS_SERVICE_TOKEN]')
+
+            if not args.os_endpoint:
+                raise exc.CommandError(
+                    'Expecting an endpoint provided via either '
+                    '--os-endpoint or env[OS_SERVICE_ENDPOINT]')
+
+            # user supplied a token and endpoint and at least one other cred
+            if args.os_username or args.os_password or args.os_auth_url:
+                msg = ('WARNING: Bypassing authentication using a token & '
+                       'endpoint (authentication credentials are being '
+                       'ignored).')
+                print msg
+
+        else:
+            if not args.os_auth_url:
+                raise exc.CommandError(
+                    'Expecting an auth URL via either --os-auth-url or '
+                    'env[OS_AUTH_URL]')
+
+            if args.os_username or args.os_password:
+                if not args.os_username:
+                    raise exc.CommandError(
+                        'Expecting a username provided via either '
+                        '--os-username or env[OS_USERNAME]')
+
+                if not args.os_password:
+                    # No password, If we've got a tty, try prompting for it
+                    if hasattr(sys.stdin, 'isatty') and sys.stdin.isatty():
+                        # Check for Ctl-D
+                        try:
+                            args.os_password = getpass.getpass('OS Password: ')
+                        except EOFError:
+                            pass
+                    # No password because we did't have a tty or the
+                    # user Ctl-D when prompted?
+                    if not args.os_password:
+                        raise exc.CommandError(
+                            'Expecting a password provided via either '
+                            '--os-password, env[OS_PASSWORD], or '
+                            'prompted response')
+
+            else:
+                raise exc.CommandError('Expecting authentication method via'
+                                       '\n  either a service token, '
+                                       '--os-token or env[OS_SERVICE_TOKEN], '
+                                       '\n  credentials, '
+                                       '--os-username or env[OS_USERNAME]')
+
     def main(self, argv):
         # Parse args once to find version
         parser = self.get_base_parser()
@@ -337,73 +391,6 @@ class OpenStackIdentityShell(object):
         args.os_token = args.os_token or env('SERVICE_TOKEN')
         args.os_endpoint = args.os_endpoint or env('SERVICE_ENDPOINT')
 
-        if not utils.isunauthenticated(args.func):
-            # if the user hasn't provided any auth data
-            if not (args.os_token or args.os_endpoint or args.os_username or
-                    args.os_password or args.os_auth_url):
-                raise exc.CommandError('Expecting authentication method via'
-                                       '\n  either a service token, '
-                                       '--os-token or env[OS_SERVICE_TOKEN], '
-                                       '\n  or credentials, '
-                                       '--os-username or env[OS_USERNAME].')
-
-            # user supplied a token and endpoint and at least one other cred
-            if (args.os_token and args.os_endpoint) and (args.os_username or
-                                                         args.os_tenant_id or
-                                                         args.os_tenant_name or
-                                                         args.os_password or
-                                                         args.os_auth_url):
-                msg = ('WARNING: Bypassing authentication using a token & '
-                       'endpoint (authentication credentials are being '
-                       'ignored).')
-                print msg
-
-            # if it looks like the user wants to provide a credentials
-            # but is missing something
-            if (not (args.os_token and args.os_endpoint)
-                and ((args.os_username or args.os_password or args.os_auth_url)
-                and not (args.os_username and args.os_password and
-                         args.os_auth_url))):
-                if not args.os_username:
-                    raise exc.CommandError(
-                        'Expecting a username provided via either '
-                        '--os-username or env[OS_USERNAME]')
-
-                if not args.os_auth_url:
-                    raise exc.CommandError(
-                        'Expecting an auth URL via either --os-auth-url or '
-                        'env[OS_AUTH_URL]')
-
-                if not args.os_password:
-                    # No password, If we've got a tty, try prompting for it
-                    if hasattr(sys.stdin, 'isatty') and sys.stdin.isatty():
-                        # Check for Ctl-D
-                        try:
-                            args.os_password = getpass.getpass('OS Password: ')
-                        except EOFError:
-                            pass
-                    # No password because we did't have a tty or the
-                    # user Ctl-D when prompted?
-                    if not args.os_password:
-                        raise exc.CommandError(
-                            'Expecting a password provided via either '
-                            '--os-password, env[OS_PASSWORD], or '
-                            'prompted response')
-
-            # if it looks like the user wants to provide a service token
-            # but is missing something
-            if args.os_token or args.os_endpoint and not (
-                    args.os_token and args.os_endpoint):
-                if not args.os_token:
-                    raise exc.CommandError(
-                        'Expecting a token provided via either --os-token or '
-                        'env[OS_SERVICE_TOKEN]')
-
-                if not args.os_endpoint:
-                    raise exc.CommandError(
-                        'Expecting an endpoint provided via either '
-                        '--os-endpoint or env[OS_SERVICE_ENDPOINT]')
-
         if utils.isunauthenticated(args.func):
             self.cs = shell_generic.CLIENT_CLASS(endpoint=args.os_auth_url,
                                                  cacert=args.os_cacert,
@@ -413,6 +400,7 @@ class OpenStackIdentityShell(object):
                                                  debug=args.debug,
                                                  timeout=args.timeout)
         else:
+            self.auth_check(args)
             token = None
             if args.os_token and args.os_endpoint:
                 token = args.os_token
