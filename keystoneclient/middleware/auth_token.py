@@ -213,7 +213,7 @@ opts = [
     cfg.StrOpt('certfile'),
     cfg.StrOpt('keyfile'),
     cfg.StrOpt('signing_dir'),
-    cfg.ListOpt('memcache_servers'),
+    cfg.ListOpt('memcached_servers', deprecated_name='memcache_servers'),
     cfg.IntOpt('token_cache_time', default=300),
     cfg.IntOpt('revocation_cache_time', default=1),
     cfg.StrOpt('memcache_security_strategy', default=None),
@@ -364,7 +364,8 @@ class AuthProtocol(object):
 
     def _init_cache(self, env):
         cache = self._conf_get('cache')
-        memcache_servers = self._conf_get('memcache_servers')
+        memcache_servers = self._conf_get('memcached_servers')
+
         if cache and env.get(cache, None) is not None:
             # use the cache from the upstream filter
             self.LOG.info('Using %s memcache for caching token', cache)

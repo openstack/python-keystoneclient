@@ -134,7 +134,7 @@ a WSGI component. Example for the auth_token middleware::
     ;Uncomment next line to use Swift MemcacheRing
     ;cache = swift.cache
     ;Uncomment next line and check ip:port to use memcached to cache tokens
-    ;memcache_servers = 127.0.0.1:11211
+    ;memcached_servers = 127.0.0.1:11211
     ;Uncomment next 2 lines to turn on memcache protection
     ;memcache_security_strategy = ENCRYPT
     ;memcache_secret_key = change_me
@@ -203,7 +203,7 @@ invalidated tokens may continue to work if they are still in the token cache,
 so token_cache_time is configurable. For larger deployments, the middleware
 also supports memcache based caching.
 
-* ``memcache_servers``: (optonal) if defined, the memcache server(s) to use for
+* ``memcached_servers``: (optonal) if defined, the memcache server(s) to use for
   cacheing. It will be ignored if Swift MemcacheRing is used instead.
 * ``token_cache_time``: (optional, default 300 seconds) Set to -1 to disable
   caching completely.
