@@ -195,6 +195,34 @@ class CrudTests(testtools.TestCase):
         self.assertTrue(len(returned_list))
         [self.assertTrue(isinstance(r, self.model)) for r in returned_list]
 
+    def test_find(self, ref=None):
+        ref = ref or self.new_ref()
+        ref_list = [ref]
+        resp = TestResponse({
+            "status_code": 200,
+            "text": self.serialize(ref_list),
+        })
+
+        method = 'GET'
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.headers[method]
+        query = '?name=%s' % ref['name'] if hasattr(ref, 'name') else ''
+        requests.request(
+            method,
+            urlparse.urljoin(
+                self.TEST_URL,
+                'v3/%s%s' % (self.collection_key, query)),
+            **kwargs).AndReturn((resp))
+        self.mox.ReplayAll()
+
+        returned = self.manager.find(name=getattr(ref, 'name', None))
+        self.assertTrue(isinstance(returned, self.model))
+        for attr in ref:
+            self.assertEqual(
+                getattr(returned, attr),
+                ref[attr],
+                'Expected different %s' % attr)
+
     def test_update(self, ref=None):
         ref = ref or self.new_ref()
         req_ref = ref.copy()
