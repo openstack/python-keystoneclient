@@ -1,5 +1,5 @@
 ..
-      Copyright 2011-2012 OpenStack, LLC
+      Copyright 2011-2013 OpenStack, LLC
       All Rights Reserved.
 
       Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -188,7 +188,8 @@ Configuration Options
   the timeout when validating token by http).
 * ``auth_port``: (optional, default `35357`) the port used to validate tokens
 * ``auth_protocol``: (optional, default `https`)
-* ``auth_uri``: (optional, defaults to `auth_protocol`://`auth_host`:`auth_port`)
+* ``auth_uri``: (optional, defaults to
+  `auth_protocol`://`auth_host`:`auth_port`)
 * ``certfile``: (required, if Keystone server requires client cert)
 * ``keyfile``: (required, if Keystone server requires client cert)  This can be
   the same as the certfile if the certfile includes the private key.
@@ -232,22 +233,24 @@ Memcache Protection
 ===================
 
 When using memcached, we are storing user tokens and token validation
-information into the cache as raw data. Which means anyone who have access
-to the memcache servers can read and modify data stored there. To mitigate
-this risk, ``auth_token`` middleware provides an option to either encrypt
-or authenticate the token data stored in the cache.
+information into the cache as raw data. Which means that anyone who
+has access to the memcache servers can read and modify data stored
+there. To mitigate this risk, ``auth_token`` middleware provides an
+option to authenticate and optionally encrypt the token data stored in
+the cache.
 
-* ``memcache_security_strategy``: (optional) if defined, indicate whether token
-  data should be encrypted or authenticated. Acceptable values are ``ENCRYPT``
-  or ``MAC``. If ``ENCRYPT``, token data is encrypted in the cache. If
-  ``MAC``, token data is authenticated (with HMAC) in the cache. If its value
-  is neither ``MAC`` nor ``ENCRYPT``, ``auth_token`` will raise an exception
-  on initialization.
+* ``memcache_security_strategy``: (optional) if defined, indicate
+  whether token data should be authenticated or authenticated and
+  encrypted. Acceptable values are ``MAC`` or ``ENCRYPT``. If ``MAC``,
+  token data is authenticated (with HMAC) in the cache. If
+  ``ENCRYPT``, token data is encrypted and authenticated in the
+  cache. If the value is not one of these options or empty,
+  ``auth_token`` will raise an exception on initialization.
 * ``memcache_secret_key``: (optional, mandatory if
-  ``memcache_security_strategy`` is defined) if defined,
-  a random string to be used for key derivation. If
-  ``memcache_security_strategy`` is defined and ``memcache_secret_key`` is
-  absent, ``auth_token`` will raise an exception on initialization.
+  ``memcache_security_strategy`` is defined) this string is used for
+  key derivation. If ``memcache_security_strategy`` is defined and
+  ``memcache_secret_key`` is absent, ``auth_token`` will raise an
+  exception on initialization.
 
 Exchanging User Information
 ===========================

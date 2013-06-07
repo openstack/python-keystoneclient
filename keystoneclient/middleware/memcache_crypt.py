@@ -1,6 +1,6 @@
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
-# Copyright 2010-2012 OpenStack LLC
+# Copyright 2010-2013 OpenStack LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,33 +18,34 @@
 """
 Utilities for memcache encryption and integrity check.
 
-Data is serialized before been encrypted or MACed. Encryption have a
-dependency on the pycrypto. If pycrypto is not available,
-CryptoUnabailableError will be raised.
+Data should be serialized before entering these functions. Encryption
+has a dependency on the pycrypto. If pycrypto is not available,
+CryptoUnavailableError will be raised.
 
-Encrypted data stored in memcache are prefixed with '{ENCRYPT:AES256}'.
-
-MACed data stored in memcache are prefixed with '{MAC:SHA1}'.
+This module will not be called unless signing or encryption is enabled
+in the config. It will always validate signatures, and will decrypt
+data if encryption is enabled. It is not valid to mix protection
+modes.
 
 """
 
 import base64
 import functools
 import hashlib
-import json
+import hmac
+import math
 import os
 
-# make sure pycrypt is available
+# make sure pycrypto is available
 try:
     from Crypto.Cipher import AES
 except ImportError:
     AES = None
 
-
-# prefix marker indicating data is HMACed (signed by a secret key)
-MAC_MARKER = '{MAC:SHA1}'
-# prefix marker indicating data is encrypted
-ENCRYPT_MARKER = '{ENCRYPT:AES256}'
+HASH_FUNCTION = hashlib.sha384
+DIGEST_LENGTH = HASH_FUNCTION().digest_size
+DIGEST_SPLIT = DIGEST_LENGTH // 3
+DIGEST_LENGTH_B64 = 4 * int(math.ceil(DIGEST_LENGTH / 3.0))
 
 
 class InvalidMacError(Exception):
@@ -81,77 +82,121 @@ def assert_crypto_availability(f):
     return wrapper
 
 
-def generate_aes_key(token, secret):
-    """ Generates and returns a 256 bit AES key, based on sha256 hash. """
-    return hashlib.sha256(token + secret).digest()
+def constant_time_compare(first, second):
+    """ Returns True if both string inputs are equal, otherwise False
+
+    This function should take a constant amount of time regardless of
+    how many characters in the strings match.
+
+    """
+    if len(first) != len(second):
+        return False
+    result = 0
+    for x, y in zip(first, second):
+        result |= ord(x) ^ ord(y)
+    return result == 0
 
 
-def compute_mac(token, serialized_data):
-    """ Computes and returns the base64 encoded MAC. """
-    return hash_data(serialized_data + token)
+def derive_keys(token, secret, strategy):
+    """ Derives keys for MAC and ENCRYPTION from the user-provided
+    secret. The resulting keys should be passed to the protect and
+    unprotect functions.
+
+    As suggested by NIST Special Publication 800-108, this uses the
+    first 128 bits from the sha384 KDF for the obscured cache key
+    value, the second 128 bits for the message authentication key and
+    the remaining 128 bits for the encryption key.
+
+    This approach is faster than computing a separate hmac as the KDF
+    for each desired key.
+    """
+    digest = hmac.new(secret, token + strategy, HASH_FUNCTION).digest()
+    return {'CACHE_KEY': digest[:DIGEST_SPLIT],
+            'MAC': digest[DIGEST_SPLIT: 2 * DIGEST_SPLIT],
+            'ENCRYPTION': digest[2 * DIGEST_SPLIT:],
+            'strategy': strategy}
 
 
-def hash_data(data):
-    """ Return the base64 encoded SHA1 hash of the data. """
-    return base64.b64encode(hashlib.sha1(data).digest())
-
-
-def sign_data(token, data):
-    """ MAC the data using SHA1. """
-    mac_data = {}
-    mac_data['serialized_data'] = json.dumps(data)
-    mac = compute_mac(token, mac_data['serialized_data'])
-    mac_data['mac'] = mac
-    md = MAC_MARKER + base64.b64encode(json.dumps(mac_data))
-    return md
-
-
-def verify_signed_data(token, data):
-    """ Verify data integrity by ensuring MAC is valid. """
-    if data.startswith(MAC_MARKER):
-        try:
-            data = data[len(MAC_MARKER):]
-            mac_data = json.loads(base64.b64decode(data))
-            mac = compute_mac(token, mac_data['serialized_data'])
-            if mac != mac_data['mac']:
-                raise InvalidMacError('invalid MAC; expect=%s, actual=%s' %
-                                      (mac_data['mac'], mac))
-            return json.loads(mac_data['serialized_data'])
-        except:
-            raise InvalidMacError('invalid MAC; data appeared to be corrupted')
-    else:
-        # doesn't appear to be MACed data
-        return data
+def sign_data(key, data):
+    """ Sign the data using the defined function and the derived key"""
+    mac = hmac.new(key, data, HASH_FUNCTION).digest()
+    return base64.b64encode(mac)
 
 
 @assert_crypto_availability
-def encrypt_data(token, secret, data):
-    """ Encryptes the data with the given secret key. """
+def encrypt_data(key, data):
+    """ Encrypt the data with the given secret key.
+
+    Padding is n bytes of the value n, where 1 <= n <= blocksize.
+    """
     iv = os.urandom(16)
-    aes_key = generate_aes_key(token, secret)
-    cipher = AES.new(aes_key, AES.MODE_CFB, iv)
-    data = json.dumps(data)
-    encoded_data = base64.b64encode(iv + cipher.encrypt(data))
-    encoded_data = ENCRYPT_MARKER + encoded_data
-    return encoded_data
+    cipher = AES.new(key, AES.MODE_CBC, iv)
+    padding = 16 - len(data) % 16
+    return iv + cipher.encrypt(data + chr(padding) * padding)
 
 
 @assert_crypto_availability
-def decrypt_data(token, secret, data):
+def decrypt_data(key, data):
     """ Decrypt the data with the given secret key. """
-    if data.startswith(ENCRYPT_MARKER):
-        try:
-            # encrypted data
-            encoded_data = data[len(ENCRYPT_MARKER):]
-            aes_key = generate_aes_key(token, secret)
-            decoded_data = base64.b64decode(encoded_data)
-            iv = decoded_data[:16]
-            encrypted_data = decoded_data[16:]
-            cipher = AES.new(aes_key, AES.MODE_CFB, iv)
-            decrypted_data = cipher.decrypt(encrypted_data)
-            return json.loads(decrypted_data)
-        except:
-            raise DecryptError('data appeared to be corrupted')
-    else:
-        # doesn't appear to be encrypted data
-        return data
+    iv = data[:16]
+    cipher = AES.new(key, AES.MODE_CBC, iv)
+    try:
+        result = cipher.decrypt(data[16:])
+    except Exception:
+        raise DecryptError('Encrypted data appears to be corrupted.')
+
+    # Strip the last n padding bytes where n is the last value in
+    # the plaintext
+    padding = ord(result[-1])
+    return result[:-1 * padding]
+
+
+def protect_data(keys, data):
+    """ Given keys and serialized data, returns an appropriately
+    protected string suitable for storage in the cache.
+
+    """
+    if keys['strategy'] == 'ENCRYPT':
+        data = encrypt_data(keys['ENCRYPTION'], data)
+
+    encoded_data = base64.b64encode(data)
+
+    signature = sign_data(keys['MAC'], encoded_data)
+    return signature + encoded_data
+
+
+def unprotect_data(keys, signed_data):
+    """ Given keys and cached string data, verifies the signature,
+    decrypts if necessary, and returns the original serialized data.
+
+    """
+    # cache backends return None when no data is found. We don't mind
+    # that this particular special value is unsigned.
+    if signed_data is None:
+        return None
+
+    # First we calculate the signature
+    provided_mac = signed_data[:DIGEST_LENGTH_B64]
+    calculated_mac = sign_data(
+        keys['MAC'],
+        signed_data[DIGEST_LENGTH_B64:])
+
+    # Then verify that it matches the provided value
+    if not constant_time_compare(provided_mac, calculated_mac):
+        raise InvalidMacError('Invalid MAC; data appears to be corrupted.')
+
+    data = base64.b64decode(signed_data[DIGEST_LENGTH_B64:])
+
+    # then if necessary decrypt the data
+    if keys['strategy'] == 'ENCRYPT':
+        data = decrypt_data(keys['ENCRYPTION'], data)
+
+    return data
+
+
+def get_cache_key(keys):
+    """ Given keys generated by derive_keys(), returns a base64
+    encoded value suitable for use as a cache key in memcached.
+
+    """
+    return base64.b64encode(keys['CACHE_KEY'])

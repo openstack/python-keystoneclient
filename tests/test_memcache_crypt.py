@@ -4,48 +4,66 @@ from keystoneclient.middleware import memcache_crypt
 
 
 class MemcacheCryptPositiveTests(testtools.TestCase):
-    def test_generate_aes_key(self):
-        self.assertEqual(
-            len(memcache_crypt.generate_aes_key('Gimme Da Key', 'hush')), 32)
+    def _setup_keys(self, strategy):
+        return memcache_crypt.derive_keys('token', 'secret', strategy)
 
-    def test_compute_mac(self):
-        self.assertEqual(
-            memcache_crypt.compute_mac('mykey', 'This is a test!'),
-            'tREu41yR5tEgeBWIuv9ag4AeKA8=')
+    def test_constant_time_compare(self):
+        # make sure it works as a compare, the "constant time" aspect
+        # isn't appropriate to test in unittests
+        ctc = memcache_crypt.constant_time_compare
+        self.assertTrue(ctc('abcd', 'abcd'))
+        self.assertTrue(ctc('', ''))
+        self.assertFalse(ctc('abcd', 'efgh'))
+        self.assertFalse(ctc('abc', 'abcd'))
+        self.assertFalse(ctc('abc', 'abc\x00'))
+        self.assertFalse(ctc('', 'abc'))
+
+    def test_derive_keys(self):
+        keys = memcache_crypt.derive_keys('token', 'secret', 'strategy')
+        self.assertEqual(len(keys['ENCRYPTION']),
+                         len(keys['CACHE_KEY']))
+        self.assertEqual(len(keys['CACHE_KEY']),
+                         len(keys['MAC']))
+        self.assertNotEqual(keys['ENCRYPTION'],
+                            keys['MAC'])
+        self.assertIn('strategy', keys.keys())
+
+    def test_key_strategy_diff(self):
+        k1 = self._setup_keys('MAC')
+        k2 = self._setup_keys('ENCRYPT')
+        self.assertNotEqual(k1, k2)
 
     def test_sign_data(self):
-        expected = '{MAC:SHA1}eyJtYWMiOiAiM0FrQmdPZHRybGo1RFFESHA1eUxqcDVq' +\
-                   'Si9BPSIsICJzZXJpYWxpemVkX2RhdGEiOiAiXCJUaGlzIGlzIGEgdG' +\
-                   'VzdCFcIiJ9'
-        self.assertEqual(
-            memcache_crypt.sign_data('mykey', 'This is a test!'),
-            expected)
+        keys = self._setup_keys('MAC')
+        sig = memcache_crypt.sign_data(keys['MAC'], 'data')
+        self.assertEqual(len(sig), memcache_crypt.DIGEST_LENGTH_B64)
 
-    def test_verify_signed_data(self):
-        signed = memcache_crypt.sign_data('mykey', 'Testz')
-        self.assertEqual(
-            memcache_crypt.verify_signed_data('mykey', signed),
-            'Testz')
-        self.assertEqual(
-            memcache_crypt.verify_signed_data('aasSFWE13WER', 'not MACed'),
-            'not MACed')
+    def test_encryption(self):
+        keys = self._setup_keys('ENCRYPT')
+        # what you put in is what you get out
+        for data in ['data', '1234567890123456', '\x00\xFF' * 13
+                     ] + [chr(x % 256) * x for x in range(768)]:
+            crypt = memcache_crypt.encrypt_data(keys['ENCRYPTION'], data)
+            decrypt = memcache_crypt.decrypt_data(keys['ENCRYPTION'], crypt)
+            self.assertEqual(data, decrypt)
+            self.assertRaises(memcache_crypt.DecryptError,
+                              memcache_crypt.decrypt_data,
+                              keys['ENCRYPTION'], crypt[:-1])
 
-    def test_encrypt_data(self):
-        expected = '{ENCRYPT:AES256}'
-        self.assertEqual(
-            memcache_crypt.encrypt_data('mykey', 'mysecret',
-                                        'This is a test!')[:16],
-            expected)
-
-    def test_decrypt_data(self):
-        encrypted = memcache_crypt.encrypt_data('mykey', 'mysecret', 'Testz')
-        self.assertEqual(
-            memcache_crypt.decrypt_data('mykey', 'mysecret', encrypted),
-            'Testz')
-        self.assertEqual(
-            memcache_crypt.decrypt_data('mykey', 'mysecret',
-                                        'Not Encrypted!'),
-            'Not Encrypted!')
+    def test_protect_wrappers(self):
+        data = 'My Pretty Little Data'
+        for strategy in ['MAC', 'ENCRYPT']:
+            keys = self._setup_keys(strategy)
+            protected = memcache_crypt.protect_data(keys, data)
+            self.assertNotEqual(protected, data)
+            if strategy == 'ENCRYPT':
+                self.assertNotIn(data, protected)
+            unprotected = memcache_crypt.unprotect_data(keys, protected)
+            self.assertEqual(data, unprotected)
+            self.assertRaises(memcache_crypt.InvalidMacError,
+                              memcache_crypt.unprotect_data,
+                              keys, protected[:-1])
+            self.assertIsNone(memcache_crypt.unprotect_data(keys, None))
 
     def test_no_pycrypt(self):
         aes = memcache_crypt.AES
