@@ -417,7 +417,10 @@ class AuthProtocol(object):
     def _get_supported_versions(self):
         versions = []
         response, data = self._json_request('GET', '/')
-        if response.status != 300:
+        if response.status == 501:
+            self.LOG.warning("Old keystone installation found...assuming v2.0")
+            versions.append("v2.0")
+        elif response.status != 300:
             self.LOG.error('Unable to get version info from keystone: %s' %
                            response.status)
             raise ServiceError('Unable to get version info from keystone')
