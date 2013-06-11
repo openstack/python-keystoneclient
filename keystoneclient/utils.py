@@ -1,7 +1,6 @@
 import getpass
 import hashlib
 import sys
-import uuid
 
 import prettytable
 
@@ -78,11 +77,10 @@ def find_resource(manager, name_or_id):
     except exceptions.NotFound:
         pass
 
-    # now try to get entity as uuid
+    # now try the entity as a string
     try:
-        uuid.UUID(str(name_or_id))
         return manager.get(name_or_id)
-    except (ValueError, exceptions.NotFound):
+    except (exceptions.NotFound):
         pass
 
     # finally try to find entity by name
