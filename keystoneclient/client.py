@@ -10,10 +10,16 @@ OpenStack Client interface. Handles the REST calls and responses.
 
 import copy
 import logging
-import sys
 import urlparse
 
 import requests
+
+try:
+    import keyring
+    import pickle
+except ImportError:
+    keyring = None
+    pickle = None
 
 try:
     import json
@@ -31,19 +37,6 @@ from keystoneclient import exceptions
 
 
 _logger = logging.getLogger(__name__)
-
-
-def try_import_keyring():
-    try:
-        import keyring  # noqa
-        import pickle  # noqa
-        return True
-    except ImportError:
-        if (hasattr(sys.stderr, 'isatty') and sys.stderr.isatty()):
-            print >> sys.stderr, 'Failed to load keyring modules.'
-        else:
-            _logger.warning('Failed to load keyring modules.')
-        return False
 
 
 class HTTPClient(object):
@@ -121,7 +114,9 @@ class HTTPClient(object):
                 requests.logging.getLogger(requests.__name__).addHandler(ch)
 
         # keyring setup
-        self.use_keyring = use_keyring and try_import_keyring()
+        if use_keyring and keyring is None:
+            _logger.warning('Failed to load keyring modules.')
+        self.use_keyring = use_keyring and keyring is not None
         self.force_new_token = force_new_token
         self.stale_duration = stale_duration or access.STALE_TOKEN_DURATION
         self.stale_duration = int(self.stale_duration)
@@ -233,6 +228,7 @@ class HTTPClient(object):
         Otherwise, (keyring_key, None) is returned.
 
         :returns: (keyring_key, auth_ref) or (keyring_key, None)
+        :returns: or (None, None) if use_keyring is not set in the object
 
         """
         keyring_key = None
@@ -246,7 +242,7 @@ class HTTPClient(object):
                                                 keyring_key)
                 if auth_ref:
                     auth_ref = pickle.loads(auth_ref)
-                    if self.auth_ref.will_expire_soon(self.stale_duration):
+                    if auth_ref.will_expire_soon(self.stale_duration):
                         # token has expired, don't use it
                         auth_ref = None
             except Exception as e:
