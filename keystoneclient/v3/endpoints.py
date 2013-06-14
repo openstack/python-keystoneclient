@@ -47,22 +47,23 @@ class EndpointManager(base.CrudManager):
             msg = msg % ', '.join(VALID_INTERFACES)
             raise Exception(msg)
 
-    def create(self, service, url, name=None, interface=None, region=None,
-               enabled=True):
+    def create(self, service, url, interface=None, region=None, enabled=True,
+               **kwargs):
         self._validate_interface(interface)
         return super(EndpointManager, self).create(
             service_id=base.getid(service),
             interface=interface,
             url=url,
             region=region,
-            enabled=enabled)
+            enabled=enabled,
+            **kwargs)
 
     def get(self, endpoint):
         return super(EndpointManager, self).get(
             endpoint_id=base.getid(endpoint))
 
-    def list(self, service=None, interface=None, region=None,
-             enabled=None, **kwargs):
+    def list(self, service=None, interface=None, region=None, enabled=None,
+             **kwargs):
         """List endpoints.
 
         If ``**kwargs`` are provided, then filter endpoints with
@@ -76,8 +77,8 @@ class EndpointManager(base.CrudManager):
             enabled=enabled,
             **kwargs)
 
-    def update(self, endpoint, service=None, url=None, name=None,
-               interface=None, region=None, enabled=None):
+    def update(self, endpoint, service=None, url=None, interface=None,
+               region=None, enabled=None, **kwargs):
         self._validate_interface(interface)
         return super(EndpointManager, self).update(
             endpoint_id=base.getid(endpoint),
@@ -85,7 +86,8 @@ class EndpointManager(base.CrudManager):
             interface=interface,
             url=url,
             region=region,
-            enabled=enabled)
+            enabled=enabled,
+            **kwargs)
 
     def delete(self, endpoint):
         return super(EndpointManager, self).delete(
