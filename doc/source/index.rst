@@ -11,7 +11,7 @@ Contents:
    :maxdepth: 1
 
    releases
-   shell
+   man/keystone
    using-api
 
    api/autoindex
