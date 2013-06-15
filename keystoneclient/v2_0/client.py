@@ -16,7 +16,6 @@ import logging
 
 from keystoneclient import client
 from keystoneclient import exceptions
-from keystoneclient import service_catalog
 from keystoneclient.v2_0 import ec2
 from keystoneclient.v2_0 import endpoints
 from keystoneclient.v2_0 import roles
@@ -133,11 +132,6 @@ class Client(client.HTTPClient):
         if self.management_url is None:
             self.authenticate()
 
-    #TODO(heckj): move to a method on auth_ref
-    def has_service_catalog(self):
-        """Returns True if this client provides a service catalog."""
-        return hasattr(self, 'service_catalog')
-
     def process_token(self):
         """ Extract and process information from the new auth_ref.
 
@@ -147,12 +141,20 @@ class Client(client.HTTPClient):
         # list of tenants for introspection, and leave to client user
         # to determine what to do. Otherwise, load up the service catalog
         if self.auth_ref.scoped:
+            if not self.auth_ref.tenant_id:
+                raise exceptions.AuthorizationFailure(
+                    "Token didn't provide tenant_id")
+            if not self.auth_ref.user_id:
+                raise exceptions.AuthorizationFailure(
+                    "Token didn't provide user_id")
             if self.management_url is None and self.auth_ref.management_url:
                 self.management_url = self.auth_ref.management_url[0]
             self.tenant_name = self.auth_ref.tenant_name
             self.tenant_id = self.auth_ref.tenant_id
             self.user_id = self.auth_ref.user_id
-        self._extract_service_catalog(self.auth_url, self.auth_ref)
+
+        self.auth_user_id = self.auth_ref.user_id
+        self.auth_tenant_id = self.auth_ref.tenant_id
 
     def get_raw_token_from_identity_service(self, auth_url, username=None,
                                             password=None, tenant_name=None,
@@ -201,17 +203,3 @@ class Client(client.HTTPClient):
             params['auth']['tenantName'] = tenant_name
         resp, body = self.request(url, 'POST', body=params, headers=headers)
         return body['access']
-
-    # TODO(heckj): remove entirely in favor of access.AccessInfo and
-    # associated methods
-    def _extract_service_catalog(self, url, body):
-        """ Set the client's service catalog from the response data. """
-        self.service_catalog = service_catalog.ServiceCatalog(
-            body, region_name=self.region_name)
-        try:
-            sc = self.service_catalog.get_token()
-            # Save these since we have them and they'll be useful later
-            self.auth_tenant_id = sc.get('tenant_id')
-            self.auth_user_id = sc.get('user_id')
-        except KeyError:
-            raise exceptions.AuthorizationFailure()

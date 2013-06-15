@@ -324,6 +324,15 @@ class HTTPClient(object):
     def serialize(self, entity):
         return json.dumps(entity)
 
+    @property
+    def service_catalog(self):
+        """Returns this client's service catalog."""
+        return self.auth_ref.service_catalog
+
+    def has_service_catalog(self):
+        """Returns True if this client provides a service catalog."""
+        return self.auth_ref.has_service_catalog()
+
     def request(self, url, method, **kwargs):
         """ Send an http request with the specified characteristics.
 
