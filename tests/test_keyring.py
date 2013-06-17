@@ -1,5 +1,4 @@
 import datetime
-import unittest
 
 from keystoneclient import access
 from keystoneclient import client
@@ -27,15 +26,11 @@ TENANT_ID = 'tenant_id'
 
 class KeyringTest(utils.TestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        super(KeyringTest, cls).setUpClass()
-
+    def setUp(self):
         if keyring is None:
-            raise unittest.SkipTest(
+            self.skipTest(
                 'optional package keyring or pickle is not installed')
 
-    def setUp(self):
         class MemoryKeyring(keyring.backend.KeyringBackend):
             """Simple memory keyring with support for multiple keys"""
             def __init__(self):
