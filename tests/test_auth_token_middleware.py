@@ -414,10 +414,10 @@ class DisableModuleFixture(fixtures.Fixture):
         sys.meta_path.insert(0, finder)
 
 
-class FakeSwiftMemcacheRing(memorycache.Client):
-    # NOTE(vish): swift memcache uses param timeout instead of time
+class FakeSwiftOldMemcacheClient(memorycache.Client):
+    # NOTE(vish,chmou): old swift memcache uses param timeout instead of time
     def set(self, key, value, timeout=0, min_compress_len=0):
-        sup = super(FakeSwiftMemcacheRing, self)
+        sup = super(FakeSwiftOldMemcacheClient, self)
         sup.set(key, value, timeout, min_compress_len)
 
 
@@ -1036,16 +1036,18 @@ class AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
         self.assertRaises(auth_token.InvalidUserToken,
                           self._get_cached_token, token)
 
-    def test_memcache_set_expired(self):
+    def test_memcache_set_expired(self, extra_conf={}, extra_environ={}):
         token_cache_time = 10
         conf = {
             'token_cache_time': token_cache_time,
             'signing_dir': CERTDIR,
         }
+        conf.update(extra_conf)
         self.set_middleware(conf=conf)
         req = webob.Request.blank('/')
         token = self.token_dict['signed_token_scoped']
         req.headers['X-Auth-Token'] = token
+        req.environ.update(extra_environ)
         try:
             now = datetime.datetime.utcnow()
             timeutils.set_time_override(now)
@@ -1057,11 +1059,15 @@ class AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
         finally:
             timeutils.clear_time_override()
 
+    def test_old_swift_memcache_set_expired(self):
+        extra_conf = {'cache': 'swift.cache'}
+        extra_environ = {'swift.cache': FakeSwiftOldMemcacheClient()}
+        self.test_memcache_set_expired(extra_conf, extra_environ)
+
     def test_swift_memcache_set_expired(self):
-        self.middleware._cache = FakeSwiftMemcacheRing()
-        self.middleware._use_keystone_cache = False
-        self.middleware._cache_initialized = True
-        self.test_memcache_set_expired()
+        extra_conf = {'cache': 'swift.cache'}
+        extra_environ = {'swift.cache': memorycache.Client()}
+        self.test_memcache_set_expired(extra_conf, extra_environ)
 
     def test_use_cache_from_env(self):
         env = {'swift.cache': 'CACHE_TEST'}
