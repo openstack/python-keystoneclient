@@ -61,3 +61,27 @@ class GroupTests(utils.TestCase, utils.CrudTests):
         returned_list = self.manager.list(user=user_id)
         self.assertTrue(len(returned_list))
         [self.assertTrue(isinstance(r, self.model)) for r in returned_list]
+
+    def test_list_groups_for_domain(self):
+        ref_list = [self.new_ref(), self.new_ref()]
+
+        domain_id = uuid.uuid4().hex
+        resp = utils.TestResponse({
+            "status_code": 200,
+            "text": self.serialize(ref_list),
+        })
+
+        method = 'GET'
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.headers[method]
+        requests.request(
+            method,
+            urlparse.urljoin(
+                self.TEST_URL,
+                'v3/%s?domain_id=%s' % (self.collection_key, domain_id)),
+            **kwargs).AndReturn((resp))
+        self.mox.ReplayAll()
+
+        returned_list = self.manager.list(domain=domain_id)
+        self.assertTrue(len(returned_list))
+        [self.assertTrue(isinstance(r, self.model)) for r in returned_list]
