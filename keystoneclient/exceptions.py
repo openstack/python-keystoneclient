@@ -29,7 +29,7 @@ class EndpointNotFound(Exception):
 
 
 class EmptyCatalog(Exception):
-    """ The service catalog is empty. """
+    """The service catalog is empty. """
     pass
 
 

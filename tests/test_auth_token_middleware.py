@@ -368,7 +368,7 @@ VERSION_LIST_v2 = {
 
 
 class NoModuleFinder(object):
-    """ Disallow further imports of 'module' """
+    """Disallow further imports of 'module'."""
 
     def __init__(self, module):
         self.module = module
@@ -433,7 +433,7 @@ class FakeHTTPResponse(object):
 class BaseFakeHTTPConnection(object):
 
     def _user_token_responses(self, token_id):
-        """ Emulate user token responses.
+        """Emulate user token responses.
 
         Return success if the token is in the list we know
         about. If the request is for revoked tokens, then return
@@ -473,7 +473,7 @@ class BaseFakeHTTPConnection(object):
 
 
 class FakeHTTPConnection(BaseFakeHTTPConnection):
-    """ Emulate a fake Keystone v2 server """
+    """Emulate a fake Keystone v2 server."""
 
     def __init__(self, *args, **kwargs):
         self.send_valid_revocation_list = True
@@ -519,7 +519,7 @@ class FakeHTTPConnection(BaseFakeHTTPConnection):
 
 
 class v3FakeHTTPConnection(FakeHTTPConnection):
-    """ Emulate a fake Keystone v3 server """
+    """Emulate a fake Keystone v3 server."""
 
     def request(self, method, path, **kwargs):
         """Fakes out several http responses.
@@ -549,7 +549,7 @@ class v3FakeHTTPConnection(FakeHTTPConnection):
 
 
 class RaisingHTTPConnection(FakeHTTPConnection):
-    """ An HTTPConnection that always raises."""
+    """An HTTPConnection that always raises."""
 
     def request(self, method, path, **kwargs):
         raise AssertionError("HTTP request was called.")
@@ -599,7 +599,7 @@ class v3FakeApp(object):
 
 
 class BaseAuthTokenMiddlewareTest(testtools.TestCase):
-    """ Base test class for auth_token middleware.
+    """Base test class for auth_token middleware.
 
     All the tests allow for running with auth_token
     configured for receiving v2 or v3 tokens, with the
@@ -651,7 +651,7 @@ class BaseAuthTokenMiddlewareTest(testtools.TestCase):
         globals()[signed_list] = globals()[valid_signed_list]
 
     def set_fake_http(self, http_handler):
-        """ Configure the http handler for the auth_token middleware.
+        """Configure the http handler for the auth_token middleware.
 
         Allows tests to override the default handler on specific tests,
         e.g. to use v2 for those parts of auth_token that still use v2
@@ -663,7 +663,7 @@ class BaseAuthTokenMiddlewareTest(testtools.TestCase):
 
     def set_middleware(self, fake_app=None, fake_http=None,
                        expected_env=None, conf=None):
-        """ Configure the class ready to call the auth_token middleware.
+        """Configure the class ready to call the auth_token middleware.
 
         Set up the various fake items needed to run the middleware.
         Individual tests that need to further refine these can call this
@@ -1197,7 +1197,7 @@ class AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
 
 
 class v2AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
-    """ v2 token specific tests.
+    """v2 token specific tests.
 
     There are some differences between how the auth-token middleware handles
     v2 and v3 tokens over and above the token formats, namely:
@@ -1256,7 +1256,7 @@ class v2AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
         self.assertEqual(body, ['SUCCESS'])
 
     def test_valid_uuid_request_forced_to_2_0(self):
-        """ Test forcing auth_token to use lower api version.
+        """Test forcing auth_token to use lower api version.
 
         By installing the v3 http hander, auth_token will be get
         a version list that looks like a v3 server - from which it
@@ -1294,7 +1294,7 @@ class v2AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
 
 
 class v3AuthTokenMiddlewareTest(AuthTokenMiddlewareTest):
-    """ Test auth_token middleware with v3 tokens.
+    """Test auth_token middleware with v3 tokens.
 
     Re-execute the AuthTokenMiddlewareTest class tests, but with the
     the auth_token middleware configured to expect v3 tokens back from

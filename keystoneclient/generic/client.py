@@ -47,12 +47,12 @@ class Client(client.HTTPClient):
     """
 
     def __init__(self, endpoint=None, **kwargs):
-        """ Initialize a new client for the Keystone v2.0 API. """
+        """Initialize a new client for the Keystone v2.0 API."""
         super(Client, self).__init__(endpoint=endpoint, **kwargs)
         self.endpoint = endpoint
 
     def discover(self, url=None):
-        """ Discover Keystone servers and return API versions supported.
+        """Discover Keystone servers and return API versions supported.
 
         :param url: optional url to test (without version)
 
@@ -74,11 +74,11 @@ class Client(client.HTTPClient):
             return self._local_keystone_exists()
 
     def _local_keystone_exists(self):
-        """ Checks if Keystone is available on default local port 35357 """
+        """Checks if Keystone is available on default local port 35357."""
         return self._check_keystone_versions("http://localhost:35357")
 
     def _check_keystone_versions(self, url):
-        """ Calls Keystone URL and detects the available API versions """
+        """Calls Keystone URL and detects the available API versions."""
         try:
             httpclient = client.HTTPClient()
             resp, body = httpclient.request(url, "GET",
@@ -125,7 +125,7 @@ class Client(client.HTTPClient):
             _logger.exception(e)
 
     def discover_extensions(self, url=None):
-        """ Discover Keystone extensions supported.
+        """Discover Keystone extensions supported.
 
         :param url: optional url to test (should have a version in it)
 
@@ -141,7 +141,7 @@ class Client(client.HTTPClient):
             return self._check_keystone_extensions(url)
 
     def _check_keystone_extensions(self, url):
-        """ Calls Keystone URL and detects the available extensions """
+        """Calls Keystone URL and detects the available extensions."""
         try:
             httpclient = client.HTTPClient()
             if not url.endswith("/"):
@@ -184,7 +184,7 @@ class Client(client.HTTPClient):
 
     @staticmethod
     def _get_version_info(version, root_url):
-        """ Parses version information
+        """Parses version information.
 
         :param version: a dict of a Keystone version response
         :param root_url: string url used to construct
@@ -203,7 +203,7 @@ class Client(client.HTTPClient):
 
     @staticmethod
     def _get_extension_info(extension):
-        """ Parses extension information
+        """Parses extension information.
 
         :param extension: a dict of a Keystone extension response
         :returns: tuple - (alias, name)

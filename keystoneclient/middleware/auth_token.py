@@ -226,7 +226,7 @@ CACHE_KEY_TEMPLATE = 'tokens/%s'
 
 
 def will_expire_soon(expiry):
-    """ Determines if expiration is about to occur.
+    """Determines if expiration is about to occur.
 
     :param expiry: a datetime of the expected expiration
     :returns: boolean : true if expiration is within 30 seconds
@@ -382,7 +382,7 @@ class AuthProtocol(object):
             return CONF.keystone_authtoken[name]
 
     def _choose_api_version(self):
-        """ Determine the api version that we should use."""
+        """Determine the api version that we should use."""
 
         # If the configuration specifies an auth_version we will just
         # assume that is correct and use it.  We could, of course, check
@@ -896,7 +896,7 @@ class AuthProtocol(object):
                 self.LOG.debug('Cached Token %s seems expired', token)
 
     def _cache_store(self, token, data):
-        """ Store value into memcache.
+        """Store value into memcache.
 
         data may be the string 'invalid' or a tuple like (data, expires)
 
@@ -943,7 +943,7 @@ class AuthProtocol(object):
         return expires
 
     def _cache_put(self, token, data, expires):
-        """ Put token data into the cache.
+        """Put token data into the cache.
 
         Stores the parsed expire date in cache allowing
         quick check of token freshness on retrieval.

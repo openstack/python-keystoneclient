@@ -140,17 +140,17 @@ class TenantManager(base.ManagerWithFind):
         return self._delete("/tenants/%s" % (base.getid(tenant)))
 
     def list_users(self, tenant):
-        """ List users for a tenant. """
+        """List users for a tenant. """
         return self.api.users.list(base.getid(tenant))
 
     def add_user(self, tenant, user, role):
-        """ Add a user to a tenant with the given role. """
+        """Add a user to a tenant with the given role. """
         return self.api.roles.add_user_role(base.getid(user),
                                             base.getid(role),
                                             base.getid(tenant))
 
     def remove_user(self, tenant, user, role):
-        """ Remove the specified role from the user on the tenant. """
+        """Remove the specified role from the user on the tenant. """
         return self.api.roles.remove_user_role(base.getid(user),
                                                base.getid(role),
                                                base.getid(tenant))
