@@ -195,28 +195,91 @@ if not CONF:
 # To use Swift memcache, you must set the 'cache' option to the environment
 # key where the Swift cache object is stored.
 opts = [
-    cfg.StrOpt('auth_admin_prefix', default=''),
-    cfg.StrOpt('auth_host', default='127.0.0.1'),
-    cfg.IntOpt('auth_port', default=35357),
-    cfg.StrOpt('auth_protocol', default='https'),
-    cfg.StrOpt('auth_uri', default=None),
-    cfg.StrOpt('auth_version', default=None),
-    cfg.BoolOpt('delay_auth_decision', default=False),
-    cfg.BoolOpt('http_connect_timeout', default=None),
-    cfg.StrOpt('http_handler', default=None),
-    cfg.StrOpt('admin_token', secret=True),
-    cfg.StrOpt('admin_user'),
-    cfg.StrOpt('admin_password', secret=True),
-    cfg.StrOpt('admin_tenant_name', default='admin'),
-    cfg.StrOpt('cache', default=None),   # env key for the swift cache
-    cfg.StrOpt('certfile'),
-    cfg.StrOpt('keyfile'),
-    cfg.StrOpt('signing_dir'),
-    cfg.ListOpt('memcached_servers', deprecated_name='memcache_servers'),
-    cfg.IntOpt('token_cache_time', default=300),
-    cfg.IntOpt('revocation_cache_time', default=1),
-    cfg.StrOpt('memcache_security_strategy', default=None),
-    cfg.StrOpt('memcache_secret_key', default=None, secret=True)
+    cfg.StrOpt('auth_admin_prefix',
+               default='',
+               help='Prefix to prepend at the begining of the URL'),
+    cfg.StrOpt('auth_host',
+               default='127.0.0.1',
+               help='Host providing the public Identity API endpoint'),
+    cfg.IntOpt('auth_port',
+               default=35357,
+               help='Port of the public Identity API endpoint'),
+    cfg.StrOpt('auth_protocol',
+               default='https',
+               help='Protocol of the public Identity API endpoint'
+               '(http or https)'),
+    cfg.StrOpt('auth_uri',
+               default=None,
+               help='(optional) Complete public Identity API endpoint;'
+               ' defaults to auth_protocol://auth_host:auth_port'),
+    cfg.StrOpt('auth_version',
+               default=None,
+               help='API version of the public Identity API endpoint'),
+    cfg.BoolOpt('delay_auth_decision',
+                default=False,
+                help='Do not handle authorization requests within the'
+                ' middleware, but delegate the authorization decision to'
+                ' downstream WSGI components'),
+    cfg.BoolOpt('http_connect_timeout',
+                default=None,
+                help='Request timeout value for communicating with Identity'
+                ' API server.'),
+    cfg.StrOpt('http_handler',
+               default=None,
+               help='Allows to pass in the name of a fake http_handler'
+               ' callback function used instead of httplib.HTTPConnection or'
+               ' httplib.HTTPSConnection. Useful for unit testing where'
+               ' network is not available.'),
+    cfg.StrOpt('admin_token',
+               secret=True,
+               help='Single shared secret with the Keystone configuration'
+               ' used for bootstrapping a Keystone installation, or otherwise'
+               ' bypassing the normal authentication process.'),
+    cfg.StrOpt('admin_user',
+               help='Keystone account username'),
+    cfg.StrOpt('admin_password',
+               secret=True,
+               help='Keystone account password'),
+    cfg.StrOpt('admin_tenant_name',
+               default='admin',
+               help='Keystone service account tenant name to validate'
+               ' user tokens'),
+    cfg.StrOpt('cache',
+               default=None,
+               help='Env key for the swift cache'),
+    cfg.StrOpt('certfile',
+               help='Required if Keystone server requires client certificate'),
+    cfg.StrOpt('keyfile',
+               help='Required if Keystone server requires client certificate'),
+    cfg.StrOpt('signing_dir',
+               help='Directory used to cache files related to PKI tokens'),
+    cfg.ListOpt('memcached_servers',
+                deprecated_name='memcache_servers',
+                help='If defined, the memcache server(s) to use for'
+                ' caching'),
+    cfg.IntOpt('token_cache_time',
+               default=300,
+               help='In order to prevent excessive requests and validations,'
+               ' the middleware uses an in-memory cache for the tokens the'
+               ' Keystone API returns. This is only valid if memcache_servers'
+               ' is defined. Set to -1 to disable caching completely.'),
+    cfg.IntOpt('revocation_cache_time',
+               default=1,
+               help='Value only used for unit testing'),
+    cfg.StrOpt('memcache_security_strategy',
+               default=None,
+               help='(optional) if defined, indicate whether token data'
+               ' should be authenticated or authenticated and encrypted.'
+               ' Acceptable values are MAC or ENCRYPT.  If MAC, token data is'
+               ' authenticated (with HMAC) in the cache. If ENCRYPT, token'
+               ' data is encrypted and authenticated in the cache. If the'
+               ' value is not one of these options or empty, auth_token will'
+               ' raise an exception on initialization.'),
+    cfg.StrOpt('memcache_secret_key',
+               default=None,
+               secret=True,
+               help='(optional, mandatory if memcache_security_strategy is'
+               ' defined) this string is used for key derivation.')
 ]
 CONF.register_opts(opts, group='keystone_authtoken')
 
