@@ -331,7 +331,6 @@ class AuthProtocol(object):
 
         # Token caching via memcache
         self._cache = None
-        self._use_keystone_cache = False
         self._cache_initialized = False    # cache already initialzied?
         # memcache value treatment, ENCRYPT or MAC
         self._memcache_security_strategy = \
@@ -373,7 +372,6 @@ class AuthProtocol(object):
         else:
             # use Keystone memcache
             self._cache = memorycache.get_client(memcache_servers)
-            self._use_keystone_cache = True
         self._cache_initialized = True
 
     def _conf_get(self, name):
@@ -915,14 +913,16 @@ class AuthProtocol(object):
             cache_key = CACHE_KEY_TEMPLATE % memcache_crypt.get_cache_key(keys)
             data_to_store = memcache_crypt.protect_data(keys, serialized_data)
 
-        # we need to special-case set() because of the incompatibility between
-        # Swift MemcacheRing and python-memcached. See
-        # https://bugs.launchpad.net/swift/+bug/1095730
-        if self._use_keystone_cache:
+        # Historically the swift cache conection used the argument
+        # timeout= for the cache timeout, but this has been unified
+        # with the official python memcache client with time= since
+        # grizzly, we still need to handle folsom for a while until
+        # this could get removed.
+        try:
             self._cache.set(cache_key,
                             data_to_store,
                             time=self.token_cache_time)
-        else:
+        except(TypeError):
             self._cache.set(cache_key,
                             data_to_store,
                             timeout=self.token_cache_time)
