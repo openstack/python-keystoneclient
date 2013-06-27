@@ -55,10 +55,10 @@ class GroupManager(base.CrudManager):
             domain_id=base.getid(domain),
             description=description)
 
-    def list(self, user=None, **kwargs):
+    def list(self, user=None, domain=None, **kwargs):
         """List groups.
 
-        If user is provided, then filter groups with
+        If domain or user is provided, then filter groups with
         that attribute.
 
         If ``**kwargs`` are provided, then filter groups with
@@ -70,6 +70,7 @@ class GroupManager(base.CrudManager):
             base_url = None
         return super(GroupManager, self).list(
             base_url=base_url,
+            domain_id=base.getid(domain),
             **kwargs)
 
     def get(self, group):
