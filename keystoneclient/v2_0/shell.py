@@ -96,15 +96,15 @@ def do_user_update(kc, args):
         kwargs['enabled'] = utils.string_to_bool(args.enabled)
 
     if not len(kwargs):
-        print "User not updated, no arguments present."
+        print("User not updated, no arguments present.")
         return
 
     user = utils.find_resource(kc.users, args.user)
     try:
         kc.users.update(user, **kwargs)
-        print 'User has been updated.'
+        print('User has been updated.')
     except Exception as e:
-        print 'Unable to update user: %s' % e
+        print('Unable to update user: %s' % e)
 
 
 @utils.arg('--pass', metavar='<password>', dest='passwd', required=False,
@@ -150,8 +150,8 @@ def do_password_update(kc, args):
     kc.users.update_own_password(currentpasswd, newpasswd)
 
     if args.os_password != newpasswd:
-        print "You should update the password you are using to authenticate "\
-              "to match your new password"
+        print("You should update the password you are using to authenticate "
+              "to match your new password")
 
 
 @utils.arg('user', metavar='<user>', help='Name or ID of user to delete')
@@ -208,7 +208,7 @@ def do_tenant_update(kc, args):
         kwargs.update({'enabled': utils.string_to_bool(args.enabled)})
 
     if kwargs == {}:
-        print "Tenant not updated, no arguments present."
+        print("Tenant not updated, no arguments present.")
         return
     tenant.update(**kwargs)
 
@@ -419,9 +419,9 @@ def do_ec2_credentials_delete(kc, args):
         args.user_id = kc.auth_user_id
     try:
         kc.ec2.delete(args.user_id, args.access)
-        print 'Credential has been deleted.'
+        print('Credential has been deleted.')
     except Exception as e:
-        print 'Unable to delete credential: %s' % e
+        print('Unable to delete credential: %s' % e)
 
 
 @utils.arg('--service', metavar='<service-type>', default=None,
@@ -432,7 +432,7 @@ def do_catalog(kc, args):
     endpoints = kc.service_catalog.get_endpoints(service_type=args.service)
     for (service, service_endpoints) in endpoints.iteritems():
         if len(service_endpoints) > 0:
-            print "Service: %s" % service
+            print("Service: %s" % service)
             for ep in service_endpoints:
                 utils.print_dict(ep)
 
@@ -458,7 +458,7 @@ def do_endpoint_get(kc, args):
     if args.attr and args.value:
         kwargs.update({'attr': args.attr, 'filter_value': args.value})
     elif args.attr or args.value:
-        print 'Both --attr and --value required.'
+        print('Both --attr and --value required.')
         return
 
     url = kc.service_catalog.url_for(**kwargs)
@@ -498,9 +498,9 @@ def do_endpoint_delete(kc, args):
     """Delete a service endpoint"""
     try:
         kc.endpoints.delete(args.id)
-        print 'Endpoint has been deleted.'
+        print('Endpoint has been deleted.')
     except Exception:
-        print 'Unable to delete endpoint.'
+        print('Unable to delete endpoint.')
 
 
 @utils.arg('--wrap', metavar='<integer>', default=0,

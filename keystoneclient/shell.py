@@ -18,6 +18,8 @@
 Command-line interface to the OpenStack Identity API.
 """
 
+from __future__ import print_function
+
 import argparse
 import getpass
 import os
@@ -321,7 +323,7 @@ class OpenStackIdentityShell(object):
                 msg = ('WARNING: Bypassing authentication using a token & '
                        'endpoint (authentication credentials are being '
                        'ignored).')
-                print msg
+                print(msg)
 
         else:
             if not args.os_auth_url:
@@ -453,7 +455,7 @@ class OpenStackIdentityShell(object):
 
         commands.remove('bash-completion')
         commands.remove('bash_completion')
-        print ' '.join(commands | options)
+        print(' '.join(commands | options))
 
     @utils.arg('command', metavar='<subcommand>', nargs='?',
                help='Display help for <subcommand>')
@@ -484,7 +486,7 @@ def main():
         OpenStackIdentityShell().main(sys.argv[1:])
 
     except Exception as e:
-        print >> sys.stderr, e
+        print(e, file=sys.stderr)
         sys.exit(1)
 
 
