@@ -1,5 +1,6 @@
 import time
 
+import mock
 import mox
 import requests
 import testtools
@@ -72,9 +73,12 @@ class TestCase(testtools.TestCase):
     def setUp(self):
         super(TestCase, self).setUp()
         self.mox = mox.Mox()
-        self._original_time = time.time
-        time.time = lambda: 1234
-        requests.request = self.mox.CreateMockAnything()
+        self.request_patcher = mock.patch.object(requests, 'request',
+                                                 self.mox.CreateMockAnything())
+        self.time_patcher = mock.patch.object(time, 'time',
+                                              lambda: 1234)
+        self.request_patcher.start()
+        self.time_patcher.start()
         self.client = client.Client(username=self.TEST_USER,
                                     token=self.TEST_TOKEN,
                                     tenant_name=self.TEST_TENANT_NAME,
@@ -82,7 +86,8 @@ class TestCase(testtools.TestCase):
                                     endpoint=self.TEST_URL)
 
     def tearDown(self):
-        time.time = self._original_time
+        self.request_patcher.stop()
+        self.time_patcher.stop()
         self.mox.UnsetStubs()
         self.mox.VerifyAll()
         super(TestCase, self).tearDown()
@@ -101,12 +106,16 @@ class UnauthenticatedTestCase(testtools.TestCase):
     def setUp(self):
         super(UnauthenticatedTestCase, self).setUp()
         self.mox = mox.Mox()
-        self._original_time = time.time
-        time.time = lambda: 1234
-        requests.request = self.mox.CreateMockAnything()
+        self.request_patcher = mock.patch.object(requests, 'request',
+                                                 self.mox.CreateMockAnything())
+        self.time_patcher = mock.patch.object(time, 'time',
+                                              lambda: 1234)
+        self.request_patcher.start()
+        self.time_patcher.start()
 
     def tearDown(self):
-        time.time = self._original_time
+        self.request_patcher.stop()
+        self.time_patcher.stop()
         self.mox.UnsetStubs()
         self.mox.VerifyAll()
         super(UnauthenticatedTestCase, self).tearDown()
