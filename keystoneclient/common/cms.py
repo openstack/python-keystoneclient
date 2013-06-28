@@ -118,7 +118,8 @@ def is_ans1_token(token):
 
 
 def cms_sign_text(text, signing_cert_file_name, signing_key_file_name):
-    """ Uses OpenSSL to sign a document
+    """Uses OpenSSL to sign a document.
+
     Produces a Base64 encoding of a DER formatted CMS Document
     http://en.wikipedia.org/wiki/Cryptographic_Message_Syntax
     """

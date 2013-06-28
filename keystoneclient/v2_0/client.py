@@ -122,7 +122,7 @@ class Client(client.HTTPClient):
     """
 
     def __init__(self, **kwargs):
-        """ Initialize a new client for the Keystone v2.0 API. """
+        """Initialize a new client for the Keystone v2.0 API. """
         super(Client, self).__init__(**kwargs)
         self.version = 'v2.0'
         self.endpoints = endpoints.EndpointManager(self)
@@ -139,7 +139,7 @@ class Client(client.HTTPClient):
             self.authenticate()
 
     def process_token(self):
-        """ Extract and process information from the new auth_ref.
+        """Extract and process information from the new auth_ref.
 
         And set the relevant authentication information.
         """
@@ -170,7 +170,7 @@ class Client(client.HTTPClient):
                                             tenant_id=None, token=None,
                                             project_name=None, project_id=None,
                                             **kwargs):
-        """ Authenticate against the v2 Identity API.
+        """Authenticate against the v2 Identity API.
 
         :returns: (``resp``, ``body``) if authentication was successful.
         :raises: AuthorizationFailure if unable to authenticate or validate
@@ -194,7 +194,7 @@ class Client(client.HTTPClient):
 
     def _base_authN(self, auth_url, username=None, password=None,
                     tenant_name=None, tenant_id=None, token=None):
-        """ Takes a username, password, and optionally a tenant_id or
+        """Takes a username, password, and optionally a tenant_id or
         tenant_name to get an authentication token from keystone.
         May also take a token and a tenant_id to re-scope a token
         to a tenant."""

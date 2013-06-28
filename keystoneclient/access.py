@@ -173,10 +173,10 @@ class AccessInfo(dict):
 
     @property
     def scoped(self):
-        """ Returns true if the authorization token was scoped to a tenant
-            (project), and contains a populated service catalog.
+        """Returns true if the authorization token was scoped to a tenant
+           (project), and contains a populated service catalog.
 
-            This is deprecated, use project_scoped instead.
+           This is deprecated, use project_scoped instead.
 
         :returns: bool
         """
@@ -184,8 +184,8 @@ class AccessInfo(dict):
 
     @property
     def project_scoped(self):
-        """ Returns true if the authorization token was scoped to a tenant
-            (project).
+        """Returns true if the authorization token was scoped to a tenant
+           (project).
 
         :returns: bool
         """
@@ -193,7 +193,7 @@ class AccessInfo(dict):
 
     @property
     def domain_scoped(self):
-        """ Returns true if the authorization token was scoped to a domain.
+        """Returns true if the authorization token was scoped to a domain.
 
         :returns: bool
         """

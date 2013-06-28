@@ -84,7 +84,7 @@ class Client(client.Client):
     """
 
     def __init__(self, **kwargs):
-        """ Initialize a new client for the Keystone v3 API. """
+        """Initialize a new client for the Keystone v3 API."""
         super(Client, self).__init__(**kwargs)
 
         self.version = 'v3'
@@ -102,7 +102,7 @@ class Client(client.Client):
         return json.dumps(entity, sort_keys=True)
 
     def process_token(self):
-        """ Extract and process information from the new auth_ref.
+        """Extract and process information from the new auth_ref.
 
         And set the relevant authentication information.
         """
@@ -126,7 +126,7 @@ class Client(client.Client):
                                             project_domain_id=None,
                                             project_domain_name=None,
                                             token=None, **kwargs):
-        """ Authenticate against the v3 Identity API.
+        """Authenticate against the v3 Identity API.
 
         :returns: (``resp``, ``body``) if authentication was successful.
         :raises: AuthorizationFailure if unable to authenticate or validate
