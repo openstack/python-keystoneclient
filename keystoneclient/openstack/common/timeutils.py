@@ -32,7 +32,7 @@ PERFECT_TIME_FORMAT = _ISO8601_TIME_FORMAT_SUBSECOND
 
 
 def isotime(at=None, subsecond=False):
-    """Stringify time in ISO 8601 format"""
+    """Stringify time in ISO 8601 format."""
     if not at:
         at = utcnow()
     st = at.strftime(_ISO8601_TIME_FORMAT
@@ -44,7 +44,7 @@ def isotime(at=None, subsecond=False):
 
 
 def parse_isotime(timestr):
-    """Parse time from ISO 8601 format"""
+    """Parse time from ISO 8601 format."""
     try:
         return iso8601.parse_date(timestr)
     except iso8601.ParseError as e:
@@ -66,7 +66,7 @@ def parse_strtime(timestr, fmt=PERFECT_TIME_FORMAT):
 
 
 def normalize_time(timestamp):
-    """Normalize time in arbitrary timezone to UTC naive object"""
+    """Normalize time in arbitrary timezone to UTC naive object."""
     offset = timestamp.utcoffset()
     if offset is None:
         return timestamp
@@ -103,7 +103,7 @@ def utcnow():
 
 
 def iso8601_from_timestamp(timestamp):
-    """Returns a iso8601 formated date from timestamp"""
+    """Returns a iso8601 formated date from timestamp."""
     return isotime(datetime.datetime.utcfromtimestamp(timestamp))
 
 

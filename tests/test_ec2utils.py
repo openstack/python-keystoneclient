@@ -58,7 +58,7 @@ class Ec2SignerTest(testtools.TestCase):
         self.assertFalse(self.signer._v4_creds(credentials))
 
     def test_generate_0(self):
-        """Test generate function for v0 signature"""
+        """Test generate function for v0 signature."""
         credentials = {'host': '127.0.0.1',
                        'verb': 'GET',
                        'path': '/v1/',
@@ -71,7 +71,7 @@ class Ec2SignerTest(testtools.TestCase):
         self.assertEqual(signature, expected)
 
     def test_generate_1(self):
-        """Test generate function for v1 signature"""
+        """Test generate function for v1 signature."""
         credentials = {'host': '127.0.0.1',
                        'verb': 'GET',
                        'path': '/v1/',
@@ -82,7 +82,7 @@ class Ec2SignerTest(testtools.TestCase):
         self.assertEqual(signature, expected)
 
     def test_generate_v2_SHA256(self):
-        """Test generate function for v2 signature, SHA256"""
+        """Test generate function for v2 signature, SHA256."""
         credentials = {'host': '127.0.0.1',
                        'verb': 'GET',
                        'path': '/v1/',
@@ -93,7 +93,7 @@ class Ec2SignerTest(testtools.TestCase):
         self.assertEqual(signature, expected)
 
     def test_generate_v2_SHA1(self):
-        """Test generate function for v2 signature, SHA1"""
+        """Test generate function for v2 signature, SHA1."""
         credentials = {'host': '127.0.0.1',
                        'verb': 'GET',
                        'path': '/v1/',

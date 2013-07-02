@@ -32,7 +32,7 @@ class User(base.Resource):
 
 
 class UserManager(base.ManagerWithFind):
-    """Manager class for manipulating Keystone users"""
+    """Manager class for manipulating Keystone users."""
     resource_class = User
 
     def get(self, user):

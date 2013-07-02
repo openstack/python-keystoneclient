@@ -18,7 +18,7 @@ from keystoneclient import base
 
 
 class Role(base.Resource):
-    """Represents a Keystone role"""
+    """Represents a Keystone role."""
     def __repr__(self):
         return "<Role %s>" % self._info
 
@@ -27,7 +27,7 @@ class Role(base.Resource):
 
 
 class RoleManager(base.ManagerWithFind):
-    """Manager class for manipulating Keystone roles"""
+    """Manager class for manipulating Keystone roles."""
     resource_class = Role
 
     def get(self, role):

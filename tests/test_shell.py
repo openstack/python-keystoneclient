@@ -185,7 +185,7 @@ class ShellTest(utils.TestCase):
             self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
 
     def test_shell_user_create_args(self):
-        """Test user-create args"""
+        """Test user-create args."""
         do_uc_mock = mock.MagicMock()
         # grab the decorators for do_user_create
         uc_func = getattr(shell_v2_0, 'do_user_create')

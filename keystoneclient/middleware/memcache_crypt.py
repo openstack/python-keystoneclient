@@ -118,7 +118,7 @@ def derive_keys(token, secret, strategy):
 
 
 def sign_data(key, data):
-    """Sign the data using the defined function and the derived key"""
+    """Sign the data using the defined function and the derived key."""
     mac = hmac.new(key, data, HASH_FUNCTION).digest()
     return base64.b64encode(mac)
 

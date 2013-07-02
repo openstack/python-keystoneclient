@@ -168,7 +168,7 @@ class AccessInfo(dict):
 
     @property
     def tenant_name(self):
-        """Synonym for project_name"""
+        """Synonym for project_name."""
         return self.project_name
 
     @property
@@ -211,7 +211,7 @@ class AccessInfo(dict):
 
     @property
     def tenant_id(self):
-        """Synonym for project_id """
+        """Synonym for project_id."""
         return self.project_id
 
     @property

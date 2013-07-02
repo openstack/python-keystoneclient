@@ -46,7 +46,7 @@ def print_list(objs, fields, formatters={}, order_by=None):
 
 
 def _word_wrap(string, max_length=0):
-    """wrap long strings to be no longer then max_length"""
+    """wrap long strings to be no longer then max_length."""
     if max_length <= 0:
         return string
     return '\n'.join([string[i:i + max_length] for i in

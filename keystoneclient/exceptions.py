@@ -29,12 +29,12 @@ class EndpointNotFound(Exception):
 
 
 class EmptyCatalog(Exception):
-    """The service catalog is empty. """
+    """The service catalog is empty."""
     pass
 
 
 class NoUniqueMatch(Exception):
-    """Unable to find unique resource"""
+    """Unable to find unique resource."""
     pass
 
 

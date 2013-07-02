@@ -149,7 +149,7 @@ class TestCase(testtools.TestCase):
 
 
 class UnauthenticatedTestCase(testtools.TestCase):
-    """Class used as base for unauthenticated calls """
+    """Class used as base for unauthenticated calls."""
     TEST_ROOT_URL = 'http://127.0.0.1:5000/'
     TEST_URL = '%s%s' % (TEST_ROOT_URL, 'v3')
     TEST_ROOT_ADMIN_URL = 'http://127.0.0.1:35357/'

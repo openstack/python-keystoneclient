@@ -46,7 +46,7 @@ def require_service_catalog(f):
            help='Tenant;  lists all users if not specified')
 @utils.arg('--tenant_id', help=argparse.SUPPRESS)
 def do_user_list(kc, args):
-    """List users"""
+    """List users."""
     if args.tenant:
         tenant_id = utils.find_resource(kc.tenants, args.tenant).id
     else:
@@ -96,7 +96,7 @@ def do_user_create(kc, args):
            help='Enable or disable user')
 @utils.arg('user', metavar='<user>', help='Name or ID of user to update')
 def do_user_update(kc, args):
-    """Update user's name, email, and enabled status"""
+    """Update user's name, email, and enabled status."""
     kwargs = {}
     if args.name:
         kwargs['name'] = args.name
@@ -122,7 +122,7 @@ def do_user_update(kc, args):
 @utils.arg('user', metavar='<user>',
            help='Name or ID of user to update password')
 def do_user_password_update(kc, args):
-    """Update user password"""
+    """Update user password."""
     user = utils.find_resource(kc.users, args.user)
     new_passwd = args.passwd or utils.prompt_for_password()
     if new_passwd is None:
@@ -139,7 +139,7 @@ def do_user_password_update(kc, args):
 @utils.arg('--new-password ', metavar='<new-password>', dest='newpasswd',
            required=False, help='Desired new password')
 def do_password_update(kc, args):
-    """Update own password"""
+    """Update own password."""
 
     # we are prompting for these passwords if they are not passed in
     # this gives users the option not to have their password
@@ -172,7 +172,7 @@ def do_user_delete(kc, args):
 
 
 def do_tenant_list(kc, args):
-    """List all tenants"""
+    """List all tenants."""
     tenants = kc.tenants.list()
     utils.print_list(tenants, ['id', 'name', 'enabled'], order_by='name')
 
@@ -180,7 +180,7 @@ def do_tenant_list(kc, args):
 @utils.arg('tenant', metavar='<tenant>',
            help='Name or ID of tenant to display')
 def do_tenant_get(kc, args):
-    """Display tenant details"""
+    """Display tenant details."""
     tenant = utils.find_resource(kc.tenants, args.tenant)
     utils.print_dict(tenant._info)
 
@@ -192,7 +192,7 @@ def do_tenant_get(kc, args):
 @utils.arg('--enabled', metavar='<true|false>', default=True,
            help='Initial tenant enabled status (default true)')
 def do_tenant_create(kc, args):
-    """Create new tenant"""
+    """Create new tenant."""
     tenant = kc.tenants.create(args.name,
                                description=args.description,
                                enabled=utils.string_to_bool(args.enabled))
@@ -207,7 +207,7 @@ def do_tenant_create(kc, args):
            help='Enable or disable tenant')
 @utils.arg('tenant', metavar='<tenant>', help='Name or ID of tenant to update')
 def do_tenant_update(kc, args):
-    """Update tenant name, description, enabled status"""
+    """Update tenant name, description, enabled status."""
     tenant = utils.find_resource(kc.tenants, args.tenant)
     kwargs = {}
     if args.name:
@@ -225,7 +225,7 @@ def do_tenant_update(kc, args):
 
 @utils.arg('tenant', metavar='<tenant>', help='Name or ID of tenant to delete')
 def do_tenant_delete(kc, args):
-    """Delete tenant"""
+    """Delete tenant."""
     tenant = utils.find_resource(kc.tenants, args.tenant)
     kc.tenants.delete(tenant)
 
@@ -238,7 +238,7 @@ def do_tenant_delete(kc, args):
 @utils.arg('--description', metavar='<service-description>',
            help='Description of service')
 def do_service_create(kc, args):
-    """Add service to Service Catalog"""
+    """Add service to Service Catalog."""
     service = kc.services.create(args.name,
                                  args.type,
                                  args.description)
@@ -246,7 +246,7 @@ def do_service_create(kc, args):
 
 
 def do_service_list(kc, args):
-    """List all services in Service Catalog"""
+    """List all services in Service Catalog."""
     services = kc.services.list()
     utils.print_list(services, ['id', 'name', 'type', 'description'],
                      order_by='name')
@@ -255,7 +255,7 @@ def do_service_list(kc, args):
 @utils.arg('service', metavar='<service>',
            help='Name or ID of service to display')
 def do_service_get(kc, args):
-    """Display service from Service Catalog"""
+    """Display service from Service Catalog."""
     service = utils.find_resource(kc.services, args.service)
     utils.print_dict(service._info)
 
@@ -263,20 +263,20 @@ def do_service_get(kc, args):
 @utils.arg('service', metavar='<service>',
            help='Name or ID of service to delete')
 def do_service_delete(kc, args):
-    """Delete service from Service Catalog"""
+    """Delete service from Service Catalog."""
     service = utils.find_resource(kc.services, args.service)
     kc.services.delete(service.id)
 
 
 def do_role_list(kc, args):
-    """List all roles"""
+    """List all roles."""
     roles = kc.roles.list()
     utils.print_list(roles, ['id', 'name'], order_by='name')
 
 
 @utils.arg('role', metavar='<role>', help='Name or ID of role to display')
 def do_role_get(kc, args):
-    """Display role details"""
+    """Display role details."""
     role = utils.find_resource(kc.roles, args.role)
     utils.print_dict(role._info)
 
@@ -284,14 +284,14 @@ def do_role_get(kc, args):
 @utils.arg('--name', metavar='<role-name>', required=True,
            help='Name of new role')
 def do_role_create(kc, args):
-    """Create new role"""
+    """Create new role."""
     role = kc.roles.create(args.name)
     utils.print_dict(role._info)
 
 
 @utils.arg('role', metavar='<role>', help='Name or ID of role to delete')
 def do_role_delete(kc, args):
-    """Delete role"""
+    """Delete role."""
     role = utils.find_resource(kc.roles, args.role)
     kc.roles.delete(role)
 
@@ -375,7 +375,7 @@ def do_user_role_list(kc, args):
 @utils.arg('--tenant-id', metavar='<tenant-id>', help='Tenant ID')
 @utils.arg('--tenant_id', help=argparse.SUPPRESS)
 def do_ec2_credentials_create(kc, args):
-    """Create EC2-compatible credentials for user per tenant"""
+    """Create EC2-compatible credentials for user per tenant."""
     if not args.tenant_id:
         # use the authenticated tenant id as a default
         args.tenant_id = kc.auth_tenant_id
@@ -391,7 +391,7 @@ def do_ec2_credentials_create(kc, args):
 @utils.arg('--access', metavar='<access-key>', required=True,
            help='Access Key')
 def do_ec2_credentials_get(kc, args):
-    """Display EC2-compatible credentials"""
+    """Display EC2-compatible credentials."""
     if not args.user_id:
         # use the authenticated user id as a default
         args.user_id = kc.auth_user_id
@@ -423,7 +423,7 @@ def do_ec2_credentials_list(kc, args):
 @utils.arg('--access', metavar='<access-key>', required=True,
            help='Access Key')
 def do_ec2_credentials_delete(kc, args):
-    """Delete EC2-compatible credentials"""
+    """Delete EC2-compatible credentials."""
     if not args.user_id:
         # use the authenticated user id as a default
         args.user_id = kc.auth_user_id
@@ -459,7 +459,7 @@ def do_catalog(kc, args):
            help='Value of attribute to match')
 @require_service_catalog
 def do_endpoint_get(kc, args):
-    """Find endpoint filtered by a specific attribute or service type"""
+    """Find endpoint filtered by a specific attribute or service type."""
     kwargs = {
         'service_type': args.service,
         'endpoint_type': args.endpoint_type,
@@ -476,7 +476,7 @@ def do_endpoint_get(kc, args):
 
 
 def do_endpoint_list(kc, args):
-    """List configured service endpoints"""
+    """List configured service endpoints."""
     endpoints = kc.endpoints.list()
     utils.print_list(endpoints,
                      ['id', 'region', 'publicurl',
@@ -495,7 +495,7 @@ def do_endpoint_list(kc, args):
 @utils.arg('--internalurl', metavar='<internal-url>',
            help='Internal URL endpoint')
 def do_endpoint_create(kc, args):
-    """Create a new endpoint associated with a service"""
+    """Create a new endpoint associated with a service."""
     service_id = utils.find_resource(kc.services, args.service).id
     endpoint = kc.endpoints.create(args.region,
                                    service_id,
@@ -507,7 +507,7 @@ def do_endpoint_create(kc, args):
 
 @utils.arg('id', metavar='<endpoint-id>', help='ID of endpoint to delete')
 def do_endpoint_delete(kc, args):
-    """Delete a service endpoint"""
+    """Delete a service endpoint."""
     try:
         kc.endpoints.delete(args.id)
         print('Endpoint has been deleted.')
@@ -519,6 +519,6 @@ def do_endpoint_delete(kc, args):
            help='wrap PKI tokens to a specified length, or 0 to disable')
 @require_service_catalog
 def do_token_get(kc, args):
-    """Display the current user token"""
+    """Display the current user token."""
     utils.print_dict(kc.service_catalog.get_token(),
                      wrap=int(args.wrap))

@@ -32,7 +32,7 @@ class KeyringTest(utils.TestCase):
                 'optional package keyring or pickle is not installed')
 
         class MemoryKeyring(keyring.backend.KeyringBackend):
-            """Simple memory keyring with support for multiple keys"""
+            """Simple memory keyring with support for multiple keys."""
             def __init__(self):
                 self.passwords = {}
 
