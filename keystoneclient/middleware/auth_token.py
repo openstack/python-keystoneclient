@@ -305,7 +305,7 @@ class AuthProtocol(object):
                     'unable to access signing_dir %s' % self.signing_dirname)
             if os.stat(self.signing_dirname).st_uid != os.getuid():
                 self.LOG.warning(
-                    'signing_dir is not owned by %s' % os.getlogin())
+                    'signing_dir is not owned by %s' % os.getuid())
             current_mode = stat.S_IMODE(os.stat(self.signing_dirname).st_mode)
             if current_mode != stat.S_IRWXU:
                 self.LOG.warning(
