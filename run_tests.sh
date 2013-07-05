@@ -135,7 +135,7 @@ function run_pep8 {
   # NOTE(heckj): E125, E126 are being ignored matching other openstack projects
   # for pep 1.3.3 due to relatively arbitrary line indentation rulings
   ${wrapper} pep8 --repeat --show-pep8 --show-source \
-    --ignore=E125,E126 --exclude=.venv,.tox,dist,doc \
+    --ignore=E125,E126 --exclude=.venv,.tox,dist,doc,build \
     ${srcfiles}
 }
 
