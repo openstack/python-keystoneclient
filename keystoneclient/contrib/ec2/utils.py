@@ -216,12 +216,7 @@ class Ec2Signer(object):
             for h in sh_str.split(';'):
                 if h not in headers_lower:
                     continue
-                if h == 'host':
-                    # Note we discard any port suffix
-                    header_list.append('%s:%s' %
-                                       (h, headers_lower[h].split(':')[0]))
-                else:
-                    header_list.append('%s:%s' % (h, headers_lower[h]))
+                header_list.append('%s:%s' % (h, headers_lower[h]))
             return '\n'.join(header_list) + '\n'
 
         # Create canonical request:
