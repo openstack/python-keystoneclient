@@ -42,12 +42,16 @@ def require_service_catalog(f):
     return wrapped
 
 
-@utils.arg('--tenant-id', metavar='<tenant-id>',
-           help='Tenant ID;  lists all users if not specified')
+@utils.arg('--tenant', '--tenant-id', metavar='<tenant>',
+           help='Tenant;  lists all users if not specified')
 @utils.arg('--tenant_id', help=argparse.SUPPRESS)
 def do_user_list(kc, args):
     """List users"""
-    users = kc.users.list(tenant_id=args.tenant_id)
+    if args.tenant:
+        tenant_id = utils.find_resource(kc.tenants, args.tenant).id
+    else:
+        tenant_id = None
+    users = kc.users.list(tenant_id=tenant_id)
     utils.print_list(users, ['id', 'name', 'enabled', 'email'],
                      order_by='name')
 
@@ -61,7 +65,7 @@ def do_user_get(kc, args):
 
 @utils.arg('--name', metavar='<user-name>', required=True,
            help='New user name (must be unique)')
-@utils.arg('--tenant-id', metavar='<tenant-id>',
+@utils.arg('--tenant', '--tenant-id', metavar='<tenant>',
            help='New user default tenant')
 @utils.arg('--tenant_id', help=argparse.SUPPRESS)
 @utils.arg('--pass', metavar='<pass>', dest='passwd',
@@ -72,8 +76,14 @@ def do_user_get(kc, args):
            help='Initial user enabled status (default true)')
 def do_user_create(kc, args):
     """Create new user"""
+    if args.tenant:
+        tenant_id = utils.find_resource(kc.tenants, args.tenant).id
+    elif args.tenant_id:
+        tenant_id = args.tenant_id
+    else:
+        tenant_id = None
     user = kc.users.create(args.name, args.passwd, args.email,
-                           tenant_id=args.tenant_id,
+                           tenant_id=tenant_id,
                            enabled=utils.string_to_bool(args.enabled))
     utils.print_dict(user._info)
 
@@ -475,8 +485,9 @@ def do_endpoint_list(kc, args):
 
 @utils.arg('--region', metavar='<endpoint-region>',
            help='Endpoint region', default='regionOne')
-@utils.arg('--service-id', '--service_id', metavar='<service-id>',
-           required=True, help='ID of service associated with Endpoint')
+@utils.arg('--service', '--service-id', '--service_id',
+           metavar='<service>', required=True,
+           help='Name or ID of service associated with Endpoint')
 @utils.arg('--publicurl', metavar='<public-url>',
            help='Public URL endpoint')
 @utils.arg('--adminurl', metavar='<admin-url>',
@@ -485,8 +496,9 @@ def do_endpoint_list(kc, args):
            help='Internal URL endpoint')
 def do_endpoint_create(kc, args):
     """Create a new endpoint associated with a service"""
+    service_id = utils.find_resource(kc.services, args.service).id
     endpoint = kc.endpoints.create(args.region,
-                                   args.service_id,
+                                   service_id,
                                    args.publicurl,
                                    args.adminurl,
                                    args.internalurl)
