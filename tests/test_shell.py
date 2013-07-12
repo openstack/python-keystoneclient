@@ -293,7 +293,8 @@ class ShellTest(utils.TestCase):
 
     def test_shell_tenant_id_args(self):
         """Test a corner case where --tenant_id appears on the
-           command-line twice"""
+           command-line twice.
+        """
         do_ec2_mock = mock.MagicMock()
         # grab the decorators for do_ec2_create_credentials
         ec2_func = getattr(shell_v2_0, 'do_ec2_credentials_create')
