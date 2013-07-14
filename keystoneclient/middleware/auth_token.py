@@ -667,8 +667,8 @@ class AuthProtocol(object):
         try:
             token = data['access']['token']['id']
             expiry = data['access']['token']['expires']
-            assert token
-            assert expiry
+            if not (token and expiry):
+                raise AssertionError('invalid token or expire')
             datetime_expiry = timeutils.parse_isotime(expiry)
             return (token, timeutils.normalize_time(datetime_expiry))
         except (AssertionError, KeyError):
