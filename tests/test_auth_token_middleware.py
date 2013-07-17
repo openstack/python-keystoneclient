@@ -699,7 +699,8 @@ if tuple(sys.version_info)[0:2] < (2, 7):
     class AdjustedBaseAuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
         def assertIsInstance(self, obj, cls, msg=None):
             """Same as self.assertTrue(isinstance(obj, cls)), with a nicer
-            default message."""
+            default message.
+            """
             if not isinstance(obj, cls):
                 standardMsg = '%s is not an instance of %r' % (obj, cls)
                 self.fail(self._formatMessage(msg, standardMsg))

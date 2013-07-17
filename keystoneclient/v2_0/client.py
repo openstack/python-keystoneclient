@@ -197,7 +197,8 @@ class Client(client.HTTPClient):
         """Takes a username, password, and optionally a tenant_id or
         tenant_name to get an authentication token from keystone.
         May also take a token and a tenant_id to re-scope a token
-        to a tenant."""
+        to a tenant.
+        """
         headers = {}
         url = auth_url + "/tokens"
         if token:

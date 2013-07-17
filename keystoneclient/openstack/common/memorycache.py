@@ -57,7 +57,8 @@ class Client(object):
     def get(self, key):
         """Retrieves the value for a key or None.
 
-        this expunges expired keys during each get"""
+           this expunges expired keys during each get
+        """
 
         now = timeutils.utcnow_ts()
         for k in self.cache.keys():
