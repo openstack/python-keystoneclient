@@ -5,6 +5,7 @@ flake8==2.0
 hacking>=0.5.3,<0.6
 
 coverage
+discover
 fixtures
 keyring
 mock
