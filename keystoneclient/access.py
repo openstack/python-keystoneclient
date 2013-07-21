@@ -58,7 +58,7 @@ class AccessInfo(dict):
 
     def __init__(self, *args, **kwargs):
         super(AccessInfo, self).__init__(*args, **kwargs)
-        self.service_catalog = service_catalog.ServiceCatalog(
+        self.service_catalog = service_catalog.ServiceCatalog.factory(
             resource_dict=self, region_name=self.get('region_name'))
 
     def has_service_catalog(self):
