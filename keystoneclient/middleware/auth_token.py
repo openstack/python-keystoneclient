@@ -1191,7 +1191,7 @@ class AuthProtocol(object):
             # modification time.
             if os.path.exists(self.revoked_file_name):
                 mtime = os.path.getmtime(self.revoked_file_name)
-                fetched_time = datetime.datetime.fromtimestamp(mtime)
+                fetched_time = datetime.datetime.utcfromtimestamp(mtime)
             # Otherwise the list will need to be fetched.
             else:
                 fetched_time = datetime.datetime.min
