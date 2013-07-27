@@ -39,7 +39,7 @@ class UserTests(utils.TestCase, utils.CrudTests):
         kwargs.setdefault('domain_id', uuid.uuid4().hex)
         kwargs.setdefault('enabled', True)
         kwargs.setdefault('name', uuid.uuid4().hex)
-        kwargs.setdefault('project_id', uuid.uuid4().hex)
+        kwargs.setdefault('default_project_id', uuid.uuid4().hex)
         return kwargs
 
     def test_add_user_to_group(self):
@@ -131,3 +131,145 @@ class UserTests(utils.TestCase, utils.CrudTests):
         self.mox.ReplayAll()
 
         self.manager.remove_from_group(user=ref['id'], group=group_id)
+
+    def test_create_with_project(self):
+        # Can create a user with the deprecated project option rather than
+        # default_project_id.
+        ref = self.new_ref()
+        resp = utils.TestResponse({
+            "status_code": 201,
+            "text": self.serialize(ref),
+        })
+
+        method = 'POST'
+        req_ref = ref.copy()
+        req_ref.pop('id')
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.headers[method]
+        kwargs['data'] = self.serialize(req_ref)
+        requests.request(
+            method,
+            urlparse.urljoin(
+                self.TEST_URL,
+                'v3/%s' % self.collection_key),
+            **kwargs).AndReturn((resp))
+        self.mox.ReplayAll()
+
+        param_ref = req_ref.copy()
+        # Use deprecated project_id rather than new default_project_id.
+        param_ref['project_id'] = param_ref.pop('default_project_id')
+        params = utils.parameterize(param_ref)
+
+        returned = self.manager.create(**params)
+        self.assertTrue(isinstance(returned, self.model))
+        for attr in ref:
+            self.assertEqual(
+                getattr(returned, attr),
+                ref[attr],
+                'Expected different %s' % attr)
+
+    def test_create_with_project_and_default_project(self):
+        # Can create a user with the deprecated project and default_project_id.
+        # The backend call should only pass the default_project_id.
+        ref = self.new_ref()
+        resp = utils.TestResponse({
+            "status_code": 201,
+            "text": self.serialize(ref),
+        })
+
+        method = 'POST'
+        req_ref = ref.copy()
+        req_ref.pop('id')
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.headers[method]
+        kwargs['data'] = self.serialize(req_ref)
+        requests.request(
+            method,
+            urlparse.urljoin(
+                self.TEST_URL,
+                'v3/%s' % self.collection_key),
+            **kwargs).AndReturn((resp))
+        self.mox.ReplayAll()
+
+        param_ref = req_ref.copy()
+        # Add the deprecated project_id in the call, the value will be ignored.
+        param_ref['project_id'] = 'project'
+        params = utils.parameterize(param_ref)
+
+        returned = self.manager.create(**params)
+        self.assertTrue(isinstance(returned, self.model))
+        for attr in ref:
+            self.assertEqual(
+                getattr(returned, attr),
+                ref[attr],
+                'Expected different %s' % attr)
+
+    def test_update_with_project(self):
+        # Can update a user with the deprecated project option rather than
+        # default_project_id.
+        ref = self.new_ref()
+        req_ref = ref.copy()
+        del req_ref['id']
+        resp = utils.TestResponse({
+            "status_code": 200,
+            "text": self.serialize(ref),
+        })
+
+        method = 'PATCH'
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.headers[method]
+        kwargs['data'] = self.serialize(req_ref)
+        requests.request(
+            method,
+            urlparse.urljoin(
+                self.TEST_URL,
+                'v3/%s/%s' % (self.collection_key, ref['id'])),
+            **kwargs).AndReturn((resp))
+        self.mox.ReplayAll()
+
+        param_ref = req_ref.copy()
+        # Use deprecated project_id rather than new default_project_id.
+        param_ref['project_id'] = param_ref.pop('default_project_id')
+        params = utils.parameterize(param_ref)
+
+        returned = self.manager.update(ref['id'], **params)
+        self.assertTrue(isinstance(returned, self.model))
+        for attr in ref:
+            self.assertEqual(
+                getattr(returned, attr),
+                ref[attr],
+                'Expected different %s' % attr)
+
+    def test_update_with_project_and_default_project(self, ref=None):
+        ref = self.new_ref()
+        req_ref = ref.copy()
+        del req_ref['id']
+        resp = utils.TestResponse({
+            "status_code": 200,
+            "text": self.serialize(ref),
+        })
+
+        method = 'PATCH'
+        kwargs = copy.copy(self.TEST_REQUEST_BASE)
+        kwargs['headers'] = self.headers[method]
+        kwargs['data'] = self.serialize(req_ref)
+        requests.request(
+            method,
+            urlparse.urljoin(
+                self.TEST_URL,
+                'v3/%s/%s' % (self.collection_key, ref['id'])),
+            **kwargs).AndReturn((resp))
+        self.mox.ReplayAll()
+
+        param_ref = req_ref.copy()
+        # Add the deprecated project_id in the call, the value will be ignored.
+        param_ref['project_id'] = 'project'
+        params = utils.parameterize(param_ref)
+
+        returned = self.manager.update(ref['id'], **params)
+        self.assertTrue(isinstance(returned, self.model))
+        for attr in ref:
+            self.assertEqual(
+                getattr(returned, attr),
+                ref[attr],
+                'Expected different %s' % attr)
