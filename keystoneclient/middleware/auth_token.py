@@ -153,7 +153,6 @@ import stat
 import tempfile
 import time
 import urllib
-import webob.exc
 
 from keystoneclient.openstack.common import jsonutils
 from keystoneclient.common import cms
@@ -250,6 +249,19 @@ class ServiceError(Exception):
 
 class ConfigurationError(Exception):
     pass
+
+
+class MiniResp(object):
+    def __init__(self, error_message, env, headers=[]):
+        # The HEAD method is unique: it must never return a body, even if
+        # it reports an error (RFC-2616 clause 9.4). We relieve callers
+        # from varying the error responses depending on the method.
+        if env['REQUEST_METHOD'] == 'HEAD':
+            self.body = ['']
+        else:
+            self.body = [error_message]
+        self.headers = list(headers)
+        self.headers.append(('Content-type', 'text/plain'))
 
 
 class AuthProtocol(object):
@@ -472,8 +484,9 @@ class AuthProtocol(object):
 
         except ServiceError as e:
             self.LOG.critical('Unable to obtain admin token: %s' % e)
-            resp = webob.exc.HTTPServiceUnavailable()
-            return resp(env, start_response)
+            resp = MiniResp('Service unavailable', env)
+            start_response('503 Service Unavailable', resp.headers)
+            return resp.body
 
     def _remove_auth_headers(self, env):
         """Remove headers so a user can't fake authentication.
@@ -534,8 +547,9 @@ class AuthProtocol(object):
 
         """
         headers = [('WWW-Authenticate', 'Keystone uri=\'%s\'' % self.auth_uri)]
-        resp = webob.exc.HTTPUnauthorized('Authentication required', headers)
-        return resp(env, start_response)
+        resp = MiniResp('Authentication required', env, headers)
+        start_response('401 Unauthorized', resp.headers)
+        return resp.body
 
     def get_admin_token(self):
         """Return admin token, possibly fetching a new one.
