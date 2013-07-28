@@ -428,8 +428,29 @@ class HTTPClient(object):
     def process_token(self):
         """Extract and process information from the new auth_ref.
 
+        And set the relevant authentication information.
         """
-        raise NotImplementedError
+        # if we got a response without a service catalog, set the local
+        # list of tenants for introspection, and leave to client user
+        # to determine what to do. Otherwise, load up the service catalog
+        if self.auth_ref.project_scoped:
+            if not self.auth_ref.tenant_id:
+                raise exceptions.AuthorizationFailure(
+                    "Token didn't provide tenant_id")
+            if self.management_url is None and self.auth_ref.management_url:
+                self.management_url = self.auth_ref.management_url[0]
+            self.project_name = self.auth_ref.tenant_name
+            self.project_id = self.auth_ref.tenant_id
+
+        if not self.auth_ref.user_id:
+            raise exceptions.AuthorizationFailure(
+                "Token didn't provide user_id")
+
+        self.user_id = self.auth_ref.user_id
+
+        self.auth_domain_id = self.auth_ref.domain_id
+        self.auth_tenant_id = self.auth_ref.tenant_id
+        self.auth_user_id = self.auth_ref.user_id
 
     def get_raw_token_from_identity_service(self, auth_url, username=None,
                                             password=None, tenant_name=None,

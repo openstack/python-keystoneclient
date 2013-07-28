@@ -16,7 +16,7 @@ import json
 import logging
 
 from keystoneclient import exceptions
-from keystoneclient.v2_0 import client
+from keystoneclient import client
 from keystoneclient.v3 import credentials
 from keystoneclient.v3 import domains
 from keystoneclient.v3 import endpoints
@@ -31,7 +31,7 @@ from keystoneclient.v3 import users
 _logger = logging.getLogger(__name__)
 
 
-class Client(client.Client):
+class Client(client.HTTPClient):
     """Client for the OpenStack Identity API v3.
 
     :param string user_id: User ID for authentication. (optional)
@@ -97,6 +97,9 @@ class Client(client.Client):
         self.roles = roles.RoleManager(self)
         self.services = services.ServiceManager(self)
         self.users = users.UserManager(self)
+
+        if self.management_url is None:
+            self.authenticate()
 
     def serialize(self, entity):
         return json.dumps(entity, sort_keys=True)
