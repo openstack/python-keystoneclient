@@ -18,10 +18,12 @@ import datetime
 import iso8601
 import os
 import shutil
+import stat
 import string
 import sys
 import tempfile
 import testtools
+import uuid
 
 import fixtures
 import webob
@@ -909,6 +911,23 @@ class AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
         self.middleware.token_revocation_list = self.get_revocation_list_json()
         self.middleware.verify_signed_token(
             self.token_dict['signed_token_scoped'])
+
+    def test_verify_signing_dir_create_while_missing(self):
+        tmp_name = uuid.uuid4().hex
+        test_parent_signing_dir = "/tmp/%s" % tmp_name
+        self.middleware.signing_dirname = "/tmp/%s/%s" % ((tmp_name,) * 2)
+        self.middleware.signing_cert_file_name = "%s/test.pem" %\
+            self.middleware.signing_dirname
+        self.middleware.verify_signing_dir()
+        # NOTE(wu_wenxiang): Verify if the signing dir was created as expected.
+        self.assertTrue(os.path.isdir(self.middleware.signing_dirname))
+        self.assertTrue(os.access(self.middleware.signing_dirname, os.W_OK))
+        self.assertEqual(os.stat(self.middleware.signing_dirname).st_uid,
+                         os.getuid())
+        self.assertEqual(
+            stat.S_IMODE(os.stat(self.middleware.signing_dirname).st_mode),
+            stat.S_IRWXU)
+        shutil.rmtree(test_parent_signing_dir)
 
     def test_cert_file_missing(self):
         self.assertFalse(self.middleware.cert_file_missing(

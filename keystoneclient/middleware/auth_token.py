@@ -383,20 +383,7 @@ class AuthProtocol(object):
             self.signing_dirname = tempfile.mkdtemp(prefix='keystone-signing-')
         self.LOG.info('Using %s as cache directory for signing certificate' %
                       self.signing_dirname)
-        if os.path.exists(self.signing_dirname):
-            if not os.access(self.signing_dirname, os.W_OK):
-                raise ConfigurationError(
-                    'unable to access signing_dir %s' % self.signing_dirname)
-            if os.stat(self.signing_dirname).st_uid != os.getuid():
-                self.LOG.warning(
-                    'signing_dir is not owned by %s' % os.getuid())
-            current_mode = stat.S_IMODE(os.stat(self.signing_dirname).st_mode)
-            if current_mode != stat.S_IRWXU:
-                self.LOG.warning(
-                    'signing_dir mode is %s instead of %s' %
-                    (oct(current_mode), oct(stat.S_IRWXU)))
-        else:
-            os.makedirs(self.signing_dirname, stat.S_IRWXU)
+        self.verify_signing_dir()
 
         val = '%s/signing_cert.pem' % self.signing_dirname
         self.signing_cert_file_name = val
@@ -1145,6 +1132,22 @@ class AuthProtocol(object):
         formatted = cms.token_to_cms(signed_text)
         return self.cms_verify(formatted)
 
+    def verify_signing_dir(self):
+        if os.path.exists(self.signing_dirname):
+            if not os.access(self.signing_dirname, os.W_OK):
+                raise ConfigurationError(
+                    'unable to access signing_dir %s' % self.signing_dirname)
+            if os.stat(self.signing_dirname).st_uid != os.getuid():
+                self.LOG.warning(
+                    'signing_dir is not owned by %s' % os.getuid())
+            current_mode = stat.S_IMODE(os.stat(self.signing_dirname).st_mode)
+            if current_mode != stat.S_IRWXU:
+                self.LOG.warning(
+                    'signing_dir mode is %s instead of %s' %
+                    (oct(current_mode), oct(stat.S_IRWXU)))
+        else:
+            os.makedirs(self.signing_dirname, stat.S_IRWXU)
+
     @property
     def token_revocation_list_fetched_time(self):
         if not self._token_revocation_list_fetched_time:
@@ -1210,11 +1213,19 @@ class AuthProtocol(object):
     def fetch_signing_cert(self):
         response, data = self._http_request('GET',
                                             '/v2.0/certificates/signing')
-        try:
-            #todo check response
+
+        def write_cert_file(data):
             certfile = open(self.signing_cert_file_name, 'w')
             certfile.write(data)
             certfile.close()
+
+        try:
+            #todo check response
+            try:
+                write_cert_file(data)
+            except IOError:
+                self.verify_signing_dir()
+                write_cert_file(data)
         except (AssertionError, KeyError):
             self.LOG.warn(
                 "Unexpected response from keystone service: %s", data)
