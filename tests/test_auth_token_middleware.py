@@ -1076,9 +1076,17 @@ class AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
         self.middleware(req.environ, self.start_fake_response)
         self.assertEqual(self.response_status, 401)
 
-    def test_memcache_set_invalid(self):
+    def test_memcache_set_invalid_uuid(self):
         req = webob.Request.blank('/')
-        token = 'invalid-token'
+        token = uuid.uuid4().hex
+        req.headers['X-Auth-Token'] = token
+        self.middleware(req.environ, self.start_fake_response)
+        self.assertRaises(auth_token.InvalidUserToken,
+                          self._get_cached_token, token)
+
+    def test_memcache_set_invalid_signed(self):
+        req = webob.Request.blank('/')
+        token = self.token_dict['signed_token_scoped_expired']
         req.headers['X-Auth-Token'] = token
         self.middleware(req.environ, self.start_fake_response)
         self.assertRaises(auth_token.InvalidUserToken,
