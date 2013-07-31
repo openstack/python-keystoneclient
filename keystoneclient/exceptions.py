@@ -4,6 +4,8 @@
 Exception definitions.
 """
 
+from keystoneclient.openstack.common import jsonutils
+
 
 class CommandError(Exception):
     pass
@@ -143,7 +145,7 @@ _code_map = dict((c.http_status, c) for c in [BadRequest,
                                               ServiceUnavailable])
 
 
-def from_response(response, body):
+def from_response(response, body=None):
     """
     Return an instance of an ClientException or subclass
     based on an requests response.
@@ -155,6 +157,12 @@ def from_response(response, body):
             raise exception_from_response(resp, resp.text)
     """
     cls = _code_map.get(response.status_code, ClientException)
+    if body is None:
+        try:
+            body = jsonutils.loads(response.text)
+        except Exception:
+            body = response.text
+
     if body:
         if hasattr(body, 'keys'):
             error = body[body.keys()[0]]
