@@ -1047,6 +1047,7 @@ class AuthProtocol(object):
                 if self.cert_file_missing(err.output, self.ca_file_name):
                     self.fetch_ca_cert()
                     continue
+                self.LOG.warning('Verify error: %s' % err)
                 raise err
             return output
 

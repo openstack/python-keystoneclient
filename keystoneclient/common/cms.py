@@ -25,7 +25,10 @@ def _ensure_subprocess():
 
 
 def cms_verify(formatted, signing_cert_file_name, ca_file_name):
-    """Verifies the signature of the contents IAW CMS syntax."""
+    """Verifies the signature of the contents IAW CMS syntax.
+
+    :raises: subprocess.CalledProcessError
+    """
     _ensure_subprocess()
     process = subprocess.Popen(["openssl", "cms", "-verify",
                                 "-certfile", signing_cert_file_name,
@@ -39,7 +42,8 @@ def cms_verify(formatted, signing_cert_file_name, ca_file_name):
     output, err = process.communicate(formatted)
     retcode = process.poll()
     if retcode:
-        LOG.warning('Verify error: %s' % err)
+        # Do not log errors, as some happen in the positive thread
+        # instead, catch them in the calling code and log them there.
         # NOTE(dmllr): Python 2.6 compatibility:
         # CalledProcessError did not have output keyword argument
         e = subprocess.CalledProcessError(retcode, "openssl")
