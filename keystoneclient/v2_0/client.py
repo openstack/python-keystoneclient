@@ -14,8 +14,8 @@
 #    under the License.
 import logging
 
-from keystoneclient import client
 from keystoneclient import exceptions
+from keystoneclient import httpclient
 from keystoneclient.v2_0 import ec2
 from keystoneclient.v2_0 import endpoints
 from keystoneclient.v2_0 import roles
@@ -28,7 +28,7 @@ from keystoneclient.v2_0 import users
 _logger = logging.getLogger(__name__)
 
 
-class Client(client.HTTPClient):
+class Client(httpclient.HTTPClient):
     """Client for the OpenStack Keystone v2.0 API.
 
     :param string username: Username for authentication. (optional)

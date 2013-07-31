@@ -3,7 +3,7 @@ import mock
 
 import requests
 
-from keystoneclient import client
+from keystoneclient import httpclient
 from tests import utils
 
 
@@ -15,9 +15,9 @@ MOCK_REQUEST = mock.Mock(return_value=(FAKE_RESPONSE))
 
 
 def get_client():
-    cl = client.HTTPClient(username="username", password="password",
-                           tenant_id="tenant", auth_url="auth_test",
-                           cacert="ca.pem", key="key.pem", cert="cert.pem")
+    cl = httpclient.HTTPClient(username="username", password="password",
+                               tenant_id="tenant", auth_url="auth_test",
+                               cacert="ca.pem", key="key.pem", cert="cert.pem")
     return cl
 
 
@@ -71,7 +71,7 @@ class ClientTest(utils.TestCase):
 
     def test_post_auth(self):
         with mock.patch.object(requests, "request", MOCK_REQUEST):
-            cl = client.HTTPClient(
+            cl = httpclient.HTTPClient(
                 username="username", password="password", tenant_id="tenant",
                 auth_url="auth_test", cacert="ca.pem", key="key.pem",
                 cert="cert.pem")

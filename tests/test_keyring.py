@@ -1,7 +1,7 @@
 import datetime
 
 from keystoneclient import access
-from keystoneclient import client
+from keystoneclient import httpclient
 from keystoneclient.openstack.common import timeutils
 
 from tests import utils
@@ -58,8 +58,8 @@ class KeyringTest(utils.TestCase):
         Ensure that we get no value back if we don't have use_keyring
         set in the client.
         """
-        cl = client.HTTPClient(username=USERNAME, password=PASSWORD,
-                               tenant_id=TENANT_ID, auth_url=AUTH_URL)
+        cl = httpclient.HTTPClient(username=USERNAME, password=PASSWORD,
+                                   tenant_id=TENANT_ID, auth_url=AUTH_URL)
 
         (keyring_key, auth_ref) = cl.get_auth_ref_from_keyring(
             auth_url=AUTH_URL,
@@ -72,8 +72,8 @@ class KeyringTest(utils.TestCase):
         self.assertIsNone(auth_ref)
 
     def test_build_keyring_key(self):
-        cl = client.HTTPClient(username=USERNAME, password=PASSWORD,
-                               tenant_id=TENANT_ID, auth_url=AUTH_URL)
+        cl = httpclient.HTTPClient(username=USERNAME, password=PASSWORD,
+                                   tenant_id=TENANT_ID, auth_url=AUTH_URL)
 
         keyring_key = cl._build_keyring_key(auth_url=AUTH_URL,
                                             username=USERNAME,
@@ -86,9 +86,9 @@ class KeyringTest(utils.TestCase):
                          (AUTH_URL, TENANT_ID, TENANT, TOKEN, USERNAME))
 
     def test_set_and_get_keyring_expired(self):
-        cl = client.HTTPClient(username=USERNAME, password=PASSWORD,
-                               tenant_id=TENANT_ID, auth_url=AUTH_URL,
-                               use_keyring=True)
+        cl = httpclient.HTTPClient(username=USERNAME, password=PASSWORD,
+                                   tenant_id=TENANT_ID, auth_url=AUTH_URL,
+                                   use_keyring=True)
         keyring_key = cl._build_keyring_key(auth_url=AUTH_URL,
                                             username=USERNAME,
                                             tenant_name=TENANT,
@@ -108,9 +108,9 @@ class KeyringTest(utils.TestCase):
         self.assertIsNone(auth_ref)
 
     def test_set_and_get_keyring(self):
-        cl = client.HTTPClient(username=USERNAME, password=PASSWORD,
-                               tenant_id=TENANT_ID, auth_url=AUTH_URL,
-                               use_keyring=True)
+        cl = httpclient.HTTPClient(username=USERNAME, password=PASSWORD,
+                                   tenant_id=TENANT_ID, auth_url=AUTH_URL,
+                                   use_keyring=True)
         keyring_key = cl._build_keyring_key(auth_url=AUTH_URL,
                                             username=USERNAME,
                                             tenant_name=TENANT,

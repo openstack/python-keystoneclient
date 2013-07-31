@@ -3,8 +3,8 @@ import mock
 
 import requests
 
-from keystoneclient import client
 from keystoneclient import exceptions
+from keystoneclient import httpclient
 from tests import utils
 
 
@@ -16,8 +16,8 @@ MOCK_REQUEST = mock.Mock(return_value=(FAKE_RESPONSE))
 
 
 def get_client():
-    cl = client.HTTPClient(username="username", password="password",
-                           tenant_id="tenant", auth_url="auth_test")
+    cl = httpclient.HTTPClient(username="username", password="password",
+                               tenant_id="tenant", auth_url="auth_test")
     return cl
 
 
@@ -108,9 +108,9 @@ class ClientTest(utils.TestCase):
 
     def test_forwarded_for(self):
         ORIGINAL_IP = "10.100.100.1"
-        cl = client.HTTPClient(username="username", password="password",
-                               tenant_id="tenant", auth_url="auth_test",
-                               original_ip=ORIGINAL_IP)
+        cl = httpclient.HTTPClient(username="username", password="password",
+                                   tenant_id="tenant", auth_url="auth_test",
+                                   original_ip=ORIGINAL_IP)
 
         with mock.patch.object(requests, "request", MOCK_REQUEST):
             res = cl.request('/', 'GET')

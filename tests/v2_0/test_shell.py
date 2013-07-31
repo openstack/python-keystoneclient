@@ -5,7 +5,7 @@ import sys
 
 from testtools import matchers
 
-from keystoneclient import client
+from keystoneclient import httpclient
 
 from tests import utils
 from tests.v2_0 import fakes
@@ -28,11 +28,11 @@ class ShellTests(utils.TestCase):
 
         self.fake_client = fakes.FakeHTTPClient()
         self.stubs.Set(
-            client.HTTPClient, "_cs_request",
+            httpclient.HTTPClient, "_cs_request",
             lambda ign_self, *args, **kwargs:
             self.fake_client._cs_request(*args, **kwargs))
         self.stubs.Set(
-            client.HTTPClient, "authenticate",
+            httpclient.HTTPClient, "authenticate",
             lambda cl_obj:
             self.fake_client.authenticate(cl_obj))
         self.old_environment = os.environ.copy()

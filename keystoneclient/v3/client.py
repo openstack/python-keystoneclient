@@ -15,8 +15,8 @@
 import json
 import logging
 
-from keystoneclient import client
 from keystoneclient import exceptions
+from keystoneclient import httpclient
 from keystoneclient.v3 import credentials
 from keystoneclient.v3 import domains
 from keystoneclient.v3 import endpoints
@@ -31,7 +31,7 @@ from keystoneclient.v3 import users
 _logger = logging.getLogger(__name__)
 
 
-class Client(client.HTTPClient):
+class Client(httpclient.HTTPClient):
     """Client for the OpenStack Identity API v3.
 
     :param string user_id: User ID for authentication. (optional)
