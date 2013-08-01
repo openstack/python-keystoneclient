@@ -17,6 +17,7 @@
 import datetime
 import iso8601
 import os
+import shutil
 import string
 import sys
 import tempfile
@@ -671,8 +672,7 @@ class BaseAuthTokenMiddlewareTest(testtools.TestCase):
 
         """
         conf = conf or self.conf
-        if 'http_handler' not in conf:
-            fake_http = fake_http or self.fake_http
+        if fake_http:
             conf['http_handler'] = fake_http
         fake_app = fake_app or self.fake_app
         self.middleware = auth_token.AuthProtocol(fake_app(expected_env), conf)
@@ -1002,6 +1002,21 @@ class AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
         self.assertIsNotNone(self.middleware.LOG.msg)
         self.assertIsNotNone(self.middleware.LOG.debugmsg)
 
+    def test_request_no_token_http(self):
+        req = webob.Request.blank('/', environ={'REQUEST_METHOD': 'HEAD'})
+        conf = {
+            'auth_host': 'keystone.example.com',
+            'auth_port': 1234,
+            'auth_protocol': 'http',
+            'auth_admin_prefix': '/testadmin',
+        }
+        self.set_middleware(conf=conf)
+        body = self.middleware(req.environ, self.start_fake_response)
+        self.assertEqual(self.response_status, 401)
+        self.assertEqual(self.response_headers['WWW-Authenticate'],
+                         "Keystone uri='http://keystone.example.com:1234'")
+        self.assertEqual(body, [''])
+
     def test_request_blank_token(self):
         req = webob.Request.blank('/')
         req.headers['X-Auth-Token'] = ''
@@ -1195,6 +1210,34 @@ class AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
         middleware = auth_token.AuthProtocol(self.fake_app, conf)
         self.assertEquals(middleware.token_revocation_list_cache_timeout,
                           datetime.timedelta(seconds=24))
+
+
+class CertDownloadMiddlewareTest(BaseAuthTokenMiddlewareTest):
+    def setUp(self):
+        super(CertDownloadMiddlewareTest, self).setUp()
+        self.base_dir = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.base_dir)
+        super(CertDownloadMiddlewareTest, self).tearDown()
+
+    # Usually we supply a signed_dir with pre-installed certificates,
+    # so invocation of /usr/bin/openssl succeeds. This time we give it
+    # an empty directory, so it fails.
+    def test_request_no_token_dummy(self):
+        cert_dir = os.path.join(self.base_dir, 'certs')
+        os.mkdir(cert_dir)
+        conf = {
+            'auth_host': 'keystone.example.com',
+            'auth_port': 1234,
+            'auth_protocol': 'http',
+            'auth_admin_prefix': '/testadmin',
+            'signing_dir': cert_dir,
+        }
+        self.set_middleware(fake_http=self.fake_http, conf=conf)
+        self.assertRaises(cms.subprocess.CalledProcessError,
+                          self.middleware.verify_signed_token,
+                          self.token_dict['signed_token_scoped'])
 
 
 class v2AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
