@@ -4,9 +4,10 @@ import json
 
 import requests
 
-from keystoneclient.v2_0 import client
 from keystoneclient import exceptions
 from keystoneclient.openstack.common import timeutils
+from keystoneclient.v2_0 import client
+
 from tests import utils
 
 

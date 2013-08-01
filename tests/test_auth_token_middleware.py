@@ -26,11 +26,11 @@ import fixtures
 import webob
 
 from keystoneclient.common import cms
-from keystoneclient import utils
 from keystoneclient.middleware import auth_token
-from keystoneclient.openstack.common import memorycache
 from keystoneclient.openstack.common import jsonutils
+from keystoneclient.openstack.common import memorycache
 from keystoneclient.openstack.common import timeutils
+from keystoneclient import utils
 
 
 ROOTDIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
