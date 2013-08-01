@@ -197,24 +197,26 @@ if not CONF:
 opts = [
     cfg.StrOpt('auth_admin_prefix',
                default='',
-               help='Prefix to prepend at the begining of the URL'),
+               help='Prefix to prepend at the beginning of the path'),
     cfg.StrOpt('auth_host',
                default='127.0.0.1',
-               help='Host providing the public Identity API endpoint'),
+               help='Host providing the admin Identity API endpoint'),
     cfg.IntOpt('auth_port',
                default=35357,
-               help='Port of the public Identity API endpoint'),
+               help='Port of the admin Identity API endpoint'),
     cfg.StrOpt('auth_protocol',
                default='https',
-               help='Protocol of the public Identity API endpoint'
+               help='Protocol of the admin Identity API endpoint'
                '(http or https)'),
     cfg.StrOpt('auth_uri',
                default=None,
-               help='(optional) Complete public Identity API endpoint;'
-               ' defaults to auth_protocol://auth_host:auth_port'),
+               # FIXME(dolph): should be default='http://127.0.0.1:5000/v2.0/',
+               # or (depending on client support) an unversioned, publicly
+               # accessible identity endpoint (see bug 1207517)
+               help='Complete public Identity API endpoint'),
     cfg.StrOpt('auth_version',
                default=None,
-               help='API version of the public Identity API endpoint'),
+               help='API version of the admin Identity API endpoint'),
     cfg.BoolOpt('delay_auth_decision',
                 default=False,
                 help='Do not handle authorization requests within the'
@@ -360,6 +362,13 @@ class AuthProtocol(object):
         self.auth_admin_prefix = self._conf_get('auth_admin_prefix')
         self.auth_uri = self._conf_get('auth_uri')
         if self.auth_uri is None:
+            self.LOG.warning(
+                'Configuring auth_uri to point to the public identity '
+                'endpoint is required; clients may not be able to '
+                'authenticate against an admin endpoint')
+
+            # FIXME(dolph): drop support for this fallback behavior as
+            # documented in bug 1207517
             self.auth_uri = '%s://%s:%s' % (self.auth_protocol,
                                             self.auth_host,
                                             self.auth_port)
