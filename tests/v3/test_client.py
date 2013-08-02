@@ -36,6 +36,13 @@ class KeystoneClientTest(utils.TestCase):
         })
         self.unscoped_mock_req = mock.Mock(return_value=unscoped_fake_resp)
 
+        trust_fake_resp = utils.TestResponse({
+            "status_code": 200,
+            "text": json.dumps(client_fixtures.TRUST_TOKEN),
+            "headers": client_fixtures.AUTH_RESPONSE_HEADERS
+        })
+        self.trust_mock_req = mock.Mock(return_value=trust_fake_resp)
+
     def test_unscoped_init(self):
         with mock.patch.object(requests, "request", self.unscoped_mock_req):
             c = client.Client(user_domain_name='exampledomain',
@@ -119,3 +126,17 @@ class KeystoneClientTest(utils.TestCase):
             self.assertIsNone(new_client.password)
             self.assertEqual(new_client.management_url,
                              'http://admin:35357/v3')
+
+    def test_trust_init(self):
+        with mock.patch.object(requests, "request", self.trust_mock_req):
+            c = client.Client(user_domain_name='exampledomain',
+                              username='exampleuser',
+                              password='password',
+                              auth_url='http://somewhere/',
+                              trust_id='fe0aef')
+            self.assertIsNotNone(c.auth_ref)
+            self.assertFalse(c.auth_ref.domain_scoped)
+            self.assertFalse(c.auth_ref.project_scoped)
+            self.assertEqual(c.auth_ref.trust_id, 'fe0aef')
+            self.assertTrue(c.auth_ref.trust_scoped)
+            self.assertEquals(c.auth_user_id, '0ca8f6')

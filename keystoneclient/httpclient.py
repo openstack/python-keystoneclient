@@ -126,7 +126,7 @@ class HTTPClient(object):
                  stale_duration=None, user_id=None, user_domain_id=None,
                  user_domain_name=None, domain_id=None, domain_name=None,
                  project_id=None, project_name=None, project_domain_id=None,
-                 project_domain_name=None):
+                 project_domain_name=None, trust_id=None):
         """Construct a new http client
 
         :param string user_id: User ID for authentication. (optional)
@@ -196,6 +196,7 @@ class HTTPClient(object):
         :param string tenant_id: Tenant id. (optional)
                                  The tenant_id keyword argument is
                                  deprecated, use project_id instead.
+        :param string trust_id: Trust ID for trust scoping. (optional)
 
         """
         # set baseline defaults
@@ -217,6 +218,8 @@ class HTTPClient(object):
         self.management_url = None
         self.timeout = float(timeout) if timeout is not None else None
 
+        self.trust_id = None
+
         # if loading from a dictionary passed in via auth_ref,
         # load values from AccessInfo parsing that dictionary
         if auth_ref:
@@ -233,6 +236,7 @@ class HTTPClient(object):
             self.auth_url = self.auth_ref.auth_url[0]
             self.management_url = self.auth_ref.management_url[0]
             self.auth_token = self.auth_ref.auth_token
+            self.trust_id = self.auth_ref.trust_id
         else:
             self.auth_ref = None
 
@@ -275,6 +279,10 @@ class HTTPClient(object):
             self.project_domain_id = 'default'
         if project_domain_name:
             self.project_domain_name = project_domain_name
+
+        # trust-related attributes
+        if trust_id:
+            self.trust_id = trust_id
 
         # endpoint selection
         if auth_url:
@@ -361,7 +369,7 @@ class HTTPClient(object):
                      user_id=None, domain_name=None, domain_id=None,
                      project_name=None, project_id=None, user_domain_id=None,
                      user_domain_name=None, project_domain_id=None,
-                     project_domain_name=None):
+                     project_domain_name=None, trust_id=None):
         """Authenticate user.
 
         Uses the data provided at instantiation to authenticate against
@@ -381,6 +389,9 @@ class HTTPClient(object):
         to the default project. Otherwise, the authentication token returned
         will be 'unscoped' and limited in capabilities until a fully-scoped
         token is acquired.
+
+        With the v3 API, with the OS-TRUST extension enabled, the trust_id can
+        be provided to allow project-specific role delegation between users
 
         If successful, sets the self.auth_ref and self.auth_token with
         the returned token. If not already set, will also set
@@ -416,6 +427,8 @@ class HTTPClient(object):
         project_domain_id = project_domain_id or self.project_domain_id
         project_domain_name = project_domain_name or self.project_domain_name
 
+        trust_id = trust_id or self.trust_id
+
         if not token:
             token = self.auth_token_from_user
             if (not token and self.auth_ref and not
@@ -434,7 +447,8 @@ class HTTPClient(object):
             'project_name': project_name,
             'project_domain_id': project_domain_id,
             'project_domain_name': project_domain_name,
-            'token': token
+            'token': token,
+            'trust_id': trust_id,
         }
         (keyring_key, auth_ref) = self.get_auth_ref_from_keyring(**kwargs)
         new_token_needed = False
@@ -535,7 +549,8 @@ class HTTPClient(object):
                                             domain_id=None, domain_name=None,
                                             project_id=None, project_name=None,
                                             project_domain_id=None,
-                                            project_domain_name=None):
+                                            project_domain_name=None,
+                                            trust_id=None):
         """Authenticate against the Identity API and get a token.
 
         Not implemented here because auth protocols should be API

@@ -17,6 +17,7 @@ import logging
 
 from keystoneclient import exceptions
 from keystoneclient import httpclient
+from keystoneclient.v3.contrib import trusts
 from keystoneclient.v3 import credentials
 from keystoneclient.v3 import domains
 from keystoneclient.v3 import endpoints
@@ -97,6 +98,7 @@ class Client(httpclient.HTTPClient):
         self.roles = roles.RoleManager(self)
         self.services = services.ServiceManager(self)
         self.users = users.UserManager(self)
+        self.trusts = trusts.TrustManager(self)
 
         if self.management_url is None:
             self.authenticate()
@@ -128,7 +130,9 @@ class Client(httpclient.HTTPClient):
                                             project_id=None, project_name=None,
                                             project_domain_id=None,
                                             project_domain_name=None,
-                                            token=None, **kwargs):
+                                            token=None,
+                                            trust_id=None,
+                                            **kwargs):
         """Authenticate against the v3 Identity API.
 
         :returns: (``resp``, ``body``) if authentication was successful.
@@ -151,7 +155,8 @@ class Client(httpclient.HTTPClient):
                 project_name=project_name,
                 project_domain_id=project_domain_id,
                 project_domain_name=project_domain_name,
-                token=token)
+                token=token,
+                trust_id=trust_id)
         except (exceptions.AuthorizationFailure, exceptions.Unauthorized):
             _logger.debug('Authorization failed.')
             raise
@@ -163,7 +168,7 @@ class Client(httpclient.HTTPClient):
                  user_domain_id=None, user_domain_name=None, password=None,
                  domain_id=None, domain_name=None,
                  project_id=None, project_name=None, project_domain_id=None,
-                 project_domain_name=None, token=None):
+                 project_domain_name=None, token=None, trust_id=None):
         headers = {}
         url = auth_url + "/auth/tokens"
         body = {'auth': {'identity': {}}}
@@ -225,6 +230,12 @@ class Client(httpclient.HTTPClient):
                     scope['project']['domain']['id'] = project_domain_id
                 elif project_domain_name:
                     scope['project']['domain']['name'] = project_domain_name
+
+        if trust_id:
+            body['auth']['scope'] = {}
+            scope = body['auth']['scope']
+            scope['OS-TRUST:trust'] = {}
+            scope['OS-TRUST:trust']['id'] = trust_id
 
         if not (ident or token):
             raise ValueError('Authentication method required (e.g. password)')

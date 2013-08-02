@@ -200,6 +200,23 @@ class AccessInfo(dict):
         raise NotImplementedError()
 
     @property
+    def trust_id(self):
+        """Returns the trust id associated with the authentication token.
+
+        :returns: str or None (if no trust associated with the token)
+        """
+        raise NotImplementedError()
+
+    @property
+    def trust_scoped(self):
+        """Returns true if the authorization token was scoped as delegated in a
+        trust, via the OS-TRUST v3 extension.
+
+        :returns: bool
+        """
+        raise NotImplementedError()
+
+    @property
     def project_id(self):
         """Returns the project ID associated with the authentication
         request, or None if the authentication request wasn't scoped to a
@@ -331,6 +348,14 @@ class AccessInfoV2(AccessInfo):
         return False
 
     @property
+    def trust_id(self):
+        return None
+
+    @property
+    def trust_scoped(self):
+        return False
+
+    @property
     def project_id(self):
         tenant_dict = self['token'].get('tenant', None)
         if tenant_dict:
@@ -447,6 +472,14 @@ class AccessInfoV3(AccessInfo):
     @property
     def domain_scoped(self):
         return 'domain' in self
+
+    @property
+    def trust_id(self):
+        return self.get('OS-TRUST:trust', {}).get('id')
+
+    @property
+    def trust_scoped(self):
+        return 'OS-TRUST:trust' in self
 
     @property
     def auth_url(self):

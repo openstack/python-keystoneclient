@@ -185,6 +185,7 @@ class CrudTests(testtools.TestCase):
     collection_key = None
     model = None
     manager = None
+    path_prefix = None
 
     def new_ref(self, **kwargs):
         kwargs.setdefault('id', uuid.uuid4().hex)
@@ -212,33 +213,48 @@ class CrudTests(testtools.TestCase):
             return json.dumps({self.collection_key: entity}, sort_keys=True)
         raise NotImplementedError('Are you sure you want to serialize that?')
 
-    def test_create(self, ref=None):
+    def _req_path(self):
+        if self.path_prefix:
+            return 'v3/%s/%s' % (self.path_prefix, self.collection_key)
+        else:
+            return 'v3/%s' % self.collection_key
+
+    def test_create(self, ref=None, req_ref=None):
         ref = ref or self.new_ref()
+        manager_ref = ref.copy()
+        manager_ref.pop('id')
+
+        # req_ref argument allows you to specify a different
+        # signature for the request when the manager does some
+        # conversion before doing the request (e.g converting
+        # from datetime object to timestamp string)
+        req_ref = req_ref or ref.copy()
+        req_ref.pop('id')
+        data = self.serialize(req_ref)
         resp = TestResponse({
             "status_code": 201,
-            "text": self.serialize(ref),
+            "text": data,
         })
 
         method = 'POST'
-        req_ref = ref.copy()
-        req_ref.pop('id')
         kwargs = copy.copy(self.TEST_REQUEST_BASE)
         kwargs['headers'] = self.headers[method]
-        kwargs['data'] = self.serialize(req_ref)
+        kwargs['data'] = data
+
         requests.request(
             method,
             urlparse.urljoin(
                 self.TEST_URL,
-                'v3/%s' % self.collection_key),
+                self._req_path()),
             **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
-        returned = self.manager.create(**parameterize(req_ref))
+        returned = self.manager.create(**parameterize(manager_ref))
         self.assertTrue(isinstance(returned, self.model))
-        for attr in ref:
+        for attr in req_ref:
             self.assertEqual(
                 getattr(returned, attr),
-                ref[attr],
+                req_ref[attr],
                 'Expected different %s' % attr)
 
     def test_get(self, ref=None):
@@ -255,7 +271,7 @@ class CrudTests(testtools.TestCase):
             method,
             urlparse.urljoin(
                 self.TEST_URL,
-                'v3/%s/%s' % (self.collection_key, ref['id'])),
+                '%s/%s' % (self._req_path(), ref['id'])),
             **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
@@ -281,7 +297,7 @@ class CrudTests(testtools.TestCase):
             method,
             urlparse.urljoin(
                 self.TEST_URL,
-                expected_path or 'v3/%s' % self.collection_key),
+                expected_path or self._req_path()),
             **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
@@ -305,7 +321,7 @@ class CrudTests(testtools.TestCase):
             method,
             urlparse.urljoin(
                 self.TEST_URL,
-                'v3/%s%s' % (self.collection_key, query)),
+                '%s%s' % (self._req_path(), query)),
             **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
@@ -334,7 +350,7 @@ class CrudTests(testtools.TestCase):
             method,
             urlparse.urljoin(
                 self.TEST_URL,
-                'v3/%s/%s' % (self.collection_key, ref['id'])),
+                '%s/%s' % (self._req_path(), ref['id'])),
             **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
@@ -360,7 +376,7 @@ class CrudTests(testtools.TestCase):
             method,
             urlparse.urljoin(
                 self.TEST_URL,
-                'v3/%s/%s' % (self.collection_key, ref['id'])),
+                '%s/%s' % (self._req_path(), ref['id'])),
             **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
