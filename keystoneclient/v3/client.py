@@ -15,8 +15,8 @@
 import json
 import logging
 
-from keystoneclient import exceptions
 from keystoneclient import client
+from keystoneclient import exceptions
 from keystoneclient.v3 import credentials
 from keystoneclient.v3 import domains
 from keystoneclient.v3 import endpoints

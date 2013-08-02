@@ -15,8 +15,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from keystoneclient import utils
 from keystoneclient.generic import client
+from keystoneclient import utils
 
 CLIENT_CLASS = client.Client
 

@@ -154,12 +154,12 @@ import tempfile
 import time
 import urllib
 
-from keystoneclient.openstack.common import jsonutils
 from keystoneclient.common import cms
-from keystoneclient import utils
 from keystoneclient.middleware import memcache_crypt
+from keystoneclient.openstack.common import jsonutils
 from keystoneclient.openstack.common import memorycache
 from keystoneclient.openstack.common import timeutils
+from keystoneclient import utils
 
 CONF = None
 # to pass gate before oslo-config is deployed everywhere,

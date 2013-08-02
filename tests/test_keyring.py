@@ -3,8 +3,9 @@ import datetime
 from keystoneclient import access
 from keystoneclient import client
 from keystoneclient.openstack.common import timeutils
-from tests.v2_0 import client_fixtures
+
 from tests import utils
+from tests.v2_0 import client_fixtures
 
 try:
     import keyring  # noqa

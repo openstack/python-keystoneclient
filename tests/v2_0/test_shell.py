@@ -2,12 +2,13 @@ import cStringIO
 import os
 import stubout
 import sys
+
 from testtools import matchers
 
 from keystoneclient import client
 
-from tests.v2_0 import fakes
 from tests import utils
+from tests.v2_0 import fakes
 
 
 DEFAULT_USERNAME = 'username'

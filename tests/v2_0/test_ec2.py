@@ -1,6 +1,6 @@
 import copy
-import urlparse
 import json
+import urlparse
 
 import requests
 
