@@ -12,8 +12,8 @@ function usage {
   echo "  -x, --stop               Stop running tests after the first error or failure."
   echo "  -f, --force              Force a clean re-build of the virtual environment. Useful when dependencies have been added."
   echo "  -u, --update             Update the virtual environment with any newer package versions"
-  echo "  -p, --pep8               Just run pep8"
-  echo "  -P, --no-pep8            Don't run pep8"
+  echo "  -p, --pep8               Just run flake8"
+  echo "  -P, --no-pep8            Don't run flake8"
   echo "  -c, --coverage           Generate coverage report"
   echo "  -d, --debug              Run tests with testtools instead of testr. This allows you to use the debugger."
   echo "  -h, --help               Print this usage message"
@@ -33,8 +33,8 @@ function process_option {
     -s|--no-site-packages) no_site_packages=1;;
     -f|--force) force=1;;
     -u|--update) update=1;;
-    -p|--pep8) just_pep8=1;;
-    -P|--no-pep8) no_pep8=1;;
+    -p|--pep8) just_flake8=1;;
+    -P|--no-pep8) no_flake8=1;;
     -c|--coverage) coverage=1;;
     -d|--debug) debug=1;;
     -*) testropts="$testropts $1";;
@@ -52,8 +52,8 @@ installvenvopts=
 testrargs=
 testropts=
 wrapper=""
-just_pep8=0
-no_pep8=0
+just_flake8=0
+no_flake8=0
 coverage=0
 debug=0
 update=0
@@ -130,15 +130,13 @@ function copy_subunit_log {
   cp $LOGNAME subunit.log
 }
 
-function run_pep8 {
-  echo "Running pep8 ..."
+function run_flake8 {
+  echo "Running flake8 ..."
   srcfiles="keystoneclient tests"
-  # Just run PEP8 in current environment
-  #
-  # NOTE(heckj): E125, E126 are being ignored matching other openstack projects
-  # for pep 1.3.3 due to relatively arbitrary line indentation rulings
-  ${wrapper} pep8 --repeat --show-pep8 --show-source \
-    --ignore=E125,E126 --exclude=.venv,.tox,dist,doc,build \
+  # Just run Flake8 in current environment
+  ${wrapper} flake8 --show-pep8 --show-source \
+    --ignore=F811,F821,F841,H201,H202,H302,H304,H404,H802 \
+    --exclude=.venv,.tox,dist,doc,*egg,build \
     ${srcfiles}
 }
 
@@ -179,20 +177,20 @@ if [ $coverage -eq 1 ]; then
     ${wrapper} coverage erase
 fi
 
-if [ $just_pep8 -eq 1 ]; then
-    run_pep8
+if [ $just_flake8 -eq 1 ]; then
+    run_flake8
     exit
 fi
 
 init_testr
 run_tests
 
-# NOTE(sirp): we only want to run pep8 when we're running the full-test suite,
+# NOTE(sirp): we only want to run flake8 when we're running the full-test suite,
 # not when we're running tests individually. To handle this, we need to
 # distinguish between options (testropts), which begin with a '-', and
 # arguments (testrargs).
 if [ -z "$testrargs" ]; then
-  if [ $no_pep8 -eq 0 ]; then
-    run_pep8
+  if [ $no_flake8 -eq 0 ]; then
+    run_flake8
   fi
 fi
