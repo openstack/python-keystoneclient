@@ -19,6 +19,8 @@ import argparse
 import getpass
 import sys
 
+import six
+
 from keystoneclient import utils
 from keystoneclient.v2_0 import client
 
@@ -440,7 +442,7 @@ def do_ec2_credentials_delete(kc, args):
 def do_catalog(kc, args):
     """List service catalog, possibly filtered by service."""
     endpoints = kc.service_catalog.get_endpoints(service_type=args.service)
-    for (service, service_endpoints) in endpoints.iteritems():
+    for (service, service_endpoints) in six.iteritems(endpoints):
         if len(service_endpoints) > 0:
             print("Service: %s" % service)
             for ep in service_endpoints:

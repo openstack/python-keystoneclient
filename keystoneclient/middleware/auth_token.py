@@ -154,6 +154,8 @@ import tempfile
 import time
 import urllib
 
+import six
+
 from keystoneclient.common import cms
 from keystoneclient.middleware import memcache_crypt
 from keystoneclient.openstack.common import jsonutils
@@ -843,7 +845,7 @@ class AuthProtocol(object):
 
     def _add_headers(self, env, headers):
         """Add http headers to environment."""
-        for (k, v) in headers.iteritems():
+        for (k, v) in six.iteritems(headers):
             env_key = self._header_to_env_var(k)
             env[env_key] = v
 
