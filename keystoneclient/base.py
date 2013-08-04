@@ -34,9 +34,8 @@ except NameError:
 
 
 def getid(obj):
-    """
-    Abstracts the common pattern of allowing both an object or an object's ID
-    (UUID) as a parameter when dealing with relationships.
+    """Abstracts the common pattern of allowing both an object or an object's
+    ID (UUID) as a parameter when dealing with relationships.
     """
 
     # Try to return the object's UUID first, if we have a UUID.
@@ -75,9 +74,8 @@ def filter_kwargs(f):
 
 
 class Manager(object):
-    """
-    Managers interact with a particular type of API (servers, flavors, images,
-    etc.) and provide CRUD operations for them.
+    """Managers interact with a particular type of API (servers, flavors,
+    images, etc.) and provide CRUD operations for them.
     """
     resource_class = None
 
@@ -138,8 +136,7 @@ class Manager(object):
 
 
 class ManagerWithFind(Manager):
-    """
-    Like a `Manager`, but with additional `find()`/`findall()` methods.
+    """Like a `Manager`, but with additional `find()`/`findall()` methods.
     """
 
     __metaclass__ = abc.ABCMeta
@@ -149,8 +146,7 @@ class ManagerWithFind(Manager):
         pass
 
     def find(self, **kwargs):
-        """
-        Find a single item with attributes matching ``**kwargs``.
+        """Find a single item with attributes matching ``**kwargs``.
 
         This isn't very efficient: it loads the entire list then filters on
         the Python side.
@@ -167,8 +163,7 @@ class ManagerWithFind(Manager):
             return rl[0]
 
     def findall(self, **kwargs):
-        """
-        Find all items with attributes matching ``**kwargs``.
+        """Find all items with attributes matching ``**kwargs``.
 
         This isn't very efficient: it loads the entire list then filters on
         the Python side.
@@ -287,9 +282,7 @@ class CrudManager(Manager):
 
     @filter_kwargs
     def find(self, **kwargs):
-        """
-        Find a single item with attributes matching ``**kwargs``.
-        """
+        """Find a single item with attributes matching ``**kwargs``."""
         url = self.build_url(dict_args_in_out=kwargs)
 
         rl = self._list(
@@ -310,8 +303,7 @@ class CrudManager(Manager):
 
 
 class Resource(object):
-    """
-    A resource represents a particular instance of an object (tenant, user,
+    """A resource represents a particular instance of an object (tenant, user,
     etc). This is pretty much just a bag for attributes.
 
     :param manager: Manager object

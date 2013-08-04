@@ -34,22 +34,16 @@ class RoleManager(base.ManagerWithFind):
         return self._get("/OS-KSADM/roles/%s" % base.getid(role), "role")
 
     def create(self, name):
-        """
-        Create a role.
-        """
+        """Create a role."""
         params = {"role": {"name": name}}
         return self._create('/OS-KSADM/roles', params, "role")
 
     def delete(self, role):
-        """
-        Delete a role.
-        """
+        """Delete a role."""
         return self._delete("/OS-KSADM/roles/%s" % base.getid(role))
 
     def list(self):
-        """
-        List all available roles.
-        """
+        """List all available roles."""
         return self._list("/OS-KSADM/roles", "roles")
 
     def roles_for_user(self, user, tenant=None):

@@ -39,8 +39,7 @@ class UserManager(base.ManagerWithFind):
         return self._get("/users/%s" % base.getid(user), "user")
 
     def update(self, user, **kwargs):
-        """
-        Update user data.
+        """Update user data.
 
         Supported arguments include ``name``, ``email``, and ``enabled``.
         """
@@ -52,9 +51,7 @@ class UserManager(base.ManagerWithFind):
         return self._update(url, params, "user")
 
     def update_enabled(self, user, enabled):
-        """
-        Update enabled-ness
-        """
+        """Update enabled-ness."""
         params = {"user": {"id": base.getid(user),
                            "enabled": enabled}}
 
@@ -62,9 +59,7 @@ class UserManager(base.ManagerWithFind):
                      "user")
 
     def update_password(self, user, password):
-        """
-        Update password
-        """
+        """Update password."""
         params = {"user": {"id": base.getid(user),
                            "password": password}}
 
@@ -72,9 +67,7 @@ class UserManager(base.ManagerWithFind):
                             params, "user")
 
     def update_own_password(self, origpasswd, passwd):
-        """
-        Update password
-        """
+        """Update password."""
         params = {"user": {"password": passwd,
                            "original_password": origpasswd}}
 
@@ -84,9 +77,7 @@ class UserManager(base.ManagerWithFind):
                             management=False)
 
     def update_tenant(self, user, tenant):
-        """
-        Update default tenant.
-        """
+        """Update default tenant."""
         params = {"user": {"id": base.getid(user),
                            "tenantId": base.getid(tenant)}}
 
@@ -96,9 +87,7 @@ class UserManager(base.ManagerWithFind):
                             params, "user")
 
     def create(self, name, password, email, tenant_id=None, enabled=True):
-        """
-        Create a user.
-        """
+        """Create a user."""
         # FIXME(ja): email should be optional, keystone currently requires it
         params = {"user": {"name": name,
                            "password": password,
@@ -108,14 +97,11 @@ class UserManager(base.ManagerWithFind):
         return self._create('/users', params, "user")
 
     def delete(self, user):
-        """
-        Delete a user.
-        """
+        """Delete a user."""
         return self._delete("/users/%s" % base.getid(user))
 
     def list(self, tenant_id=None, limit=None, marker=None):
-        """
-        Get a list of users (optionally limited to a tenant)
+        """Get a list of users (optionally limited to a tenant).
 
         :rtype: list of :class:`User`
         """

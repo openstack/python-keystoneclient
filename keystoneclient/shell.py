@@ -442,8 +442,8 @@ class OpenStackIdentityShell(object):
             return shell_v2_0.CLIENT_CLASS
 
     def do_bash_completion(self, args):
-        """
-        Prints all of the commands and options to stdout.
+        """Prints all of the commands and options to stdout.
+
         The keystone.bash_completion script doesn't have to hard code them.
         """
         commands = set()
@@ -460,9 +460,7 @@ class OpenStackIdentityShell(object):
     @utils.arg('command', metavar='<subcommand>', nargs='?',
                help='Display help for <subcommand>')
     def do_help(self, args):
-        """
-        Display help about this program or one of its subcommands.
-        """
+        """Display help about this program or one of its subcommands."""
         if getattr(args, 'command', None):
             if args.command in self.subcommands:
                 self.subcommands[args.command].print_help()

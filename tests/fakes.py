@@ -23,9 +23,7 @@ def assert_has_keys(dict, required=[], optional=[]):
 class FakeClient(object):
 
     def assert_called(self, method, url, body=None, pos=-1):
-        """
-        Assert than an API method was just called.
-        """
+        """Assert than an API method was just called."""
         expected = (method, url)
         called = self.callstack[pos][0:2]
 
@@ -38,9 +36,7 @@ class FakeClient(object):
             assert self.callstack[pos][2] == body
 
     def assert_called_anytime(self, method, url, body=None):
-        """
-        Assert than an API method was called anytime in the test.
-        """
+        """Assert than an API method was called anytime in the test."""
         expected = (method, url)
 
         assert self.callstack, ("Expected %s %s but no calls were made." %

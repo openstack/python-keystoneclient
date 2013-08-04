@@ -42,9 +42,8 @@ class NoUniqueMatch(Exception):
 
 
 class ClientException(Exception):
-    """
-    The base exception class for all exceptions this library raises.
-    """
+    """The base exception class for all exceptions this library raises."""
+
     def __init__(self, code, message=None, details=None):
         self.code = code
         self.message = message or self.__class__.message
@@ -55,24 +54,21 @@ class ClientException(Exception):
 
 
 class BadRequest(ClientException):
-    """
-    HTTP 400 - Bad request: you sent some malformed data.
-    """
+    """HTTP 400 - Bad request: you sent some malformed data."""
+
     http_status = 400
     message = "Bad request"
 
 
 class Unauthorized(ClientException):
-    """
-    HTTP 401 - Unauthorized: bad credentials.
-    """
+    """HTTP 401 - Unauthorized: bad credentials."""
+
     http_status = 401
     message = "Unauthorized"
 
 
 class Forbidden(ClientException):
-    """
-    HTTP 403 - Forbidden: your credentials don't give you access to this
+    """HTTP 403 - Forbidden: your credentials do not allow access to this
     resource.
     """
     http_status = 403
@@ -80,32 +76,26 @@ class Forbidden(ClientException):
 
 
 class NotFound(ClientException):
-    """
-    HTTP 404 - Not found
-    """
+    """HTTP 404 - Not found."""
     http_status = 404
     message = "Not found"
 
 
 class MethodNotAllowed(ClientException):
-    """
-    HTTP 405 - Method not allowed
-    """
+    """HTTP 405 - Method not allowed."""
     http_status = 405
     message = "Method not allowed"
 
 
 class Conflict(ClientException):
-    """
-    HTTP 409 - Conflict
-    """
+    """HTTP 409 - Conflict."""
     http_status = 409
     message = "Conflict"
 
 
 class OverLimit(ClientException):
-    """
-    HTTP 413 - Over limit: you're over the API limits for this time period.
+    """HTTP 413 - Over limit: you're over the API limits for this time
+    period.
     """
     http_status = 413
     message = "Over limit"
@@ -113,17 +103,15 @@ class OverLimit(ClientException):
 
 # NotImplemented is a python keyword.
 class HTTPNotImplemented(ClientException):
-    """
-    HTTP 501 - Not Implemented: the server does not support this operation.
+    """HTTP 501 - Not Implemented: the server does not support this
+    operation.
     """
     http_status = 501
     message = "Not Implemented"
 
 
 class ServiceUnavailable(ClientException):
-    """
-    HTTP 503 - Service Unavailable: The server is currently unavailable.
-    """
+    """HTTP 503 - Service Unavailable: The server is currently unavailable."""
     http_status = 503
     message = "Service Unavailable"
 
@@ -146,9 +134,8 @@ _code_map = dict((c.http_status, c) for c in [BadRequest,
 
 
 def from_response(response, body=None):
-    """
-    Return an instance of an ClientException or subclass
-    based on an requests response.
+    """Return an instance of a ClientException or subclass
+    based on a requests response.
 
     Usage::
 

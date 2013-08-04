@@ -54,8 +54,7 @@ class KeyringTest(utils.TestCase):
         keyring.set_keyring(MemoryKeyring())
 
     def test_no_keyring_key(self):
-        """
-        Ensure that we get no value back if we don't have use_keyring
+        """Ensure that we get no value back if we don't have use_keyring
         set in the client.
         """
         cl = httpclient.HTTPClient(username=USERNAME, password=PASSWORD,

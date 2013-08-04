@@ -113,10 +113,10 @@ def unauthenticated(f):
 
 
 def isunauthenticated(f):
-    """
-    Checks to see if the function is marked as not requiring authentication
-    with the @unauthenticated decorator. Returns True if decorator is
-    set to True, False otherwise.
+    """Checks to see if the function is marked as not requiring authentication
+    with the @unauthenticated decorator.
+
+    Returns True if decorator is set to True, False otherwise.
     """
     return getattr(f, 'unauthenticated', False)
 
@@ -135,9 +135,8 @@ def hash_signed_token(signed_text):
 
 
 def prompt_for_password():
-    """
-     Prompt user for password if not provided so the password
-     doesn't show up in the bash history.
+    """Prompt user for password if not provided so the password
+    doesn't show up in the bash history.
     """
     if not (hasattr(sys.stdin, 'isatty') and sys.stdin.isatty()):
         # nothing to do

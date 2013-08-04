@@ -75,10 +75,7 @@ class TenantManager(base.ManagerWithFind):
         return self._get("/tenants/%s" % tenant_id, "tenant")
 
     def create(self, tenant_name, description=None, enabled=True, **kwargs):
-        """
-        Create a new tenant.
-
-        """
+        """Create a new tenant."""
         params = {"tenant": {"name": tenant_name,
                              "description": description,
                              "enabled": enabled}}
@@ -91,8 +88,7 @@ class TenantManager(base.ManagerWithFind):
         return self._create('/tenants', params, "tenant")
 
     def list(self, limit=None, marker=None):
-        """
-        Get a list of tenants.
+        """Get a list of tenants.
 
         :param integer limit: maximum number to return. (optional)
         :param string marker: use when specifying a limit and making
@@ -125,9 +121,7 @@ class TenantManager(base.ManagerWithFind):
 
     def update(self, tenant_id, tenant_name=None, description=None,
                enabled=None, **kwargs):
-        """
-        Update a tenant with a new name and description.
-        """
+        """Update a tenant with a new name and description."""
         body = {"tenant": {'id': tenant_id}}
         if tenant_name is not None:
             body['tenant']['name'] = tenant_name
@@ -145,9 +139,7 @@ class TenantManager(base.ManagerWithFind):
         return self._create("/tenants/%s" % tenant_id, body, "tenant")
 
     def delete(self, tenant):
-        """
-        Delete a tenant.
-        """
+        """Delete a tenant."""
         return self._delete("/tenants/%s" % (base.getid(tenant)))
 
     def list_users(self, tenant):
