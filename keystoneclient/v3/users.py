@@ -14,7 +14,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import logging
+
 from keystoneclient import base
+
+
+LOG = logging.getLogger(__name__)
 
 
 class User(base.Resource):
@@ -39,17 +44,32 @@ class UserManager(base.CrudManager):
             raise exceptions.ValidationError(msg)
 
     def create(self, name, domain=None, project=None, password=None,
-               email=None, description=None, enabled=True):
+               email=None, description=None, enabled=True,
+               default_project=None):
+        """Create a user.
+
+        .. warning::
+
+        The project argument is deprecated, use default_project instead.
+
+        If both default_project and project is provided, the default_project
+        will be used.
+        """
+        if project:
+            LOG.warning("The project argument is deprecated, "
+                        "use default_project instead.")
+        default_project_id = base.getid(default_project) or base.getid(project)
         return super(UserManager, self).create(
             name=name,
             domain_id=base.getid(domain),
-            project_id=base.getid(project),
+            default_project_id=default_project_id,
             password=password,
             email=email,
             description=description,
             enabled=enabled)
 
-    def list(self, project=None, domain=None, group=None, **kwargs):
+    def list(self, project=None, domain=None, group=None, default_project=None,
+             **kwargs):
         """List users.
 
         If project, domain or group are provided, then filter
@@ -57,7 +77,18 @@ class UserManager(base.CrudManager):
 
         If ``**kwargs`` are provided, then filter users with
         attributes matching ``**kwargs``.
+
+        .. warning::
+
+        The project argument is deprecated, use default_project instead.
+
+        If both default_project and project is provided, the default_project
+        will be used.
         """
+        if project:
+            LOG.warning("The project argument is deprecated, "
+                        "use default_project instead.")
+        default_project_id = base.getid(default_project) or base.getid(project)
         if group:
             base_url = '/groups/%s' % base.getid(group)
         else:
@@ -66,7 +97,7 @@ class UserManager(base.CrudManager):
         return super(UserManager, self).list(
             base_url=base_url,
             domain_id=base.getid(domain),
-            project_id=base.getid(project),
+            default_project_id=default_project_id,
             **kwargs)
 
     def get(self, user):
@@ -74,12 +105,26 @@ class UserManager(base.CrudManager):
             user_id=base.getid(user))
 
     def update(self, user, name=None, domain=None, project=None, password=None,
-               email=None, description=None, enabled=None):
+               email=None, description=None, enabled=None,
+               default_project=None):
+        """Update a user.
+
+        .. warning::
+
+        The project argument is deprecated, use default_project instead.
+
+        If both default_project and project is provided, the default_project
+        will be used.
+        """
+        if project:
+            LOG.warning("The project argument is deprecated, "
+                        "use default_project instead.")
+        default_project_id = base.getid(default_project) or base.getid(project)
         return super(UserManager, self).update(
             user_id=base.getid(user),
             name=name,
             domain_id=base.getid(domain),
-            project_id=base.getid(project),
+            default_project_id=default_project_id,
             password=password,
             email=email,
             description=description,
