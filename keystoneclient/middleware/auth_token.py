@@ -1203,8 +1203,8 @@ class AuthProtocol(object):
                 return self.fetch_revocation_list(retry=False)
         if response.status != 200:
             raise ServiceError('Unable to fetch token revocation list.')
-        if (not 'signed' in data):
-            raise ServiceError('Revocation list inmproperly formatted.')
+        if 'signed' not in data:
+            raise ServiceError('Revocation list improperly formatted.')
         return self.cms_verify(data['signed'])
 
     def fetch_signing_cert(self):
