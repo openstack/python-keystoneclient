@@ -128,12 +128,15 @@ class TestResponse(requests.Response):
 
     def __init__(self, data):
         self._text = None
-        super(TestResponse, self)
+        super(TestResponse, self).__init__()
         if isinstance(data, dict):
             self.status_code = data.get('status_code', None)
-            self.headers = data.get('headers', None)
+            headers = data.get('headers')
+            if headers:
+                self.headers.update(headers)
             # Fake the text attribute to streamline Response creation
-            self._text = data.get('text', None)
+            # _content is defined by requests.Response
+            self._content = data.get('text', None)
         else:
             self.status_code = data
 
@@ -142,4 +145,4 @@ class TestResponse(requests.Response):
 
     @property
     def text(self):
-        return self._text
+        return self.content
