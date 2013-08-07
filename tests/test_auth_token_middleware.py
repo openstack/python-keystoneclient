@@ -556,6 +556,13 @@ class RaisingHTTPConnection(FakeHTTPConnection):
         raise AssertionError("HTTP request was called.")
 
 
+class RaisingHTTPNetworkError(FakeHTTPConnection):
+    """An HTTPConnection that always raises network error."""
+
+    def request(self, method, path, **kwargs):
+        raise auth_token.NetworkError("Network connection error.")
+
+
 class FakeApp(object):
     """This represents a WSGI app protected by the auth_token middleware."""
     def __init__(self, expected_env=None):
@@ -1210,6 +1217,20 @@ class AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
         middleware = auth_token.AuthProtocol(self.fake_app, conf)
         self.assertEquals(middleware.token_revocation_list_cache_timeout,
                           datetime.timedelta(seconds=24))
+
+    def test_http_error_not_cached_token(self):
+        """Test to don't cache token as invalid on network errors.
+
+        We use UUID tokens since they are the easiest one to reach
+        get_http_connection.
+        """
+        req = webob.Request.blank('/')
+        token = self.token_dict['uuid_token_default']
+        req.headers['X-Auth-Token'] = token
+        self.set_fake_http(RaisingHTTPNetworkError)
+        self.middleware.http_request_max_retries = 0
+        self.middleware(req.environ, self.start_fake_response)
+        self.assertEqual(self._get_cached_token(token), None)
 
 
 class CertDownloadMiddlewareTest(BaseAuthTokenMiddlewareTest):
