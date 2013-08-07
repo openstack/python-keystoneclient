@@ -643,6 +643,12 @@ class BaseAuthTokenMiddlewareTest(testtools.TestCase):
         self.fake_http = fake_http or FakeHTTPConnection
         self.set_middleware(self.fake_app, self.fake_http,
                             expected_env, self.conf)
+        # self.middleware.verify_signed_token will call
+        # _ensure_subprocess, but we need
+        # cms.subprocess.CalledProcessError to be imported first.
+        # Explicitly call _ensure_subprocess to make sure the import
+        # happens before we need it regardless of test order.
+        cms._ensure_subprocess()
 
         self.response_status = None
         self.response_headers = None
