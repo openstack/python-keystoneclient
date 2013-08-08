@@ -7,3 +7,4 @@ requests>=0.8.8
 simplejson
 six
 oslo.config>=1.1.0
+netaddr
