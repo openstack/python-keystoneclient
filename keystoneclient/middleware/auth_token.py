@@ -145,9 +145,9 @@ keystone.token_info
 """
 
 import datetime
-import httplib
 import logging
 import os
+import requests
 import stat
 import tempfile
 import time
@@ -259,6 +259,10 @@ opts = [
                help='Required if Keystone server requires client certificate'),
     cfg.StrOpt('keyfile',
                help='Required if Keystone server requires client certificate'),
+    cfg.StrOpt('cafile', default=None,
+               help='A PEM encoded Certificate Authority to use when '
+                    'verifying HTTPs connections. Defaults to system CAs.'),
+    cfg.BoolOpt('insecure', default=False, help='Verify HTTPS connections.'),
     cfg.StrOpt('signing_dir',
                help='Directory used to cache files related to PKI tokens'),
     cfg.ListOpt('memcached_servers',
@@ -354,43 +358,35 @@ class AuthProtocol(object):
                                     (True, 'true', 't', '1', 'on', 'yes', 'y'))
 
         # where to find the auth service (we use this to validate tokens)
-        self.auth_host = self._conf_get('auth_host')
-        self.auth_port = int(self._conf_get('auth_port'))
-        self.auth_protocol = self._conf_get('auth_protocol')
-        if not self._conf_get('http_handler'):
-            if self.auth_protocol == 'http':
-                self.http_client_class = httplib.HTTPConnection
-            else:
-                self.http_client_class = httplib.HTTPSConnection
-        else:
-            # Really only used for unit testing, since we need to
-            # have a fake handler set up before we issue an http
-            # request to get the list of versions supported by the
-            # server at the end of this initialization
-            self.http_client_class = self._conf_get('http_handler')
-
+        auth_host = self._conf_get('auth_host')
+        auth_port = int(self._conf_get('auth_port'))
+        auth_protocol = self._conf_get('auth_protocol')
         self.auth_admin_prefix = self._conf_get('auth_admin_prefix')
         self.auth_uri = self._conf_get('auth_uri')
+
+        if netaddr.valid_ipv6(auth_host):
+            # Note(dzyu) it is an IPv6 address, so it needs to be wrapped
+            # with '[]' to generate a valid IPv6 URL, based on
+            # http://www.ietf.org/rfc/rfc2732.txt
+            auth_host = '[%s]' % auth_host
+
+        self.request_uri = '%s://%s:%s' % (auth_protocol, auth_host, auth_port)
+
         if self.auth_uri is None:
             self.LOG.warning(
                 'Configuring auth_uri to point to the public identity '
                 'endpoint is required; clients may not be able to '
                 'authenticate against an admin endpoint')
-            host = self.auth_host
-            if netaddr.valid_ipv6(host):
-                # Note(dzyu) it is an IPv6 address, so it needs to be wrapped
-                # with '[]' to generate a valid IPv6 URL, based on
-                # http://www.ietf.org/rfc/rfc2732.txt
-                host = '[%s]' % host
+
             # FIXME(dolph): drop support for this fallback behavior as
             # documented in bug 1207517
-            self.auth_uri = '%s://%s:%s' % (self.auth_protocol,
-                                            host,
-                                            self.auth_port)
+            self.auth_uri = self.request_uri
 
         # SSL
         self.cert_file = self._conf_get('certfile')
         self.key_file = self._conf_get('keyfile')
+        self.ssl_ca_file = self._conf_get('cafile')
+        self.ssl_insecure = self._conf_get('insecure')
 
         # signing
         self.signing_dirname = self._conf_get('signing_dir')
@@ -403,7 +399,7 @@ class AuthProtocol(object):
         val = '%s/signing_cert.pem' % self.signing_dirname
         self.signing_cert_file_name = val
         val = '%s/cacert.pem' % self.signing_dirname
-        self.ca_file_name = val
+        self.signing_ca_file_name = val
         val = '%s/revoked.pem' % self.signing_dirname
         self.revoked_file_name = val
 
@@ -505,12 +501,12 @@ class AuthProtocol(object):
     def _get_supported_versions(self):
         versions = []
         response, data = self._json_request('GET', '/')
-        if response.status == 501:
+        if response.status_code == 501:
             self.LOG.warning("Old keystone installation found...assuming v2.0")
             versions.append("v2.0")
-        elif response.status != 300:
+        elif response.status_code != 300:
             self.LOG.error('Unable to get version info from keystone: %s' %
-                           response.status)
+                           response.status_code)
             raise ServiceError('Unable to get version info from keystone')
         else:
             try:
@@ -648,17 +644,6 @@ class AuthProtocol(object):
 
         return self.admin_token
 
-    def _get_http_connection(self):
-        if self.auth_protocol == 'http':
-            return self.http_client_class(self.auth_host, self.auth_port,
-                                          timeout=self.http_connect_timeout)
-        else:
-            return self.http_client_class(self.auth_host,
-                                          self.auth_port,
-                                          self.key_file,
-                                          self.cert_file,
-                                          timeout=self.http_connect_timeout)
-
     def _http_request(self, method, path, **kwargs):
         """HTTP request helper used to make unspecified content type requests.
 
@@ -668,28 +653,35 @@ class AuthProtocol(object):
         :raise ServerError when unable to communicate with keystone
 
         """
-        conn = self._get_http_connection()
+        url = "%s/%s" % (self.request_uri, path.lstrip('/'))
+
+        kwargs.setdefault('timeout', self.http_connect_timeout)
+        if self.cert_file and self.key_file:
+            kwargs['cert'] = (self.cert_file, self.key_file)
+        elif self.cert_file or self.key_file:
+            self.LOG.warn('Cannot use only a cert or key file. '
+                          'Please provide both. Ignoring.')
+
+        kwargs['verify'] = self.ssl_ca_file or True
+        if self.ssl_insecure:
+            kwargs['verify'] = False
 
         RETRIES = self.http_request_max_retries
         retry = 0
         while True:
             try:
-                conn.request(method, path, **kwargs)
-                response = conn.getresponse()
-                body = response.read()
+                response = requests.request(method, url, **kwargs)
                 break
             except Exception as e:
-                if retry == RETRIES:
-                    self.LOG.error('HTTP connection exception: %s' % e)
+                if retry >= RETRIES:
+                    self.LOG.error('HTTP connection exception: %s', e)
                     raise NetworkError('Unable to communicate with keystone')
                 # NOTE(vish): sleep 0.5, 1, 2
                 self.LOG.warn('Retrying on HTTP connection exception: %s' % e)
                 time.sleep(2.0 ** retry / 2)
                 retry += 1
-            finally:
-                conn.close()
 
-        return response, body
+        return response
 
     def _json_request(self, method, path, body=None, additional_headers=None):
         """HTTP request helper used to make json requests.
@@ -714,14 +706,14 @@ class AuthProtocol(object):
             kwargs['headers'].update(additional_headers)
 
         if body:
-            kwargs['body'] = jsonutils.dumps(body)
+            kwargs['data'] = jsonutils.dumps(body)
 
         path = self.auth_admin_prefix + path
 
-        response, body = self._http_request(method, path, **kwargs)
+        response = self._http_request(method, path, **kwargs)
 
         try:
-            data = jsonutils.loads(body)
+            data = jsonutils.loads(response.text)
         except ValueError:
             self.LOG.debug('Keystone did not return json-encoded body')
             data = {}
@@ -1090,18 +1082,18 @@ class AuthProtocol(object):
                 '/v2.0/tokens/%s' % safe_quote(user_token),
                 additional_headers=headers)
 
-        if response.status == 200:
+        if response.status_code == 200:
             return data
-        if response.status == 404:
+        if response.status_code == 404:
             self.LOG.warn("Authorization failed for token %s", user_token)
             raise InvalidUserToken('Token authorization failed')
-        if response.status == 401:
+        if response.status_code == 401:
             self.LOG.info(
                 'Keystone rejected admin token %s, resetting', headers)
             self.admin_token = None
         else:
             self.LOG.error('Bad response code while validating token: %s' %
-                           response.status)
+                           response.status_code)
         if retry:
             self.LOG.info('Retrying validation')
             return self._validate_user_token(user_token, False)
@@ -1135,13 +1127,14 @@ class AuthProtocol(object):
         while True:
             try:
                 output = cms.cms_verify(data, self.signing_cert_file_name,
-                                        self.ca_file_name)
+                                        self.signing_ca_file_name)
             except cms.subprocess.CalledProcessError as err:
                 if self.cert_file_missing(err.output,
                                           self.signing_cert_file_name):
                     self.fetch_signing_cert()
                     continue
-                if self.cert_file_missing(err.output, self.ca_file_name):
+                if self.cert_file_missing(err.output,
+                                          self.signing_ca_file_name):
                     self.fetch_ca_cert()
                     continue
                 self.LOG.warning('Verify error: %s' % err)
@@ -1221,14 +1214,14 @@ class AuthProtocol(object):
         headers = {'X-Auth-Token': self.get_admin_token()}
         response, data = self._json_request('GET', '/v2.0/tokens/revoked',
                                             additional_headers=headers)
-        if response.status == 401:
+        if response.status_code == 401:
             if retry:
                 self.LOG.info(
                     'Keystone rejected admin token %s, resetting admin token',
                     headers)
                 self.admin_token = None
                 return self.fetch_revocation_list(retry=False)
-        if response.status != 200:
+        if response.status_code != 200:
             raise ServiceError('Unable to fetch token revocation list.')
         if 'signed' not in data:
             raise ServiceError('Revocation list improperly formatted.')
@@ -1237,7 +1230,7 @@ class AuthProtocol(object):
     def fetch_signing_cert(self):
         path = self.auth_admin_prefix.rstrip('/')
         path += '/v2.0/certificates/signing'
-        response, data = self._http_request('GET', path)
+        response = self._http_request('GET', path)
 
         def write_cert_file(data):
             with open(self.signing_cert_file_name, 'w') as certfile:
@@ -1246,26 +1239,26 @@ class AuthProtocol(object):
         try:
             #todo check response
             try:
-                write_cert_file(data)
+                write_cert_file(response.text)
             except IOError:
                 self.verify_signing_dir()
-                write_cert_file(data)
+                write_cert_file(response.text)
         except (AssertionError, KeyError):
             self.LOG.warn(
-                "Unexpected response from keystone service: %s", data)
+                "Unexpected response from keystone service: %s", response.text)
             raise ServiceError('invalid json response')
 
     def fetch_ca_cert(self):
         path = self.auth_admin_prefix.rstrip('/') + '/v2.0/certificates/ca'
-        response, data = self._http_request('GET', path)
+        response = self._http_request('GET', path)
 
         try:
             #todo check response
-            with open(self.ca_file_name, 'w') as certfile:
-                certfile.write(data)
+            with open(self.signing_ca_file_name, 'w') as certfile:
+                certfile.write(response.text)
         except (AssertionError, KeyError):
             self.LOG.warn(
-                "Unexpected response from keystone service: %s", data)
+                "Unexpected response from keystone service: %s", response.text)
             raise ServiceError('invalid json response')
 
 
