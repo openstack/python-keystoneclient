@@ -1217,9 +1217,8 @@ class AuthProtocol(object):
                                             '/v2.0/certificates/signing')
 
         def write_cert_file(data):
-            certfile = open(self.signing_cert_file_name, 'w')
-            certfile.write(data)
-            certfile.close()
+            with open(self.signing_cert_file_name, 'w') as certfile:
+                certfile.write(data)
 
         try:
             #todo check response
@@ -1238,9 +1237,8 @@ class AuthProtocol(object):
                                             '/v2.0/certificates/ca')
         try:
             #todo check response
-            certfile = open(self.ca_file_name, 'w')
-            certfile.write(data)
-            certfile.close()
+            with open(self.ca_file_name, 'w') as certfile:
+                certfile.write(data)
         except (AssertionError, KeyError):
             self.LOG.warn(
                 "Unexpected response from keystone service: %s", data)
