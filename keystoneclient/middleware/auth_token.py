@@ -1221,8 +1221,9 @@ class AuthProtocol(object):
         return self.cms_verify(data['signed'])
 
     def fetch_signing_cert(self):
-        response, data = self._http_request('GET',
-                                            '/v2.0/certificates/signing')
+        path = self.auth_admin_prefix.rstrip('/')
+        path += '/v2.0/certificates/signing'
+        response, data = self._http_request('GET', path)
 
         def write_cert_file(data):
             certfile = open(self.signing_cert_file_name, 'w')
@@ -1242,8 +1243,9 @@ class AuthProtocol(object):
             raise ServiceError('invalid json response')
 
     def fetch_ca_cert(self):
-        response, data = self._http_request('GET',
-                                            '/v2.0/certificates/ca')
+        path = self.auth_admin_prefix.rstrip('/') + '/v2.0/certificates/ca'
+        response, data = self._http_request('GET', path)
+
         try:
             #todo check response
             certfile = open(self.ca_file_name, 'w')

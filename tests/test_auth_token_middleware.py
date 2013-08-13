@@ -475,6 +475,31 @@ class BaseFakeHTTPConnection(object):
         return status, body
 
 
+class CertificateHTTPConnection(BaseFakeHTTPConnection):
+
+    signing_cert_data = 'SIGNING CERT'
+    ca_cert_data = 'SIGNING CA'
+
+    def __init__(self, *args, **kwargs):
+        self.response = None
+
+    def request(self, method, path, **kwargs):
+        CertificateHTTPConnection.last_requested_url = path
+
+        if method == 'GET' and path == '/testadmin/v2.0/certificates/signing':
+            self.response = FakeHTTPResponse(200, self.signing_cert_data)
+        elif method == 'GET' and path == '/testadmin/v2.0/certificates/ca':
+            self.response = FakeHTTPResponse(200, self.ca_cert_data)
+        else:
+            self.response = FakeHTTPResponse(404, '')
+
+    def getresponse(self):
+        return self.response
+
+    def close(self):
+        pass
+
+
 class FakeHTTPConnection(BaseFakeHTTPConnection):
     """Emulate a fake Keystone v2 server."""
 
@@ -1262,6 +1287,16 @@ class CertDownloadMiddlewareTest(BaseAuthTokenMiddlewareTest):
     def setUp(self):
         super(CertDownloadMiddlewareTest, self).setUp()
         self.base_dir = tempfile.mkdtemp()
+        self.cert_dir = os.path.join(self.base_dir, 'certs')
+        os.mkdir(self.cert_dir)
+
+        self.conf = {
+            'auth_host': 'keystone.example.com',
+            'auth_port': 1234,
+            'auth_protocol': 'http',
+            'auth_admin_prefix': '/testadmin',
+            'signing_dir': self.cert_dir,
+        }
 
     def tearDown(self):
         shutil.rmtree(self.base_dir)
@@ -1271,19 +1306,70 @@ class CertDownloadMiddlewareTest(BaseAuthTokenMiddlewareTest):
     # so invocation of /usr/bin/openssl succeeds. This time we give it
     # an empty directory, so it fails.
     def test_request_no_token_dummy(self):
-        cert_dir = os.path.join(self.base_dir, 'certs')
-        os.mkdir(cert_dir)
-        conf = {
-            'auth_host': 'keystone.example.com',
-            'auth_port': 1234,
-            'auth_protocol': 'http',
-            'auth_admin_prefix': '/testadmin',
-            'signing_dir': cert_dir,
-        }
-        self.set_middleware(fake_http=self.fake_http, conf=conf)
+        self.set_middleware(fake_http=self.fake_http, conf=self.conf)
         self.assertRaises(cms.subprocess.CalledProcessError,
                           self.middleware.verify_signed_token,
                           self.token_dict['signed_token_scoped'])
+
+    def test_fetch_signing_cert(self):
+        self.set_middleware(fake_http=CertificateHTTPConnection,
+                            conf=self.conf)
+
+        self.middleware.fetch_signing_cert()
+
+        with open(self.middleware.signing_cert_file_name, 'r') as f:
+            self.assertEqual(f.read(),
+                             CertificateHTTPConnection.signing_cert_data)
+
+        self.assertEqual('/testadmin/v2.0/certificates/signing',
+                         self.middleware.http_client_class.last_requested_url)
+
+    def test_fetch_signing_ca(self):
+        self.set_middleware(fake_http=CertificateHTTPConnection,
+                            conf=self.conf)
+
+        self.middleware.fetch_ca_cert()
+
+        with open(self.middleware.ca_file_name, 'r') as f:
+            self.assertEqual(f.read(), CertificateHTTPConnection.ca_cert_data)
+
+        self.assertEqual('/testadmin/v2.0/certificates/ca',
+                         self.middleware.http_client_class.last_requested_url)
+
+    def test_prefix_trailing_slash(self):
+        self.conf['auth_admin_prefix'] = '/newadmin/'
+        self.set_middleware(fake_http=CertificateHTTPConnection,
+                            conf=self.conf)
+
+        # the requests will return a 404, but it doesn't matter
+
+        self.middleware.fetch_ca_cert()
+
+        self.assertEqual('/newadmin/v2.0/certificates/ca',
+                         self.middleware.http_client_class.last_requested_url)
+
+        self.middleware.fetch_signing_cert()
+
+        self.assertEqual('/newadmin/v2.0/certificates/signing',
+                         self.middleware.http_client_class.last_requested_url)
+
+    def test_without_prefix(self):
+        self.conf['auth_admin_prefix'] = ''
+
+        self.set_middleware(fake_http=CertificateHTTPConnection,
+                            conf=self.conf)
+
+        # the requests will return a 404, but it doesn't matter
+
+        self.middleware.fetch_ca_cert()
+
+        self.assertEqual('/v2.0/certificates/ca',
+                         self.middleware.http_client_class.last_requested_url)
+
+        self.middleware.fetch_signing_cert()
+
+        self.assertEqual('/v2.0/certificates/signing',
+                         self.middleware.http_client_class.last_requested_url)
 
 
 class v2AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
