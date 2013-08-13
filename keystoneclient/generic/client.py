@@ -18,13 +18,13 @@
 import logging
 import urlparse
 
-from keystoneclient import client
 from keystoneclient import exceptions
+from keystoneclient import httpclient
 
 _logger = logging.getLogger(__name__)
 
 
-class Client(client.HTTPClient):
+class Client(httpclient.HTTPClient):
     """Client for the OpenStack Keystone pre-version calls API.
 
     :param string endpoint: A user-supplied endpoint URL for the keystone
@@ -80,10 +80,10 @@ class Client(client.HTTPClient):
     def _check_keystone_versions(self, url):
         """Calls Keystone URL and detects the available API versions."""
         try:
-            httpclient = client.HTTPClient()
-            resp, body = httpclient.request(url, "GET",
-                                            headers={'Accept':
-                                                     'application/json'})
+            client = httpclient.HTTPClient()
+            resp, body = client.request(url, "GET",
+                                        headers={'Accept':
+                                                 'application/json'})
             # Multiple Choices status code is returned by the root
             # identity endpoint, with references to one or more
             # Identity API versions -- v3 spec
@@ -143,12 +143,12 @@ class Client(client.HTTPClient):
     def _check_keystone_extensions(self, url):
         """Calls Keystone URL and detects the available extensions."""
         try:
-            httpclient = client.HTTPClient()
+            client = httpclient.HTTPClient()
             if not url.endswith("/"):
                 url += '/'
-            resp, body = httpclient.request("%sextensions" % url, "GET",
-                                            headers={'Accept':
-                                                     'application/json'})
+            resp, body = client.request("%sextensions" % url, "GET",
+                                        headers={'Accept':
+                                                 'application/json'})
             if resp.status_code in (200, 204):  # some cases we get No Content
                 try:
                     results = {}
