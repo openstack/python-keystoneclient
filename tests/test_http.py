@@ -1,7 +1,26 @@
+# vim: tabstop=4 shiftwidth=4 softtabstop=4
+
+# Copyright 2013 OpenStack LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
 import json
 import mock
 
+import httpretty
 import requests
+import testtools
+from testtools import matchers
 
 from keystoneclient import exceptions
 from keystoneclient import httpclient
@@ -28,6 +47,18 @@ def get_authed_client():
     return cl
 
 
+class FakeLog(object):
+    def __init__(self):
+        self.warn_log = str()
+        self.debug_log = str()
+
+    def warn(self, msg=None, *args, **kwargs):
+        self.warn_log = "%s\n%s" % (self.warn_log, (msg % args))
+
+    def debug(self, msg=None, *args, **kwargs):
+        self.debug_log = "%s\n%s" % (self.debug_log, (msg % args))
+
+
 class ClientTest(utils.TestCase):
 
     def test_unauthorized_client_requests(self):
@@ -44,7 +75,7 @@ class ClientTest(utils.TestCase):
             with mock.patch('time.time', mock.Mock(return_value=1234)):
                 resp, body = cl.get("/hi")
                 headers = {"X-Auth-Token": "token",
-                           "User-Agent": cl.USER_AGENT}
+                           "User-Agent": httpclient.USER_AGENT}
                 MOCK_REQUEST.assert_called_with(
                     "GET",
                     "http://127.0.0.1:5000/hi",
@@ -97,7 +128,7 @@ class ClientTest(utils.TestCase):
             headers = {
                 "X-Auth-Token": "token",
                 "Content-Type": "application/json",
-                "User-Agent": cl.USER_AGENT
+                "User-Agent": httpclient.USER_AGENT
             }
             MOCK_REQUEST.assert_called_with(
                 "POST",
@@ -117,5 +148,69 @@ class ClientTest(utils.TestCase):
 
             args, kwargs = MOCK_REQUEST.call_args
             self.assertIn(
-                ('Forwarded', "for=%s;by=%s" % (ORIGINAL_IP, cl.USER_AGENT)),
+                ('Forwarded', "for=%s;by=%s" % (ORIGINAL_IP,
+                                                httpclient.USER_AGENT)),
                 kwargs['headers'].items())
+
+
+class BasicRequestTests(testtools.TestCase):
+
+    url = 'http://keystone.test.com/'
+
+    def setUp(self):
+        super(BasicRequestTests, self).setUp()
+        self.logger = FakeLog()
+        httpretty.enable()
+
+    def tearDown(self):
+        httpretty.disable()
+        super(BasicRequestTests, self).tearDown()
+
+    def request(self, method='GET', response='Test Response', status=200,
+                url=None, **kwargs):
+        if not url:
+            url = self.url
+
+        httpretty.register_uri(method, url, body=response, status=status)
+
+        return httpclient.request(url, method, debug=True,
+                                  logger=self.logger, **kwargs)
+
+    @property
+    def last_request(self):
+        return httpretty.httpretty.last_request
+
+    def test_basic_params(self):
+        method = 'GET'
+        response = 'Test Response'
+        status = 200
+
+        resp = self.request(method=method, status=status, response=response)
+
+        self.assertEqual(self.last_request.method, method)
+
+        self.assertThat(self.logger.debug_log, matchers.Contains('curl'))
+        self.assertThat(self.logger.debug_log, matchers.Contains('-X %s' %
+                                                                 method))
+        self.assertThat(self.logger.debug_log, matchers.Contains(self.url))
+
+        self.assertThat(self.logger.debug_log, matchers.Contains(str(status)))
+        self.assertThat(self.logger.debug_log, matchers.Contains(response))
+
+    def test_headers(self):
+        headers = {'key': 'val', 'test': 'other'}
+
+        self.request(headers=headers)
+
+        for k, v in headers.iteritems():
+            self.assertEqual(self.last_request.headers[k], v)
+
+        for header in headers.iteritems():
+            self.assertThat(self.logger.debug_log,
+                            matchers.Contains('-H "%s: %s"' % header))
+
+    def test_body(self):
+        data = "BODY DATA"
+        resp = self.request(response=data)
+        self.assertThat(self.logger.debug_log, matchers.Contains('BODY:'))
+        self.assertThat(self.logger.debug_log, matchers.Contains(data))

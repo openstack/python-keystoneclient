@@ -39,9 +39,84 @@ from keystoneclient import exceptions
 _logger = logging.getLogger(__name__)
 
 
-class HTTPClient(object):
+USER_AGENT = 'python-keystoneclient'
 
-    USER_AGENT = 'python-keystoneclient'
+
+def request(url, method='GET', headers=None, original_ip=None, debug=False,
+            logger=None, **kwargs):
+    """Perform a http request with standard settings.
+
+    A wrapper around requests.request that adds standard headers like
+    User-Agent and provides optional debug logging of the request.
+
+    Arguments that are not handled are passed through to the requests library.
+
+    :param string url: The url to make the request of.
+    :param string method: The http method to use. (eg. 'GET', 'POST')
+    :param dict headers: Headers to be included in the request. (optional)
+    :param string original_ip: Mark this request as forwarded for this ip.
+                               (optional)
+    :param bool debug: Enable debug logging. (Defaults to False)
+    :param logging.Logger logger: A logger to output to. (optional)
+
+    :raises exceptions.ClientException: For connection failure, or to indicate
+                                        an error response code.
+
+    :returns: The response to the request.
+    """
+
+    if not headers:
+        headers = dict()
+
+    if not logger:
+        logger = _logger
+
+    headers.setdefault('User-Agent', USER_AGENT)
+
+    if original_ip:
+        headers['Forwarded'] = "for=%s;by=%s" % (original_ip, USER_AGENT)
+
+    if debug:
+        string_parts = ['curl -i']
+
+        if method:
+            string_parts.append(' -X %s' % method)
+
+        string_parts.append(' %s' % url)
+
+        if headers:
+            for header in headers.iteritems():
+                string_parts.append(' -H "%s: %s"' % header)
+
+        logger.debug("REQ: %s" % "".join(string_parts))
+
+        data = kwargs.get('data')
+        if data:
+            logger.debug("REQ BODY: %s\n" % data)
+
+    try:
+        resp = requests.request(
+            method,
+            url,
+            headers=headers,
+            **kwargs)
+    except requests.ConnectionError:
+        msg = 'Unable to establish connection to %s' % url
+        raise exceptions.ClientException(msg)
+
+    if debug:
+        logger.debug("RESP: [%s] %s\nRESP BODY: %s\n",
+                     resp.status_code, resp.headers, resp.text)
+
+    if resp.status_code >= 400:
+        logger.debug("Request returned failure status: %s",
+                     resp.status_code)
+        raise exceptions.from_response(resp)
+
+    return resp
+
+
+class HTTPClient(object):
 
     def __init__(self, username=None, tenant_id=None, tenant_name=None,
                  password=None, auth_url=None, region_name=None, timeout=None,
@@ -483,33 +558,6 @@ class HTTPClient(object):
         """
         raise NotImplementedError
 
-    def http_log_req(self, args, kwargs):
-        if not self.debug_log:
-            return
-
-        string_parts = ['curl -i']
-        for element in args:
-            if element in ('GET', 'POST'):
-                string_parts.append(' -X %s' % element)
-            else:
-                string_parts.append(' %s' % element)
-
-        for element in kwargs['headers']:
-            header = ' -H "%s: %s"' % (element, kwargs['headers'][element])
-            string_parts.append(header)
-
-        _logger.debug("REQ: %s" % "".join(string_parts))
-        if 'data' in kwargs:
-            _logger.debug("REQ BODY: %s\n" % (kwargs['data']))
-
-    def http_log_resp(self, resp):
-        if self.debug_log:
-            _logger.debug(
-                "RESP: [%s] %s\nRESP BODY: %s\n",
-                resp.status_code,
-                resp.headers,
-                resp.text)
-
     def serialize(self, entity):
         return json.dumps(entity)
 
@@ -522,7 +570,7 @@ class HTTPClient(object):
         """Returns True if this client provides a service catalog."""
         return self.auth_ref.has_service_catalog()
 
-    def request(self, url, method, **kwargs):
+    def request(self, url, method, body=None, **kwargs):
         """Send an http request with the specified characteristics.
 
         Wrapper around requests.request to handle tasks such as
@@ -531,54 +579,37 @@ class HTTPClient(object):
         # Copy the kwargs so we can reuse the original in case of redirects
         request_kwargs = copy.copy(kwargs)
         request_kwargs.setdefault('headers', kwargs.get('headers', {}))
-        request_kwargs['headers']['User-Agent'] = self.USER_AGENT
-        if self.original_ip:
-            request_kwargs['headers']['Forwarded'] = "for=%s;by=%s" % (
-                self.original_ip, self.USER_AGENT)
-        if 'body' in kwargs:
+
+        if body:
             request_kwargs['headers']['Content-Type'] = 'application/json'
-            request_kwargs['data'] = self.serialize(kwargs['body'])
-            del request_kwargs['body']
+            request_kwargs['data'] = self.serialize(body)
+
         if self.cert:
-            request_kwargs['cert'] = self.cert
+            request_kwargs.setdefault('cert', self.cert)
         if self.timeout is not None:
             request_kwargs.setdefault('timeout', self.timeout)
 
-        self.http_log_req((url, method,), request_kwargs)
-
-        try:
-            resp = requests.request(
-                method,
-                url,
-                verify=self.verify_cert,
-                **request_kwargs)
-        except requests.ConnectionError:
-            msg = 'Unable to establish connection to %s' % url
-            raise exceptions.ClientException(msg)
-
-        self.http_log_resp(resp)
+        resp = request(url, method, original_ip=self.original_ip,
+                       verify=self.verify_cert, debug=self.debug_log,
+                       **request_kwargs)
 
         if resp.text:
             try:
-                body = json.loads(resp.text)
+                body_resp = json.loads(resp.text)
             except (ValueError, TypeError):
-                body = None
+                body_resp = None
                 _logger.debug("Could not decode JSON from body: %s"
                               % resp.text)
         else:
             _logger.debug("No body was returned.")
-            body = None
+            body_resp = None
 
-        if resp.status_code >= 400:
-            _logger.debug(
-                "Request returned failure status: %s",
-                resp.status_code)
-            raise exceptions.from_response(resp, body or resp.text)
-        elif resp.status_code in (301, 302, 305):
+        if resp.status_code in (301, 302, 305):
             # Redirected. Reissue the request to the new location.
-            return self.request(resp.headers['location'], method, **kwargs)
+            return self.request(resp.headers['location'], method, body,
+                                **request_kwargs)
 
-        return resp, body
+        return resp, body_resp
 
     def _cs_request(self, url, method, **kwargs):
         """Makes an authenticated request to keystone endpoint by

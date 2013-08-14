@@ -37,7 +37,7 @@ class ClientTest(utils.TestCase):
             with mock.patch('time.time', mock.Mock(return_value=1234)):
                 resp, body = cl.get("/hi")
                 headers = {"X-Auth-Token": "token",
-                           "User-Agent": cl.USER_AGENT}
+                           "User-Agent": httpclient.USER_AGENT}
                 kwargs = copy.copy(self.TEST_REQUEST_BASE)
                 kwargs['cert'] = ('cert.pem', 'key.pem')
                 kwargs['verify'] = 'ca.pem'
@@ -57,7 +57,7 @@ class ClientTest(utils.TestCase):
             headers = {
                 "X-Auth-Token": "token",
                 "Content-Type": "application/json",
-                "User-Agent": cl.USER_AGENT
+                "User-Agent": httpclient.USER_AGENT
             }
             kwargs = copy.copy(self.TEST_REQUEST_BASE)
             kwargs['cert'] = ('cert.pem', 'key.pem')
@@ -81,7 +81,7 @@ class ClientTest(utils.TestCase):
             headers = {
                 "X-Auth-Token": "token",
                 "Content-Type": "application/json",
-                "User-Agent": cl.USER_AGENT
+                "User-Agent": httpclient.USER_AGENT
             }
             kwargs = copy.copy(self.TEST_REQUEST_BASE)
             kwargs['cert'] = ('cert.pem', 'key.pem')
