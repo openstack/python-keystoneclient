@@ -90,6 +90,16 @@ class ServiceCatalog(object):
         """
         raise NotImplementedError()
 
+    def get_data(self):
+        """Get the raw catalog structure.
+
+        Get the version dependant catalog structure as it is presented within
+        the resource.
+
+        :returns: dict containing raw catalog data or None
+        """
+        raise NotImplementedError()
+
 
 class ServiceCatalogV2(ServiceCatalog):
     """An object for encapsulating the service catalog using raw v2 auth token
@@ -107,6 +117,9 @@ class ServiceCatalogV2(ServiceCatalog):
         # will not work. Use 'token' attribute instead.
         return 'token' in resource_dict
 
+    def get_data(self):
+        return self.catalog.get('serviceCatalog')
+
     def get_token(self):
         token = {'id': self.catalog['token']['id'],
                  'expires': self.catalog['token']['expires']}
@@ -123,7 +136,7 @@ class ServiceCatalogV2(ServiceCatalog):
             endpoint_type = endpoint_type + 'URL'
 
         sc = {}
-        for service in self.catalog.get('serviceCatalog', []):
+        for service in (self.get_data() or []):
             if service_type and service_type != service['type']:
                 continue
             sc[service['type']] = []
@@ -154,7 +167,7 @@ class ServiceCatalogV2(ServiceCatalog):
 
     def url_for(self, attr=None, filter_value=None,
                 service_type='identity', endpoint_type='publicURL'):
-        catalog = self.catalog.get('serviceCatalog', [])
+        catalog = self.get_data()
 
         if not catalog:
             raise exceptions.EmptyCatalog('The service catalog is empty.')
@@ -195,6 +208,9 @@ class ServiceCatalogV3(ServiceCatalog):
         # will not work. Use 'methods' attribute instead.
         return 'methods' in resource_dict
 
+    def get_data(self):
+        return self.catalog.get('catalog')
+
     def get_token(self):
         token = {'id': self._auth_token,
                  'expires': self.catalog['expires_at']}
@@ -215,7 +231,7 @@ class ServiceCatalogV3(ServiceCatalog):
         if endpoint_type:
             endpoint_type = endpoint_type.rstrip('URL')
         sc = {}
-        for service in self.catalog.get('catalog', []):
+        for service in (self.get_data() or []):
             if service_type and service_type != service['type']:
                 continue
             sc[service['type']] = []
@@ -247,7 +263,7 @@ class ServiceCatalogV3(ServiceCatalog):
 
     def url_for(self, attr=None, filter_value=None,
                 service_type='identity', endpoint_type='public'):
-        catalog = self.catalog.get('catalog', [])
+        catalog = self.get_data()
 
         if not catalog:
             raise exceptions.EmptyCatalog('The service catalog is empty.')
