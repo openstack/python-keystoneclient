@@ -3,6 +3,7 @@ import mock
 
 import requests
 
+from keystoneclient import exceptions
 from keystoneclient.v2_0 import client
 from tests import utils
 from tests.v2_0 import client_fixtures
@@ -90,3 +91,9 @@ class KeystoneClientTest(utils.TestCase):
             self.assertIsNone(new_client.password)
             self.assertEqual(new_client.management_url,
                              'http://admin:35357/v2.0')
+
+    def test_init_err_no_auth_url(self):
+        self.assertRaises(exceptions.AuthorizationFailure,
+                          client.Client,
+                          username='exampleuser',
+                          password='password')
