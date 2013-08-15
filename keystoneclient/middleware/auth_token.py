@@ -318,6 +318,10 @@ class ConfigurationError(Exception):
     pass
 
 
+class NetworkError(Exception):
+    pass
+
+
 class MiniResp(object):
     def __init__(self, error_message, env, headers=[]):
         # The HEAD method is unique: it must never return a body, even if
@@ -424,6 +428,7 @@ class AuthProtocol(object):
         self.http_connect_timeout = (http_connect_timeout_cfg and
                                      int(http_connect_timeout_cfg))
         self.auth_version = None
+        self.http_request_max_retries = 3
 
     def _assert_valid_memcache_protection_config(self):
         if self._memcache_security_strategy:
@@ -655,9 +660,8 @@ class AuthProtocol(object):
         """
         conn = self._get_http_connection()
 
-        RETRIES = 3
+        RETRIES = self.http_request_max_retries
         retry = 0
-
         while True:
             try:
                 conn.request(method, path, **kwargs)
@@ -667,7 +671,7 @@ class AuthProtocol(object):
             except Exception as e:
                 if retry == RETRIES:
                     self.LOG.error('HTTP connection exception: %s' % e)
-                    raise ServiceError('Unable to communicate with keystone')
+                    raise NetworkError('Unable to communicate with keystone')
                 # NOTE(vish): sleep 0.5, 1, 2
                 self.LOG.warn('Retrying on HTTP connection exception: %s' % e)
                 time.sleep(2.0 ** retry / 2)
@@ -778,6 +782,10 @@ class AuthProtocol(object):
             expires = self._confirm_token_not_expired(data)
             self._cache_put(token_id, data, expires)
             return data
+        except NetworkError as e:
+            self.LOG.debug('Token validation failure.', exc_info=True)
+            self.LOG.warn("Authorization failed for token %s", user_token)
+            raise InvalidUserToken('Token authorization failed')
         except Exception as e:
             self.LOG.debug('Token validation failure.', exc_info=True)
             self._cache_store_invalid(user_token)
