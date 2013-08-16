@@ -938,7 +938,7 @@ class AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
             'memcached_servers': ['localhost:11211'],
             'memcache_security_strategy': 'Encrypt'
         }
-        self.assertRaises(Exception, self.set_middleware, conf)
+        self.assertRaises(Exception, self.set_middleware, conf=conf)
         # test invalue memcache_security_strategy
         conf = {
             'auth_host': 'keystone.example.com',
@@ -947,7 +947,7 @@ class AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
             'memcached_servers': ['localhost:11211'],
             'memcache_security_strategy': 'whatever'
         }
-        self.assertRaises(Exception, self.set_middleware, conf)
+        self.assertRaises(Exception, self.set_middleware, conf=conf)
         # test missing memcache_secret_key
         conf = {
             'auth_host': 'keystone.example.com',
@@ -956,7 +956,7 @@ class AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
             'memcached_servers': ['localhost:11211'],
             'memcache_security_strategy': 'mac'
         }
-        self.assertRaises(Exception, self.set_middleware, conf)
+        self.assertRaises(Exception, self.set_middleware, conf=conf)
         conf = {
             'auth_host': 'keystone.example.com',
             'auth_port': 1234,
@@ -965,7 +965,7 @@ class AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
             'memcache_security_strategy': 'Encrypt',
             'memcache_secret_key': ''
         }
-        self.assertRaises(Exception, self.set_middleware, conf)
+        self.assertRaises(Exception, self.set_middleware, conf=conf)
         conf = {
             'auth_host': 'keystone.example.com',
             'auth_port': 1234,
@@ -974,7 +974,7 @@ class AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
             'memcache_security_strategy': 'mAc',
             'memcache_secret_key': ''
         }
-        self.assertRaises(Exception, self.set_middleware, conf)
+        self.assertRaises(Exception, self.set_middleware, conf=conf)
 
     def test_config_revocation_cache_timeout(self):
         conf = {
