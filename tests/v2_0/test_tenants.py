@@ -41,6 +41,13 @@ class TenantTests(utils.TestCase):
                         "description": "None",
                         "name": "admin",
                         "id": 1,
+                    },
+                    {
+                        "extravalue01": "metadata01",
+                        "enabled": True,
+                        "description": "For testing extras",
+                        "name": "test_extras",
+                        "id": 4,
                     }
                 ],
                 "links": [],
@@ -52,7 +59,8 @@ class TenantTests(utils.TestCase):
             "tenant": {
                 "name": "tenantX",
                 "description": "Like tenant 9, but better.",
-                "enabled": True
+                "enabled": True,
+                "extravalue01": "metadata01",
             },
         }
         resp_body = {
@@ -61,6 +69,7 @@ class TenantTests(utils.TestCase):
                 "enabled": True,
                 "id": 4,
                 "description": "Like tenant 9, but better.",
+                "extravalue01": "metadata01",
             }
         }
         resp = utils.TestResponse({
@@ -75,14 +84,17 @@ class TenantTests(utils.TestCase):
                          urlparse.urljoin(self.TEST_URL, 'v2.0/tenants'),
                          **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
-
-        tenant = self.client.tenants.create(req_body['tenant']['name'],
-                                            req_body['tenant']['description'],
-                                            req_body['tenant']['enabled'])
+        tenant = self.client.tenants.create(
+            req_body['tenant']['name'],
+            req_body['tenant']['description'],
+            req_body['tenant']['enabled'],
+            extravalue01=req_body['tenant']['extravalue01'],
+            name="dont overwrite priors")
         self.assertTrue(isinstance(tenant, tenants.Tenant))
         self.assertEqual(tenant.id, 4)
         self.assertEqual(tenant.name, "tenantX")
         self.assertEqual(tenant.description, "Like tenant 9, but better.")
+        self.assertEqual(tenant.extravalue01, "metadata01")
 
     def test_duplicate_create(self):
         req_body = {
@@ -228,6 +240,8 @@ class TenantTests(utils.TestCase):
                 "name": "tenantX",
                 "description": "I changed you!",
                 "enabled": False,
+                "extravalue01": "metadataChanged",
+                #"extraname": "dontoverwrite!",
             },
         }
         resp_body = {
@@ -236,6 +250,7 @@ class TenantTests(utils.TestCase):
                 "enabled": False,
                 "id": 4,
                 "description": "I changed you!",
+                "extravalue01": "metadataChanged",
             },
         }
         resp = utils.TestResponse({
@@ -252,15 +267,19 @@ class TenantTests(utils.TestCase):
                          **kwargs).AndReturn((resp))
         self.mox.ReplayAll()
 
-        tenant = self.client.tenants.update(req_body['tenant']['id'],
-                                            req_body['tenant']['name'],
-                                            req_body['tenant']['description'],
-                                            req_body['tenant']['enabled'])
+        tenant = self.client.tenants.update(
+            req_body['tenant']['id'],
+            req_body['tenant']['name'],
+            req_body['tenant']['description'],
+            req_body['tenant']['enabled'],
+            extravalue01=req_body['tenant']['extravalue01'],
+            name="dont overwrite priors")
         self.assertTrue(isinstance(tenant, tenants.Tenant))
         self.assertEqual(tenant.id, 4)
         self.assertEqual(tenant.name, "tenantX")
         self.assertEqual(tenant.description, "I changed you!")
         self.assertFalse(tenant.enabled)
+        self.assertEqual(tenant.extravalue01, "metadataChanged")
 
     def test_update_empty_description(self):
         req_body = {

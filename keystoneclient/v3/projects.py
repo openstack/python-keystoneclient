@@ -51,12 +51,13 @@ class ProjectManager(base.CrudManager):
     collection_key = 'projects'
     key = 'project'
 
-    def create(self, name, domain, description=None, enabled=True):
+    def create(self, name, domain, description=None, enabled=True, **kwargs):
         return super(ProjectManager, self).create(
             domain_id=base.getid(domain),
             name=name,
             description=description,
-            enabled=enabled)
+            enabled=enabled,
+            **kwargs)
 
     def list(self, domain=None, user=None, **kwargs):
         """List projects.
@@ -78,13 +79,14 @@ class ProjectManager(base.CrudManager):
             project_id=base.getid(project))
 
     def update(self, project, name=None, domain=None, description=None,
-               enabled=None):
+               enabled=None, **kwargs):
         return super(ProjectManager, self).update(
             project_id=base.getid(project),
             domain_id=base.getid(domain),
             name=name,
             description=description,
-            enabled=enabled)
+            enabled=enabled,
+            **kwargs)
 
     def delete(self, project):
         return super(ProjectManager, self).delete(

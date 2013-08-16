@@ -74,7 +74,7 @@ class TenantManager(base.ManagerWithFind):
     def get(self, tenant_id):
         return self._get("/tenants/%s" % tenant_id, "tenant")
 
-    def create(self, tenant_name, description=None, enabled=True):
+    def create(self, tenant_name, description=None, enabled=True, **kwargs):
         """
         Create a new tenant.
 
@@ -82,6 +82,11 @@ class TenantManager(base.ManagerWithFind):
         params = {"tenant": {"name": tenant_name,
                              "description": description,
                              "enabled": enabled}}
+
+        #Allow Extras Passthru and ensure we don't clobber primary arguments.
+        for k, v in kwargs.iteritems():
+            if k not in params['tenant']:
+                params['tenant'][k] = v
 
         return self._create('/tenants', params, "tenant")
 
@@ -119,7 +124,7 @@ class TenantManager(base.ManagerWithFind):
         return tenant_list
 
     def update(self, tenant_id, tenant_name=None, description=None,
-               enabled=None):
+               enabled=None, **kwargs):
         """
         Update a tenant with a new name and description.
         """
@@ -130,6 +135,12 @@ class TenantManager(base.ManagerWithFind):
             body['tenant']['enabled'] = enabled
         if description is not None:
             body['tenant']['description'] = description
+
+        #Allow Extras Passthru and ensure we don't clobber primary arguments.
+        for k, v in kwargs.iteritems():
+            if k not in body['tenant']:
+                body['tenant'][k] = v
+
         # Keystone's API uses a POST rather than a PUT here.
         return self._create("/tenants/%s" % tenant_id, body, "tenant")
 
