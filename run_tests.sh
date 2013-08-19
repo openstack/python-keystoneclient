@@ -134,10 +134,7 @@ function run_flake8 {
   echo "Running flake8 ..."
   srcfiles="keystoneclient tests"
   # Just run Flake8 in current environment
-  ${wrapper} flake8 --show-pep8 --show-source \
-    --ignore=F811,F821,F841,H201,H202,H302,H304,H404,H802 \
-    --exclude=.venv,.tox,dist,doc,*egg,build \
-    ${srcfiles}
+  ${wrapper} flake8 ${srcfiles}
 }
 
 TESTRTESTS="python setup.py testr"
