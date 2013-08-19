@@ -38,6 +38,9 @@ class FakeManager(object):
             raise exceptions.NotFound(resource_id)
 
     def find(self, name=None):
+        if name == '9999':
+            # NOTE(morganfainberg): special case that raises NoUniqueMatch.
+            raise exceptions.NoUniqueMatch()
         for resource_id, resource in self.resources.items():
             if resource['name'] == str(name):
                 return resource
@@ -76,3 +79,9 @@ class FindResourceTestCase(test_utils.TestCase):
     def test_find_by_int_name(self):
         output = utils.find_resource(self.manager, 9876)
         self.assertEqual(output, self.manager.resources['5678'])
+
+    def test_find_no_unique_match(self):
+        self.assertRaises(exceptions.CommandError,
+                          utils.find_resource,
+                          self.manager,
+                          9999)
