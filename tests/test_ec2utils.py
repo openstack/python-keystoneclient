@@ -16,7 +16,7 @@
 
 import testtools
 
-from keystoneclient.contrib.ec2.utils import Ec2Signer
+from keystoneclient.contrib.ec2 import utils
 
 
 class Ec2SignerTest(testtools.TestCase):
@@ -25,7 +25,7 @@ class Ec2SignerTest(testtools.TestCase):
         super(Ec2SignerTest, self).setUp()
         self.access = '966afbde20b84200ae4e62e09acf46b2'
         self.secret = '89cdf9e94e2643cab35b8b8ac5a51f83'
-        self.signer = Ec2Signer(self.secret)
+        self.signer = utils.Ec2Signer(self.secret)
 
     def tearDown(self):
         super(Ec2SignerTest, self).tearDown()
@@ -116,7 +116,7 @@ class Ec2SignerTest(testtools.TestCase):
         """
         # Create a new signer object with the AWS example key
         secret = 'wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY'
-        signer = Ec2Signer(secret)
+        signer = utils.Ec2Signer(secret)
 
         body_hash = ('b6359072c78d70ebee1e81adcbab4f0'
                      '1bf2c23245fa365ef83fe8f1f955085e2')
@@ -149,7 +149,7 @@ class Ec2SignerTest(testtools.TestCase):
         """Test v4 generator with host:port format."""
         # Create a new signer object with the AWS example key
         secret = 'wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY'
-        signer = Ec2Signer(secret)
+        signer = utils.Ec2Signer(secret)
 
         body_hash = ('b6359072c78d70ebee1e81adcbab4f0'
                      '1bf2c23245fa365ef83fe8f1f955085e2')
@@ -186,7 +186,7 @@ class Ec2SignerTest(testtools.TestCase):
         """
         # Create a new signer object with the AWS example key
         secret = 'wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY'
-        signer = Ec2Signer(secret)
+        signer = utils.Ec2Signer(secret)
 
         body_hash = ('b6359072c78d70ebee1e81adcbab4f0'
                      '1bf2c23245fa365ef83fe8f1f955085e2')
@@ -223,7 +223,7 @@ class Ec2SignerTest(testtools.TestCase):
         """
         # Create a new signer object with the AWS example key
         secret = 'wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY'
-        signer = Ec2Signer(secret)
+        signer = utils.Ec2Signer(secret)
 
         body_hash = ('b6359072c78d70ebee1e81adcbab4f0'
                      '1bf2c23245fa365ef83fe8f1f955085e2')

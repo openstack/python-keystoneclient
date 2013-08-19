@@ -13,7 +13,7 @@
 #    under the License.
 
 import copy
-from datetime import timedelta
+import datetime
 import json
 
 import requests
@@ -60,7 +60,7 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
     def test_authenticate_success_expired(self):
         # Build an expired token
         self.TEST_RESPONSE_DICT['access']['token']['expires'] = \
-            (timeutils.utcnow() - timedelta(1)).isoformat()
+            (timeutils.utcnow() - datetime.timedelta(1)).isoformat()
         resp = utils.TestResponse({
             "status_code": 200,
             "text": json.dumps(self.TEST_RESPONSE_DICT),
