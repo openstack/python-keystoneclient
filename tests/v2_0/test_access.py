@@ -32,6 +32,7 @@ class AccessInfoTest(utils.TestCase):
         self.assertFalse(auth_ref.scoped)
         self.assertFalse(auth_ref.domain_scoped)
         self.assertFalse(auth_ref.project_scoped)
+        self.assertFalse(auth_ref.trust_scoped)
 
         self.assertEquals(auth_ref.expires, timeutils.parse_isotime(
                           UNSCOPED_TOKEN['access']['token']['expires']))

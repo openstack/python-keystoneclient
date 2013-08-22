@@ -232,3 +232,40 @@ AUTH_RESPONSE_BODY = {
         }]
     }
 }
+
+TRUST_TOKEN = {
+    u'token': {
+        u'methods': [
+            u'password'
+        ],
+        u'catalog': {},
+        u'expires_at': u'2010-11-01T03:32:15-05:00',
+        "OS-TRUST:trust": {
+            "id": "fe0aef",
+            "impersonation": False,
+            "links": {
+                "self": "http://identity:35357/v3/trusts/fe0aef"
+            },
+            "trustee_user": {
+                "id": "0ca8f6",
+                "links": {
+                    "self": "http://identity:35357/v3/users/0ca8f6"
+                }
+            },
+            "trustor_user": {
+                "id": "bd263c",
+                "links": {
+                    "self": "http://identity:35357/v3/users/bd263c"
+                }
+            }
+        },
+        u'user': {
+            u'domain': {
+                u'id': u'4e6893b7ba0b4006840c3845660b86ed',
+                u'name': u'exampledomain'
+            },
+            u'id': u'0ca8f6',
+            u'name': u'exampleuser',
+        }
+    }
+}

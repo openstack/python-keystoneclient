@@ -33,6 +33,8 @@ class KeystoneClientTest(utils.TestCase):
             self.assertFalse(c.auth_ref.scoped)
             self.assertFalse(c.auth_ref.domain_scoped)
             self.assertFalse(c.auth_ref.project_scoped)
+            self.assertIsNone(c.auth_ref.trust_id)
+            self.assertFalse(c.auth_ref.trust_scoped)
 
     def test_scoped_init(self):
         with mock.patch.object(requests, "request", self.scoped_mock_req):
@@ -44,6 +46,8 @@ class KeystoneClientTest(utils.TestCase):
             self.assertTrue(c.auth_ref.scoped)
             self.assertTrue(c.auth_ref.project_scoped)
             self.assertFalse(c.auth_ref.domain_scoped)
+            self.assertIsNone(c.auth_ref.trust_id)
+            self.assertFalse(c.auth_ref.trust_scoped)
 
     def test_auth_ref_load(self):
         with mock.patch.object(requests, "request", self.scoped_mock_req):
@@ -57,6 +61,8 @@ class KeystoneClientTest(utils.TestCase):
             self.assertTrue(new_client.auth_ref.scoped)
             self.assertTrue(new_client.auth_ref.project_scoped)
             self.assertFalse(new_client.auth_ref.domain_scoped)
+            self.assertIsNone(new_client.auth_ref.trust_id)
+            self.assertFalse(new_client.auth_ref.trust_scoped)
             self.assertEquals(new_client.username, 'exampleuser')
             self.assertIsNone(new_client.password)
             self.assertEqual(new_client.management_url,
@@ -77,6 +83,8 @@ class KeystoneClientTest(utils.TestCase):
             self.assertTrue(new_client.auth_ref.scoped)
             self.assertTrue(new_client.auth_ref.project_scoped)
             self.assertFalse(new_client.auth_ref.domain_scoped)
+            self.assertIsNone(new_client.auth_ref.trust_id)
+            self.assertFalse(new_client.auth_ref.trust_scoped)
             self.assertEquals(new_client.auth_url, new_auth_url)
             self.assertEquals(new_client.username, 'exampleuser')
             self.assertIsNone(new_client.password)
