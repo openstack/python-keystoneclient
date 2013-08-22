@@ -222,7 +222,7 @@ class AccessInfo(dict):
         request, or None if the authentication request wasn't scoped to a
         project.
 
-        :returns: str or None ((if no project associated with the token)
+        :returns: str or None (if no project associated with the token)
         """
         raise NotImplementedError()
 
@@ -327,9 +327,24 @@ class AccessInfoV2(AccessInfo):
 
     @property
     def project_name(self):
-        tenant_dict = self['token'].get('tenant', None)
-        if tenant_dict:
-            return tenant_dict.get('name', None)
+        try:
+            tenant_dict = self['token']['tenant']
+        except KeyError:
+            pass
+        else:
+            return tenant_dict.get('name')
+
+        # pre grizzly
+        try:
+            return self['user']['tenantName']
+        except KeyError:
+            pass
+
+        # pre diablo, keystone only provided a tenantId
+        try:
+            return self['token']['tenantId']
+        except KeyError:
+            pass
 
     @property
     def scoped(self):
@@ -357,10 +372,24 @@ class AccessInfoV2(AccessInfo):
 
     @property
     def project_id(self):
-        tenant_dict = self['token'].get('tenant', None)
-        if tenant_dict:
-            return tenant_dict.get('id', None)
-        return None
+        try:
+            tenant_dict = self['token']['tenant']
+        except KeyError:
+            pass
+        else:
+            return tenant_dict.get('id')
+
+        # pre grizzly
+        try:
+            return self['user']['tenantId']
+        except KeyError:
+            pass
+
+        # pre diablo
+        try:
+            return self['token']['tenantId']
+        except KeyError:
+            pass
 
     @property
     def project_domain_id(self):
