@@ -152,6 +152,19 @@ class ClientTest(utils.TestCase):
                                                 httpclient.USER_AGENT)),
                 kwargs['headers'].items())
 
+    def test_client_deprecated(self):
+        # Can resolve symbols from the keystoneclient.client module.
+        # keystoneclient.client was deprecated and renamed to
+        # keystoneclient.httpclient. This tests that keystoneclient.client
+        # can still be used.
+
+        from keystoneclient import client
+
+        # These statements will raise an AttributeError if the symbol isn't
+        # defined in the module.
+
+        client.HTTPClient
+
 
 class BasicRequestTests(testtools.TestCase):
 
