@@ -228,6 +228,10 @@ opts = [
                 default=None,
                 help='Request timeout value for communicating with Identity'
                 ' API server.'),
+    cfg.IntOpt('http_request_max_retries',
+               default=3,
+               help='How many times are we trying to reconnect when'
+               ' communicating with Identity API Server.'),
     cfg.StrOpt('http_handler',
                default=None,
                help='Allows to pass in the name of a fake http_handler'
@@ -428,7 +432,8 @@ class AuthProtocol(object):
         self.http_connect_timeout = (http_connect_timeout_cfg and
                                      int(http_connect_timeout_cfg))
         self.auth_version = None
-        self.http_request_max_retries = 3
+        self.http_request_max_retries = \
+            self._conf_get('http_request_max_retries')
 
     def _assert_valid_memcache_protection_config(self):
         if self._memcache_security_strategy:

@@ -25,6 +25,7 @@ import testtools
 import uuid
 
 import fixtures
+import mock
 import webob
 
 from keystoneclient.common import cms
@@ -991,6 +992,21 @@ class AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
         self.middleware.http_request_max_retries = 0
         self.middleware(req.environ, self.start_fake_response)
         self.assertEqual(self._get_cached_token(token), None)
+
+    def test_http_request_max_retries(self):
+        times_retry = 10
+
+        req = webob.Request.blank('/')
+        token = self.token_dict['uuid_token_default']
+        req.headers['X-Auth-Token'] = token
+
+        self.set_middleware(conf=dict(http_request_max_retries=times_retry))
+
+        with mock.patch('time.sleep') as mock_obj:
+            self.set_fake_http(RaisingHTTPNetworkError)
+            self.middleware(req.environ, self.start_fake_response)
+
+        self.assertEqual(mock_obj.call_count, times_retry)
 
 
 class CertDownloadMiddlewareTest(BaseAuthTokenMiddlewareTest):
