@@ -5,7 +5,7 @@ import urlparse
 import uuid
 
 import mock
-import mox
+from mox3 import mox
 import requests
 import testtools
 

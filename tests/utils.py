@@ -1,7 +1,7 @@
 import time
 
 import mock
-import mox
+from mox3 import mox
 import requests
 import testtools
 
