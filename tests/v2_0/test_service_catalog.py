@@ -1,3 +1,5 @@
+import copy
+
 from keystoneclient import access
 from keystoneclient import exceptions
 
@@ -48,3 +50,17 @@ class ServiceCatalogTest(utils.TestCase):
 
         url = sc.url_for(service_type='image', endpoint_type='internalURL')
         self.assertEquals(url, "https://image-internal.south.host/v1/")
+
+    def test_service_catalog_empty(self):
+        # We need to do a copy.deepcopy here since
+        # dict(self.AUTH_RESPONSE_BODY) or self.AUTH_RESPONSE_BODY.copy() will
+        # only do a shadowcopy and sc_empty['token']['catalog'] will still be a
+        # reference to self.AUTH_RESPONSE_BODY so setting it to empty will fail
+        # the other tests that needs a service catalog.
+        sc_empty = copy.deepcopy(self.AUTH_RESPONSE_BODY)
+        sc_empty['access']['serviceCatalog'] = []
+        auth_ref = access.AccessInfo.factory(None, sc_empty)
+        self.assertRaises(exceptions.EmptyCatalog,
+                          auth_ref.service_catalog.url_for,
+                          service_type='image',
+                          endpoint_type='internalURL')
