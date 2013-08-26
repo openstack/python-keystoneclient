@@ -3,6 +3,7 @@ import mock
 
 import requests
 
+from keystoneclient import exceptions
 from keystoneclient.v3 import client
 
 from tests import utils
@@ -140,3 +141,9 @@ class KeystoneClientTest(utils.TestCase):
             self.assertEqual(c.auth_ref.trust_id, 'fe0aef')
             self.assertTrue(c.auth_ref.trust_scoped)
             self.assertEquals(c.auth_user_id, '0ca8f6')
+
+    def test_init_err_no_auth_url(self):
+        self.assertRaises(exceptions.AuthorizationFailure,
+                          client.Client,
+                          username='exampleuser',
+                          password='password')

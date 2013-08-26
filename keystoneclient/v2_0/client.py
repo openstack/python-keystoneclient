@@ -173,6 +173,8 @@ class Client(httpclient.HTTPClient):
         to a tenant.
         """
         headers = {}
+        if auth_url is None:
+            raise ValueError("Cannot authenticate without a valid auth_url")
         url = auth_url + "/tokens"
         if token:
             headers['X-Auth-Token'] = token

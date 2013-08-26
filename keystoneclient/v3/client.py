@@ -170,6 +170,8 @@ class Client(httpclient.HTTPClient):
                  project_id=None, project_name=None, project_domain_id=None,
                  project_domain_name=None, token=None, trust_id=None):
         headers = {}
+        if auth_url is None:
+            raise ValueError("Cannot authenticate without a valid auth_url")
         url = auth_url + "/auth/tokens"
         body = {'auth': {'identity': {}}}
         ident = body['auth']['identity']
