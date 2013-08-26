@@ -134,10 +134,23 @@ class AccessInfo(dict):
     @property
     def user_domain_id(self):
         """Returns the domain id of the user associated with the authentication
-           request.
+        request.
 
-           For v2, it always returns 'default' which maybe different from the
-           Keystone configuration.
+        For v2, it always returns 'default' which may be different from the
+        Keystone configuration.
+
+        :returns: str
+        """
+        raise NotImplementedError()
+
+    @property
+    def user_domain_name(self):
+        """Returns the domain name of the user associated with the
+        authentication request.
+
+        For v2, it always returns 'Default' which may be different from the
+        Keystone configuration.
+
         :returns: str
         """
         raise NotImplementedError()
@@ -234,10 +247,23 @@ class AccessInfo(dict):
     @property
     def project_domain_id(self):
         """Returns the domain id of the project associated with the
-           authentication request.
+        authentication request.
 
-           For v2, it always returns 'default' which maybe different from the
-           keystone configuration.
+        For v2, it returns 'default' if a project is scoped or None which may
+        be different from the keystone configuration.
+
+        :returns: str
+        """
+        raise NotImplementedError()
+
+    @property
+    def project_domain_name(self):
+        """Returns the domain name of the project associated with the
+        authentication request.
+
+        For v2, it returns 'Default' if a project is scoped or None  which may
+        be different from the keystone configuration.
+
         :returns: str
         """
         raise NotImplementedError()
@@ -316,6 +342,10 @@ class AccessInfoV2(AccessInfo):
     @property
     def user_domain_id(self):
         return 'default'
+
+    @property
+    def user_domain_name(self):
+        return 'Default'
 
     @property
     def domain_name(self):
@@ -397,6 +427,11 @@ class AccessInfoV2(AccessInfo):
             return 'default'
 
     @property
+    def project_domain_name(self):
+        if self.project_id:
+            return 'Default'
+
+    @property
     def auth_url(self):
         if self.service_catalog:
             return self.service_catalog.get_urls(service_type='identity',
@@ -457,6 +492,10 @@ class AccessInfoV3(AccessInfo):
         return self['user']['domain']['id']
 
     @property
+    def user_domain_name(self):
+        return self['user']['domain']['name']
+
+    @property
     def username(self):
         return self['user']['name']
 
@@ -483,6 +522,12 @@ class AccessInfoV3(AccessInfo):
         project = self.get('project')
         if project:
             return project['domain']['id']
+
+    @property
+    def project_domain_name(self):
+        project = self.get('project')
+        if project:
+            return project['domain']['name']
 
     @property
     def project_name(self):

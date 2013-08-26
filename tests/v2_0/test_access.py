@@ -37,6 +37,11 @@ class AccessInfoTest(utils.TestCase):
         self.assertFalse(auth_ref.project_scoped)
         self.assertFalse(auth_ref.trust_scoped)
 
+        self.assertIsNone(auth_ref.project_domain_id)
+        self.assertIsNone(auth_ref.project_domain_name)
+        self.assertEqual(auth_ref.user_domain_id, 'default')
+        self.assertEqual(auth_ref.user_domain_name, 'Default')
+
         self.assertEquals(auth_ref.expires, timeutils.parse_isotime(
                           UNSCOPED_TOKEN['access']['token']['expires']))
 
@@ -73,6 +78,11 @@ class AccessInfoTest(utils.TestCase):
         self.assertEquals(auth_ref.management_url,
                           ('http://admin:35357/v2.0',))
 
+        self.assertEqual(auth_ref.project_domain_id, 'default')
+        self.assertEqual(auth_ref.project_domain_name, 'Default')
+        self.assertEqual(auth_ref.user_domain_id, 'default')
+        self.assertEqual(auth_ref.user_domain_name, 'Default')
+
         self.assertTrue(auth_ref.scoped)
         self.assertTrue(auth_ref.project_scoped)
         self.assertFalse(auth_ref.domain_scoped)
@@ -84,6 +94,10 @@ class AccessInfoTest(utils.TestCase):
         self.assertEquals(auth_ref.username, 'user_name1')
         self.assertEquals(auth_ref.project_id, 'tenant_id1')
         self.assertEquals(auth_ref.project_name, 'tenant_id1')
+        self.assertEquals(auth_ref.project_domain_id, 'default')
+        self.assertEquals(auth_ref.project_domain_name, 'Default')
+        self.assertEquals(auth_ref.user_domain_id, 'default')
+        self.assertEquals(auth_ref.user_domain_name, 'Default')
         self.assertFalse(auth_ref.scoped)
 
     def test_grizzly_token(self):
@@ -91,3 +105,7 @@ class AccessInfoTest(utils.TestCase):
 
         self.assertEquals(auth_ref.project_id, 'tenant_id1')
         self.assertEquals(auth_ref.project_name, 'tenant_name1')
+        self.assertEquals(auth_ref.project_domain_id, 'default')
+        self.assertEquals(auth_ref.project_domain_name, 'Default')
+        self.assertEquals(auth_ref.user_domain_id, 'default')
+        self.assertEquals(auth_ref.user_domain_name, 'Default')
