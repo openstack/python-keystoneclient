@@ -2,11 +2,14 @@ import datetime
 
 from keystoneclient import access
 from keystoneclient.openstack.common import timeutils
+from tests import client_fixtures as token_data
 from tests import utils
 from tests.v2_0 import client_fixtures
 
 UNSCOPED_TOKEN = client_fixtures.UNSCOPED_TOKEN
 PROJECT_SCOPED_TOKEN = client_fixtures.PROJECT_SCOPED_TOKEN
+DIABLO_TOKEN = token_data.TOKEN_RESPONSES[token_data.VALID_DIABLO_TOKEN]
+GRIZZLY_TOKEN = token_data.TOKEN_RESPONSES[token_data.SIGNED_TOKEN_SCOPED_KEY]
 
 
 class AccessInfoTest(utils.TestCase):
@@ -73,3 +76,18 @@ class AccessInfoTest(utils.TestCase):
         self.assertTrue(auth_ref.scoped)
         self.assertTrue(auth_ref.project_scoped)
         self.assertFalse(auth_ref.domain_scoped)
+
+    def test_diablo_token(self):
+        auth_ref = access.AccessInfo.factory(body=DIABLO_TOKEN)
+
+        self.assertTrue(auth_ref)
+        self.assertEquals(auth_ref.username, 'user_name1')
+        self.assertEquals(auth_ref.project_id, 'tenant_id1')
+        self.assertEquals(auth_ref.project_name, 'tenant_id1')
+        self.assertFalse(auth_ref.scoped)
+
+    def test_grizzly_token(self):
+        auth_ref = access.AccessInfo.factory(body=GRIZZLY_TOKEN)
+
+        self.assertEquals(auth_ref.project_id, 'tenant_id1')
+        self.assertEquals(auth_ref.project_name, 'tenant_name1')
