@@ -61,9 +61,6 @@ class AccessInfo(dict):
         self.service_catalog = service_catalog.ServiceCatalog.factory(
             resource_dict=self, region_name=self.get('region_name'))
 
-    def has_service_catalog(self):
-        return 'serviceCatalog' in self
-
     def will_expire_soon(self, stale_duration=None):
         """Determines if expiration is about to occur.
 
