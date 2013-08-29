@@ -789,11 +789,11 @@ class AuthProtocol(object):
             expires = self._confirm_token_not_expired(data)
             self._cache_put(token_id, data, expires)
             return data
-        except NetworkError as e:
+        except NetworkError:
             self.LOG.debug('Token validation failure.', exc_info=True)
             self.LOG.warn("Authorization failed for token %s", token_id)
             raise InvalidUserToken('Token authorization failed')
-        except Exception as e:
+        except Exception:
             self.LOG.debug('Token validation failure.', exc_info=True)
             if token_id:
                 self._cache_store_invalid(token_id)
