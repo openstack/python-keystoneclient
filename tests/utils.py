@@ -12,14 +12,16 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import sys
 import time
 
+import httpretty
 import mock
 from mox3 import mox
 import requests
 import testtools
 
-from keystoneclient.v2_0 import client
+from keystoneclient.openstack.common import jsonutils
 
 
 class TestCase(testtools.TestCase):
@@ -29,110 +31,63 @@ class TestCase(testtools.TestCase):
     TEST_TENANT_NAME = 'aTenant'
     TEST_TOKEN = 'aToken'
     TEST_USER = 'test'
-    TEST_ROOT_URL = 'http://127.0.0.1:5000/'
-    TEST_URL = '%s%s' % (TEST_ROOT_URL, 'v2.0')
-    TEST_ROOT_ADMIN_URL = 'http://127.0.0.1:35357/'
-    TEST_ADMIN_URL = '%s%s' % (TEST_ROOT_ADMIN_URL, 'v2.0')
-    TEST_REQUEST_BASE = {
-        'verify': True,
-    }
 
-    TEST_SERVICE_CATALOG = [{
-        "endpoints": [{
-            "adminURL": "http://cdn.admin-nets.local:8774/v1.0",
-            "region": "RegionOne",
-            "internalURL": "http://127.0.0.1:8774/v1.0",
-            "publicURL": "http://cdn.admin-nets.local:8774/v1.0/"
-        }],
-        "type": "nova_compat",
-        "name": "nova_compat"
-    }, {
-        "endpoints": [{
-            "adminURL": "http://nova/novapi/admin",
-            "region": "RegionOne",
-            "internalURL": "http://nova/novapi/internal",
-            "publicURL": "http://nova/novapi/public"
-        }],
-        "type": "compute",
-        "name": "nova"
-    }, {
-        "endpoints": [{
-            "adminURL": "http://glance/glanceapi/admin",
-            "region": "RegionOne",
-            "internalURL": "http://glance/glanceapi/internal",
-            "publicURL": "http://glance/glanceapi/public"
-        }],
-        "type": "image",
-        "name": "glance"
-    }, {
-        "endpoints": [{
-            "adminURL": "http://127.0.0.1:35357/v2.0",
-            "region": "RegionOne",
-            "internalURL": "http://127.0.0.1:5000/v2.0",
-            "publicURL": "http://127.0.0.1:5000/v2.0"
-        }],
-        "type": "identity",
-        "name": "keystone"
-    }, {
-        "endpoints": [{
-            "adminURL": "http://swift/swiftapi/admin",
-            "region": "RegionOne",
-            "internalURL": "http://swift/swiftapi/internal",
-            "publicURL": "http://swift/swiftapi/public"
-        }],
-        "type": "object-store",
-        "name": "swift"
-    }]
+    TEST_ROOT_URL = 'http://127.0.0.1:5000/'
 
     def setUp(self):
         super(TestCase, self).setUp()
         self.mox = mox.Mox()
-        self.request_patcher = mock.patch.object(requests, 'request',
-                                                 self.mox.CreateMockAnything())
-        self.time_patcher = mock.patch.object(time, 'time',
-                                              lambda: 1234)
-        self.request_patcher.start()
+        self.time_patcher = mock.patch.object(time, 'time', lambda: 1234)
         self.time_patcher.start()
-        self.client = client.Client(username=self.TEST_USER,
-                                    token=self.TEST_TOKEN,
-                                    tenant_name=self.TEST_TENANT_NAME,
-                                    auth_url=self.TEST_URL,
-                                    endpoint=self.TEST_URL)
 
     def tearDown(self):
-        self.request_patcher.stop()
         self.time_patcher.stop()
         self.mox.UnsetStubs()
         self.mox.VerifyAll()
         super(TestCase, self).tearDown()
 
+    def stub_url(self, method, parts=None, base_url=None, json=None, **kwargs):
+        if not base_url:
+            base_url = self.TEST_URL
 
-class UnauthenticatedTestCase(testtools.TestCase):
-    """Class used as base for unauthenticated calls."""
-    TEST_ROOT_URL = 'http://127.0.0.1:5000/'
-    TEST_URL = '%s%s' % (TEST_ROOT_URL, 'v2.0')
-    TEST_ROOT_ADMIN_URL = 'http://127.0.0.1:35357/'
-    TEST_ADMIN_URL = '%s%s' % (TEST_ROOT_ADMIN_URL, 'v2.0')
-    TEST_REQUEST_BASE = {
-        'verify': True,
-    }
+        if json:
+            kwargs['body'] = jsonutils.dumps(json)
+            kwargs['content_type'] = 'application/json'
 
-    def setUp(self):
-        super(UnauthenticatedTestCase, self).setUp()
-        self.mox = mox.Mox()
-        self.request_patcher = mock.patch.object(requests, 'request',
-                                                 self.mox.CreateMockAnything())
-        self.time_patcher = mock.patch.object(time, 'time',
-                                              lambda: 1234)
-        self.request_patcher.start()
-        self.time_patcher.start()
+        if parts:
+            url = '/'.join([p.strip('/') for p in [base_url] + parts])
+        else:
+            url = base_url
 
-    def tearDown(self):
-        self.request_patcher.stop()
-        self.time_patcher.stop()
-        self.mox.UnsetStubs()
-        self.mox.VerifyAll()
-        super(UnauthenticatedTestCase, self).tearDown()
+        httpretty.register_uri(method, url, **kwargs)
+
+    def assertRequestBodyIs(self, body=None, json=None):
+        if json:
+            val = jsonutils.loads(httpretty.last_request().body)
+            self.assertEqual(json, val)
+        elif body:
+            self.assertEqual(body, httpretty.last_request().body)
+
+    def assertQueryStringIs(self, val):
+        self.assertEqual(httpretty.last_request().querystring, val)
+
+
+if tuple(sys.version_info)[0:2] < (2, 7):
+
+    def assertDictEqual(self, d1, d2, msg=None):
+        # Simple version taken from 2.7
+        self.assertIsInstance(d1, dict,
+                              'First argument is not a dictionary')
+        self.assertIsInstance(d2, dict,
+                              'Second argument is not a dictionary')
+        if d1 != d2:
+            if msg:
+                self.fail(msg)
+            else:
+                standardMsg = '%r != %r' % (d1, d2)
+                self.fail(standardMsg)
+
+    TestCase.assertDictEqual = assertDictEqual
 
 
 class TestResponse(requests.Response):

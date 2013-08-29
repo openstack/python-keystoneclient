@@ -13,18 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import uuid
 
 from keystoneclient import exceptions
 from keystoneclient.openstack.common import timeutils
 from keystoneclient.v3.contrib import trusts
 from tests.v3 import utils
-import uuid
 
 
 class TrustTests(utils.TestCase, utils.CrudTests):
     def setUp(self):
         super(TrustTests, self).setUp()
-        self.additionalSetUp()
         self.key = 'trust'
         self.collection_key = 'trusts'
         self.model = trusts.Trust

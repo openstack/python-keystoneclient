@@ -16,7 +16,7 @@
 import urlparse
 
 from tests import fakes
-from tests import utils
+from tests.v2_0 import utils
 
 
 class FakeHTTPClient(fakes.FakeClient):

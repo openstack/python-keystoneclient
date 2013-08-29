@@ -21,7 +21,6 @@ from tests.v3 import utils
 class EndpointTests(utils.TestCase, utils.CrudTests):
     def setUp(self):
         super(EndpointTests, self).setUp()
-        self.additionalSetUp()
         self.key = 'endpoint'
         self.collection_key = 'endpoints'
         self.model = endpoints.Endpoint

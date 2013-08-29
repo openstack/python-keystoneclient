@@ -12,37 +12,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import copy
-import urlparse
+import httpretty
 
-import requests
-
-from tests import utils
+from tests.v2_0 import utils
 
 
 class TokenTests(utils.TestCase):
-    def setUp(self):
-        super(TokenTests, self).setUp()
-        self.TEST_REQUEST_HEADERS = {
-            'X-Auth-Token': 'aToken',
-            'User-Agent': 'python-keystoneclient'}
-        self.TEST_POST_HEADERS = {
-            'Content-Type': 'application/json',
-            'X-Auth-Token': 'aToken',
-            'User-Agent': 'python-keystoneclient'}
-
+    @httpretty.activate
     def test_delete(self):
-        resp = utils.TestResponse({
-            "status_code": 204,
-            "text": ""})
-
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.TEST_REQUEST_HEADERS
-        requests.request(
-            'DELETE',
-            urlparse.urljoin(self.TEST_URL, 'v2.0/tokens/1'),
-            **kwargs).AndReturn((resp))
-
-        self.mox.ReplayAll()
-
+        self.stub_url(httpretty.DELETE, ['tokens', '1'], status=204)
         self.client.tokens.delete(1)

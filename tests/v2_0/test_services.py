@@ -12,28 +12,15 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import copy
-import json
-import urlparse
-
-import requests
+import httpretty
 
 from keystoneclient.v2_0 import services
-from tests import utils
+from tests.v2_0 import utils
 
 
 class ServiceTests(utils.TestCase):
     def setUp(self):
         super(ServiceTests, self).setUp()
-        self.TEST_REQUEST_HEADERS = {
-            'X-Auth-Token': 'aToken',
-            'User-Agent': 'python-keystoneclient',
-        }
-        self.TEST_POST_HEADERS = {
-            'Content-Type': 'application/json',
-            'X-Auth-Token': 'aToken',
-            'User-Agent': 'python-keystoneclient',
-        }
         self.TEST_SERVICES = {
             "OS-KSADM:services": {
                 "values": [
@@ -53,6 +40,7 @@ class ServiceTests(utils.TestCase):
             },
         }
 
+    @httpretty.activate
     def test_create(self):
         req_body = {
             "OS-KSADM:service": {
@@ -69,19 +57,7 @@ class ServiceTests(utils.TestCase):
                 "id": 3,
             }
         }
-        resp = utils.TestResponse({
-            "status_code": 200,
-            "text": json.dumps(resp_body),
-        })
-
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.TEST_POST_HEADERS
-        kwargs['data'] = json.dumps(req_body)
-        requests.request('POST',
-                         urlparse.urljoin(self.TEST_URL,
-                         'v2.0/OS-KSADM/services'),
-                         **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_url(httpretty.POST, ['OS-KSADM', 'services'], json=resp_body)
 
         service = self.client.services.create(
             req_body['OS-KSADM:service']['name'],
@@ -90,37 +66,21 @@ class ServiceTests(utils.TestCase):
         self.assertTrue(isinstance(service, services.Service))
         self.assertEqual(service.id, 3)
         self.assertEqual(service.name, req_body['OS-KSADM:service']['name'])
+        self.assertRequestBodyIs(json=req_body)
 
+    @httpretty.activate
     def test_delete(self):
-        resp = utils.TestResponse({
-            "status_code": 200,
-            "text": "",
-        })
-
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.TEST_REQUEST_HEADERS
-        requests.request('DELETE',
-                         urlparse.urljoin(self.TEST_URL,
-                         'v2.0/OS-KSADM/services/1'),
-                         **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_url(httpretty.DELETE, ['OS-KSADM', 'services', '1'],
+                      status=204)
 
         self.client.services.delete(1)
 
+    @httpretty.activate
     def test_get(self):
         test_services = self.TEST_SERVICES['OS-KSADM:services']['values'][0]
-        resp = utils.TestResponse({
-            "status_code": 200,
-            "text": json.dumps({'OS-KSADM:service': test_services}),
-        })
 
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.TEST_REQUEST_HEADERS
-        requests.request('GET',
-                         urlparse.urljoin(self.TEST_URL,
-                         'v2.0/OS-KSADM/services/1'),
-                         **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_url(httpretty.GET, ['OS-KSADM', 'services', '1'],
+                      json={'OS-KSADM:service': test_services})
 
         service = self.client.services.get(1)
         self.assertTrue(isinstance(service, services.Service))
@@ -128,19 +88,10 @@ class ServiceTests(utils.TestCase):
         self.assertEqual(service.name, 'nova')
         self.assertEqual(service.type, 'compute')
 
+    @httpretty.activate
     def test_list(self):
-        resp = utils.TestResponse({
-            "status_code": 200,
-            "text": json.dumps(self.TEST_SERVICES),
-        })
-
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.TEST_REQUEST_HEADERS
-        requests.request('GET',
-                         urlparse.urljoin(self.TEST_URL,
-                         'v2.0/OS-KSADM/services'),
-                         **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_url(httpretty.GET, ['OS-KSADM', 'services'],
+                      json=self.TEST_SERVICES)
 
         service_list = self.client.services.list()
         [self.assertTrue(isinstance(r, services.Service))

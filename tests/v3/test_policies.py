@@ -21,7 +21,6 @@ from tests.v3 import utils
 class PolicyTests(utils.TestCase, utils.CrudTests):
     def setUp(self):
         super(PolicyTests, self).setUp()
-        self.additionalSetUp()
         self.key = 'policy'
         self.collection_key = 'policies'
         self.model = policies.Policy

@@ -13,6 +13,7 @@
 #    under the License.
 
 from keystoneclient import base
+from keystoneclient.v2_0 import client
 from keystoneclient.v2_0 import roles
 from tests import utils
 
@@ -35,6 +36,12 @@ class BaseTest(utils.TestCase):
         self.assertEqual(base.getid(TmpObject), 4)
 
     def test_resource_lazy_getattr(self):
+        self.client = client.Client(username=self.TEST_USER,
+                                    token=self.TEST_TOKEN,
+                                    tenant_name=self.TEST_TENANT_NAME,
+                                    auth_url='http://127.0.0.1:5000',
+                                    endpoint='http://127.0.0.1:5000')
+
         self.client.get = self.mox.CreateMockAnything()
         self.client.get('/OS-KSADM/roles/1').AndRaise(AttributeError)
         self.mox.ReplayAll()
@@ -78,6 +85,11 @@ class ManagerTest(utils.TestCase):
 
     def setUp(self):
         super(ManagerTest, self).setUp()
+        self.client = client.Client(username=self.TEST_USER,
+                                    token=self.TEST_TOKEN,
+                                    tenant_name=self.TEST_TENANT_NAME,
+                                    auth_url='http://127.0.0.1:5000',
+                                    endpoint='http://127.0.0.1:5000')
         self.mgr = base.Manager(self.client)
         self.mgr.resource_class = base.Resource
 

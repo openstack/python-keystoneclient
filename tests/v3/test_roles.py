@@ -14,11 +14,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import copy
-import urlparse
 import uuid
 
-import requests
+import httpretty
 
 from keystoneclient import exceptions
 from keystoneclient.v3 import roles
@@ -28,7 +26,6 @@ from tests.v3 import utils
 class RoleTests(utils.TestCase, utils.CrudTests):
     def setUp(self):
         super(RoleTests, self).setUp()
-        self.additionalSetUp()
         self.key = 'role'
         self.collection_key = 'roles'
         self.model = roles.Role
@@ -39,376 +36,213 @@ class RoleTests(utils.TestCase, utils.CrudTests):
         kwargs.setdefault('name', uuid.uuid4().hex)
         return kwargs
 
+    @httpretty.activate
     def test_domain_role_grant(self):
         user_id = uuid.uuid4().hex
         domain_id = uuid.uuid4().hex
         ref = self.new_ref()
-        resp = utils.TestResponse({
-            "status_code": 201,
-            "text": '',
-        })
 
-        method = 'PUT'
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.headers[method]
-        requests.request(
-            method,
-            urlparse.urljoin(
-                self.TEST_URL,
-                'v3/domains/%s/users/%s/%s/%s' % (
-                    domain_id, user_id, self.collection_key, ref['id'])),
-            **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_url(httpretty.PUT,
+                      ['domains', domain_id, 'users', user_id,
+                       self.collection_key, ref['id']],
+                      status=201)
 
         self.manager.grant(role=ref['id'], domain=domain_id, user=user_id)
 
+    @httpretty.activate
     def test_domain_group_role_grant(self):
         group_id = uuid.uuid4().hex
         domain_id = uuid.uuid4().hex
         ref = self.new_ref()
-        resp = utils.TestResponse({
-            "status_code": 201,
-            "text": '',
-        })
 
-        method = 'PUT'
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.headers[method]
-        requests.request(
-            method,
-            urlparse.urljoin(
-                self.TEST_URL,
-                'v3/domains/%s/groups/%s/%s/%s' % (
-                    domain_id, group_id, self.collection_key, ref['id'])),
-            **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_url(httpretty.PUT,
+                      ['domains', domain_id, 'groups', group_id,
+                       self.collection_key, ref['id']],
+                      status=201)
 
         self.manager.grant(role=ref['id'], domain=domain_id, group=group_id)
 
+    @httpretty.activate
     def test_domain_role_list(self):
         user_id = uuid.uuid4().hex
         domain_id = uuid.uuid4().hex
         ref_list = [self.new_ref(), self.new_ref()]
-        resp = utils.TestResponse({
-            "status_code": 200,
-            "text": self.serialize(ref_list),
-        })
 
-        method = 'GET'
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.headers[method]
-        requests.request(
-            method,
-            urlparse.urljoin(
-                self.TEST_URL,
-                'v3/domains/%s/users/%s/%s' % (
-                    domain_id, user_id, self.collection_key)),
-            **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_entity(httpretty.GET,
+                         ['domains', domain_id, 'users', user_id,
+                         self.collection_key], entity=ref_list)
 
         self.manager.list(domain=domain_id, user=user_id)
 
+    @httpretty.activate
     def test_domain_group_role_list(self):
         group_id = uuid.uuid4().hex
         domain_id = uuid.uuid4().hex
         ref_list = [self.new_ref(), self.new_ref()]
-        resp = utils.TestResponse({
-            "status_code": 200,
-            "text": self.serialize(ref_list),
-        })
 
-        method = 'GET'
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.headers[method]
-        requests.request(
-            method,
-            urlparse.urljoin(
-                self.TEST_URL,
-                'v3/domains/%s/groups/%s/%s' % (
-                    domain_id, group_id, self.collection_key)),
-            **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_entity(httpretty.GET,
+                         ['domains', domain_id, 'groups', group_id,
+                          self.collection_key], entity=ref_list)
 
         self.manager.list(domain=domain_id, group=group_id)
 
+    @httpretty.activate
     def test_domain_role_check(self):
         user_id = uuid.uuid4().hex
         domain_id = uuid.uuid4().hex
         ref = self.new_ref()
-        resp = utils.TestResponse({
-            "status_code": 204,
-            "text": '',
-        })
 
-        method = 'HEAD'
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.headers[method]
-        requests.request(
-            method,
-            urlparse.urljoin(
-                self.TEST_URL,
-                'v3/domains/%s/users/%s/%s/%s' % (
-                    domain_id, user_id, self.collection_key, ref['id'])),
-            **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_url(httpretty.HEAD,
+                      ['domains', domain_id, 'users', user_id,
+                       self.collection_key, ref['id']],
+                      status=204)
 
         self.manager.check(role=ref['id'], domain=domain_id,
                            user=user_id)
 
+    @httpretty.activate
     def test_domain_group_role_check(self):
         return
         group_id = uuid.uuid4().hex
         domain_id = uuid.uuid4().hex
         ref = self.new_ref()
-        resp = utils.TestResponse({
-            "status_code": 204,
-            "text": '',
-        })
 
-        method = 'HEAD'
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.headers[method]
-        requests.request(
-            method,
-            urlparse.urljoin(
-                self.TEST_URL,
-                'v3/domains/%s/groups/%s/%s/%s' % (
-                    domain_id, group_id, self.collection_key, ref['id'])),
-            **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_url(httpretty.HEAD,
+                      ['domains', domain_id, 'groups', group_id,
+                       self.collection_key, ref['id']],
+                      status=204)
 
         self.manager.check(role=ref['id'], domain=domain_id, group=group_id)
 
+    @httpretty.activate
     def test_domain_role_revoke(self):
         user_id = uuid.uuid4().hex
         domain_id = uuid.uuid4().hex
         ref = self.new_ref()
-        resp = utils.TestResponse({
-            "status_code": 204,
-            "text": '',
-        })
 
-        method = 'DELETE'
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.headers[method]
-        requests.request(
-            method,
-            urlparse.urljoin(
-                self.TEST_URL,
-                'v3/domains/%s/users/%s/%s/%s' % (
-                    domain_id, user_id, self.collection_key, ref['id'])),
-            **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_url(httpretty.DELETE,
+                      ['domains', domain_id, 'users', user_id,
+                       self.collection_key, ref['id']],
+                      status=204)
 
         self.manager.revoke(role=ref['id'], domain=domain_id, user=user_id)
 
+    @httpretty.activate
     def test_domain_group_role_revoke(self):
         group_id = uuid.uuid4().hex
         domain_id = uuid.uuid4().hex
         ref = self.new_ref()
-        resp = utils.TestResponse({
-            "status_code": 204,
-            "text": '',
-        })
 
-        method = 'DELETE'
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.headers[method]
-        requests.request(
-            method,
-            urlparse.urljoin(
-                self.TEST_URL,
-                'v3/domains/%s/groups/%s/%s/%s' % (
-                    domain_id, group_id, self.collection_key, ref['id'])),
-            **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_url(httpretty.DELETE,
+                      ['domains', domain_id, 'groups', group_id,
+                       self.collection_key, ref['id']],
+                      status=204)
 
         self.manager.revoke(role=ref['id'], domain=domain_id, group=group_id)
 
+    @httpretty.activate
     def test_project_role_grant(self):
         user_id = uuid.uuid4().hex
         project_id = uuid.uuid4().hex
         ref = self.new_ref()
-        resp = utils.TestResponse({
-            "status_code": 201,
-            "text": '',
-        })
 
-        method = 'PUT'
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.headers[method]
-        requests.request(
-            method,
-            urlparse.urljoin(
-                self.TEST_URL,
-                'v3/projects/%s/users/%s/%s/%s' % (
-                    project_id, user_id, self.collection_key, ref['id'])),
-            **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_url(httpretty.PUT,
+                      ['projects', project_id, 'users', user_id,
+                       self.collection_key, ref['id']],
+                      status=201)
 
         self.manager.grant(role=ref['id'], project=project_id, user=user_id)
 
+    @httpretty.activate
     def test_project_group_role_grant(self):
         group_id = uuid.uuid4().hex
         project_id = uuid.uuid4().hex
         ref = self.new_ref()
-        resp = utils.TestResponse({
-            "status_code": 201,
-            "text": '',
-        })
 
-        method = 'PUT'
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.headers[method]
-        requests.request(
-            method,
-            urlparse.urljoin(
-                self.TEST_URL,
-                'v3/projects/%s/groups/%s/%s/%s' % (
-                    project_id, group_id, self.collection_key, ref['id'])),
-            **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_url(httpretty.PUT,
+                      ['projects', project_id, 'groups', group_id,
+                       self.collection_key, ref['id']],
+                      status=201)
 
         self.manager.grant(role=ref['id'], project=project_id, group=group_id)
 
+    @httpretty.activate
     def test_project_role_list(self):
         user_id = uuid.uuid4().hex
         project_id = uuid.uuid4().hex
         ref_list = [self.new_ref(), self.new_ref()]
-        resp = utils.TestResponse({
-            "status_code": 200,
-            "text": self.serialize(ref_list),
-        })
 
-        method = 'GET'
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.headers[method]
-        requests.request(
-            method,
-            urlparse.urljoin(
-                self.TEST_URL,
-                'v3/projects/%s/users/%s/%s' % (
-                    project_id, user_id, self.collection_key)),
-            **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_entity(httpretty.GET,
+                         ['projects', project_id, 'users', user_id,
+                          self.collection_key], entity=ref_list)
 
         self.manager.list(project=project_id, user=user_id)
 
+    @httpretty.activate
     def test_project_group_role_list(self):
         group_id = uuid.uuid4().hex
         project_id = uuid.uuid4().hex
         ref_list = [self.new_ref(), self.new_ref()]
-        resp = utils.TestResponse({
-            "status_code": 200,
-            "text": self.serialize(ref_list),
-        })
 
-        method = 'GET'
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.headers[method]
-        requests.request(
-            method,
-            urlparse.urljoin(
-                self.TEST_URL,
-                'v3/projects/%s/groups/%s/%s' % (
-                    project_id, group_id, self.collection_key)),
-            **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_entity(httpretty.GET,
+                         ['projects', project_id, 'groups', group_id,
+                          self.collection_key], entity=ref_list)
 
         self.manager.list(project=project_id, group=group_id)
 
+    @httpretty.activate
     def test_project_role_check(self):
         user_id = uuid.uuid4().hex
         project_id = uuid.uuid4().hex
         ref = self.new_ref()
-        resp = utils.TestResponse({
-            "status_code": 200,
-            "text": '',
-        })
 
-        method = 'HEAD'
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.headers[method]
-        requests.request(
-            method,
-            urlparse.urljoin(
-                self.TEST_URL,
-                'v3/projects/%s/users/%s/%s/%s' % (
-                    project_id, user_id, self.collection_key, ref['id'])),
-            **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_url(httpretty.HEAD,
+                      ['projects', project_id, 'users', user_id,
+                       self.collection_key, ref['id']],
+                      status=200)
 
         self.manager.check(role=ref['id'], project=project_id, user=user_id)
 
+    @httpretty.activate
     def test_project_group_role_check(self):
         group_id = uuid.uuid4().hex
         project_id = uuid.uuid4().hex
         ref = self.new_ref()
-        resp = utils.TestResponse({
-            "status_code": 200,
-            "text": '',
-        })
 
-        method = 'HEAD'
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.headers[method]
-        requests.request(
-            method,
-            urlparse.urljoin(
-                self.TEST_URL,
-                'v3/projects/%s/groups/%s/%s/%s' % (
-                    project_id, group_id, self.collection_key, ref['id'])),
-            **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_url(httpretty.HEAD,
+                      ['projects', project_id, 'groups', group_id,
+                       self.collection_key, ref['id']],
+                      status=200)
 
         self.manager.check(role=ref['id'], project=project_id, group=group_id)
 
+    @httpretty.activate
     def test_project_role_revoke(self):
         user_id = uuid.uuid4().hex
         project_id = uuid.uuid4().hex
         ref = self.new_ref()
-        resp = utils.TestResponse({
-            "status_code": 204,
-            "text": '',
-        })
 
-        method = 'DELETE'
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.headers[method]
-        requests.request(
-            method,
-            urlparse.urljoin(
-                self.TEST_URL,
-                'v3/projects/%s/users/%s/%s/%s' % (
-                    project_id, user_id, self.collection_key, ref['id'])),
-            **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_url(httpretty.DELETE,
+                      ['projects', project_id, 'users', user_id,
+                       self.collection_key, ref['id']],
+                      status=204)
 
         self.manager.revoke(role=ref['id'], project=project_id, user=user_id)
 
+    @httpretty.activate
     def test_project_group_role_revoke(self):
         group_id = uuid.uuid4().hex
         project_id = uuid.uuid4().hex
         ref = self.new_ref()
-        resp = utils.TestResponse({
-            "status_code": 204,
-            "text": '',
-        })
 
-        method = 'DELETE'
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.headers[method]
-        requests.request(
-            method,
-            urlparse.urljoin(
-                self.TEST_URL,
-                'v3/projects/%s/groups/%s/%s/%s' % (
-                    project_id, group_id, self.collection_key, ref['id'])),
-            **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_url(httpretty.DELETE,
+                      ['projects', project_id, 'groups', group_id,
+                       self.collection_key, ref['id']],
+                      status=204)
 
         self.manager.revoke(role=ref['id'], project=project_id, group=group_id)
 
+    @httpretty.activate
     def test_domain_project_role_grant_fails(self):
         user_id = uuid.uuid4().hex
         project_id = uuid.uuid4().hex

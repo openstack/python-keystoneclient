@@ -21,7 +21,6 @@ from tests.v3 import utils
 class ServiceTests(utils.TestCase, utils.CrudTests):
     def setUp(self):
         super(ServiceTests, self).setUp()
-        self.additionalSetUp()
         self.key = 'service'
         self.collection_key = 'services'
         self.model = services.Service
