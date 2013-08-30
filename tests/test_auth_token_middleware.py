@@ -1072,13 +1072,6 @@ class CrossVersionAuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
                          client_fixtures.UUID_TOKEN_DEFAULT,
                          httpretty.httpretty.last_request.path)
 
-    def test_invalid_auth_version_request(self):
-        conf = {
-            'signing_dir': client_fixtures.CERTDIR,
-            'auth_version': 'v1.0'      # v1.0 is no longer supported
-        }
-        self.assertRaises(Exception, self.set_middleware, conf)
-
 
 class v3AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
                                 CommonAuthTokenMiddlewareTest):
