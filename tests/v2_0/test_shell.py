@@ -14,9 +14,9 @@
 
 import cStringIO
 import os
-import stubout
 import sys
 
+from mox3 import stubout
 from testtools import matchers
 
 from keystoneclient import httpclient
