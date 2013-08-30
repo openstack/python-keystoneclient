@@ -107,7 +107,8 @@ class ClientTest(utils.TestCase):
         }
         fake_err_response = utils.TestResponse({
             "status_code": 400,
-            "text": json.dumps(err_response)
+            "text": json.dumps(err_response),
+            "headers": {"Content-Type": "application/json"},
         })
         err_MOCK_REQUEST = mock.Mock(return_value=(fake_err_response))
 

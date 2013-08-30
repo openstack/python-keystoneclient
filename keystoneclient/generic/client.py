@@ -120,7 +120,7 @@ class Client(httpclient.HTTPClient):
             elif resp.status_code == 305:
                 return self._check_keystone_versions(resp['location'])
             else:
-                raise exceptions.from_response(resp, resp.text)
+                raise exceptions.from_response(resp, "GET", url)
         except Exception as e:
             _logger.exception(e)
 
@@ -178,7 +178,8 @@ class Client(httpclient.HTTPClient):
             elif resp.status_code == 305:
                 return self._check_keystone_extensions(resp['location'])
             else:
-                raise exceptions.from_response(resp, resp.text)
+                raise exceptions.from_response(
+                    resp, "GET", "%sextensions" % url)
         except Exception as e:
             _logger.exception(e)
 

@@ -120,7 +120,7 @@ def request(url, method='GET', headers=None, original_ip=None, debug=False,
     if resp.status_code >= 400:
         logger.debug("Request returned failure status: %s",
                      resp.status_code)
-        raise exceptions.from_response(resp)
+        raise exceptions.from_response(resp, method, url)
 
     return resp
 
