@@ -20,6 +20,7 @@ import uuid
 
 import requests
 
+from keystoneclient import exceptions
 from keystoneclient.v3 import users
 from tests.v3 import utils
 
@@ -63,6 +64,10 @@ class UserTests(utils.TestCase, utils.CrudTests):
         self.mox.ReplayAll()
 
         self.manager.add_to_group(user=ref['id'], group=group_id)
+        self.assertRaises(exceptions.ValidationError,
+                          self.manager.remove_from_group,
+                          user=ref['id'],
+                          group=None)
 
     def test_list_users_in_group(self):
         group_id = uuid.uuid4().hex
@@ -110,6 +115,11 @@ class UserTests(utils.TestCase, utils.CrudTests):
 
         self.manager.check_in_group(user=ref['id'], group=group_id)
 
+        self.assertRaises(exceptions.ValidationError,
+                          self.manager.check_in_group,
+                          user=ref['id'],
+                          group=None)
+
     def test_remove_user_from_group(self):
         group_id = uuid.uuid4().hex
         ref = self.new_ref()
@@ -131,6 +141,10 @@ class UserTests(utils.TestCase, utils.CrudTests):
         self.mox.ReplayAll()
 
         self.manager.remove_from_group(user=ref['id'], group=group_id)
+        self.assertRaises(exceptions.ValidationError,
+                          self.manager.remove_from_group,
+                          user=ref['id'],
+                          group=None)
 
     def test_create_with_project(self):
         # Can create a user with the deprecated project option rather than

@@ -17,6 +17,7 @@
 import logging
 
 from keystoneclient import base
+from keystoneclient import exceptions
 
 
 LOG = logging.getLogger(__name__)
