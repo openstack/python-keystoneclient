@@ -12,248 +12,251 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from __future__ import unicode_literals
+
+
 UNSCOPED_TOKEN = {
-    u'token': {
-        u'methods': [
-            u'password'
+    'token': {
+        'methods': [
+            'password'
         ],
-        u'catalog': {},
-        u'expires_at': u'2010-11-01T03:32:15-05:00',
-        u'user': {
-            u'domain': {
-                u'id': u'4e6893b7ba0b4006840c3845660b86ed',
-                u'name': u'exampledomain'
+        'catalog': {},
+        'expires_at': '2010-11-01T03:32:15-05:00',
+        'user': {
+            'domain': {
+                'id': '4e6893b7ba0b4006840c3845660b86ed',
+                'name': 'exampledomain'
             },
-            u'id': u'c4da488862bd435c9e6c0275a0d0e49a',
-            u'name': u'exampleuser',
+            'id': 'c4da488862bd435c9e6c0275a0d0e49a',
+            'name': 'exampleuser',
         }
     }
 }
 
 DOMAIN_SCOPED_TOKEN = {
-    u'token': {
-        u'methods': [
-            u'password'
+    'token': {
+        'methods': [
+            'password'
         ],
-        u'catalog': {},
-        u'expires_at': u'2010-11-01T03:32:15-05:00',
-        u'user': {
-            u'domain': {
-                u'id': u'4e6893b7ba0b4006840c3845660b86ed',
-                u'name': u'exampledomain'
+        'catalog': {},
+        'expires_at': '2010-11-01T03:32:15-05:00',
+        'user': {
+            'domain': {
+                'id': '4e6893b7ba0b4006840c3845660b86ed',
+                'name': 'exampledomain'
             },
-            u'id': u'c4da488862bd435c9e6c0275a0d0e49a',
-            u'name': u'exampleuser',
+            'id': 'c4da488862bd435c9e6c0275a0d0e49a',
+            'name': 'exampleuser',
         },
-        u'domain': {
-            u'id': u'8e9283b7ba0b1038840c3842058b86ab',
-            u'name': u'anotherdomain'
+        'domain': {
+            'id': '8e9283b7ba0b1038840c3842058b86ab',
+            'name': 'anotherdomain'
         },
     }
 }
 
 PROJECT_SCOPED_TOKEN = {
-    u'token': {
-        u'methods': [
-            u'password'
+    'token': {
+        'methods': [
+            'password'
         ],
-        u'catalog': [{
-            u'endpoints': [{
-                u'url':
-                u'http://public.com:8776/v1/225da22d3ce34b15877ea70b2a575f58',
-                u'region': u'RegionOne',
-                u'interface': u'public'
+        'catalog': [{
+            'endpoints': [{
+                'url':
+                'http://public.com:8776/v1/225da22d3ce34b15877ea70b2a575f58',
+                'region': 'RegionOne',
+                'interface': 'public'
             }, {
-                u'url':
-                u'http://internal:8776/v1/225da22d3ce34b15877ea70b2a575f58',
-                u'region': u'RegionOne',
-                u'interface': u'internal'
+                'url':
+                'http://internal:8776/v1/225da22d3ce34b15877ea70b2a575f58',
+                'region': 'RegionOne',
+                'interface': 'internal'
             }, {
-                u'url':
-                u'http://admin:8776/v1/225da22d3ce34b15877ea70b2a575f58',
-                u'region': u'RegionOne',
-                u'interface': u'admin'
+                'url':
+                'http://admin:8776/v1/225da22d3ce34b15877ea70b2a575f58',
+                'region': 'RegionOne',
+                'interface': 'admin'
             }],
-            u'type': u'volume'
+            'type': 'volume'
         }, {
-            u'endpoints': [{
-                u'url': u'http://public.com:9292/v1',
-                u'region': u'RegionOne',
-                u'interface': u'public'
+            'endpoints': [{
+                'url': 'http://public.com:9292/v1',
+                'region': 'RegionOne',
+                'interface': 'public'
             }, {
-                u'url': u'http://internal:9292/v1',
-                u'region': u'RegionOne',
-                u'interface': u'internal'
+                'url': 'http://internal:9292/v1',
+                'region': 'RegionOne',
+                'interface': 'internal'
             }, {
-                u'url': u'http://admin:9292/v1',
-                u'region': u'RegionOne',
-                u'interface': u'admin'
+                'url': 'http://admin:9292/v1',
+                'region': 'RegionOne',
+                'interface': 'admin'
             }],
-            u'type': u'image'
+            'type': 'image'
         }, {
-            u'endpoints': [{
-                u'url':
-                u'http://public.com:8774/v2/225da22d3ce34b15877ea70b2a575f58',
-                u'region': u'RegionOne',
-                u'interface': u'public'
+            'endpoints': [{
+                'url':
+                'http://public.com:8774/v2/225da22d3ce34b15877ea70b2a575f58',
+                'region': 'RegionOne',
+                'interface': 'public'
             }, {
-                u'url':
-                u'http://internal:8774/v2/225da22d3ce34b15877ea70b2a575f58',
-                u'region': u'RegionOne',
-                u'interface': u'internal'
+                'url':
+                'http://internal:8774/v2/225da22d3ce34b15877ea70b2a575f58',
+                'region': 'RegionOne',
+                'interface': 'internal'
             }, {
-                u'url':
-                u'http://admin:8774/v2/225da22d3ce34b15877ea70b2a575f58',
-                u'region': u'RegionOne',
-                u'interface': u'admin'
+                'url':
+                'http://admin:8774/v2/225da22d3ce34b15877ea70b2a575f58',
+                'region': 'RegionOne',
+                'interface': 'admin'
             }],
-            u'type': u'compute'
+            'type': 'compute'
         }, {
-            u'endpoints': [{
-                u'url': u'http://public.com:8773/services/Cloud',
-                u'region': u'RegionOne',
-                u'interface': u'public'
+            'endpoints': [{
+                'url': 'http://public.com:8773/services/Cloud',
+                'region': 'RegionOne',
+                'interface': 'public'
             }, {
-                u'url': u'http://internal:8773/services/Cloud',
-                u'region': u'RegionOne',
-                u'interface': u'internal'
+                'url': 'http://internal:8773/services/Cloud',
+                'region': 'RegionOne',
+                'interface': 'internal'
             }, {
-                u'url': u'http://admin:8773/services/Admin',
-                u'region': u'RegionOne',
-                u'interface': u'admin'
+                'url': 'http://admin:8773/services/Admin',
+                'region': 'RegionOne',
+                'interface': 'admin'
             }],
-            u'type': u'ec2'
+            'type': 'ec2'
         }, {
-            u'endpoints': [{
-                u'url': u'http://public.com:5000/v3',
-                u'region': u'RegionOne',
-                u'interface': u'public'
+            'endpoints': [{
+                'url': 'http://public.com:5000/v3',
+                'region': 'RegionOne',
+                'interface': 'public'
             }, {
-                u'url': u'http://internal:5000/v3',
-                u'region': u'RegionOne',
-                u'interface': u'internal'
+                'url': 'http://internal:5000/v3',
+                'region': 'RegionOne',
+                'interface': 'internal'
             }, {
-                u'url': u'http://admin:35357/v3',
-                u'region': u'RegionOne',
-                u'interface': u'admin'
+                'url': 'http://admin:35357/v3',
+                'region': 'RegionOne',
+                'interface': 'admin'
             }],
-            u'type': u'identity'
+            'type': 'identity'
         }],
-        u'expires_at': u'2010-11-01T03:32:15-05:00',
-        u'user': {
-            u'domain': {
-                u'id': u'4e6893b7ba0b4006840c3845660b86ed',
-                u'name': u'exampledomain'
+        'expires_at': '2010-11-01T03:32:15-05:00',
+        'user': {
+            'domain': {
+                'id': '4e6893b7ba0b4006840c3845660b86ed',
+                'name': 'exampledomain'
             },
-            u'id': u'c4da488862bd435c9e6c0275a0d0e49a',
-            u'name': u'exampleuser',
+            'id': 'c4da488862bd435c9e6c0275a0d0e49a',
+            'name': 'exampleuser',
         },
-        u'project': {
-            u'domain': {
-                u'id': u'4e6893b7ba0b4006840c3845660b86ed',
-                u'name': u'exampledomain'
+        'project': {
+            'domain': {
+                'id': '4e6893b7ba0b4006840c3845660b86ed',
+                'name': 'exampledomain'
             },
-            u'id': u'225da22d3ce34b15877ea70b2a575f58',
-            u'name': u'exampleproject',
+            'id': '225da22d3ce34b15877ea70b2a575f58',
+            'name': 'exampleproject',
         },
     }
 }
 
 AUTH_RESPONSE_HEADERS = {
-    u'X-Subject-Token': u'3e2813b7ba0b4006840c3825860b86ed'
+    'X-Subject-Token': '3e2813b7ba0b4006840c3825860b86ed'
 }
 
 AUTH_RESPONSE_BODY = {
-    u'token': {
-        u'methods': [
-            u'password'
+    'token': {
+        'methods': [
+            'password'
         ],
-        u'expires_at': u'2010-11-01T03:32:15-05:00',
-        u'project': {
-            u'domain': {
-                u'id': u'123',
-                u'name': u'aDomain'
+        'expires_at': '2010-11-01T03:32:15-05:00',
+        'project': {
+            'domain': {
+                'id': '123',
+                'name': 'aDomain'
             },
-            u'id': u'345',
-            u'name': u'aTenant'
+            'id': '345',
+            'name': 'aTenant'
         },
-        u'user': {
-            u'domain': {
-                u'id': u'1',
-                u'name': u'aDomain'
+        'user': {
+            'domain': {
+                'id': '1',
+                'name': 'aDomain'
             },
-            u'id': u'567',
-            u'name': u'test'
+            'id': '567',
+            'name': 'test'
         },
-        u'issued_at': u'2010-10-31T03:32:15-05:00',
-        u'catalog': [{
-            u'endpoints': [{
-                u'url': u'https://compute.north.host/novapi/public',
-                u'region': u'North',
-                u'interface': u'public'
+        'issued_at': '2010-10-31T03:32:15-05:00',
+        'catalog': [{
+            'endpoints': [{
+                'url': 'https://compute.north.host/novapi/public',
+                'region': 'North',
+                'interface': 'public'
             }, {
-                u'url': u'https://compute.north.host/novapi/internal',
-                u'region': u'North',
-                u'interface': u'internal'
+                'url': 'https://compute.north.host/novapi/internal',
+                'region': 'North',
+                'interface': 'internal'
             }, {
-                u'url': u'https://compute.north.host/novapi/admin',
-                u'region': u'North',
-                u'interface': u'admin'
+                'url': 'https://compute.north.host/novapi/admin',
+                'region': 'North',
+                'interface': 'admin'
             }],
-            u'type': u'compute'
+            'type': 'compute'
         }, {
-            u'endpoints': [{
-                u'url': u'http://swift.north.host/swiftapi/public',
-                u'region': u'South',
-                u'interface': u'public'
+            'endpoints': [{
+                'url': 'http://swift.north.host/swiftapi/public',
+                'region': 'South',
+                'interface': 'public'
             }, {
-                u'url': u'http://swift.north.host/swiftapi/internal',
-                u'region': u'South',
-                u'interface': u'internal'
+                'url': 'http://swift.north.host/swiftapi/internal',
+                'region': 'South',
+                'interface': 'internal'
             }, {
-                u'url': u'http://swift.north.host/swiftapi/admin',
-                u'region': u'South',
-                u'interface': u'admin'
+                'url': 'http://swift.north.host/swiftapi/admin',
+                'region': 'South',
+                'interface': 'admin'
             }],
-            u'type': u'object-store'
+            'type': 'object-store'
         }, {
-            u'endpoints': [{
-                u'url': u'http://glance.north.host/glanceapi/public',
-                u'region': u'North',
-                u'interface': u'public'
+            'endpoints': [{
+                'url': 'http://glance.north.host/glanceapi/public',
+                'region': 'North',
+                'interface': 'public'
             }, {
-                u'url': u'http://glance.north.host/glanceapi/internal',
-                u'region': u'North',
-                u'interface': u'internal'
+                'url': 'http://glance.north.host/glanceapi/internal',
+                'region': 'North',
+                'interface': 'internal'
             }, {
-                u'url': u'http://glance.north.host/glanceapi/admin',
-                u'region': u'North',
-                u'interface': u'admin'
+                'url': 'http://glance.north.host/glanceapi/admin',
+                'region': 'North',
+                'interface': 'admin'
             }, {
-                u'url': u'http://glance.south.host/glanceapi/public',
-                u'region': u'South',
-                u'interface': u'public'
+                'url': 'http://glance.south.host/glanceapi/public',
+                'region': 'South',
+                'interface': 'public'
             }, {
-                u'url': u'http://glance.south.host/glanceapi/internal',
-                u'region': u'South',
-                u'interface': u'internal'
+                'url': 'http://glance.south.host/glanceapi/internal',
+                'region': 'South',
+                'interface': 'internal'
             }, {
-                u'url': u'http://glance.south.host/glanceapi/admin',
-                u'region': u'South',
-                u'interface': u'admin'
+                'url': 'http://glance.south.host/glanceapi/admin',
+                'region': 'South',
+                'interface': 'admin'
             }],
-            u'type': u'image'
+            'type': 'image'
         }]
     }
 }
 
 TRUST_TOKEN = {
-    u'token': {
-        u'methods': [
-            u'password'
+    'token': {
+        'methods': [
+            'password'
         ],
-        u'catalog': {},
-        u'expires_at': u'2010-11-01T03:32:15-05:00',
+        'catalog': {},
+        'expires_at': '2010-11-01T03:32:15-05:00',
         "OS-TRUST:trust": {
             "id": "fe0aef",
             "impersonation": False,
@@ -273,13 +276,13 @@ TRUST_TOKEN = {
                 }
             }
         },
-        u'user': {
-            u'domain': {
-                u'id': u'4e6893b7ba0b4006840c3845660b86ed',
-                u'name': u'exampledomain'
+        'user': {
+            'domain': {
+                'id': '4e6893b7ba0b4006840c3845660b86ed',
+                'name': 'exampledomain'
             },
-            u'id': u'0ca8f6',
-            u'name': u'exampleuser',
+            'id': '0ca8f6',
+            'name': 'exampleuser',
         }
     }
 }

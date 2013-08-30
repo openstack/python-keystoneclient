@@ -12,6 +12,8 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
+from __future__ import unicode_literals
+
 import os
 import sys
 import pbr.version
@@ -49,8 +51,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'python-keystoneclient'
-copyright = u'OpenStack Contributors'
+project = 'python-keystoneclient'
+copyright = 'OpenStack Contributors'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -100,11 +102,11 @@ pygments_style = 'sphinx'
 #modindex_common_prefix = []
 
 # Grouping the document tree for man pages.
-# List of tuples 'sourcefile', 'target', u'title', u'Authors name', 'manual'
+# List of tuples 'sourcefile', 'target', 'title', 'Authors name', 'manual'
 
 man_pages = [
-    ('man/keystone', 'keystone', u'Client for OpenStack Identity API',
-     [u'OpenStack Contributors'], 1),
+    ('man/keystone', 'keystone', 'Client for OpenStack Identity API',
+     ['OpenStack Contributors'], 1),
 ]
 
 # -- Options for HTML output --------------------------------------------------
@@ -196,8 +198,8 @@ htmlhelp_basename = 'python-keystoneclientdoc'
 # .
 latex_documents = [
     ('index', 'python-keystoneclient.tex',
-     u'python-keystoneclient Documentation',
-     u'Nebula Inc, based on work by Rackspace and Jacob Kaplan-Moss',
+     'python-keystoneclient Documentation',
+     'Nebula Inc, based on work by Rackspace and Jacob Kaplan-Moss',
      'manual'),
 ]
 

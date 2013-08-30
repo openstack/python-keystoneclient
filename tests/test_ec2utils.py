@@ -14,6 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from __future__ import unicode_literals
+
 import testtools
 
 from keystoneclient.contrib.ec2 import utils
@@ -86,7 +88,7 @@ class Ec2SignerTest(testtools.TestCase):
         credentials = {'host': '127.0.0.1',
                        'verb': 'GET',
                        'path': '/v1/',
-                       'params': {'SignatureVersion': u'2',
+                       'params': {'SignatureVersion': '2',
                                   'AWSAccessKeyId': self.access}}
         signature = self.signer.generate(credentials)
         expected = 'odsGmT811GffUO0Eu13Pq+xTzKNIjJ6NhgZU74tYX/w='
@@ -97,7 +99,7 @@ class Ec2SignerTest(testtools.TestCase):
         credentials = {'host': '127.0.0.1',
                        'verb': 'GET',
                        'path': '/v1/',
-                       'params': {'SignatureVersion': u'2',
+                       'params': {'SignatureVersion': '2',
                                   'AWSAccessKeyId': self.access}}
         self.signer.hmac_256 = None
         signature = self.signer.generate(credentials)
