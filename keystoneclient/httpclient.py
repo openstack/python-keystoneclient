@@ -34,11 +34,6 @@ except ImportError:
     keyring = None
     pickle = None
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
-
 # Python 2.5 compat fix
 if not hasattr(urlparse, 'parse_qsl'):
     import cgi
@@ -47,6 +42,7 @@ if not hasattr(urlparse, 'parse_qsl'):
 
 from keystoneclient import access
 from keystoneclient import exceptions
+from keystoneclient.openstack.common import jsonutils
 
 
 _logger = logging.getLogger(__name__)
@@ -587,7 +583,7 @@ class HTTPClient(object):
         raise NotImplementedError
 
     def serialize(self, entity):
-        return json.dumps(entity)
+        return jsonutils.dumps(entity)
 
     @property
     def service_catalog(self):
@@ -623,7 +619,7 @@ class HTTPClient(object):
 
         if resp.text:
             try:
-                body_resp = json.loads(resp.text)
+                body_resp = jsonutils.loads(resp.text)
             except (ValueError, TypeError):
                 body_resp = None
                 _logger.debug("Could not decode JSON from body: %s"

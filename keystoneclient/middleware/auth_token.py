@@ -146,7 +146,6 @@ keystone.token_info
 
 import datetime
 import httplib
-import json
 import logging
 import os
 import stat
@@ -783,7 +782,7 @@ class AuthProtocol(object):
                 return cached
             if cms.is_ans1_token(user_token):
                 verified = self.verify_signed_token(user_token)
-                data = json.loads(verified)
+                data = jsonutils.loads(verified)
             else:
                 data = self.verify_uuid_token(user_token, retry)
             expires = self._confirm_token_not_expired(data)
@@ -973,8 +972,8 @@ class AuthProtocol(object):
 
             # Note that 'invalid' and (data, expires) are the only
             # valid types of serialized cache entries, so there is not
-            # a collision with json.loads(serialized) == None.
-            cached = json.loads(serialized)
+            # a collision with jsonutils.loads(serialized) == None.
+            cached = jsonutils.loads(serialized)
             if cached == 'invalid':
                 self.LOG.debug('Cached Token %s is marked unauthorized',
                                token_id)
@@ -993,7 +992,7 @@ class AuthProtocol(object):
         data may be the string 'invalid' or a tuple like (data, expires)
 
         """
-        serialized_data = json.dumps(data)
+        serialized_data = jsonutils.dumps(data)
         if self._memcache_security_strategy is None:
             cache_key = CACHE_KEY_TEMPLATE % token_id
             data_to_store = serialized_data
