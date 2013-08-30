@@ -701,6 +701,26 @@ class CommonAuthTokenMiddlewareTest(object):
             seconds=40)
         self.assertFalse(auth_token.will_expire_soon(fortyseconds))
 
+    def test_token_is_v2_accepts_v2(self):
+        token = client_fixtures.UUID_TOKEN_DEFAULT
+        token_response = client_fixtures.TOKEN_RESPONSES[token]
+        self.assertTrue(auth_token._token_is_v2(token_response))
+
+    def test_token_is_v2_rejects_v3(self):
+        token = client_fixtures.v3_UUID_TOKEN_DEFAULT
+        token_response = client_fixtures.TOKEN_RESPONSES[token]
+        self.assertFalse(auth_token._token_is_v2(token_response))
+
+    def test_token_is_v3_rejects_v2(self):
+        token = client_fixtures.UUID_TOKEN_DEFAULT
+        token_response = client_fixtures.TOKEN_RESPONSES[token]
+        self.assertFalse(auth_token._token_is_v3(token_response))
+
+    def test_token_is_v3_accepts_v3(self):
+        token = client_fixtures.v3_UUID_TOKEN_DEFAULT
+        token_response = client_fixtures.TOKEN_RESPONSES[token]
+        self.assertTrue(auth_token._token_is_v3(token_response))
+
     def test_encrypt_cache_data(self):
         httpretty.disable()
         conf = {
