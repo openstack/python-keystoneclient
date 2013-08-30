@@ -144,7 +144,7 @@ class ClientTest(utils.TestCase):
                                    original_ip=ORIGINAL_IP)
 
         with mock.patch.object(requests, "request", MOCK_REQUEST):
-            res = cl.request('/', 'GET')
+            cl.request('/', 'GET')
 
             args, kwargs = MOCK_REQUEST.call_args
             self.assertIn(
@@ -198,7 +198,7 @@ class BasicRequestTests(testtools.TestCase):
         response = 'Test Response'
         status = 200
 
-        resp = self.request(method=method, status=status, response=response)
+        self.request(method=method, status=status, response=response)
 
         self.assertEqual(self.last_request.method, method)
 
@@ -224,6 +224,6 @@ class BasicRequestTests(testtools.TestCase):
 
     def test_body(self):
         data = "BODY DATA"
-        resp = self.request(response=data)
+        self.request(response=data)
         self.assertThat(self.logger.debug_log, matchers.Contains('BODY:'))
         self.assertThat(self.logger.debug_log, matchers.Contains(data))

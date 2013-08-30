@@ -1192,7 +1192,7 @@ class v2AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
         # lower, v2, api version
         req = webob.Request.blank('/')
         req.headers['X-Auth-Token'] = client_fixtures.UUID_TOKEN_DEFAULT
-        body = self.middleware(req.environ, self.start_fake_response)
+        self.middleware(req.environ, self.start_fake_response)
         self.assertEqual(self.response_status, 200)
         self.assertEqual("/testadmin/v2.0/tokens/%s" %
                          client_fixtures.UUID_TOKEN_DEFAULT,

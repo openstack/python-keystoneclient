@@ -277,12 +277,12 @@ class UserTests(utils.TestCase):
             **kwargs).AndReturn((resp_4))
         self.mox.ReplayAll()
 
-        user = self.client.users.update(2,
-                                        name='gabriel',
-                                        email='gabriel@example.com')
-        user = self.client.users.update_password(2, 'swordfish')
-        user = self.client.users.update_tenant(2, 1)
-        user = self.client.users.update_enabled(2, False)
+        self.client.users.update(2,
+                                 name='gabriel',
+                                 email='gabriel@example.com')
+        self.client.users.update_password(2, 'swordfish')
+        self.client.users.update_tenant(2, 1)
+        self.client.users.update_enabled(2, False)
 
     def test_update_own_password(self):
         req_body = {
