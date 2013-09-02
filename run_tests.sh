@@ -72,11 +72,6 @@ if [ $no_site_packages -eq 1 ]; then
   installvenvopts="--no-site-packages"
 fi
 
-function init_testr {
-  if [ ! -d .testrepository ]; then
-    ${wrapper} testr init
-  fi
-}
 
 function run_tests {
   # Cleanup *.pyc
@@ -179,7 +174,6 @@ if [ $just_flake8 -eq 1 ]; then
     exit
 fi
 
-init_testr
 run_tests
 
 # NOTE(sirp): we only want to run flake8 when we're running the full-test suite,
