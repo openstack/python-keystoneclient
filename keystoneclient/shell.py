@@ -15,7 +15,11 @@
 #    under the License.
 
 """
-Command-line interface to the OpenStack Identity API.
+DEPRECATED: Command-line interface to the OpenStack Identity API.
+
+For a CLI, use python-openstackclient instead. For a Python library, continue
+using python-keystoneclient.
+
 """
 
 from __future__ import print_function
