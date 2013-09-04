@@ -15,10 +15,10 @@
 #    under the License.
 
 """
-DEPRECATED: Command-line interface to the OpenStack Identity API.
+Pending deprecation: Command-line interface to the OpenStack Identity API.
 
-For a CLI, use python-openstackclient instead. For a Python library, continue
-using python-keystoneclient.
+This CLI is pending deprecation in favor of python-openstackclient. For a
+Python library, continue using python-keystoneclient.
 
 """
 
