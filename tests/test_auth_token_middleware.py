@@ -397,6 +397,16 @@ class CommonAuthTokenMiddlewareTest(object):
         self.set_middleware(conf=conf)
         self.assertLastPath(None)
 
+    def test_init_by_ipv6Addr_auth_host(self):
+        conf = {
+            'auth_host': '2001:2013:1:f101::1',
+            'auth_port': 1234,
+            'auth_protocol': 'http',
+        }
+        self.set_middleware(conf=conf)
+        expected_auth_uri = 'http://[2001:2013:1:f101::1]:1234'
+        self.assertEqual(expected_auth_uri, self.middleware.auth_uri)
+
     def assert_valid_request_200(self, token, with_catalog=True):
         req = webob.Request.blank('/')
         req.headers['X-Auth-Token'] = token

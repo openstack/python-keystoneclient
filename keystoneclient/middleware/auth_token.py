@@ -153,6 +153,7 @@ import tempfile
 import time
 import urllib
 
+import netaddr
 import six
 
 from keystoneclient.common import cms
@@ -375,11 +376,16 @@ class AuthProtocol(object):
                 'Configuring auth_uri to point to the public identity '
                 'endpoint is required; clients may not be able to '
                 'authenticate against an admin endpoint')
-
+            host = self.auth_host
+            if netaddr.valid_ipv6(host):
+                # Note(dzyu) it is an IPv6 address, so it needs to be wrapped
+                # with '[]' to generate a valid IPv6 URL, based on
+                # http://www.ietf.org/rfc/rfc2732.txt
+                host = '[%s]' % host
             # FIXME(dolph): drop support for this fallback behavior as
             # documented in bug 1207517
             self.auth_uri = '%s://%s:%s' % (self.auth_protocol,
-                                            self.auth_host,
+                                            host,
                                             self.auth_port)
 
         # SSL
