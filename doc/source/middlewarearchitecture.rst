@@ -193,6 +193,10 @@ Configuration Options
 * ``certfile``: (required, if Keystone server requires client cert)
 * ``keyfile``: (required, if Keystone server requires client cert)  This can be
   the same as the certfile if the certfile includes the private key.
+* ``cafile``: (optional, defaults to use system CA bundle) the path to a PEM
+  encoded CA file/bundle that will be used to verify HTTPS connections.
+* ``insecure``: (optional, default `False`) Don't verify HTTPS connections
+  (overrides `cafile`).
 
 Caching for improved response
 -----------------------------

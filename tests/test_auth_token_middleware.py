@@ -864,7 +864,7 @@ class CertDownloadMiddlewareTest(BaseAuthTokenMiddlewareTest):
                                body=data)
         self.middleware.fetch_ca_cert()
 
-        with open(self.middleware.ca_file_name, 'r') as f:
+        with open(self.middleware.signing_ca_file_name, 'r') as f:
             self.assertEqual(f.read(), data)
 
         self.assertEqual("/testadmin/v2.0/certificates/ca",
