@@ -14,11 +14,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import copy
-import urlparse
 import uuid
 
-import requests
+import httpretty
 
 from keystoneclient.v3 import groups
 from tests.v3 import utils
@@ -27,7 +25,6 @@ from tests.v3 import utils
 class GroupTests(utils.TestCase, utils.CrudTests):
     def setUp(self):
         super(GroupTests, self).setUp()
-        self.additionalSetUp()
         self.key = 'group'
         self.collection_key = 'groups'
         self.model = groups.Group
@@ -38,50 +35,31 @@ class GroupTests(utils.TestCase, utils.CrudTests):
         kwargs.setdefault('name', uuid.uuid4().hex)
         return kwargs
 
+    @httpretty.activate
     def test_list_groups_for_user(self):
         user_id = uuid.uuid4().hex
         ref_list = [self.new_ref(), self.new_ref()]
-        resp = utils.TestResponse({
-            "status_code": 200,
-            "text": self.serialize(ref_list),
-        })
 
-        method = 'GET'
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.headers[method]
-        requests.request(
-            method,
-            urlparse.urljoin(
-                self.TEST_URL,
-                'v3/users/%s/%s' % (
-                    user_id, self.collection_key)),
-            **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_entity(httpretty.GET,
+                         ['users', user_id, self.collection_key],
+                         status=200, entity=ref_list)
 
         returned_list = self.manager.list(user=user_id)
         self.assertTrue(len(returned_list))
         [self.assertTrue(isinstance(r, self.model)) for r in returned_list]
 
+    @httpretty.activate
     def test_list_groups_for_domain(self):
         ref_list = [self.new_ref(), self.new_ref()]
-
         domain_id = uuid.uuid4().hex
-        resp = utils.TestResponse({
-            "status_code": 200,
-            "text": self.serialize(ref_list),
-        })
 
-        method = 'GET'
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.headers[method]
-        requests.request(
-            method,
-            urlparse.urljoin(
-                self.TEST_URL,
-                'v3/%s?domain_id=%s' % (self.collection_key, domain_id)),
-            **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_entity(httpretty.GET,
+                         [self.collection_key],
+                         status=200, entity=ref_list)
 
         returned_list = self.manager.list(domain=domain_id)
         self.assertTrue(len(returned_list))
         [self.assertTrue(isinstance(r, self.model)) for r in returned_list]
+
+        self.assertEqual(httpretty.last_request().querystring,
+                         {'domain_id': [domain_id]})

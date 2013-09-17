@@ -12,28 +12,15 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import copy
-import json
-import urlparse
-
-import requests
+import httpretty
 
 from keystoneclient.v2_0 import endpoints
-from tests import utils
+from tests.v2_0 import utils
 
 
 class EndpointTests(utils.TestCase):
     def setUp(self):
         super(EndpointTests, self).setUp()
-        self.TEST_REQUEST_HEADERS = {
-            'X-Auth-Token': 'aToken',
-            'User-Agent': 'python-keystoneclient',
-        }
-        self.TEST_POST_HEADERS = {
-            'Content-Type': 'application/json',
-            'X-Auth-Token': 'aToken',
-            'User-Agent': 'python-keystoneclient',
-        }
         self.TEST_ENDPOINTS = {
             'endpoints': [
                 {
@@ -53,6 +40,7 @@ class EndpointTests(utils.TestCase):
             ]
         }
 
+    @httpretty.activate
     def test_create(self):
         req_body = {
             "endpoint": {
@@ -74,19 +62,7 @@ class EndpointTests(utils.TestCase):
             }
         }
 
-        resp = utils.TestResponse({
-            "status_code": 200,
-            "text": json.dumps(resp_body),
-        })
-
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.TEST_POST_HEADERS
-        kwargs['data'] = json.dumps(req_body)
-        requests.request('POST',
-                         urlparse.urljoin(self.TEST_URL,
-                         'v2.0/endpoints'),
-                         **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_url(httpretty.POST, ['endpoints'], json=resp_body)
 
         endpoint = self.client.endpoints.create(
             region=req_body['endpoint']['region'],
@@ -96,35 +72,16 @@ class EndpointTests(utils.TestCase):
             service_id=req_body['endpoint']['service_id']
         )
         self.assertTrue(isinstance(endpoint, endpoints.Endpoint))
+        self.assertRequestBodyIs(json=req_body)
 
+    @httpretty.activate
     def test_delete(self):
-        resp = utils.TestResponse({
-            "status_code": 204,
-            "text": "",
-        })
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.TEST_REQUEST_HEADERS
-        requests.request('DELETE',
-                         urlparse.urljoin(self.TEST_URL,
-                         'v2.0/endpoints/8f953'),
-                         **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
-
+        self.stub_url(httpretty.DELETE, ['endpoints', '8f953'], status=204)
         self.client.endpoints.delete('8f953')
 
+    @httpretty.activate
     def test_list(self):
-        resp = utils.TestResponse({
-            "status_code": 200,
-            "text": json.dumps(self.TEST_ENDPOINTS),
-        })
-
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.TEST_REQUEST_HEADERS
-        requests.request('GET',
-                         urlparse.urljoin(self.TEST_URL,
-                         'v2.0/endpoints'),
-                         **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_url(httpretty.GET, ['endpoints'], json=self.TEST_ENDPOINTS)
 
         endpoint_list = self.client.endpoints.list()
         [self.assertTrue(isinstance(r, endpoints.Endpoint))

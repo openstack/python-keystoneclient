@@ -12,17 +12,15 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import copy
 import datetime
 import json
 
-import requests
+import httpretty
 
 from keystoneclient import exceptions
 from keystoneclient.openstack.common import timeutils
 from keystoneclient.v2_0 import client
-
-from tests import utils
+from tests.v2_0 import utils
 
 
 class AuthenticateAgainstKeystoneTests(utils.TestCase):
@@ -52,76 +50,50 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
                 "tenantId": self.TEST_TENANT_ID,
             },
         }
-        self.TEST_REQUEST_HEADERS = {
-            'Content-Type': 'application/json',
-            'User-Agent': 'python-keystoneclient',
-        }
 
+    @httpretty.activate
     def test_authenticate_success_expired(self):
         # Build an expired token
         self.TEST_RESPONSE_DICT['access']['token']['expires'] = \
             (timeutils.utcnow() - datetime.timedelta(1)).isoformat()
-        resp = utils.TestResponse({
-            "status_code": 200,
-            "text": json.dumps(self.TEST_RESPONSE_DICT),
-        })
 
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.TEST_REQUEST_HEADERS
-        kwargs['data'] = json.dumps(self.TEST_REQUEST_BODY)
-        requests.request('POST',
-                         self.TEST_URL + "/tokens",
-                         **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
-
-        cs = client.Client(tenant_id=self.TEST_TENANT_ID,
-                           auth_url=self.TEST_URL,
-                           username=self.TEST_USER,
-                           password=self.TEST_TOKEN)
-        self.assertEqual(cs.management_url,
-                         self.TEST_RESPONSE_DICT["access"]["serviceCatalog"][3]
-                         ['endpoints'][0]["adminURL"])
+        exp_resp = httpretty.Response(body=json.dumps(self.TEST_RESPONSE_DICT),
+                                      content_type='application/json')
 
         # Build a new response
-        self.mox.ResetAll()
         TEST_TOKEN = "abcdef"
         self.TEST_RESPONSE_DICT['access']['token']['expires'] = \
             '2020-01-01T00:00:10.000123Z'
         self.TEST_RESPONSE_DICT['access']['token']['id'] = TEST_TOKEN
 
-        resp = utils.TestResponse({
-            "status_code": 200,
-            "text": json.dumps(self.TEST_RESPONSE_DICT),
-        })
-        requests.request('POST',
-                         self.TEST_URL + "/tokens",
-                         **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        new_resp = httpretty.Response(body=json.dumps(self.TEST_RESPONSE_DICT),
+                                      content_type='application/json')
+
+        # return expired first, and then the new response
+        self.stub_auth(responses=[exp_resp, new_resp])
+
+        cs = client.Client(tenant_id=self.TEST_TENANT_ID,
+                           auth_url=self.TEST_URL,
+                           username=self.TEST_USER,
+                           password=self.TEST_TOKEN)
+
+        self.assertEqual(cs.management_url,
+                         self.TEST_RESPONSE_DICT["access"]["serviceCatalog"][3]
+                         ['endpoints'][0]["adminURL"])
 
         self.assertEqual(cs.auth_token, TEST_TOKEN)
+        self.assertRequestBodyIs(json=self.TEST_REQUEST_BODY)
 
+    @httpretty.activate
     def test_authenticate_failure(self):
         _auth = 'auth'
         _cred = 'passwordCredentials'
         _pass = 'password'
         self.TEST_REQUEST_BODY[_auth][_cred][_pass] = 'bad_key'
-        resp = utils.TestResponse({
-            "status_code": 401,
-            "text": json.dumps({
-                "unauthorized": {
-                    "message": "Unauthorized",
-                    "code": "401",
-                },
-            }),
-        })
+        error = {"unauthorized": {"message": "Unauthorized",
+                                  "code": "401"}}
 
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.TEST_REQUEST_HEADERS
-        kwargs['data'] = json.dumps(self.TEST_REQUEST_BODY)
-        requests.request('POST',
-                         self.TEST_URL + "/tokens",
-                         **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_auth(status=401, json=error)
 
         # Workaround for issue with assertRaises on python2.6
         # where with assertRaises(exceptions.Unauthorized): doesn't work
@@ -133,39 +105,15 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
                           auth_url=self.TEST_URL)
 
         self.assertRaises(exceptions.Unauthorized, client_create_wrapper)
+        self.assertRequestBodyIs(json=self.TEST_REQUEST_BODY)
 
+    @httpretty.activate
     def test_auth_redirect(self):
-        correct_response = json.dumps(self.TEST_RESPONSE_DICT)
-        dict_responses = [
-            {
-                "headers": {
-                    'location': self.TEST_ADMIN_URL + "/tokens",
-                },
-                "status_code": 305,
-                "text": "Use proxy",
-            },
-            {
-                "headers": {},
-                "status_code": 200,
-                "text": correct_response,
-            },
-        ]
-        responses = [(utils.TestResponse(resp))
-                     for resp in dict_responses]
+        self.stub_auth(status=305, body='Use Proxy',
+                       location=self.TEST_ADMIN_URL + "/tokens")
 
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.TEST_REQUEST_HEADERS
-        kwargs['data'] = json.dumps(self.TEST_REQUEST_BODY)
-        requests.request('POST',
-                         self.TEST_URL + "/tokens",
-                         **kwargs).AndReturn(responses[0])
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.TEST_REQUEST_HEADERS
-        kwargs['data'] = json.dumps(self.TEST_REQUEST_BODY)
-        requests.request('POST',
-                         self.TEST_ADMIN_URL + "/tokens",
-                         **kwargs).AndReturn(responses[1])
-        self.mox.ReplayAll()
+        self.stub_auth(base_url=self.TEST_ADMIN_URL,
+                       json=self.TEST_RESPONSE_DICT)
 
         cs = client.Client(username=self.TEST_USER,
                            password=self.TEST_TOKEN,
@@ -177,20 +125,11 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
                          ['endpoints'][0]["adminURL"])
         self.assertEqual(cs.auth_token,
                          self.TEST_RESPONSE_DICT["access"]["token"]["id"])
+        self.assertRequestBodyIs(json=self.TEST_REQUEST_BODY)
 
+    @httpretty.activate
     def test_authenticate_success_password_scoped(self):
-        resp = utils.TestResponse({
-            "status_code": 200,
-            "text": json.dumps(self.TEST_RESPONSE_DICT),
-        })
-
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.TEST_REQUEST_HEADERS
-        kwargs['data'] = json.dumps(self.TEST_REQUEST_BODY)
-        requests.request('POST',
-                         self.TEST_URL + "/tokens",
-                         **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_auth(json=self.TEST_RESPONSE_DICT)
 
         cs = client.Client(username=self.TEST_USER,
                            password=self.TEST_TOKEN,
@@ -201,22 +140,14 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
                          ['endpoints'][0]["adminURL"])
         self.assertEqual(cs.auth_token,
                          self.TEST_RESPONSE_DICT["access"]["token"]["id"])
+        self.assertRequestBodyIs(json=self.TEST_REQUEST_BODY)
 
+    @httpretty.activate
     def test_authenticate_success_password_unscoped(self):
         del self.TEST_RESPONSE_DICT['access']['serviceCatalog']
         del self.TEST_REQUEST_BODY['auth']['tenantId']
-        resp = utils.TestResponse({
-            "status_code": 200,
-            "text": json.dumps(self.TEST_RESPONSE_DICT),
-        })
 
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.TEST_REQUEST_HEADERS
-        kwargs['data'] = json.dumps(self.TEST_REQUEST_BODY)
-        requests.request('POST',
-                         self.TEST_URL + "/tokens",
-                         **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_auth(json=self.TEST_RESPONSE_DICT)
 
         cs = client.Client(username=self.TEST_USER,
                            password=self.TEST_TOKEN,
@@ -224,23 +155,13 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         self.assertEqual(cs.auth_token,
                          self.TEST_RESPONSE_DICT["access"]["token"]["id"])
         self.assertFalse('serviceCatalog' in cs.service_catalog.catalog)
+        self.assertRequestBodyIs(json=self.TEST_REQUEST_BODY)
 
+    @httpretty.activate
     def test_authenticate_success_token_scoped(self):
         del self.TEST_REQUEST_BODY['auth']['passwordCredentials']
         self.TEST_REQUEST_BODY['auth']['token'] = {'id': self.TEST_TOKEN}
-        self.TEST_REQUEST_HEADERS['X-Auth-Token'] = self.TEST_TOKEN
-        resp = utils.TestResponse({
-            "status_code": 200,
-            "text": json.dumps(self.TEST_RESPONSE_DICT),
-        })
-
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.TEST_REQUEST_HEADERS
-        kwargs['data'] = json.dumps(self.TEST_REQUEST_BODY)
-        requests.request('POST',
-                         self.TEST_URL + "/tokens",
-                         **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_auth(json=self.TEST_RESPONSE_DICT)
 
         cs = client.Client(token=self.TEST_TOKEN,
                            tenant_id=self.TEST_TENANT_ID,
@@ -250,28 +171,20 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
                          ['endpoints'][0]["adminURL"])
         self.assertEqual(cs.auth_token,
                          self.TEST_RESPONSE_DICT["access"]["token"]["id"])
+        self.assertRequestBodyIs(json=self.TEST_REQUEST_BODY)
 
+    @httpretty.activate
     def test_authenticate_success_token_unscoped(self):
         del self.TEST_REQUEST_BODY['auth']['passwordCredentials']
         del self.TEST_REQUEST_BODY['auth']['tenantId']
         del self.TEST_RESPONSE_DICT['access']['serviceCatalog']
         self.TEST_REQUEST_BODY['auth']['token'] = {'id': self.TEST_TOKEN}
-        self.TEST_REQUEST_HEADERS['X-Auth-Token'] = self.TEST_TOKEN
-        resp = utils.TestResponse({
-            "status_code": 200,
-            "text": json.dumps(self.TEST_RESPONSE_DICT),
-        })
 
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.TEST_REQUEST_HEADERS
-        kwargs['data'] = json.dumps(self.TEST_REQUEST_BODY)
-        requests.request('POST',
-                         self.TEST_URL + "/tokens",
-                         **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_auth(json=self.TEST_RESPONSE_DICT)
 
         cs = client.Client(token=self.TEST_TOKEN,
                            auth_url=self.TEST_URL)
         self.assertEqual(cs.auth_token,
                          self.TEST_RESPONSE_DICT["access"]["token"]["id"])
         self.assertFalse('serviceCatalog' in cs.service_catalog.catalog)
+        self.assertRequestBodyIs(json=self.TEST_REQUEST_BODY)

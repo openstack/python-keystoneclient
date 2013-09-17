@@ -17,8 +17,8 @@ import copy
 from keystoneclient import access
 from keystoneclient import exceptions
 
-from tests import utils
 from tests.v2_0 import client_fixtures
+from tests.v2_0 import utils
 
 
 class ServiceCatalogTest(utils.TestCase):

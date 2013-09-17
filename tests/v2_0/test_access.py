@@ -17,8 +17,8 @@ import datetime
 from keystoneclient import access
 from keystoneclient.openstack.common import timeutils
 from tests import client_fixtures as token_data
-from tests import utils
 from tests.v2_0 import client_fixtures
+from tests.v2_0 import utils
 
 UNSCOPED_TOKEN = client_fixtures.UNSCOPED_TOKEN
 PROJECT_SCOPED_TOKEN = client_fixtures.PROJECT_SCOPED_TOKEN

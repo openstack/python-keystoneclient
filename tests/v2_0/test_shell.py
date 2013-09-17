@@ -21,8 +21,8 @@ from testtools import matchers
 
 from keystoneclient import httpclient
 
-from tests import utils
 from tests.v2_0 import fakes
+from tests.v2_0 import utils
 
 
 DEFAULT_USERNAME = 'username'

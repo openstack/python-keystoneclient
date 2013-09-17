@@ -21,7 +21,6 @@ from tests.v3 import utils
 class CredentialTests(utils.TestCase, utils.CrudTests):
     def setUp(self):
         super(CredentialTests, self).setUp()
-        self.additionalSetUp()
         self.key = 'credential'
         self.collection_key = 'credentials'
         self.model = credentials.Credential

@@ -12,20 +12,15 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import copy
-import json
-import time
 import urlparse
 import uuid
 
-import mock
-from mox3 import mox
-import requests
-import testtools
+import httpretty
 
-from .. import utils
-
+from keystoneclient.openstack.common import jsonutils
 from keystoneclient.v3 import client
+
+from tests import utils
 
 TestResponse = utils.TestResponse
 
@@ -44,26 +39,16 @@ def parameterize(ref):
     return params
 
 
-class TestClient(client.Client):
+class UnauthenticatedTestCase(utils.TestCase):
+    """Class used as base for unauthenticated calls."""
 
-    def serialize(self, entity):
-        return json.dumps(entity, sort_keys=True)
-
-
-class TestCase(testtools.TestCase):
-    TEST_DOMAIN_ID = '1'
-    TEST_DOMAIN_NAME = 'aDomain'
-    TEST_TENANT_ID = '1'
-    TEST_TENANT_NAME = 'aTenant'
-    TEST_TOKEN = 'aToken'
-    TEST_USER = 'test'
     TEST_ROOT_URL = 'http://127.0.0.1:5000/'
     TEST_URL = '%s%s' % (TEST_ROOT_URL, 'v3')
     TEST_ROOT_ADMIN_URL = 'http://127.0.0.1:35357/'
     TEST_ADMIN_URL = '%s%s' % (TEST_ROOT_ADMIN_URL, 'v3')
-    TEST_REQUEST_BASE = {
-        'verify': True,
-    }
+
+
+class TestCase(UnauthenticatedTestCase):
 
     TEST_SERVICE_CATALOG = [{
         "endpoints": [{
@@ -145,56 +130,21 @@ class TestCase(testtools.TestCase):
 
     def setUp(self):
         super(TestCase, self).setUp()
-        self.mox = mox.Mox()
-        self.request_patcher = mock.patch.object(requests, 'request',
-                                                 self.mox.CreateMockAnything())
-        self.time_patcher = mock.patch.object(time, 'time',
-                                              lambda: 1234)
-        self.request_patcher.start()
-        self.time_patcher.start()
-        self.client = TestClient(username=self.TEST_USER,
-                                 token=self.TEST_TOKEN,
-                                 tenant_name=self.TEST_TENANT_NAME,
-                                 auth_url=self.TEST_URL,
-                                 endpoint=self.TEST_URL)
+        self.client = client.Client(username=self.TEST_USER,
+                                    token=self.TEST_TOKEN,
+                                    tenant_name=self.TEST_TENANT_NAME,
+                                    auth_url=self.TEST_URL,
+                                    endpoint=self.TEST_URL)
 
-    def tearDown(self):
-        self.request_patcher.stop()
-        self.time_patcher.stop()
-        self.mox.UnsetStubs()
-        self.mox.VerifyAll()
-        super(TestCase, self).tearDown()
+    def stub_auth(self, subject_token=None, **kwargs):
+        if not subject_token:
+            subject_token = self.TEST_TOKEN
+
+        self.stub_url(httpretty.POST, ['auth', 'tokens'],
+                      X_Subject_Token=subject_token, **kwargs)
 
 
-class UnauthenticatedTestCase(testtools.TestCase):
-    """Class used as base for unauthenticated calls."""
-    TEST_ROOT_URL = 'http://127.0.0.1:5000/'
-    TEST_URL = '%s%s' % (TEST_ROOT_URL, 'v3')
-    TEST_ROOT_ADMIN_URL = 'http://127.0.0.1:35357/'
-    TEST_ADMIN_URL = '%s%s' % (TEST_ROOT_ADMIN_URL, 'v3')
-    TEST_REQUEST_BASE = {
-        'verify': True,
-    }
-
-    def setUp(self):
-        super(UnauthenticatedTestCase, self).setUp()
-        self.mox = mox.Mox()
-
-        self.request_patcher = mock.patch.object(requests, 'request',
-                                                 self.mox.CreateMockAnything())
-        self.time_patcher = mock.patch.object(time, 'time',
-                                              lambda: 1234)
-        self.request_patcher.start()
-
-    def tearDown(self):
-        self.request_patcher.stop()
-        self.time_patcher.stop()
-        self.mox.UnsetStubs()
-        self.mox.VerifyAll()
-        super(UnauthenticatedTestCase, self).tearDown()
-
-
-class CrudTests(testtools.TestCase):
+class CrudTests(object):
     key = None
     collection_key = None
     model = None
@@ -205,34 +155,36 @@ class CrudTests(testtools.TestCase):
         kwargs.setdefault('id', uuid.uuid4().hex)
         return kwargs
 
-    def additionalSetUp(self):
-        self.headers = {
-            'GET': {
-                'X-Auth-Token': 'aToken',
-                'User-Agent': 'python-keystoneclient',
-            }
-        }
-
-        self.headers['HEAD'] = self.headers['GET'].copy()
-        self.headers['DELETE'] = self.headers['GET'].copy()
-        self.headers['PUT'] = self.headers['GET'].copy()
-        self.headers['POST'] = self.headers['GET'].copy()
-        self.headers['POST']['Content-Type'] = 'application/json'
-        self.headers['PATCH'] = self.headers['POST'].copy()
-
-    def serialize(self, entity):
+    def encode(self, entity):
         if isinstance(entity, dict):
-            return json.dumps({self.key: entity}, sort_keys=True)
+            return {self.key: entity}
         if isinstance(entity, list):
-            return json.dumps({self.collection_key: entity}, sort_keys=True)
-        raise NotImplementedError('Are you sure you want to serialize that?')
+            return {self.collection_key: entity}
+        raise NotImplementedError('Are you sure you want to encode that?')
 
-    def _req_path(self):
-        if self.path_prefix:
-            return 'v3/%s/%s' % (self.path_prefix, self.collection_key)
-        else:
-            return 'v3/%s' % self.collection_key
+    def stub_entity(self, method, parts=None, entity=None, id=None, **kwargs):
+        if entity:
+            entity = self.encode(entity)
+            kwargs['json'] = entity
 
+        if not parts:
+            parts = [self.collection_key]
+
+            if self.path_prefix:
+                parts.insert(0, self.path_prefix)
+
+        if id:
+            if not parts:
+                parts = []
+
+            parts.append(id)
+
+        self.stub_url(method, parts=parts, **kwargs)
+
+    def assertEntityRequestBodyIs(self, entity):
+        self.assertRequestBodyIs(json=self.encode(entity))
+
+    @httpretty.activate
     def test_create(self, ref=None, req_ref=None):
         ref = ref or self.new_ref()
         manager_ref = ref.copy()
@@ -244,24 +196,8 @@ class CrudTests(testtools.TestCase):
         # from datetime object to timestamp string)
         req_ref = req_ref or ref.copy()
         req_ref.pop('id')
-        data = self.serialize(req_ref)
-        resp = TestResponse({
-            "status_code": 201,
-            "text": data,
-        })
 
-        method = 'POST'
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.headers[method]
-        kwargs['data'] = data
-
-        requests.request(
-            method,
-            urlparse.urljoin(
-                self.TEST_URL,
-                self._req_path()),
-            **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_entity(httpretty.POST, entity=req_ref, status=201)
 
         returned = self.manager.create(**parameterize(manager_ref))
         self.assertTrue(isinstance(returned, self.model))
@@ -270,24 +206,13 @@ class CrudTests(testtools.TestCase):
                 getattr(returned, attr),
                 req_ref[attr],
                 'Expected different %s' % attr)
+        self.assertEntityRequestBodyIs(req_ref)
 
+    @httpretty.activate
     def test_get(self, ref=None):
         ref = ref or self.new_ref()
-        resp = TestResponse({
-            "status_code": 200,
-            "text": self.serialize(ref),
-        })
 
-        method = 'GET'
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.headers[method]
-        requests.request(
-            method,
-            urlparse.urljoin(
-                self.TEST_URL,
-                '%s/%s' % (self._req_path(), ref['id'])),
-            **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_entity(httpretty.GET, id=ref['id'], entity=ref)
 
         returned = self.manager.get(ref['id'])
         self.assertTrue(isinstance(returned, self.model))
@@ -297,47 +222,31 @@ class CrudTests(testtools.TestCase):
                 ref[attr],
                 'Expected different %s' % attr)
 
+    @httpretty.activate
     def test_list(self, ref_list=None, expected_path=None, **filter_kwargs):
         ref_list = ref_list or [self.new_ref(), self.new_ref()]
-        resp = TestResponse({
-            "status_code": 200,
-            "text": self.serialize(ref_list),
-        })
 
-        method = 'GET'
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.headers[method]
-        requests.request(
-            method,
-            urlparse.urljoin(
-                self.TEST_URL,
-                expected_path or self._req_path()),
-            **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        if not expected_path:
+            if self.path_prefix:
+                expected_path = 'v3/%s/%s' % (self.path_prefix,
+                                              self.collection_key)
+            else:
+                expected_path = 'v3/%s' % self.collection_key
+
+        httpretty.register_uri(httpretty.GET,
+                               urlparse.urljoin(self.TEST_URL, expected_path),
+                               body=jsonutils.dumps(self.encode(ref_list)))
 
         returned_list = self.manager.list(**filter_kwargs)
         self.assertTrue(len(returned_list))
         [self.assertTrue(isinstance(r, self.model)) for r in returned_list]
 
+    @httpretty.activate
     def test_find(self, ref=None):
         ref = ref or self.new_ref()
         ref_list = [ref]
-        resp = TestResponse({
-            "status_code": 200,
-            "text": self.serialize(ref_list),
-        })
 
-        method = 'GET'
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.headers[method]
-        query = '?name=%s' % ref['name'] if hasattr(ref, 'name') else ''
-        requests.request(
-            method,
-            urlparse.urljoin(
-                self.TEST_URL,
-                '%s%s' % (self._req_path(), query)),
-            **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_entity(httpretty.GET, entity=ref_list)
 
         returned = self.manager.find(name=getattr(ref, 'name', None))
         self.assertTrue(isinstance(returned, self.model))
@@ -347,26 +256,19 @@ class CrudTests(testtools.TestCase):
                 ref[attr],
                 'Expected different %s' % attr)
 
+        if hasattr(ref, 'name'):
+            self.assertQueryStringIs({'name': ref['name']})
+        else:
+            self.assertQueryStringIs({})
+
+    @httpretty.activate
     def test_update(self, ref=None):
         ref = ref or self.new_ref()
-        req_ref = ref.copy()
-        del req_ref['id']
-        resp = TestResponse({
-            "status_code": 200,
-            "text": self.serialize(ref),
-        })
 
-        method = 'PATCH'
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.headers[method]
-        kwargs['data'] = self.serialize(req_ref)
-        requests.request(
-            method,
-            urlparse.urljoin(
-                self.TEST_URL,
-                '%s/%s' % (self._req_path(), ref['id'])),
-            **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_entity(httpretty.PATCH, id=ref['id'], entity=ref)
+
+        req_ref = ref.copy()
+        req_ref.pop('id')
 
         returned = self.manager.update(ref['id'], **parameterize(req_ref))
         self.assertTrue(isinstance(returned, self.model))
@@ -375,23 +277,11 @@ class CrudTests(testtools.TestCase):
                 getattr(returned, attr),
                 ref[attr],
                 'Expected different %s' % attr)
+        self.assertEntityRequestBodyIs(req_ref)
 
+    @httpretty.activate
     def test_delete(self, ref=None):
         ref = ref or self.new_ref()
-        resp = TestResponse({
-            "status_code": 204,
-            "text": '',
-        })
 
-        method = 'DELETE'
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.headers[method]
-        requests.request(
-            method,
-            urlparse.urljoin(
-                self.TEST_URL,
-                '%s/%s' % (self._req_path(), ref['id'])),
-            **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
-
+        self.stub_entity(httpretty.DELETE, id=ref['id'], status=204)
         self.manager.delete(ref['id'])

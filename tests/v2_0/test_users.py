@@ -12,28 +12,15 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import copy
-import json
-import urlparse
-
-import requests
+import httpretty
 
 from keystoneclient.v2_0 import users
-from tests import utils
+from tests.v2_0 import utils
 
 
 class UserTests(utils.TestCase):
     def setUp(self):
         super(UserTests, self).setUp()
-        self.TEST_REQUEST_HEADERS = {
-            'X-Auth-Token': 'aToken',
-            'User-Agent': 'python-keystoneclient',
-        }
-        self.TEST_POST_HEADERS = {
-            'Content-Type': 'application/json',
-            'X-Auth-Token': 'aToken',
-            'User-Agent': 'python-keystoneclient',
-        }
         self.TEST_USERS = {
             "users": {
                 "values": [
@@ -53,6 +40,7 @@ class UserTests(utils.TestCase):
             }
         }
 
+    @httpretty.activate
     def test_create(self):
         req_body = {
             "user": {
@@ -63,6 +51,7 @@ class UserTests(utils.TestCase):
                 "enabled": True,
             }
         }
+
         resp_body = {
             "user": {
                 "name": "gabriel",
@@ -73,19 +62,8 @@ class UserTests(utils.TestCase):
                 "email": "test@example.com",
             }
         }
-        resp = utils.TestResponse({
-            "status_code": 200,
-            "text": json.dumps(resp_body),
-        })
 
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.TEST_POST_HEADERS
-        kwargs['data'] = json.dumps(req_body)
-        requests.request(
-            'POST',
-            urlparse.urljoin(self.TEST_URL, 'v2.0/users'),
-            **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_url(httpretty.POST, ['users'], json=resp_body)
 
         user = self.client.users.create(req_body['user']['name'],
                                         req_body['user']['password'],
@@ -96,112 +74,59 @@ class UserTests(utils.TestCase):
         self.assertEqual(user.id, 3)
         self.assertEqual(user.name, "gabriel")
         self.assertEqual(user.email, "test@example.com")
+        self.assertRequestBodyIs(json=req_body)
 
+    @httpretty.activate
     def test_delete(self):
-        resp = utils.TestResponse({
-            "status_code": 204,
-            "text": "",
-        })
-
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.TEST_REQUEST_HEADERS
-        requests.request(
-            'DELETE',
-            urlparse.urljoin(self.TEST_URL, 'v2.0/users/1'),
-            **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
-
+        self.stub_url(httpretty.DELETE, ['users', '1'], status=204)
         self.client.users.delete(1)
 
+    @httpretty.activate
     def test_get(self):
-        resp = utils.TestResponse({
-            "status_code": 200,
-            "text": json.dumps({
-                'user': self.TEST_USERS['users']['values'][0],
-            })
-        })
-
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.TEST_REQUEST_HEADERS
-        requests.request(
-            'GET',
-            urlparse.urljoin(self.TEST_URL, 'v2.0/users/1'),
-            **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_url(httpretty.GET, ['users', '1'],
+                      json={'user': self.TEST_USERS['users']['values'][0]})
 
         u = self.client.users.get(1)
         self.assertTrue(isinstance(u, users.User))
         self.assertEqual(u.id, 1)
         self.assertEqual(u.name, 'admin')
 
+    @httpretty.activate
     def test_list(self):
-        resp = utils.TestResponse({
-            "status_code": 200,
-            "text": json.dumps(self.TEST_USERS),
-        })
-
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.TEST_REQUEST_HEADERS
-        requests.request(
-            'GET',
-            urlparse.urljoin(self.TEST_URL, 'v2.0/users'),
-            **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_url(httpretty.GET, ['users'], json=self.TEST_USERS)
 
         user_list = self.client.users.list()
         [self.assertTrue(isinstance(u, users.User)) for u in user_list]
 
+    @httpretty.activate
     def test_list_limit(self):
-        resp = utils.TestResponse({
-            "status_code": 200,
-            "text": json.dumps(self.TEST_USERS),
-        })
-
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.TEST_REQUEST_HEADERS
-        requests.request(
-            'GET',
-            urlparse.urljoin(self.TEST_URL, 'v2.0/users?limit=1'),
-            **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_url(httpretty.GET, ['users'], json=self.TEST_USERS)
 
         user_list = self.client.users.list(limit=1)
+        self.assertEqual(httpretty.last_request().querystring,
+                         {'limit': ['1']})
         [self.assertTrue(isinstance(u, users.User)) for u in user_list]
 
+    @httpretty.activate
     def test_list_marker(self):
-        resp = utils.TestResponse({
-            "status_code": 200,
-            "text": json.dumps(self.TEST_USERS),
-        })
-
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.TEST_REQUEST_HEADERS
-        requests.request(
-            'GET',
-            urlparse.urljoin(self.TEST_URL, 'v2.0/users?marker=foo'),
-            **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_url(httpretty.GET, ['users'], json=self.TEST_USERS)
 
         user_list = self.client.users.list(marker='foo')
+        self.assertDictEqual(httpretty.last_request().querystring,
+                             {'marker': ['foo']})
         [self.assertTrue(isinstance(u, users.User)) for u in user_list]
 
+    @httpretty.activate
     def test_list_limit_marker(self):
-        resp = utils.TestResponse({
-            "status_code": 200,
-            "text": json.dumps(self.TEST_USERS),
-        })
-
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.TEST_REQUEST_HEADERS
-        requests.request(
-            'GET',
-            urlparse.urljoin(self.TEST_URL, 'v2.0/users?marker=foo&limit=1'),
-            **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_url(httpretty.GET, ['users'], json=self.TEST_USERS)
 
         user_list = self.client.users.list(limit=1, marker='foo')
+
+        self.assertDictEqual(httpretty.last_request().querystring,
+                             {'marker': ['foo'], 'limit': ['1']})
         [self.assertTrue(isinstance(u, users.User)) for u in user_list]
 
+    @httpretty.activate
     def test_update(self):
         req_1 = {
             "user": {
@@ -229,61 +154,26 @@ class UserTests(utils.TestCase):
             }
         }
 
-        # Keystone basically echoes these back... including the password :-/
-        resp_1 = utils.TestResponse({
-            "status_code": 200,
-            "text": json.dumps(req_1)
-        })
-        resp_2 = utils.TestResponse({
-            "status_code": 200,
-            "text": json.dumps(req_2)
-        })
-        resp_3 = utils.TestResponse({
-            "status_code": 200,
-            "text": json.dumps(req_3)
-        })
-        resp_4 = utils.TestResponse({
-            "status_code": 200,
-            "text": json.dumps(req_4)
-        })
-
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.TEST_POST_HEADERS
-        kwargs['data'] = json.dumps(req_1)
-        requests.request(
-            'PUT',
-            urlparse.urljoin(self.TEST_URL, 'v2.0/users/2'),
-            **kwargs).AndReturn((resp_1))
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.TEST_POST_HEADERS
-        kwargs['data'] = json.dumps(req_2)
-        requests.request(
-            'PUT',
-            urlparse.urljoin(self.TEST_URL, 'v2.0/users/2/OS-KSADM/password'),
-            **kwargs).AndReturn((resp_2))
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.TEST_POST_HEADERS
-        kwargs['data'] = json.dumps(req_3)
-        requests.request(
-            'PUT',
-            urlparse.urljoin(self.TEST_URL, 'v2.0/users/2/OS-KSADM/tenant'),
-            **kwargs).AndReturn((resp_3))
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.TEST_POST_HEADERS
-        kwargs['data'] = json.dumps(req_4)
-        requests.request(
-            'PUT',
-            urlparse.urljoin(self.TEST_URL, 'v2.0/users/2/OS-KSADM/enabled'),
-            **kwargs).AndReturn((resp_4))
-        self.mox.ReplayAll()
+        self.stub_url(httpretty.PUT, ['users', '2'], json=req_1)
+        self.stub_url(httpretty.PUT, ['users', '2', 'OS-KSADM', 'password'],
+                      json=req_2)
+        self.stub_url(httpretty.PUT, ['users', '2', 'OS-KSADM', 'tenant'],
+                      json=req_3)
+        self.stub_url(httpretty.PUT, ['users', '2', 'OS-KSADM', 'enabled'],
+                      json=req_4)
 
         self.client.users.update(2,
                                  name='gabriel',
                                  email='gabriel@example.com')
+        self.assertRequestBodyIs(json=req_1)
         self.client.users.update_password(2, 'swordfish')
+        self.assertRequestBodyIs(json=req_2)
         self.client.users.update_tenant(2, 1)
+        self.assertRequestBodyIs(json=req_3)
         self.client.users.update_enabled(2, False)
+        self.assertRequestBodyIs(json=req_4)
 
+    @httpretty.activate
     def test_update_own_password(self):
         req_body = {
             'user': {
@@ -293,20 +183,9 @@ class UserTests(utils.TestCase):
         resp_body = {
             'access': {}
         }
-        resp = utils.TestResponse({
-            "status_code": 200,
-            "text": json.dumps(resp_body)
-        })
-
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.TEST_POST_HEADERS
-        kwargs['data'] = json.dumps(req_body)
-        requests.request(
-            'PATCH',
-            urlparse.urljoin(self.TEST_URL, 'v2.0/OS-KSCRUD/users/123'),
-            **kwargs).AndReturn((resp))
-
-        self.mox.ReplayAll()
+        self.stub_url(httpretty.PATCH, ['OS-KSCRUD', 'users', '123'],
+                      json=resp_body)
 
         self.client.user_id = '123'
         self.client.users.update_own_password('DCBA', 'ABCD')
+        self.assertRequestBodyIs(json=req_body)

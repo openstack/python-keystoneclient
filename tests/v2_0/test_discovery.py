@@ -12,12 +12,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import copy
-import json
-import requests
+import httpretty
 
 from keystoneclient.generic import client
-from tests import utils
+from tests.v2_0 import utils
 
 
 class DiscoverKeystoneTests(utils.UnauthenticatedTestCase):
@@ -55,23 +53,11 @@ class DiscoverKeystoneTests(utils.UnauthenticatedTestCase):
                 }],
             },
         }
-        self.TEST_REQUEST_HEADERS = {
-            'User-Agent': 'python-keystoneclient',
-            'Accept': 'application/json',
-        }
 
+    @httpretty.activate
     def test_get_versions(self):
-        resp = utils.TestResponse({
-            "status_code": 200,
-            "text": json.dumps(self.TEST_RESPONSE_DICT),
-        })
-
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.TEST_REQUEST_HEADERS
-        requests.request('GET',
-                         self.TEST_ROOT_URL,
-                         **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_url(httpretty.GET, base_url=self.TEST_ROOT_URL,
+                      json=self.TEST_RESPONSE_DICT)
 
         cs = client.Client()
         versions = cs.discover(self.TEST_ROOT_URL)
@@ -83,17 +69,10 @@ class DiscoverKeystoneTests(utils.UnauthenticatedTestCase):
             self.TEST_RESPONSE_DICT['versions']['values'][0]['links'][0]
             ['href'])
 
+    @httpretty.activate
     def test_get_version_local(self):
-        resp = utils.TestResponse({
-            "status_code": 200,
-            "text": json.dumps(self.TEST_RESPONSE_DICT),
-        })
-        kwargs = copy.copy(self.TEST_REQUEST_BASE)
-        kwargs['headers'] = self.TEST_REQUEST_HEADERS
-        requests.request('GET',
-                         "http://localhost:35357",
-                         **kwargs).AndReturn((resp))
-        self.mox.ReplayAll()
+        self.stub_url(httpretty.GET, base_url="http://localhost:35357/",
+                      json=self.TEST_RESPONSE_DICT)
 
         cs = client.Client()
         versions = cs.discover()

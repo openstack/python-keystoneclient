@@ -21,7 +21,6 @@ from tests.v3 import utils
 class DomainTests(utils.TestCase, utils.CrudTests):
     def setUp(self):
         super(DomainTests, self).setUp()
-        self.additionalSetUp()
         self.key = 'domain'
         self.collection_key = 'domains'
         self.model = domains.Domain
