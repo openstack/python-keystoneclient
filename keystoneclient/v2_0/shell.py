@@ -102,7 +102,7 @@ def do_user_update(kc, args):
     kwargs = {}
     if args.name:
         kwargs['name'] = args.name
-    if args.email:
+    if args.email is not None:
         kwargs['email'] = args.email
     if args.enabled:
         kwargs['enabled'] = utils.string_to_bool(args.enabled)

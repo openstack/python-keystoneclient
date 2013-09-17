@@ -71,7 +71,10 @@ class ShellTests(utils.TestCase):
         orig = sys.stdout
         try:
             sys.stdout = cStringIO.StringIO()
-            self.shell.main(cmd.split())
+            if isinstance(cmd, list):
+                self.shell.main(cmd)
+            else:
+                self.shell.main(cmd.split())
         except SystemExit:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             self.assertEqual(exc_value.code, 0)
@@ -129,6 +132,14 @@ class ShellTests(utils.TestCase):
         required = 'User not updated, no arguments present.'
         out = self.run_command('user-update 1')
         self.assertThat(out, matchers.MatchesRegex(required))
+
+        self.run_command(['user-update', '--email', '', '1'])
+        self.fake_client.assert_called_anytime(
+            'PUT', '/users/1',
+            {'user':
+                {'id': '1',
+                 'email': ''}
+             })
 
     def test_role_create(self):
         self.run_command('role-create --name new-role')
