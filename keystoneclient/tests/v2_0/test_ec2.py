@@ -98,9 +98,9 @@ class EC2Tests(utils.TestCase):
                                       'OS-EC2'], json=resp_body)
 
         creds = self.client.ec2.list(user_id)
-        self.assertTrue(len(creds), 2)
+        self.assertEqual(len(creds), 2)
         cred = creds[0]
-        self.assertTrue(isinstance(cred, ec2.EC2))
+        self.assertIsInstance(cred, ec2.EC2)
         self.assertEqual(cred.tenant_id, tenant_id)
         self.assertEqual(cred.enabled, True)
         self.assertEqual(cred.access, 'access')
