@@ -803,8 +803,8 @@ class CommonAuthTokenMiddlewareTest(object):
             'auth_uri': 'https://keystone.example.com:1234',
         }
         middleware = auth_token.AuthProtocol(self.fake_app, conf)
-        self.assertEquals(middleware.token_revocation_list_cache_timeout,
-                          datetime.timedelta(seconds=24))
+        self.assertEqual(middleware.token_revocation_list_cache_timeout,
+                         datetime.timedelta(seconds=24))
 
     def test_http_error_not_cached_token(self):
         """Test to don't cache token as invalid on network errors.

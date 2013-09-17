@@ -37,29 +37,29 @@ class AccessInfoTest(utils.TestCase):
         self.assertIn('catalog', auth_ref)
         self.assertFalse(auth_ref['catalog'])
 
-        self.assertEquals(auth_ref.auth_token,
-                          '3e2813b7ba0b4006840c3825860b86ed')
-        self.assertEquals(auth_ref.username, 'exampleuser')
-        self.assertEquals(auth_ref.user_id, 'c4da488862bd435c9e6c0275a0d0e49a')
+        self.assertEqual(auth_ref.auth_token,
+                         '3e2813b7ba0b4006840c3825860b86ed')
+        self.assertEqual(auth_ref.username, 'exampleuser')
+        self.assertEqual(auth_ref.user_id, 'c4da488862bd435c9e6c0275a0d0e49a')
 
-        self.assertEquals(auth_ref.project_name, None)
-        self.assertEquals(auth_ref.project_id, None)
+        self.assertEqual(auth_ref.project_name, None)
+        self.assertEqual(auth_ref.project_id, None)
 
-        self.assertEquals(auth_ref.auth_url, None)
-        self.assertEquals(auth_ref.management_url, None)
+        self.assertEqual(auth_ref.auth_url, None)
+        self.assertEqual(auth_ref.management_url, None)
 
         self.assertFalse(auth_ref.domain_scoped)
         self.assertFalse(auth_ref.project_scoped)
 
-        self.assertEquals(auth_ref.user_domain_id,
-                          '4e6893b7ba0b4006840c3845660b86ed')
-        self.assertEquals(auth_ref.user_domain_name, 'exampledomain')
+        self.assertEqual(auth_ref.user_domain_id,
+                         '4e6893b7ba0b4006840c3845660b86ed')
+        self.assertEqual(auth_ref.user_domain_name, 'exampledomain')
 
         self.assertIsNone(auth_ref.project_domain_id)
         self.assertIsNone(auth_ref.project_domain_name)
 
-        self.assertEquals(auth_ref.expires, timeutils.parse_isotime(
-                          UNSCOPED_TOKEN['token']['expires_at']))
+        self.assertEqual(auth_ref.expires, timeutils.parse_isotime(
+                         UNSCOPED_TOKEN['token']['expires_at']))
 
     def test_will_expire_soon(self):
         expires = timeutils.utcnow() + datetime.timedelta(minutes=5)
@@ -79,21 +79,21 @@ class AccessInfoTest(utils.TestCase):
         self.assertIn('catalog', auth_ref)
         self.assertFalse(auth_ref['catalog'])
 
-        self.assertEquals(auth_ref.auth_token,
-                          '3e2813b7ba0b4006840c3825860b86ed')
-        self.assertEquals(auth_ref.username, 'exampleuser')
-        self.assertEquals(auth_ref.user_id, 'c4da488862bd435c9e6c0275a0d0e49a')
+        self.assertEqual(auth_ref.auth_token,
+                         '3e2813b7ba0b4006840c3825860b86ed')
+        self.assertEqual(auth_ref.username, 'exampleuser')
+        self.assertEqual(auth_ref.user_id, 'c4da488862bd435c9e6c0275a0d0e49a')
 
-        self.assertEquals(auth_ref.domain_name, 'anotherdomain')
-        self.assertEquals(auth_ref.domain_id,
-                          '8e9283b7ba0b1038840c3842058b86ab')
+        self.assertEqual(auth_ref.domain_name, 'anotherdomain')
+        self.assertEqual(auth_ref.domain_id,
+                         '8e9283b7ba0b1038840c3842058b86ab')
 
-        self.assertEquals(auth_ref.project_name, None)
-        self.assertEquals(auth_ref.project_id, None)
+        self.assertEqual(auth_ref.project_name, None)
+        self.assertEqual(auth_ref.project_id, None)
 
-        self.assertEquals(auth_ref.user_domain_id,
-                          '4e6893b7ba0b4006840c3845660b86ed')
-        self.assertEquals(auth_ref.user_domain_name, 'exampledomain')
+        self.assertEqual(auth_ref.user_domain_id,
+                         '4e6893b7ba0b4006840c3845660b86ed')
+        self.assertEqual(auth_ref.user_domain_name, 'exampledomain')
 
         self.assertIsNone(auth_ref.project_domain_id)
         self.assertIsNone(auth_ref.project_domain_name)
@@ -110,33 +110,33 @@ class AccessInfoTest(utils.TestCase):
         self.assertIn('catalog', auth_ref)
         self.assertTrue(auth_ref['catalog'])
 
-        self.assertEquals(auth_ref.auth_token,
-                          '3e2813b7ba0b4006840c3825860b86ed')
-        self.assertEquals(auth_ref.username, 'exampleuser')
-        self.assertEquals(auth_ref.user_id, 'c4da488862bd435c9e6c0275a0d0e49a')
+        self.assertEqual(auth_ref.auth_token,
+                         '3e2813b7ba0b4006840c3825860b86ed')
+        self.assertEqual(auth_ref.username, 'exampleuser')
+        self.assertEqual(auth_ref.user_id, 'c4da488862bd435c9e6c0275a0d0e49a')
 
-        self.assertEquals(auth_ref.domain_name, None)
-        self.assertEquals(auth_ref.domain_id, None)
+        self.assertEqual(auth_ref.domain_name, None)
+        self.assertEqual(auth_ref.domain_id, None)
 
-        self.assertEquals(auth_ref.project_name, 'exampleproject')
-        self.assertEquals(auth_ref.project_id,
-                          '225da22d3ce34b15877ea70b2a575f58')
+        self.assertEqual(auth_ref.project_name, 'exampleproject')
+        self.assertEqual(auth_ref.project_id,
+                         '225da22d3ce34b15877ea70b2a575f58')
 
-        self.assertEquals(auth_ref.tenant_name, auth_ref.project_name)
-        self.assertEquals(auth_ref.tenant_id, auth_ref.project_id)
+        self.assertEqual(auth_ref.tenant_name, auth_ref.project_name)
+        self.assertEqual(auth_ref.tenant_id, auth_ref.project_id)
 
-        self.assertEquals(auth_ref.auth_url,
-                          ('http://public.com:5000/v3',))
-        self.assertEquals(auth_ref.management_url,
-                          ('http://admin:35357/v3',))
+        self.assertEqual(auth_ref.auth_url,
+                         ('http://public.com:5000/v3',))
+        self.assertEqual(auth_ref.management_url,
+                         ('http://admin:35357/v3',))
 
-        self.assertEquals(auth_ref.project_domain_id,
-                          '4e6893b7ba0b4006840c3845660b86ed')
-        self.assertEquals(auth_ref.project_domain_name, 'exampledomain')
+        self.assertEqual(auth_ref.project_domain_id,
+                         '4e6893b7ba0b4006840c3845660b86ed')
+        self.assertEqual(auth_ref.project_domain_name, 'exampledomain')
 
-        self.assertEquals(auth_ref.user_domain_id,
-                          '4e6893b7ba0b4006840c3845660b86ed')
-        self.assertEquals(auth_ref.user_domain_name, 'exampledomain')
+        self.assertEqual(auth_ref.user_domain_id,
+                         '4e6893b7ba0b4006840c3845660b86ed')
+        self.assertEqual(auth_ref.user_domain_name, 'exampledomain')
 
         self.assertFalse(auth_ref.domain_scoped)
         self.assertTrue(auth_ref.project_scoped)
