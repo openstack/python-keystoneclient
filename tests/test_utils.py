@@ -28,6 +28,7 @@ class FakeManager(object):
     resources = {
         '1234': {'name': 'entity_one'},
         '8e8ec658-c7b0-4243-bdf8-6f7f2952c0d0': {'name': 'entity_two'},
+        '\xe3\x82\xbdtest': {'name': u'\u30bdtest'},
         '5678': {'name': '9876'}
     }
 
@@ -71,6 +72,11 @@ class FindResourceTestCase(test_utils.TestCase):
         uuid = '8e8ec658-c7b0-4243-bdf8-6f7f2952c0d0'
         output = utils.find_resource(self.manager, uuid)
         self.assertEqual(output, self.manager.resources[uuid])
+
+    def test_find_by_unicode(self):
+        name = '\xe3\x82\xbdtest'
+        output = utils.find_resource(self.manager, name)
+        self.assertEqual(output, self.manager.resources[name])
 
     def test_find_by_str_name(self):
         output = utils.find_resource(self.manager, 'entity_one')
