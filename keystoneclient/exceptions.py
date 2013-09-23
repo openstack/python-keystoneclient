@@ -41,3 +41,11 @@ class SSLError(ConnectionError):
 
 class Timeout(ClientException):
     """The request timed out."""
+
+
+class DiscoveryFailure(ClientException):
+    """Discovery of client versions failed."""
+
+
+class VersionNotAvailable(DiscoveryFailure):
+    """Discovery failed as the version you requested is not available."""

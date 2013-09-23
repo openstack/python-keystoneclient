@@ -84,11 +84,12 @@ class Client(httpclient.HTTPClient):
 
     """
 
+    version = 'v3'
+
     def __init__(self, **kwargs):
         """Initialize a new client for the Keystone v3 API."""
         super(Client, self).__init__(**kwargs)
 
-        self.version = 'v3'
         self.credentials = credentials.CredentialManager(self)
         self.endpoints = endpoints.EndpointManager(self)
         self.domains = domains.DomainManager(self)
