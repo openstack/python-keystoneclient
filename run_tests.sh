@@ -81,7 +81,7 @@ function run_tests {
     if [ "$testropts" = "" ] && [ "$testrargs" = "" ]; then
       # Default to running all tests if specific test is not
       # provided.
-      testrargs="discover ./tests"
+      testrargs="discover ./keystoneclient/tests"
     fi
     ${wrapper} python -m testtools.run $testropts $testrargs
 
@@ -112,7 +112,7 @@ function run_tests {
     echo "Generating coverage report in covhtml/"
     # Don't compute coverage for common code, which is tested elsewhere
     ${wrapper} coverage combine
-    ${wrapper} coverage html --include='keystoneclient/*' --omit='keystoneclient/openstack/common/*' -d covhtml -i
+    ${wrapper} coverage html -d covhtml -i
   fi
 
   return $RESULT
@@ -127,7 +127,7 @@ function copy_subunit_log {
 
 function run_flake8 {
   echo "Running flake8 ..."
-  srcfiles="keystoneclient tests"
+  srcfiles="keystoneclient"
   # Just run Flake8 in current environment
   ${wrapper} flake8 ${srcfiles}
 }
