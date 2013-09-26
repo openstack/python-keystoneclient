@@ -391,11 +391,11 @@ class AccessInfoV2(AccessInfo):
 
     @property
     def trust_id(self):
-        return None
+        return self.get('trust', {}).get('id')
 
     @property
     def trust_scoped(self):
-        return False
+        return 'trust' in self
 
     @property
     def project_id(self):
