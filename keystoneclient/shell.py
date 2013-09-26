@@ -27,6 +27,7 @@ from __future__ import print_function
 import argparse
 import getpass
 import os
+import six
 import sys
 
 import keystoneclient
@@ -35,6 +36,7 @@ from keystoneclient import access
 from keystoneclient.contrib.bootstrap import shell as shell_bootstrap
 from keystoneclient import exceptions as exc
 from keystoneclient.generic import shell as shell_generic
+from keystoneclient.openstack.common import strutils
 from keystoneclient import utils
 from keystoneclient.v2_0 import shell as shell_v2_0
 
@@ -488,7 +490,7 @@ def main():
         OpenStackIdentityShell().main(sys.argv[1:])
 
     except Exception as e:
-        print(e, file=sys.stderr)
+        print(strutils.safe_encode(six.text_type(e)), file=sys.stderr)
         sys.exit(1)
 
 
