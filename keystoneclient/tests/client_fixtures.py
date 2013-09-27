@@ -24,8 +24,8 @@ from keystoneclient.openstack.common import timeutils
 from keystoneclient import utils
 
 
-CLIENTDIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-ROOTDIR = os.path.dirname(CLIENTDIR)
+TESTDIR = os.path.dirname(os.path.abspath(__file__))
+ROOTDIR = os.path.normpath(os.path.join(TESTDIR, '..', '..'))
 CERTDIR = os.path.join(ROOTDIR, 'examples', 'pki', 'certs')
 CMSDIR = os.path.join(ROOTDIR, 'examples', 'pki', 'cms')
 
