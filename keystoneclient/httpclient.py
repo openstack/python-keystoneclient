@@ -21,12 +21,10 @@
 OpenStack Client interface. Handles the REST calls and responses.
 """
 
-import copy
 import logging
 from six.moves.urllib import parse as urlparse
 
 import requests
-import six
 
 try:
     import keyring
@@ -44,89 +42,15 @@ if not hasattr(urlparse, 'parse_qsl'):
 from keystoneclient import access
 from keystoneclient import exceptions
 from keystoneclient.openstack.common import jsonutils
+from keystoneclient import session as client_session
 
 
 _logger = logging.getLogger(__name__)
 
-
-USER_AGENT = 'python-keystoneclient'
-
-
-def request(url, method='GET', headers=None, original_ip=None, debug=False,
-            logger=None, **kwargs):
-    """Perform a http request with standard settings.
-
-    A wrapper around requests.request that adds standard headers like
-    User-Agent and provides optional debug logging of the request.
-
-    Arguments that are not handled are passed through to the requests library.
-
-    :param string url: The url to make the request of.
-    :param string method: The http method to use. (eg. 'GET', 'POST')
-    :param dict headers: Headers to be included in the request. (optional)
-    :param string original_ip: Mark this request as forwarded for this ip.
-                               (optional)
-    :param bool debug: Enable debug logging. (Defaults to False)
-    :param logging.Logger logger: A logger to output to. (optional)
-
-    :raises exceptions.ClientException: For connection failure, or to indicate
-                                        an error response code.
-
-    :returns: The response to the request.
-    """
-
-    if not headers:
-        headers = dict()
-
-    if not logger:
-        logger = _logger
-
-    headers.setdefault('User-Agent', USER_AGENT)
-
-    if original_ip:
-        headers['Forwarded'] = "for=%s;by=%s" % (original_ip, USER_AGENT)
-
-    if debug:
-        string_parts = ['curl -i']
-
-        if not kwargs.get('verify', True):
-            string_parts.append(' --insecure')
-
-        if method:
-            string_parts.append(' -X %s' % method)
-
-        string_parts.append(" '%s'" % url)
-
-        if headers:
-            for header in six.iteritems(headers):
-                string_parts.append(' -H "%s: %s"' % header)
-
-        data = kwargs.get('data')
-        if data:
-            string_parts.append(" -d '%s'" % data)
-
-        logger.debug("REQ: %s\n", "".join(string_parts))
-
-    try:
-        resp = requests.request(
-            method,
-            url,
-            headers=headers,
-            **kwargs)
-    except requests.ConnectionError as e:
-        msg = 'Unable to establish connection to %s: %s' % (url, e)
-        raise exceptions.ClientException(msg)
-
-    if debug:
-        logger.debug("RESP: [%s] %s\nRESP BODY: %s\n",
-                     resp.status_code, resp.headers, resp.text)
-
-    if resp.status_code >= 400:
-        logger.debug("Request returned failure status: %s",
-                     resp.status_code)
-        raise exceptions.from_response(resp, method, url)
-
-    return resp
+# These variables are moved and using them via httpclient is deprecated.
+# Maintain here for compatibility.
+USER_AGENT = client_session.USER_AGENT
+request = client_session.request
 
 
 class HTTPClient(object):
@@ -139,7 +63,7 @@ class HTTPClient(object):
                  stale_duration=None, user_id=None, user_domain_id=None,
                  user_domain_name=None, domain_id=None, domain_name=None,
                  project_id=None, project_name=None, project_domain_id=None,
-                 project_domain_name=None, trust_id=None):
+                 project_domain_name=None, trust_id=None, session=None):
         """Construct a new http client
 
         :param string user_id: User ID for authentication. (optional)
@@ -161,31 +85,17 @@ class HTTPClient(object):
         :param string auth_url: Identity service endpoint for authorization.
         :param string region_name: Name of a region to select when choosing an
                                    endpoint from the service catalog.
-        :param integer timeout: Allows customization of the timeout for client
-                            http requests. (optional)
+        :param integer timeout: DEPRECATED: use session. (optional)
         :param string endpoint: A user-supplied endpoint URL for the identity
                                 service.  Lazy-authentication is possible for
                                 API service calls if endpoint is set at
                                 instantiation. (optional)
         :param string token: Token for authentication. (optional)
-        :param string cacert: Path to the Privacy Enhanced Mail (PEM) file
-                              which contains the trusted authority X.509
-                              certificates needed to established SSL connection
-                              with the identity service. (optional)
-        :param string key: Path to the Privacy Enhanced Mail (PEM) file which
-                           contains the unencrypted client private key needed
-                           to established two-way SSL connection with the
-                           identity service. (optional)
-        :param string cert: Path to the Privacy Enhanced Mail (PEM) file which
-                            contains the corresponding X.509 client certificate
-                            needed to established two-way SSL connection with
-                            the identity service. (optional)
-        :param boolean insecure: Does not perform X.509 certificate validation
-                                 when establishing SSL connection with identity
-                                 service. default: False (optional)
-        :param string original_ip: The original IP of the requesting user
-                                   which will be sent to identity service in a
-                                   'Forwarded' header. (optional)
+        :param string cacert: DEPRECATED: use session. (optional)
+        :param string key: DEPRECATED: use session. (optional)
+        :param string cert: DEPRECATED: use session. (optional)
+        :param boolean insecure: DEPRECATED: use session. (optional)
+        :param string original_ip: DEPRECATED: use session. (optional)
         :param boolean debug: Enables debug logging of all request and
                               responses to identity service.
                               default False (optional)
@@ -210,6 +120,8 @@ class HTTPClient(object):
                                  The tenant_id keyword argument is
                                  deprecated, use project_id instead.
         :param string trust_id: Trust ID for trust scoping. (optional)
+        :param object session: A Session object to be used for
+                               communicating with the identity service.
 
         """
         # set baseline defaults
@@ -230,7 +142,6 @@ class HTTPClient(object):
         self.auth_url = None
         self._endpoint = None
         self._management_url = None
-        self.timeout = float(timeout) if timeout is not None else None
 
         self.trust_id = None
 
@@ -309,16 +220,26 @@ class HTTPClient(object):
             self._endpoint = endpoint.rstrip('/')
         self.region_name = region_name
 
-        self.original_ip = original_ip
-        if cacert:
-            self.verify_cert = cacert
-        else:
-            self.verify_cert = True
-        if insecure:
-            self.verify_cert = False
-        self.cert = cert
-        if cert and key:
-            self.cert = (cert, key,)
+        if not session:
+            verify = cacert or True
+            if insecure:
+                verify = False
+
+            session_cert = None
+            if cert and key:
+                session_cert = (cert, key)
+            elif cert:
+                _logger.warn("Client cert was provided without corresponding "
+                             "key. Ignoring.")
+
+            timeout = float(timeout) if timeout is not None else None
+            session = client_session.Session(verify=verify,
+                                             cert=session_cert,
+                                             original_ip=original_ip,
+                                             timeout=timeout,
+                                             debug=debug)
+
+        self.session = session
         self.domain = ''
 
         # logging setup
@@ -601,29 +522,8 @@ class HTTPClient(object):
     def serialize(self, entity):
         return jsonutils.dumps(entity)
 
-    def request(self, url, method, body=None, **kwargs):
-        """Send an http request with the specified characteristics.
-
-        Wrapper around requests.request to handle tasks such as
-        setting headers, JSON encoding/decoding, and error handling.
-        """
-        # Copy the kwargs so we can reuse the original in case of redirects
-        request_kwargs = copy.copy(kwargs)
-        request_kwargs.setdefault('headers', kwargs.get('headers', {}))
-
-        if body:
-            request_kwargs['headers']['Content-Type'] = 'application/json'
-            request_kwargs['data'] = self.serialize(body)
-
-        if self.cert:
-            request_kwargs.setdefault('cert', self.cert)
-        if self.timeout is not None:
-            request_kwargs.setdefault('timeout', self.timeout)
-
-        resp = request(url, method, original_ip=self.original_ip,
-                       verify=self.verify_cert, debug=self.debug_log,
-                       **request_kwargs)
-
+    @staticmethod
+    def _decode_body(resp):
         if resp.text:
             try:
                 body_resp = jsonutils.loads(resp.text)
@@ -635,12 +535,33 @@ class HTTPClient(object):
             _logger.debug("No body was returned.")
             body_resp = None
 
+        return body_resp
+
+    def request(self, url, method, **kwargs):
+        """Send an http request with the specified characteristics.
+
+        Wrapper around requests.request to handle tasks such as
+        setting headers, JSON encoding/decoding, and error handling.
+        """
+
+        try:
+            kwargs['json'] = kwargs.pop('body')
+        except KeyError:
+            pass
+
+        resp = self.session.request(url, method, **kwargs)
+
+        # NOTE(jamielennox): The requests lib will handle the majority of
+        # redirections. Where it fails is when POSTs are redirected which
+        # is apparently something handled differently by each browser which
+        # requests forces us to do the most compliant way (which we don't want)
+        # see: https://en.wikipedia.org/wiki/Post/Redirect/Get
+        # Nova and other direct users don't do this. Is it still relevant?
         if resp.status_code in (301, 302, 305):
             # Redirected. Reissue the request to the new location.
-            return self.request(resp.headers['location'], method, body,
-                                **request_kwargs)
+            return self.request(resp.headers['location'], method, **kwargs)
 
-        return resp, body_resp
+        return resp, self._decode_body(resp)
 
     def _cs_request(self, url, method, **kwargs):
         """Makes an authenticated request to keystone endpoint by
@@ -683,3 +604,29 @@ class HTTPClient(object):
 
     def delete(self, url, **kwargs):
         return self._cs_request(url, 'DELETE', **kwargs)
+
+    # DEPRECATIONS: The following methods are no longer directly supported
+    #               but maintained for compatibility purposes.
+
+    deprecated_session_variables = {'original_ip': None,
+                                    'cert': None,
+                                    'timeout': None,
+                                    'verify_cert': 'verify'}
+
+    def __getattr__(self, name):
+        # FIXME(jamielennox): provide a proper deprecated warning
+        try:
+            var_name = self.deprecated_session_variables[name]
+        except KeyError:
+            raise AttributeError("Unknown Attribute: %s" % name)
+
+        return getattr(self.session, var_name or name)
+
+    def __setattr__(self, name, val):
+        # FIXME(jamielennox): provide a proper deprecated warning
+        try:
+            var_name = self.deprecated_session_variables[name]
+        except KeyError:
+            super(HTTPClient, self).__setattr__(name, val)
+        else:
+            setattr(self.session, var_name or name)

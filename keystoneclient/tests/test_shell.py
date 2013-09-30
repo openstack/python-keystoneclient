@@ -25,6 +25,7 @@ import testtools
 from testtools import matchers
 
 from keystoneclient import exceptions
+from keystoneclient import session
 from keystoneclient import shell as openstack_shell
 from keystoneclient.tests import utils
 from keystoneclient.v2_0 import shell as shell_v2_0
@@ -423,7 +424,8 @@ class ShellTest(utils.TestCase):
             'endpoints': [],
         })
         request_mock = mock.MagicMock(return_value=response_mock)
-        with mock.patch('requests.request', request_mock):
+        with mock.patch.object(session.requests.Session, 'request',
+                               request_mock):
             shell(('--timeout 2 --os-token=blah  --os-endpoint=blah'
                    ' --os-auth-url=blah.com endpoint-list'))
             request_mock.assert_called_with(mock.ANY, mock.ANY,

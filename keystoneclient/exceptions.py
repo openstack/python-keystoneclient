@@ -29,3 +29,15 @@ class CertificateConfigError(Exception):
         msg = ("Unable to load certificate. "
                "Ensure your system is configured properly.")
         super(CertificateConfigError, self).__init__(msg)
+
+
+class ConnectionError(ClientException):
+    """Something went wrong trying to connect to a server"""
+
+
+class SSLError(ConnectionError):
+    """An SSL error occurred."""
+
+
+class Timeout(ClientException):
+    """The request timed out."""

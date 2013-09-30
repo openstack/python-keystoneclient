@@ -17,13 +17,13 @@ import mock
 import requests
 
 from keystoneclient import httpclient
+from keystoneclient import session
 from keystoneclient.tests import utils
 
 FAKE_RESPONSE = utils.TestResponse({
     "status_code": 200,
     "text": '{"hi": "there"}',
 })
-MOCK_REQUEST = mock.Mock(return_value=(FAKE_RESPONSE))
 
 REQUEST_URL = 'https://127.0.0.1:5000/hi'
 RESPONSE_BODY = '{"hi": "there"}'
@@ -55,56 +55,59 @@ class ClientTest(utils.TestCase):
         self.request_patcher.stop()
         super(ClientTest, self).tearDown()
 
-    def test_get(self):
+    @mock.patch.object(session.requests.Session, 'request')
+    def test_get(self, MOCK_REQUEST):
+        MOCK_REQUEST.return_value = FAKE_RESPONSE
         cl = get_authed_client()
 
-        with mock.patch.object(requests, "request", MOCK_REQUEST):
-            resp, body = cl.get("/hi")
+        resp, body = cl.get("/hi")
 
-            # this may become too tightly couple later
-            mock_args, mock_kwargs = MOCK_REQUEST.call_args
+        # this may become too tightly couple later
+        mock_args, mock_kwargs = MOCK_REQUEST.call_args
 
-            self.assertEqual(mock_args[0], 'GET')
-            self.assertEqual(mock_args[1], REQUEST_URL)
-            self.assertEqual(mock_kwargs['headers']['X-Auth-Token'], 'token')
-            self.assertEqual(mock_kwargs['cert'], ('cert.pem', 'key.pem'))
-            self.assertEqual(mock_kwargs['verify'], 'ca.pem')
+        self.assertEqual(mock_args[0], 'GET')
+        self.assertEqual(mock_args[1], REQUEST_URL)
+        self.assertEqual(mock_kwargs['headers']['X-Auth-Token'], 'token')
+        self.assertEqual(mock_kwargs['cert'], ('cert.pem', 'key.pem'))
+        self.assertEqual(mock_kwargs['verify'], 'ca.pem')
 
-            # Automatic JSON parsing
-            self.assertEqual(body, {"hi": "there"})
+        # Automatic JSON parsing
+        self.assertEqual(body, {"hi": "there"})
 
-    def test_post(self):
+    @mock.patch.object(session.requests.Session, 'request')
+    def test_post(self, MOCK_REQUEST):
+        MOCK_REQUEST.return_value = FAKE_RESPONSE
         cl = get_authed_client()
 
-        with mock.patch.object(requests, "request", MOCK_REQUEST):
-            cl.post("/hi", body=[1, 2, 3])
+        cl.post("/hi", body=[1, 2, 3])
 
-            # this may become too tightly couple later
-            mock_args, mock_kwargs = MOCK_REQUEST.call_args
+        # this may become too tightly couple later
+        mock_args, mock_kwargs = MOCK_REQUEST.call_args
 
-            self.assertEqual(mock_args[0], 'POST')
-            self.assertEqual(mock_args[1], REQUEST_URL)
-            self.assertEqual(mock_kwargs['data'], '[1, 2, 3]')
-            self.assertEqual(mock_kwargs['headers']['X-Auth-Token'], 'token')
-            self.assertEqual(mock_kwargs['cert'], ('cert.pem', 'key.pem'))
-            self.assertEqual(mock_kwargs['verify'], 'ca.pem')
+        self.assertEqual(mock_args[0], 'POST')
+        self.assertEqual(mock_args[1], REQUEST_URL)
+        self.assertEqual(mock_kwargs['data'], '[1, 2, 3]')
+        self.assertEqual(mock_kwargs['headers']['X-Auth-Token'], 'token')
+        self.assertEqual(mock_kwargs['cert'], ('cert.pem', 'key.pem'))
+        self.assertEqual(mock_kwargs['verify'], 'ca.pem')
 
-    def test_post_auth(self):
-        with mock.patch.object(requests, "request", MOCK_REQUEST):
-            cl = httpclient.HTTPClient(
-                username="username", password="password", tenant_id="tenant",
-                auth_url="auth_test", cacert="ca.pem", key="key.pem",
-                cert="cert.pem")
-            cl.management_url = "https://127.0.0.1:5000"
-            cl.auth_token = "token"
-            cl.post("/hi", body=[1, 2, 3])
+    @mock.patch.object(session.requests.Session, 'request')
+    def test_post_auth(self, MOCK_REQUEST):
+        MOCK_REQUEST.return_value = FAKE_RESPONSE
+        cl = httpclient.HTTPClient(
+            username="username", password="password", tenant_id="tenant",
+            auth_url="auth_test", cacert="ca.pem", key="key.pem",
+            cert="cert.pem")
+        cl.management_url = "https://127.0.0.1:5000"
+        cl.auth_token = "token"
+        cl.post("/hi", body=[1, 2, 3])
 
-            # this may become too tightly couple later
-            mock_args, mock_kwargs = MOCK_REQUEST.call_args
+        # this may become too tightly couple later
+        mock_args, mock_kwargs = MOCK_REQUEST.call_args
 
-            self.assertEqual(mock_args[0], 'POST')
-            self.assertEqual(mock_args[1], REQUEST_URL)
-            self.assertEqual(mock_kwargs['data'], '[1, 2, 3]')
-            self.assertEqual(mock_kwargs['headers']['X-Auth-Token'], 'token')
-            self.assertEqual(mock_kwargs['cert'], ('cert.pem', 'key.pem'))
-            self.assertEqual(mock_kwargs['verify'], 'ca.pem')
+        self.assertEqual(mock_args[0], 'POST')
+        self.assertEqual(mock_args[1], REQUEST_URL)
+        self.assertEqual(mock_kwargs['data'], '[1, 2, 3]')
+        self.assertEqual(mock_kwargs['headers']['X-Auth-Token'], 'token')
+        self.assertEqual(mock_kwargs['cert'], ('cert.pem', 'key.pem'))
+        self.assertEqual(mock_kwargs['verify'], 'ca.pem')
