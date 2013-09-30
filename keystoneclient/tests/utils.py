@@ -72,6 +72,15 @@ class TestCase(testtools.TestCase):
     def assertQueryStringIs(self, val):
         self.assertEqual(httpretty.last_request().querystring, val)
 
+    def assertRequestHeaderEqual(self, name, val):
+        """Verify that the last request made contains a header and its value
+
+        The request must have already been made and httpretty must have been
+        activated for the request.
+        """
+        headers = httpretty.last_request().headers
+        self.assertEqual(headers.getheader(name), val)
+
 
 if tuple(sys.version_info)[0:2] < (2, 7):
 
