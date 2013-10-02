@@ -898,6 +898,9 @@ class AuthProtocol(object):
             'X-Role': roles,
         }
 
+        self.LOG.debug("Received request from user: %s with project_id : %s"
+                       " and roles: %s ", user_id, project_id, roles)
+
         try:
             catalog = catalog_root[catalog_key]
             rval['X-Service-Catalog'] = jsonutils.dumps(catalog)
