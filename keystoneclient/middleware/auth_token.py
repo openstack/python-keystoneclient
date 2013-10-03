@@ -298,12 +298,30 @@ opts = [
                 help='(optional) indicate whether to set the X-Service-Catalog'
                 ' header. If False, middleware will not ask for service'
                 ' catalog on token validation and will not set the'
-                ' X-Service-Catalog header.')
+                ' X-Service-Catalog header.'),
+    cfg.StrOpt('enforce_token_bind',
+               default='permissive',
+               help='Used to control the use and type of token binding. Can'
+               ' be set to: "disabled" to not check token binding.'
+               ' "permissive" (default) to validate binding information if the'
+               ' bind type is of a form known to the server and ignore it if'
+               ' not. "strict" like "permissive" but if the bind type is'
+               ' unknown the token will be rejected. "required" any form of'
+               ' token binding is needed to be allowed. Finally the name of a'
+               ' binding method that must be present in tokens.'),
 ]
 CONF.register_opts(opts, group='keystone_authtoken')
 
 LIST_OF_VERSIONS_TO_ATTEMPT = ['v2.0', 'v3.0']
 CACHE_KEY_TEMPLATE = 'tokens/%s'
+
+
+class BIND_MODE:
+    DISABLED = 'disabled'
+    PERMISSIVE = 'permissive'
+    STRICT = 'strict'
+    REQUIRED = 'required'
+    KERBEROS = 'kerberos'
 
 
 def will_expire_soon(expiry):
@@ -574,7 +592,7 @@ class AuthProtocol(object):
         try:
             self._remove_auth_headers(env)
             user_token = self._get_user_token_from_header(env)
-            token_info = self._validate_user_token(user_token)
+            token_info = self._validate_user_token(user_token, env)
             env['keystone.token_info'] = token_info
             user_headers = self._build_user_headers(token_info)
             self._add_headers(env, user_headers)
@@ -797,7 +815,7 @@ class AuthProtocol(object):
                 "Unable to parse expiration time from token: %s", data)
             raise ServiceError('invalid json response')
 
-    def _validate_user_token(self, user_token, retry=True):
+    def _validate_user_token(self, user_token, env, retry=True):
         """Authenticate user using PKI
 
         :param user_token: user's token id
@@ -820,6 +838,7 @@ class AuthProtocol(object):
             else:
                 data = self.verify_uuid_token(user_token, retry)
             expires = confirm_token_not_expired(data)
+            self._confirm_token_bind(data, env)
             self._cache_put(token_id, data, expires)
             return data
         except NetworkError:
@@ -1058,6 +1077,77 @@ class AuthProtocol(object):
                             data_to_store,
                             timeout=self.token_cache_time)
 
+    def _invalid_user_token(self, msg=False):
+        # NOTE(jamielennox): use False as the default so that None is valid
+        if msg is False:
+            msg = 'Token authorization failed'
+
+        raise InvalidUserToken(msg)
+
+    def _confirm_token_bind(self, data, env):
+        bind_mode = self._conf_get('enforce_token_bind')
+
+        if bind_mode == BIND_MODE.DISABLED:
+            return
+
+        try:
+            if _token_is_v2(data):
+                bind = data['access']['token']['bind']
+            elif _token_is_v3(data):
+                bind = data['token']['bind']
+            else:
+                self._invalid_user_token()
+        except KeyError:
+            bind = {}
+
+        # permissive and strict modes don't require there to be a bind
+        permissive = bind_mode in (BIND_MODE.PERMISSIVE, BIND_MODE.STRICT)
+
+        if not bind:
+            if permissive:
+                # no bind provided and none required
+                return
+            else:
+                self.LOG.info("No bind information present in token.")
+                self._invalid_user_token()
+
+        # get the named mode if bind_mode is not one of the predefined
+        if permissive or bind_mode == BIND_MODE.REQUIRED:
+            name = None
+        else:
+            name = bind_mode
+
+        if name and name not in bind:
+            self.LOG.info("Named bind mode %s not in bind information", name)
+            self._invalid_user_token()
+
+        for bind_type, identifier in six.iteritems(bind):
+            if bind_type == BIND_MODE.KERBEROS:
+                if not env.get('AUTH_TYPE', '').lower() == 'negotiate':
+                    self.LOG.info("Kerberos credentials required and "
+                                  "not present.")
+                    self._invalid_user_token()
+
+                if not env.get('REMOTE_USER') == identifier:
+                    self.LOG.info("Kerberos credentials do not match "
+                                  "those in bind.")
+                    self._invalid_user_token()
+
+                self.LOG.debug("Kerberos bind authentication successful.")
+
+            elif bind_mode == BIND_MODE.PERMISSIVE:
+                self.LOG.debug("Ignoring Unknown bind for permissive mode: "
+                               "%(bind_type)s: %(identifier)s.",
+                               {'bind_type': bind_type,
+                                'identifier': identifier})
+
+            else:
+                self.LOG.info("Couldn't verify unknown bind: %(bind_type)s: "
+                              "%(identifier)s.",
+                              {'bind_type': bind_type,
+                               'identifier': identifier})
+                self._invalid_user_token()
+
     def _cache_put(self, token_id, data, expires):
         """Put token data into the cache.
 
@@ -1127,7 +1217,7 @@ class AuthProtocol(object):
                            response.status_code)
         if retry:
             self.LOG.info('Retrying validation')
-            return self._validate_user_token(user_token, False)
+            return self._validate_user_token(user_token, env, False)
         else:
             self.LOG.warn("Invalid user token: %s. Keystone response: %s.",
                           user_token, data)

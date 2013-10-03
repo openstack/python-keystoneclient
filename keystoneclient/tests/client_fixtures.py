@@ -77,6 +77,8 @@ class Examples(fixtures.Fixture):
         with open(self.SIGNING_CERT_FILE) as f:
             self.SIGNING_CERT = f.read()
 
+        self.KERBEROS_BIND = 'USER@REALM'
+
         self.SIGNING_KEY_FILE = os.path.join(KEYDIR, 'signing_key.pem')
         with open(self.SIGNING_KEY_FILE) as f:
             self.SIGNING_KEY = f.read()
@@ -88,10 +90,14 @@ class Examples(fixtures.Fixture):
         self.UUID_TOKEN_DEFAULT = "ec6c0710ec2f471498484c1b53ab4f9d"
         self.UUID_TOKEN_NO_SERVICE_CATALOG = '8286720fbe4941e69fa8241723bb02df'
         self.UUID_TOKEN_UNSCOPED = '731f903721c14827be7b2dc912af7776'
+        self.UUID_TOKEN_BIND = '3fc54048ad64405c98225ce0897af7c5'
+        self.UUID_TOKEN_UNKNOWN_BIND = '8885fdf4d42e4fb9879e6379fa1eaf48'
         self.VALID_DIABLO_TOKEN = 'b0cf19b55dbb4f20a6ee18e6c6cf1726'
         self.v3_UUID_TOKEN_DEFAULT = '5603457654b346fdbb93437bfe76f2f1'
         self.v3_UUID_TOKEN_UNSCOPED = 'd34835fdaec447e695a0a024d84f8d79'
         self.v3_UUID_TOKEN_DOMAIN_SCOPED = 'e8a7b63aaa4449f38f0c5c05c3581792'
+        self.v3_UUID_TOKEN_BIND = '2f61f73e1c854cbb9534c487f9bd63c2'
+        self.v3_UUID_TOKEN_UNKNOWN_BIND = '7ed9781b62cd4880b8d8c6788ab1d1e2'
 
         self.REVOKED_TOKEN_HASH = utils.hash_signed_token(self.REVOKED_TOKEN)
         self.REVOKED_TOKEN_LIST = (
@@ -209,6 +215,50 @@ class Examples(fixtures.Fixture):
                     }
                 },
             },
+            self.UUID_TOKEN_BIND: {
+                'access': {
+                    'token': {
+                        'bind': {'kerberos': self.KERBEROS_BIND},
+                        'id': self.UUID_TOKEN_BIND,
+                        'expires': '2020-01-01T00:00:10.000123Z',
+                        'tenant': {
+                            'id': 'tenant_id1',
+                            'name': 'tenant_name1',
+                        },
+                    },
+                    'user': {
+                        'id': 'user_id1',
+                        'name': 'user_name1',
+                        'roles': [
+                            {'name': 'role1'},
+                            {'name': 'role2'},
+                        ],
+                    },
+                    'serviceCatalog': {}
+                },
+            },
+            self.UUID_TOKEN_UNKNOWN_BIND: {
+                'access': {
+                    'token': {
+                        'bind': {'FOO': 'BAR'},
+                        'id': self.UUID_TOKEN_UNKNOWN_BIND,
+                        'expires': '2020-01-01T00:00:10.000123Z',
+                        'tenant': {
+                            'id': 'tenant_id1',
+                            'name': 'tenant_name1',
+                        },
+                    },
+                    'user': {
+                        'id': 'user_id1',
+                        'name': 'user_name1',
+                        'roles': [
+                            {'name': 'role1'},
+                            {'name': 'role2'},
+                        ],
+                    },
+                    'serviceCatalog': {}
+                },
+            },
             self.v3_UUID_TOKEN_DEFAULT: {
                 'token': {
                     'expires_at': '2020-01-01T00:00:10.000123Z',
@@ -324,6 +374,60 @@ class Examples(fixtures.Fixture):
                     'roles': [
                         {'name': 'role1'},
                         {'name': 'role2'}
+                    ],
+                    'catalog': {}
+                }
+            },
+            self.v3_UUID_TOKEN_BIND: {
+                'token': {
+                    'bind': {'kerberos': self.KERBEROS_BIND},
+                    'expires_at': '2020-01-01T00:00:10.000123Z',
+                    'user': {
+                        'id': 'user_id1',
+                        'name': 'user_name1',
+                        'domain': {
+                            'id': 'domain_id1',
+                            'name': 'domain_name1'
+                        }
+                    },
+                    'project': {
+                        'id': 'tenant_id1',
+                        'name': 'tenant_name1',
+                        'domain': {
+                            'id': 'domain_id1',
+                            'name': 'domain_name1'
+                        }
+                    },
+                    'roles': [
+                        {'name': 'role1', 'id': 'Role1'},
+                        {'name': 'role2', 'id': 'Role2'},
+                    ],
+                    'catalog': {}
+                }
+            },
+            self.v3_UUID_TOKEN_UNKNOWN_BIND: {
+                'token': {
+                    'bind': {'FOO': 'BAR'},
+                    'expires_at': '2020-01-01T00:00:10.000123Z',
+                    'user': {
+                        'id': 'user_id1',
+                        'name': 'user_name1',
+                        'domain': {
+                            'id': 'domain_id1',
+                            'name': 'domain_name1'
+                        }
+                    },
+                    'project': {
+                        'id': 'tenant_id1',
+                        'name': 'tenant_name1',
+                        'domain': {
+                            'id': 'domain_id1',
+                            'name': 'domain_name1'
+                        }
+                    },
+                    'roles': [
+                        {'name': 'role1', 'id': 'Role1'},
+                        {'name': 'role2', 'id': 'Role2'},
                     ],
                     'catalog': {}
                 }

@@ -247,6 +247,7 @@ class BaseAuthTokenMiddlewareTest(testtools.TestCase):
             'auth_uri': 'https://keystone.example.com:1234',
         }
 
+        self.auth_version = auth_version
         self.response_status = None
         self.response_headers = None
 
@@ -902,6 +903,170 @@ class CommonAuthTokenMiddlewareTest(object):
         self.assert_valid_request_200(self.token_dict['uuid_token_default'],
                                       with_catalog=False)
 
+    def assert_kerberos_bind(self, token, bind_level,
+                             use_kerberos=True, success=True):
+        conf = {
+            'enforce_token_bind': bind_level,
+            'auth_version': self.auth_version,
+        }
+        self.set_middleware(conf=conf)
+
+        req = webob.Request.blank('/')
+        req.headers['X-Auth-Token'] = token
+
+        if use_kerberos:
+            if use_kerberos is True:
+                req.environ['REMOTE_USER'] = self.examples.KERBEROS_BIND
+            else:
+                req.environ['REMOTE_USER'] = use_kerberos
+
+            req.environ['AUTH_TYPE'] = 'Negotiate'
+
+        body = self.middleware(req.environ, self.start_fake_response)
+
+        if success:
+            self.assertEqual(self.response_status, 200)
+            self.assertEqual(body, ['SUCCESS'])
+            self.assertIn('keystone.token_info', req.environ)
+            self.assert_valid_last_url(token)
+        else:
+            self.assertEqual(self.response_status, 401)
+            self.assertEqual(self.response_headers['WWW-Authenticate'],
+                             "Keystone uri='https://keystone.example.com:1234'"
+                             )
+
+    def test_uuid_bind_token_disabled_with_kerb_user(self):
+        for use_kerberos in [True, False]:
+            self.assert_kerberos_bind(self.token_dict['uuid_token_bind'],
+                                      bind_level='disabled',
+                                      use_kerberos=use_kerberos,
+                                      success=True)
+
+    def test_uuid_bind_token_disabled_with_incorrect_ticket(self):
+        self.assert_kerberos_bind(self.token_dict['uuid_token_bind'],
+                                  bind_level='kerberos',
+                                  use_kerberos='ronald@MCDONALDS.COM',
+                                  success=False)
+
+    def test_uuid_bind_token_permissive_with_kerb_user(self):
+        self.assert_kerberos_bind(self.token_dict['uuid_token_bind'],
+                                  bind_level='permissive',
+                                  use_kerberos=True,
+                                  success=True)
+
+    def test_uuid_bind_token_permissive_without_kerb_user(self):
+        self.assert_kerberos_bind(self.token_dict['uuid_token_bind'],
+                                  bind_level='permissive',
+                                  use_kerberos=False,
+                                  success=False)
+
+    def test_uuid_bind_token_permissive_with_unknown_bind(self):
+        token = self.token_dict['uuid_token_unknown_bind']
+
+        for use_kerberos in [True, False]:
+            self.assert_kerberos_bind(token,
+                                      bind_level='permissive',
+                                      use_kerberos=use_kerberos,
+                                      success=True)
+
+    def test_uuid_bind_token_permissive_with_incorrect_ticket(self):
+        self.assert_kerberos_bind(self.token_dict['uuid_token_bind'],
+                                  bind_level='kerberos',
+                                  use_kerberos='ronald@MCDONALDS.COM',
+                                  success=False)
+
+    def test_uuid_bind_token_strict_with_kerb_user(self):
+        self.assert_kerberos_bind(self.token_dict['uuid_token_bind'],
+                                  bind_level='strict',
+                                  use_kerberos=True,
+                                  success=True)
+
+    def test_uuid_bind_token_strict_with_kerbout_user(self):
+        self.assert_kerberos_bind(self.token_dict['uuid_token_bind'],
+                                  bind_level='strict',
+                                  use_kerberos=False,
+                                  success=False)
+
+    def test_uuid_bind_token_strict_with_unknown_bind(self):
+        token = self.token_dict['uuid_token_unknown_bind']
+
+        for use_kerberos in [True, False]:
+            self.assert_kerberos_bind(token,
+                                      bind_level='strict',
+                                      use_kerberos=use_kerberos,
+                                      success=False)
+
+    def test_uuid_bind_token_required_with_kerb_user(self):
+        self.assert_kerberos_bind(self.token_dict['uuid_token_bind'],
+                                  bind_level='required',
+                                  use_kerberos=True,
+                                  success=True)
+
+    def test_uuid_bind_token_required_without_kerb_user(self):
+        self.assert_kerberos_bind(self.token_dict['uuid_token_bind'],
+                                  bind_level='required',
+                                  use_kerberos=False,
+                                  success=False)
+
+    def test_uuid_bind_token_required_with_unknown_bind(self):
+        token = self.token_dict['uuid_token_unknown_bind']
+
+        for use_kerberos in [True, False]:
+            self.assert_kerberos_bind(token,
+                                      bind_level='required',
+                                      use_kerberos=use_kerberos,
+                                      success=False)
+
+    def test_uuid_bind_token_required_without_bind(self):
+        for use_kerberos in [True, False]:
+            self.assert_kerberos_bind(self.token_dict['uuid_token_default'],
+                                      bind_level='required',
+                                      use_kerberos=use_kerberos,
+                                      success=False)
+
+    def test_uuid_bind_token_named_kerberos_with_kerb_user(self):
+        self.assert_kerberos_bind(self.token_dict['uuid_token_bind'],
+                                  bind_level='kerberos',
+                                  use_kerberos=True,
+                                  success=True)
+
+    def test_uuid_bind_token_named_kerberos_without_kerb_user(self):
+        self.assert_kerberos_bind(self.token_dict['uuid_token_bind'],
+                                  bind_level='kerberos',
+                                  use_kerberos=False,
+                                  success=False)
+
+    def test_uuid_bind_token_named_kerberos_with_unknown_bind(self):
+        token = self.token_dict['uuid_token_unknown_bind']
+
+        for use_kerberos in [True, False]:
+            self.assert_kerberos_bind(token,
+                                      bind_level='kerberos',
+                                      use_kerberos=use_kerberos,
+                                      success=False)
+
+    def test_uuid_bind_token_named_kerberos_without_bind(self):
+        for use_kerberos in [True, False]:
+            self.assert_kerberos_bind(self.token_dict['uuid_token_default'],
+                                      bind_level='kerberos',
+                                      use_kerberos=use_kerberos,
+                                      success=False)
+
+    def test_uuid_bind_token_named_kerberos_with_incorrect_ticket(self):
+        self.assert_kerberos_bind(self.token_dict['uuid_token_bind'],
+                                  bind_level='kerberos',
+                                  use_kerberos='ronald@MCDONALDS.COM',
+                                  success=False)
+
+    def test_uuid_bind_token_with_unknown_named_FOO(self):
+        token = self.token_dict['uuid_token_bind']
+
+        for use_kerberos in [True, False]:
+            self.assert_kerberos_bind(token,
+                                      bind_level='FOO',
+                                      use_kerberos=use_kerberos,
+                                      success=False)
+
 
 class CertDownloadMiddlewareTest(BaseAuthTokenMiddlewareTest,
                                  testresources.ResourcedTestCase):
@@ -1043,6 +1208,8 @@ class v2AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
         self.token_dict = {
             'uuid_token_default': self.examples.UUID_TOKEN_DEFAULT,
             'uuid_token_unscoped': self.examples.UUID_TOKEN_UNSCOPED,
+            'uuid_token_bind': self.examples.UUID_TOKEN_BIND,
+            'uuid_token_unknown_bind': self.examples.UUID_TOKEN_UNKNOWN_BIND,
             'signed_token_scoped': self.examples.SIGNED_TOKEN_SCOPED,
             'signed_token_scoped_expired':
             self.examples.SIGNED_TOKEN_SCOPED_EXPIRED,
@@ -1069,6 +1236,8 @@ class v2AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
 
         for token in (self.examples.UUID_TOKEN_DEFAULT,
                       self.examples.UUID_TOKEN_UNSCOPED,
+                      self.examples.UUID_TOKEN_BIND,
+                      self.examples.UUID_TOKEN_UNKNOWN_BIND,
                       self.examples.UUID_TOKEN_NO_SERVICE_CATALOG):
             httpretty.register_uri(httpretty.GET,
                                    "%s/v2.0/tokens/%s" % (BASE_URI, token),
@@ -1223,6 +1392,9 @@ class v3AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
         self.token_dict = {
             'uuid_token_default': self.examples.v3_UUID_TOKEN_DEFAULT,
             'uuid_token_unscoped': self.examples.v3_UUID_TOKEN_UNSCOPED,
+            'uuid_token_bind': self.examples.v3_UUID_TOKEN_BIND,
+            'uuid_token_unknown_bind':
+            self.examples.v3_UUID_TOKEN_UNKNOWN_BIND,
             'signed_token_scoped': self.examples.SIGNED_v3_TOKEN_SCOPED,
             'signed_token_scoped_expired':
             self.examples.SIGNED_TOKEN_SCOPED_EXPIRED,
