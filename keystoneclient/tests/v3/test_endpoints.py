@@ -14,6 +14,7 @@
 
 import uuid
 
+from keystoneclient import exceptions
 from keystoneclient.tests.v3 import utils
 from keystoneclient.v3 import endpoints
 
@@ -49,7 +50,7 @@ class EndpointTests(utils.TestCase, utils.CrudTests):
 
     def test_create_invalid_interface(self):
         ref = self.new_ref(interface=uuid.uuid4().hex)
-        self.assertRaises(Exception, self.manager.create,
+        self.assertRaises(exceptions.ValidationError, self.manager.create,
                           **utils.parameterize(ref))
 
     def test_update_public_interface(self):
@@ -66,7 +67,8 @@ class EndpointTests(utils.TestCase, utils.CrudTests):
 
     def test_update_invalid_interface(self):
         ref = self.new_ref(interface=uuid.uuid4().hex)
-        self.assertRaises(Exception, self.manager.update,
+        ref['endpoint'] = "fake_endpoint"
+        self.assertRaises(exceptions.ValidationError, self.manager.update,
                           **utils.parameterize(ref))
 
     def test_list_public_interface(self):
@@ -87,5 +89,5 @@ class EndpointTests(utils.TestCase, utils.CrudTests):
     def test_list_invalid_interface(self):
         interface = uuid.uuid4().hex
         expected_path = 'v3/%s?interface=%s' % (self.collection_key, interface)
-        self.assertRaises(Exception, self.manager.list,
+        self.assertRaises(exceptions.ValidationError, self.manager.list,
                           expected_path=expected_path, interface=interface)
