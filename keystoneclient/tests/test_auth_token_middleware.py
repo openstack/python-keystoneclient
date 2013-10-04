@@ -212,7 +212,8 @@ class BaseAuthTokenMiddlewareTest(testtools.TestCase):
             'auth_protocol': 'https',
             'auth_admin_prefix': '/testadmin',
             'signing_dir': client_fixtures.CERTDIR,
-            'auth_version': auth_version
+            'auth_version': auth_version,
+            'auth_uri': 'https://keystone.example.com:1234',
         }
 
         self.response_status = None
@@ -374,6 +375,7 @@ class NoMemcacheAuthToken(BaseAuthTokenMiddlewareTest):
             'auth_host': 'keystone.example.com',
             'auth_port': 1234,
             'memcached_servers': 'localhost:11211',
+            'auth_uri': 'https://keystone.example.com:1234',
         }
 
         auth_token.AuthProtocol(FakeApp(), conf)
@@ -402,6 +404,7 @@ class CommonAuthTokenMiddlewareTest(object):
             'auth_host': '2001:2013:1:f101::1',
             'auth_port': 1234,
             'auth_protocol': 'http',
+            'auth_uri': None,
         }
         self.set_middleware(conf=conf)
         expected_auth_uri = 'http://[2001:2013:1:f101::1]:1234'
@@ -776,7 +779,8 @@ class CommonAuthTokenMiddlewareTest(object):
 
     def test_config_revocation_cache_timeout(self):
         conf = {
-            'revocation_cache_time': 24
+            'revocation_cache_time': 24,
+            'auth_uri': 'https://keystone.example.com:1234',
         }
         middleware = auth_token.AuthProtocol(self.fake_app, conf)
         self.assertEquals(middleware.token_revocation_list_cache_timeout,
