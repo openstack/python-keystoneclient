@@ -309,6 +309,29 @@ def will_expire_soon(expiry):
     return expiry < soon
 
 
+def _token_is_v2(token_info):
+    return ('access' in token_info)
+
+
+def _token_is_v3(token_info):
+    return ('token' in token_info)
+
+
+def confirm_token_not_expired(data):
+    if not data:
+        raise InvalidUserToken('Token authorization failed')
+    if _token_is_v2(data):
+        timestamp = data['access']['token']['expires']
+    elif _token_is_v3(data):
+        timestamp = data['token']['expires_at']
+    else:
+        raise InvalidUserToken('Token authorization failed')
+    expires = timeutils.parse_isotime(timestamp).strftime('%s')
+    if time.time() >= float(expires):
+        raise InvalidUserToken('Token authorization failed')
+    return expires
+
+
 def safe_quote(s):
     """URL-encode strings that are not already URL-encoded."""
     return urllib.quote(s) if s == urllib.unquote(s) else s
@@ -783,7 +806,7 @@ class AuthProtocol(object):
                 data = jsonutils.loads(verified)
             else:
                 data = self.verify_uuid_token(user_token, retry)
-            expires = self._confirm_token_not_expired(data)
+            expires = confirm_token_not_expired(data)
             self._cache_put(token_id, data, expires)
             return data
         except NetworkError:
@@ -796,12 +819,6 @@ class AuthProtocol(object):
                 self._cache_store_invalid(token_id)
             self.LOG.warn("Authorization failed for token %s", token_id)
             raise InvalidUserToken('Token authorization failed')
-
-    def _token_is_v2(self, token_info):
-        return ('access' in token_info)
-
-    def _token_is_v3(self, token_info):
-        return ('token' in token_info)
 
     def _build_user_headers(self, token_info):
         """Convert token object into headers.
@@ -846,7 +863,7 @@ class AuthProtocol(object):
         project_domain_id = None
         project_domain_name = None
 
-        if self._token_is_v2(token_info):
+        if _token_is_v2(token_info):
             user = token_info['access']['user']
             token = token_info['access']['token']
             roles = ','.join([role['name'] for role in user.get('roles', [])])
@@ -1018,21 +1035,6 @@ class AuthProtocol(object):
             self._cache.set(cache_key,
                             data_to_store,
                             timeout=self.token_cache_time)
-
-    def _confirm_token_not_expired(self, data):
-        if not data:
-            raise InvalidUserToken('Token authorization failed')
-        if self._token_is_v2(data):
-            timestamp = data['access']['token']['expires']
-        elif self._token_is_v3(data):
-            timestamp = data['token']['expires_at']
-        else:
-            raise InvalidUserToken('Token authorization failed')
-        expires = timeutils.parse_isotime(timestamp).strftime('%s')
-        if time.time() >= float(expires):
-            self.LOG.debug('Token expired a %s', timestamp)
-            raise InvalidUserToken('Token authorization failed')
-        return expires
 
     def _cache_put(self, token_id, data, expires):
         """Put token data into the cache.
