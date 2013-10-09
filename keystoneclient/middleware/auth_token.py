@@ -326,10 +326,12 @@ def confirm_token_not_expired(data):
         timestamp = data['token']['expires_at']
     else:
         raise InvalidUserToken('Token authorization failed')
-    expires = timeutils.parse_isotime(timestamp).strftime('%s')
-    if time.time() >= float(expires):
+    expires = timeutils.parse_isotime(timestamp)
+    expires = timeutils.normalize_time(expires)
+    utcnow = timeutils.utcnow()
+    if utcnow >= expires:
         raise InvalidUserToken('Token authorization failed')
-    return expires
+    return timeutils.isotime(at=expires, subsecond=True)
 
 
 def safe_quote(s):
@@ -999,7 +1001,18 @@ class AuthProtocol(object):
                 raise InvalidUserToken('Token authorization failed')
 
             data, expires = cached
-            if ignore_expires or time.time() < float(expires):
+
+            try:
+                expires = timeutils.parse_isotime(expires)
+            except ValueError:
+                # Gracefully handle upgrade of expiration times from *nix
+                # timestamps to ISO 8601 formatted dates by ignoring old cached
+                # values.
+                return
+
+            expires = timeutils.normalize_time(expires)
+            utcnow = timeutils.utcnow()
+            if ignore_expires or utcnow < expires:
                 self.LOG.debug('Returning cached token %s', token_id)
                 return data
             else:
