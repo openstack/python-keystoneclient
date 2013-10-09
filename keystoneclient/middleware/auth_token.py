@@ -462,11 +462,12 @@ class AuthProtocol(object):
     def _assert_valid_memcache_protection_config(self):
         if self._memcache_security_strategy:
             if self._memcache_security_strategy not in ('MAC', 'ENCRYPT'):
-                raise Exception('memcache_security_strategy must be '
-                                'ENCRYPT or MAC')
+                raise ConfigurationError('memcache_security_strategy must be '
+                                         'ENCRYPT or MAC')
             if not self._memcache_secret_key:
-                raise Exception('mecmache_secret_key must be defined when '
-                                'a memcache_security_strategy is defined')
+                raise ConfigurationError('mecmache_secret_key must be defined '
+                                         'when a memcache_security_strategy '
+                                         'is defined')
 
     def _init_cache(self, env):
         cache = self._conf_get('cache')

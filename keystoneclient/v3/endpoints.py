@@ -15,6 +15,7 @@
 #    under the License.
 
 from keystoneclient import base
+from keystoneclient import exceptions
 
 
 VALID_INTERFACES = ['public', 'admin', 'internal']
@@ -45,7 +46,7 @@ class EndpointManager(base.CrudManager):
         if interface is not None and interface not in VALID_INTERFACES:
             msg = '"interface" must be one of: %s'
             msg = msg % ', '.join(VALID_INTERFACES)
-            raise Exception(msg)
+            raise exceptions.ValidationError(msg)
 
     def create(self, service, url, interface=None, region=None, enabled=True,
                **kwargs):
