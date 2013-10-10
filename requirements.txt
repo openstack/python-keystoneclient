@@ -4,7 +4,7 @@ iso8601>=0.1.4
 PrettyTable>=0.6,<0.8
 requests>=1.1
 simplejson>=2.0.9
-six
+six>=1.4.1
 oslo.config>=1.2.0
 netaddr
-Babel>=0.9.6
+Babel>=1.3
