@@ -15,6 +15,7 @@
 # under the License.
 
 import httpretty
+import six
 import testtools
 from testtools import matchers
 
@@ -194,10 +195,10 @@ class BasicRequestTests(testtools.TestCase):
 
         self.request(headers=headers)
 
-        for k, v in headers.iteritems():
+        for k, v in six.iteritems(headers):
             self.assertEqual(httpretty.last_request().headers[k], v)
 
-        for header in headers.iteritems():
+        for header in six.iteritems(headers):
             self.assertThat(self.logger.debug_log,
                             matchers.Contains('-H "%s: %s"' % header))
 

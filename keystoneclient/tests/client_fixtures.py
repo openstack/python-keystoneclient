@@ -16,6 +16,8 @@
 
 import os
 
+import six
+
 from keystoneclient.common import cms
 from keystoneclient.openstack.common import jsonutils
 from keystoneclient.openstack.common import timeutils
@@ -295,4 +297,4 @@ TOKEN_RESPONSES = {
 
 
 JSON_TOKEN_RESPONSES = dict([(k, jsonutils.dumps(v)) for k, v in
-                             TOKEN_RESPONSES.iteritems()])
+                             six.iteritems(TOKEN_RESPONSES)])
