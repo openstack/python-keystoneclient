@@ -116,7 +116,7 @@ class Ec2Signer(object):
 
     def _calc_signature_1(self, params):
         """Generate AWS signature version 1 string."""
-        keys = params.keys()
+        keys = list(params)
         keys.sort(cmp=lambda x, y: cmp(x.lower(), y.lower()))
         for key in keys:
             self.hmac.update(key)
@@ -129,7 +129,7 @@ class Ec2Signer(object):
         """Construct a sorted, correctly encoded query string as required for
         _calc_signature_2 and _calc_signature_4.
         """
-        keys = params.keys()
+        keys = list(params)
         keys.sort()
         pairs = []
         for key in keys:

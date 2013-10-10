@@ -141,7 +141,7 @@ class ServiceCatalogV2(ServiceCatalog):
                 continue
             sc[service['type']] = []
             for endpoint in service['endpoints']:
-                if endpoint_type and endpoint_type not in endpoint.keys():
+                if endpoint_type and endpoint_type not in endpoint:
                     continue
                 sc[service['type']].append(endpoint)
         return sc
