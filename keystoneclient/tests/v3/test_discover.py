@@ -77,11 +77,11 @@ class DiscoverKeystoneTests(utils.UnauthenticatedTestCase):
         self.assertIsInstance(versions, dict)
         self.assertIn('message', versions)
         self.assertIn('v3.0', versions)
-        self.assertEquals(
+        self.assertEqual(
             versions['v3.0']['url'],
             self.TEST_RESPONSE_DICT['versions']['values'][0]['links'][0]
             ['href'])
-        self.assertEquals(
+        self.assertEqual(
             versions['v2.0']['url'],
             self.TEST_RESPONSE_DICT['versions']['values'][1]['links'][0]
             ['href'])

@@ -35,8 +35,8 @@ class KeystoneClientTest(utils.TestCase):
         self.assertIsNotNone(c.auth_ref)
         self.assertFalse(c.auth_ref.domain_scoped)
         self.assertFalse(c.auth_ref.project_scoped)
-        self.assertEquals(c.auth_user_id,
-                          'c4da488862bd435c9e6c0275a0d0e49a')
+        self.assertEqual(c.auth_user_id,
+                         'c4da488862bd435c9e6c0275a0d0e49a')
 
     @httpretty.activate
     def test_domain_scoped_init(self):
@@ -49,10 +49,10 @@ class KeystoneClientTest(utils.TestCase):
         self.assertIsNotNone(c.auth_ref)
         self.assertTrue(c.auth_ref.domain_scoped)
         self.assertFalse(c.auth_ref.project_scoped)
-        self.assertEquals(c.auth_user_id,
-                          'c4da488862bd435c9e6c0275a0d0e49a')
-        self.assertEquals(c.auth_domain_id,
-                          '8e9283b7ba0b1038840c3842058b86ab')
+        self.assertEqual(c.auth_user_id,
+                         'c4da488862bd435c9e6c0275a0d0e49a')
+        self.assertEqual(c.auth_domain_id,
+                         '8e9283b7ba0b1038840c3842058b86ab')
 
     @httpretty.activate
     def test_project_scoped_init(self):
@@ -66,10 +66,10 @@ class KeystoneClientTest(utils.TestCase):
         self.assertIsNotNone(c.auth_ref)
         self.assertFalse(c.auth_ref.domain_scoped)
         self.assertTrue(c.auth_ref.project_scoped)
-        self.assertEquals(c.auth_user_id,
-                          'c4da488862bd435c9e6c0275a0d0e49a')
-        self.assertEquals(c.auth_tenant_id,
-                          '225da22d3ce34b15877ea70b2a575f58')
+        self.assertEqual(c.auth_user_id,
+                         'c4da488862bd435c9e6c0275a0d0e49a')
+        self.assertEqual(c.auth_tenant_id,
+                         '225da22d3ce34b15877ea70b2a575f58')
 
     @httpretty.activate
     def test_auth_ref_load(self):
@@ -84,7 +84,7 @@ class KeystoneClientTest(utils.TestCase):
         self.assertIsNotNone(new_client.auth_ref)
         self.assertFalse(new_client.auth_ref.domain_scoped)
         self.assertTrue(new_client.auth_ref.project_scoped)
-        self.assertEquals(new_client.username, 'exampleuser')
+        self.assertEqual(new_client.username, 'exampleuser')
         self.assertIsNone(new_client.password)
         self.assertEqual(new_client.management_url,
                          'http://admin:35357/v3')
@@ -107,8 +107,8 @@ class KeystoneClientTest(utils.TestCase):
         self.assertIsNotNone(new_client.auth_ref)
         self.assertFalse(new_client.auth_ref.domain_scoped)
         self.assertTrue(new_client.auth_ref.project_scoped)
-        self.assertEquals(new_client.auth_url, new_auth_url)
-        self.assertEquals(new_client.username, 'exampleuser')
+        self.assertEqual(new_client.auth_url, new_auth_url)
+        self.assertEqual(new_client.username, 'exampleuser')
         self.assertIsNone(new_client.password)
         self.assertEqual(new_client.management_url,
                          'http://admin:35357/v3')
@@ -127,7 +127,7 @@ class KeystoneClientTest(utils.TestCase):
         self.assertFalse(c.auth_ref.project_scoped)
         self.assertEqual(c.auth_ref.trust_id, 'fe0aef')
         self.assertTrue(c.auth_ref.trust_scoped)
-        self.assertEquals(c.auth_user_id, '0ca8f6')
+        self.assertEqual(c.auth_user_id, '0ca8f6')
 
     def test_init_err_no_auth_url(self):
         self.assertRaises(exceptions.AuthorizationFailure,

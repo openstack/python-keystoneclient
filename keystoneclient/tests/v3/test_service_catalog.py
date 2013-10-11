@@ -33,11 +33,11 @@ class ServiceCatalogTest(utils.TestCase):
                                              self.AUTH_RESPONSE_BODY)
         sc = auth_ref.service_catalog
 
-        self.assertEquals(sc.url_for(service_type='compute'),
-                          "https://compute.north.host/novapi/public")
-        self.assertEquals(sc.url_for(service_type='compute',
-                                     endpoint_type='internal'),
-                          "https://compute.north.host/novapi/internal")
+        self.assertEqual(sc.url_for(service_type='compute'),
+                         "https://compute.north.host/novapi/public")
+        self.assertEqual(sc.url_for(service_type='compute',
+                                    endpoint_type='internal'),
+                         "https://compute.north.host/novapi/internal")
 
         self.assertRaises(exceptions.EndpointNotFound, sc.url_for, "region",
                           "South", service_type='compute')
@@ -49,9 +49,9 @@ class ServiceCatalogTest(utils.TestCase):
 
         public_ep = sc.get_endpoints(service_type='compute',
                                      endpoint_type='public')
-        self.assertEquals(public_ep['compute'][0]['region'], 'North')
-        self.assertEquals(public_ep['compute'][0]['url'],
-                          "https://compute.north.host/novapi/public")
+        self.assertEqual(public_ep['compute'][0]['region'], 'North')
+        self.assertEqual(public_ep['compute'][0]['url'],
+                         "https://compute.north.host/novapi/public")
 
     def test_service_catalog_regions(self):
         self.AUTH_RESPONSE_BODY['token']['region_name'] = "North"
@@ -60,14 +60,14 @@ class ServiceCatalogTest(utils.TestCase):
         sc = auth_ref.service_catalog
 
         url = sc.url_for(service_type='image', endpoint_type='public')
-        self.assertEquals(url, "http://glance.north.host/glanceapi/public")
+        self.assertEqual(url, "http://glance.north.host/glanceapi/public")
 
         self.AUTH_RESPONSE_BODY['token']['region_name'] = "South"
         auth_ref = access.AccessInfo.factory(self.RESPONSE,
                                              self.AUTH_RESPONSE_BODY)
         sc = auth_ref.service_catalog
         url = sc.url_for(service_type='image', endpoint_type='internal')
-        self.assertEquals(url, "http://glance.south.host/glanceapi/internal")
+        self.assertEqual(url, "http://glance.south.host/glanceapi/internal")
 
     def test_service_catalog_empty(self):
         # We need to do a copy.deepcopy here since

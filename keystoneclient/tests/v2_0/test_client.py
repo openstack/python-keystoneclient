@@ -69,7 +69,7 @@ class KeystoneClientTest(utils.TestCase):
         self.assertFalse(new_client.auth_ref.domain_scoped)
         self.assertIsNone(new_client.auth_ref.trust_id)
         self.assertFalse(new_client.auth_ref.trust_scoped)
-        self.assertEquals(new_client.username, 'exampleuser')
+        self.assertEqual(new_client.username, 'exampleuser')
         self.assertIsNone(new_client.password)
         self.assertEqual(new_client.management_url,
                          'http://admin:35357/v2.0')
@@ -93,8 +93,8 @@ class KeystoneClientTest(utils.TestCase):
         self.assertFalse(new_client.auth_ref.domain_scoped)
         self.assertIsNone(new_client.auth_ref.trust_id)
         self.assertFalse(new_client.auth_ref.trust_scoped)
-        self.assertEquals(new_client.auth_url, new_auth_url)
-        self.assertEquals(new_client.username, 'exampleuser')
+        self.assertEqual(new_client.auth_url, new_auth_url)
+        self.assertEqual(new_client.username, 'exampleuser')
         self.assertIsNone(new_client.password)
         self.assertEqual(new_client.management_url,
                          'http://admin:35357/v2.0')
