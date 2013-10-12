@@ -17,3 +17,17 @@ import pbr.version
 
 
 __version__ = pbr.version.VersionInfo('python-keystoneclient').version_string()
+
+__all__ = [
+    # Modules
+    'generic',
+    'v2_0',
+    'v3',
+
+    # Packages
+    'access',
+    'client',
+    'exceptions',
+    'httpclient',
+    'service_catalog',
+]
