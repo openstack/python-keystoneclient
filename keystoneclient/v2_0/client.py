@@ -142,6 +142,7 @@ class Client(httpclient.HTTPClient):
                                             password=None, tenant_name=None,
                                             tenant_id=None, token=None,
                                             project_name=None, project_id=None,
+                                            trust_id=None,
                                             **kwargs):
         """Authenticate against the v2 Identity API.
 
@@ -157,6 +158,7 @@ class Client(httpclient.HTTPClient):
                                     tenant_id=project_id or tenant_id,
                                     tenant_name=project_name or tenant_name,
                                     password=password,
+                                    trust_id=trust_id,
                                     token=token)
         except (exceptions.AuthorizationFailure, exceptions.Unauthorized):
             _logger.debug("Authorization Failed.")
@@ -166,11 +168,13 @@ class Client(httpclient.HTTPClient):
                                                   "%s" % e)
 
     def _base_authN(self, auth_url, username=None, password=None,
-                    tenant_name=None, tenant_id=None, token=None):
+                    tenant_name=None, tenant_id=None, trust_id=None,
+                    token=None):
         """Takes a username, password, and optionally a tenant_id or
         tenant_name to get an authentication token from keystone.
         May also take a token and a tenant_id to re-scope a token
-        to a tenant.
+        to a tenant, or a token, tenant_id and trust_id and re-scope
+        the token to the trust
         """
         headers = {}
         if auth_url is None:
@@ -188,5 +192,7 @@ class Client(httpclient.HTTPClient):
             params['auth']['tenantId'] = tenant_id
         elif tenant_name:
             params['auth']['tenantName'] = tenant_name
+        if trust_id:
+            params['auth']['trust_id'] = trust_id
         resp, body = self.request(url, 'POST', body=params, headers=headers)
         return resp, body

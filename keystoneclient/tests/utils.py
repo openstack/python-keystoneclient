@@ -30,6 +30,7 @@ class TestCase(testtools.TestCase):
     TEST_TENANT_ID = '1'
     TEST_TENANT_NAME = 'aTenant'
     TEST_TOKEN = 'aToken'
+    TEST_TRUST_ID = 'aTrust'
     TEST_USER = 'test'
 
     TEST_ROOT_URL = 'http://127.0.0.1:5000/'

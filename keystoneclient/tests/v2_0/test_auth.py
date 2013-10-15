@@ -174,6 +174,24 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         self.assertRequestBodyIs(json=self.TEST_REQUEST_BODY)
 
     @httpretty.activate
+    def test_authenticate_success_token_scoped_trust(self):
+        del self.TEST_REQUEST_BODY['auth']['passwordCredentials']
+        self.TEST_REQUEST_BODY['auth']['token'] = {'id': self.TEST_TOKEN}
+        self.TEST_REQUEST_BODY['auth']['trust_id'] = self.TEST_TRUST_ID
+        response = self.TEST_RESPONSE_DICT.copy()
+        response['access']['trust'] = {"trustee_user_id": self.TEST_USER,
+                                       "id": self.TEST_TRUST_ID}
+        self.stub_auth(json=response)
+
+        cs = client.Client(token=self.TEST_TOKEN,
+                           tenant_id=self.TEST_TENANT_ID,
+                           trust_id=self.TEST_TRUST_ID,
+                           auth_url=self.TEST_URL)
+        self.assertTrue(cs.auth_ref.trust_scoped)
+        self.assertEqual(cs.auth_ref.trust_id, self.TEST_TRUST_ID)
+        self.assertRequestBodyIs(json=self.TEST_REQUEST_BODY)
+
+    @httpretty.activate
     def test_authenticate_success_token_unscoped(self):
         del self.TEST_REQUEST_BODY['auth']['passwordCredentials']
         del self.TEST_REQUEST_BODY['auth']['tenantId']
