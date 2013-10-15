@@ -26,6 +26,7 @@ import logging
 import urlparse
 
 import requests
+import six
 
 try:
     import keyring
@@ -94,7 +95,7 @@ def request(url, method='GET', headers=None, original_ip=None, debug=False,
         string_parts.append(' %s' % url)
 
         if headers:
-            for header in headers.iteritems():
+            for header in six.iteritems(headers):
                 string_parts.append(' -H "%s: %s"' % header)
 
         logger.debug("REQ: %s" % "".join(string_parts))

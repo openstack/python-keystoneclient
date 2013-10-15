@@ -17,6 +17,7 @@ import hashlib
 import sys
 
 import prettytable
+import six
 
 from keystoneclient import exceptions
 
@@ -74,7 +75,7 @@ def print_dict(d, wrap=0):
     pt = prettytable.PrettyTable(['Property', 'Value'],
                                  caching=False, print_empty=False)
     pt.aligns = ['l', 'l']
-    for (prop, value) in d.iteritems():
+    for (prop, value) in six.iteritems(d):
         if value is None:
             value = ''
         value = _word_wrap(value, max_length=wrap)
