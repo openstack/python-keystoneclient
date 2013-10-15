@@ -12,9 +12,19 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import hashlib
+"""Certificate signing functions.
 
+Call set_subprocess() with the subprocess module. Either Python's
+subprocess or eventlet.green.subprocess can be used.
+
+If set_subprocess() is not called, this module will pick Python's subprocess
+or eventlet.green.subprocess based on if os module is patched by eventlet.
+"""
+
+import hashlib
 import logging
+
+from keystoneclient import exceptions
 
 
 subprocess = None
@@ -38,10 +48,20 @@ def _ensure_subprocess():
             import subprocess  # noqa
 
 
+def set_subprocess(_subprocess=None):
+    """Set subprocess module to use.
+    The subprocess could be eventlet.green.subprocess if using eventlet,
+    or Python's subprocess otherwise.
+    """
+    global subprocess
+    subprocess = _subprocess
+
+
 def cms_verify(formatted, signing_cert_file_name, ca_file_name):
     """Verifies the signature of the contents IAW CMS syntax.
 
     :raises: subprocess.CalledProcessError
+    :raises: CertificateConfigError if certificate is not configured properly.
     """
     _ensure_subprocess()
     process = subprocess.Popen(["openssl", "cms", "-verify",
@@ -55,9 +75,23 @@ def cms_verify(formatted, signing_cert_file_name, ca_file_name):
                                stderr=subprocess.PIPE)
     output, err = process.communicate(formatted)
     retcode = process.poll()
-    if retcode:
-        # Do not log errors, as some happen in the positive thread
-        # instead, catch them in the calling code and log them there.
+
+    # Do not log errors, as some happen in the positive thread
+    # instead, catch them in the calling code and log them there.
+
+    # When invoke the openssl with not exist file, return code 2
+    # and error msg will be returned.
+    # You can get more from
+    # http://www.openssl.org/docs/apps/cms.html#EXIT_CODES
+    #
+    # $ openssl cms -verify -certfile not_exist_file -CAfile \
+    #       not_exist_file -inform PEM -nosmimecap -nodetach \
+    #       -nocerts -noattr
+    # Error opening certificate file not_exist_file
+    #
+    if retcode == 2:
+        raise exceptions.CertificateConfigError(err)
+    elif retcode:
         # NOTE(dmllr): Python 2.6 compatibility:
         # CalledProcessError did not have output keyword argument
         e = subprocess.CalledProcessError(retcode, "openssl")

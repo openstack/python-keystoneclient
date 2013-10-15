@@ -157,6 +157,7 @@ import netaddr
 import six
 
 from keystoneclient.common import cms
+from keystoneclient import exceptions
 from keystoneclient.middleware import memcache_crypt
 from keystoneclient.openstack.common import jsonutils
 from keystoneclient.openstack.common import memorycache
@@ -1147,7 +1148,7 @@ class AuthProtocol(object):
             try:
                 output = cms.cms_verify(data, self.signing_cert_file_name,
                                         self.signing_ca_file_name)
-            except cms.subprocess.CalledProcessError as err:
+            except exceptions.CertificateConfigError as err:
                 if self.cert_file_missing(err.output,
                                           self.signing_cert_file_name):
                     self.fetch_signing_cert()
@@ -1156,8 +1157,10 @@ class AuthProtocol(object):
                                           self.signing_ca_file_name):
                     self.fetch_ca_cert()
                     continue
+                raise
+            except cms.subprocess.CalledProcessError as err:
                 self.LOG.warning('Verify error: %s' % err)
-                raise err
+                raise
             return output
 
     def verify_signed_token(self, signed_text):
@@ -1255,8 +1258,10 @@ class AuthProtocol(object):
             with open(self.signing_cert_file_name, 'w') as certfile:
                 certfile.write(data)
 
+        if response.status_code != 200:
+            raise exceptions.CertificateConfigError(response.text)
+
         try:
-            #todo check response
             try:
                 write_cert_file(response.text)
             except IOError:
@@ -1271,8 +1276,10 @@ class AuthProtocol(object):
         path = self.auth_admin_prefix.rstrip('/') + '/v2.0/certificates/ca'
         response = self._http_request('GET', path)
 
+        if response.status_code != 200:
+            raise exceptions.CertificateConfigError(response.text)
+
         try:
-            #todo check response
             with open(self.signing_ca_file_name, 'w') as certfile:
                 certfile.write(response.text)
         except (AssertionError, KeyError):
