@@ -146,8 +146,8 @@ class ManagerTest(utils.TestCase):
         self.client.patch = self.mox.CreateMockAnything()
         self.client.put = self.mox.CreateMockAnything()
         self.client.patch(
-            self.url, body=self.body, management=False).AndReturn(
-                (None, self.body))
+            self.url, body=self.body, management=False).AndReturn((None,
+                                                                   self.body))
         self.client.put(self.url, body=None, management=True).AndReturn(
             (None, self.body))
         self.mox.ReplayAll()

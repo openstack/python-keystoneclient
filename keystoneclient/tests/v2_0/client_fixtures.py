@@ -27,49 +27,53 @@ UNSCOPED_TOKEN = {
                }
 }
 
+_TENANT_ID = '225da22d3ce34b15877ea70b2a575f58'
+
 PROJECT_SCOPED_TOKEN = {
     'access': {
         'serviceCatalog': [{
             'endpoints': [{
-    'adminURL': 'http://admin:8776/v1/225da22d3ce34b15877ea70b2a575f58',
-    'internalURL':
-    'http://internal:8776/v1/225da22d3ce34b15877ea70b2a575f58',
-    'publicURL':
-    'http://public.com:8776/v1/225da22d3ce34b15877ea70b2a575f58',
-    'region': 'RegionOne'
+                'adminURL': 'http://admin:8776/v1/%s' % _TENANT_ID,
+                'internalURL': 'http://internal:8776/v1/%s' % _TENANT_ID,
+                'publicURL': 'http://public.com:8776/v1/%s' % _TENANT_ID,
+                'region': 'RegionOne'
             }],
             'endpoints_links': [],
             'name': 'Volume Service',
             'type': 'volume'},
             {'endpoints': [{
-    'adminURL': 'http://admin:9292/v1',
-    'internalURL': 'http://internal:9292/v1',
-    'publicURL': 'http://public.com:9292/v1',
-    'region': 'RegionOne'}],
+                'adminURL': 'http://admin:9292/v1',
+                'internalURL': 'http://internal:9292/v1',
+                'publicURL': 'http://public.com:9292/v1',
+                'region': 'RegionOne'
+            }],
                 'endpoints_links': [],
                 'name': 'Image Service',
                 'type': 'image'},
             {'endpoints': [{
-'adminURL': 'http://admin:8774/v2/225da22d3ce34b15877ea70b2a575f58',
-'internalURL': 'http://internal:8774/v2/225da22d3ce34b15877ea70b2a575f58',
-'publicURL': 'http://public.com:8774/v2/225da22d3ce34b15877ea70b2a575f58',
-'region': 'RegionOne'}],
+                'adminURL': 'http://admin:8774/v2/%s' % _TENANT_ID,
+                'internalURL': 'http://internal:8774/v2/%s' % _TENANT_ID,
+                'publicURL': 'http://public.com:8774/v2/%s' % _TENANT_ID,
+                'region': 'RegionOne'
+            }],
                 'endpoints_links': [],
                 'name': 'Compute Service',
                 'type': 'compute'},
             {'endpoints': [{
-'adminURL': 'http://admin:8773/services/Admin',
-'internalURL': 'http://internal:8773/services/Cloud',
-'publicURL': 'http://public.com:8773/services/Cloud',
-'region': 'RegionOne'}],
+                'adminURL': 'http://admin:8773/services/Admin',
+                'internalURL': 'http://internal:8773/services/Cloud',
+                'publicURL': 'http://public.com:8773/services/Cloud',
+                'region': 'RegionOne'
+            }],
                 'endpoints_links': [],
                 'name': 'EC2 Service',
                 'type': 'ec2'},
             {'endpoints': [{
-'adminURL': 'http://admin:35357/v2.0',
-'internalURL': 'http://internal:5000/v2.0',
-'publicURL': 'http://public.com:5000/v2.0',
-'region': 'RegionOne'}],
+                'adminURL': 'http://admin:35357/v2.0',
+                'internalURL': 'http://internal:5000/v2.0',
+                'publicURL': 'http://public.com:5000/v2.0',
+                'region': 'RegionOne'
+            }],
                 'endpoints_links': [],
                 'name': 'Identity Service',
                 'type': 'identity'}],

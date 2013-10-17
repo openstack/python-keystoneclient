@@ -70,7 +70,7 @@ class RoleTests(utils.TestCase, utils.CrudTests):
 
         self.stub_entity(httpretty.GET,
                          ['domains', domain_id, 'users', user_id,
-                         self.collection_key], entity=ref_list)
+                          self.collection_key], entity=ref_list)
 
         self.manager.list(domain=domain_id, user=user_id)
 
