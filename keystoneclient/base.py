@@ -216,10 +216,9 @@ class Manager(object):
             return self.resource_class(self, body[response_key])
 
 
+@six.add_metaclass(abc.ABCMeta)
 class ManagerWithFind(Manager):
     """Manager with additional `find()`/`findall()` methods."""
-
-    __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def list(self):
