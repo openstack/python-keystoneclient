@@ -132,12 +132,12 @@ class ShellTest(utils.TestCase):
     def test_token_no_endpoint(self):
         with testtools.ExpectedException(
                 exceptions.CommandError, 'Expecting an endpoint provided'):
-            self.shell('--token=%s user-list' % uuid.uuid4().hex)
+            self.shell('--os-token=%s user-list' % uuid.uuid4().hex)
 
     def test_endpoint_no_token(self):
         with testtools.ExpectedException(
                 exceptions.CommandError, 'Expecting a token provided'):
-            self.shell('--endpoint=http://10.0.0.1:5000/v2.0/ user-list')
+            self.shell('--os-endpoint=http://10.0.0.1:5000/v2.0/ user-list')
 
     def test_shell_args(self):
         do_tenant_mock = mock.MagicMock()
