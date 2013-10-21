@@ -227,6 +227,7 @@ class HTTPClient(object):
         self.project_domain_id = None
         self.project_domain_name = None
 
+        self.region_name = None
         self.auth_url = None
         self._endpoint = None
         self._management_url = None
@@ -251,6 +252,8 @@ class HTTPClient(object):
             self._management_url = self.auth_ref.management_url[0]
             self.auth_token = self.auth_ref.auth_token
             self.trust_id = self.auth_ref.trust_id
+            if self.auth_ref.has_service_catalog():
+                self.region_name = self.auth_ref.service_catalog.region_name
         else:
             self.auth_ref = None
 
@@ -307,7 +310,8 @@ class HTTPClient(object):
             self.auth_token_from_user = None
         if endpoint:
             self._endpoint = endpoint.rstrip('/')
-        self.region_name = region_name
+        if region_name:
+            self.region_name = region_name
 
         self.original_ip = original_ip
         if cacert:
@@ -383,7 +387,8 @@ class HTTPClient(object):
                      user_id=None, domain_name=None, domain_id=None,
                      project_name=None, project_id=None, user_domain_id=None,
                      user_domain_name=None, project_domain_id=None,
-                     project_domain_name=None, trust_id=None):
+                     project_domain_name=None, trust_id=None,
+                     region_name=None):
         """Authenticate user.
 
         Uses the data provided at instantiation to authenticate against
@@ -442,6 +447,7 @@ class HTTPClient(object):
         project_domain_name = project_domain_name or self.project_domain_name
 
         trust_id = trust_id or self.trust_id
+        region_name = region_name or self.region_name
 
         if not token:
             token = self.auth_token_from_user
@@ -470,10 +476,14 @@ class HTTPClient(object):
             new_token_needed = True
             kwargs['password'] = password
             resp, body = self.get_raw_token_from_identity_service(**kwargs)
-            self.auth_ref = access.AccessInfo.factory(resp, body)
+
+            # TODO(jamielennox): passing region_name here is wrong but required
+            # for backwards compatibility. Deprecate and provide warning.
+            self.auth_ref = access.AccessInfo.factory(resp, body,
+                                                      region_name=region_name)
         else:
             self.auth_ref = auth_ref
-        self.process_token()
+        self.process_token(region_name=region_name)
         if new_token_needed:
             self.store_auth_ref_into_keyring(keyring_key)
         return True
@@ -528,7 +538,7 @@ class HTTPClient(object):
             except Exception as e:
                 _logger.warning("Failed to store token into keyring %s" % (e))
 
-    def process_token(self):
+    def process_token(self, region_name=None):
         """Extract and process information from the new auth_ref.
 
         And set the relevant authentication information.
@@ -540,8 +550,14 @@ class HTTPClient(object):
             if not self.auth_ref.tenant_id:
                 raise exceptions.AuthorizationFailure(
                     "Token didn't provide tenant_id")
-            if self.auth_ref.management_url:
-                self._management_url = self.auth_ref.management_url[0]
+            try:
+                self._management_url = self.auth_ref.service_catalog.url_for(
+                    service_type='identity',
+                    endpoint_type='admin',
+                    region_name=region_name or self.region_name)
+            except exceptions.EndpointNotFound:
+                _logger.warning("Failed to retrieve management_url from token")
+
             self.project_name = self.auth_ref.tenant_name
             self.project_id = self.auth_ref.tenant_id
 
@@ -587,14 +603,6 @@ class HTTPClient(object):
 
         :returns: (``resp``, ``body``)
 
-        """
-        raise NotImplementedError
-
-    def _extract_service_catalog(self, url, body):
-        """Set the client's service catalog from the response data.
-
-        Not implemented here because data returned may be API
-        version-specific.
         """
         raise NotImplementedError
 

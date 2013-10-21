@@ -33,21 +33,28 @@ class AccessInfo(dict):
     """
 
     @classmethod
-    def factory(cls, resp=None, body=None, **kwargs):
+    def factory(cls, resp=None, body=None, region_name=None, **kwargs):
         """Create AccessInfo object given a successful auth response & body
            or a user-provided dict.
         """
+        # FIXME(jamielennox): Passing region_name is deprecated. Provide an
+        # appropriate warning.
+
         if body is not None or len(kwargs):
             if AccessInfoV3.is_valid(body, **kwargs):
                 token = None
                 if resp:
                     token = resp.headers['X-Subject-Token']
                 if body:
+                    if region_name:
+                        body['token']['region_name'] = region_name
                     return AccessInfoV3(token, **body['token'])
                 else:
                     return AccessInfoV3(token, **kwargs)
             elif AccessInfoV2.is_valid(body, **kwargs):
                 if body:
+                    if region_name:
+                        body['access']['region_name'] = region_name
                     return AccessInfoV2(**body['access'])
                 else:
                     return AccessInfoV2(**kwargs)
@@ -59,7 +66,11 @@ class AccessInfo(dict):
     def __init__(self, *args, **kwargs):
         super(AccessInfo, self).__init__(*args, **kwargs)
         self.service_catalog = service_catalog.ServiceCatalog.factory(
-            resource_dict=self, region_name=self.get('region_name'))
+            resource_dict=self, region_name=self._region_name)
+
+    @property
+    def _region_name(self):
+        return self.get('region_name')
 
     def will_expire_soon(self, stale_duration=None):
         """Determines if expiration is about to occur.
@@ -272,6 +283,9 @@ class AccessInfo(dict):
         request. If the authentication request wasn't scoped to a tenant
         (project), this property will return None.
 
+        DEPRECATED: this doesn't correctly handle region name. You should fetch
+        it from the service catalog yourself.
+
         :returns: tuple of urls
         """
         raise NotImplementedError()
@@ -281,6 +295,9 @@ class AccessInfo(dict):
         """Returns the first adminURL for 'identity' from the service catalog
         associated with the authorization request, or None if the
         authentication request wasn't scoped to a tenant (project).
+
+        DEPRECATED: this doesn't correctly handle region name. You should fetch
+        it from the service catalog yourself.
 
         :returns: tuple of urls
         """
@@ -306,7 +323,7 @@ class AccessInfoV2(AccessInfo):
         self.service_catalog = service_catalog.ServiceCatalog.factory(
             resource_dict=self,
             token=self['token']['id'],
-            region_name=self.get('region_name'))
+            region_name=self._region_name)
 
     @classmethod
     def is_valid(cls, body, **kwargs):
@@ -430,17 +447,23 @@ class AccessInfoV2(AccessInfo):
 
     @property
     def auth_url(self):
+        # FIXME(jamielennox): this is deprecated in favour of retrieving it
+        # from the service catalog. Provide a warning.
         if self.service_catalog:
             return self.service_catalog.get_urls(service_type='identity',
-                                                 endpoint_type='publicURL')
+                                                 endpoint_type='publicURL',
+                                                 region_name=self._region_name)
         else:
             return None
 
     @property
     def management_url(self):
+        # FIXME(jamielennox): this is deprecated in favour of retrieving it
+        # from the service catalog. Provide a warning.
         if self.service_catalog:
             return self.service_catalog.get_urls(service_type='identity',
-                                                 endpoint_type='adminURL')
+                                                 endpoint_type='adminURL',
+                                                 region_name=self._region_name)
         else:
             return None
 
@@ -456,7 +479,7 @@ class AccessInfoV3(AccessInfo):
         self.service_catalog = service_catalog.ServiceCatalog.factory(
             resource_dict=self,
             token=token,
-            region_name=self.get('region_name'))
+            region_name=self._region_name)
         if token:
             self.update(auth_token=token)
 
@@ -554,16 +577,23 @@ class AccessInfoV3(AccessInfo):
 
     @property
     def auth_url(self):
+        # FIXME(jamielennox): this is deprecated in favour of retrieving it
+        # from the service catalog. Provide a warning.
         if self.service_catalog:
             return self.service_catalog.get_urls(service_type='identity',
-                                                 endpoint_type='public')
+                                                 endpoint_type='public',
+                                                 region_name=self._region_name)
         else:
             return None
 
     @property
     def management_url(self):
+        # FIXME(jamielennox): this is deprecated in favour of retrieving it
+        # from the service catalog. Provide a warning.
         if self.service_catalog:
             return self.service_catalog.get_urls(service_type='identity',
-                                                 endpoint_type='admin')
+                                                 endpoint_type='admin',
+                                                 region_name=self._region_name)
+
         else:
             return None

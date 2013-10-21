@@ -77,3 +77,86 @@ class ServiceCatalogTest(utils.TestCase):
                           auth_ref.service_catalog.url_for,
                           service_type='image',
                           endpoint_type='internalURL')
+
+    def test_service_catalog_get_endpoints_region_names(self):
+        auth_ref = access.AccessInfo.factory(None, self.AUTH_RESPONSE_BODY)
+        sc = auth_ref.service_catalog
+
+        endpoints = sc.get_endpoints(service_type='image', region_name='North')
+        self.assertEqual(len(endpoints), 1)
+        self.assertEqual(endpoints['image'][0]['publicURL'],
+                         'https://image.north.host/v1/')
+
+        endpoints = sc.get_endpoints(service_type='image', region_name='South')
+        self.assertEqual(len(endpoints), 1)
+        self.assertEqual(endpoints['image'][0]['publicURL'],
+                         'https://image.south.host/v1/')
+
+        endpoints = sc.get_endpoints(service_type='compute')
+        self.assertEqual(len(endpoints['compute']), 2)
+
+        endpoints = sc.get_endpoints(service_type='compute',
+                                     region_name='North')
+        self.assertEqual(len(endpoints['compute']), 2)
+
+        endpoints = sc.get_endpoints(service_type='compute',
+                                     region_name='West')
+        self.assertEqual(len(endpoints['compute']), 0)
+
+    def test_service_catalog_url_for_region_names(self):
+        auth_ref = access.AccessInfo.factory(None, self.AUTH_RESPONSE_BODY)
+        sc = auth_ref.service_catalog
+
+        url = sc.url_for(service_type='image', region_name='North')
+        self.assertEqual(url, 'https://image.north.host/v1/')
+
+        url = sc.url_for(service_type='image', region_name='South')
+        self.assertEqual(url, 'https://image.south.host/v1/')
+
+        url = sc.url_for(service_type='compute',
+                         region_name='North',
+                         attr='versionId',
+                         filter_value='1.1')
+        self.assertEqual(url, 'https://compute.north.host/v1.1/3456')
+
+        self.assertRaises(exceptions.EndpointNotFound, sc.url_for,
+                          service_type='image', region_name='West')
+
+    def test_servcie_catalog_get_url_region_names(self):
+        auth_ref = access.AccessInfo.factory(None, self.AUTH_RESPONSE_BODY)
+        sc = auth_ref.service_catalog
+
+        urls = sc.get_urls(service_type='image')
+        self.assertEqual(len(urls), 2)
+
+        urls = sc.get_urls(service_type='image', region_name='North')
+        self.assertEqual(len(urls), 1)
+        self.assertEqual(urls[0], 'https://image.north.host/v1/')
+
+        urls = sc.get_urls(service_type='image', region_name='South')
+        self.assertEqual(len(urls), 1)
+        self.assertEqual(urls[0], 'https://image.south.host/v1/')
+
+        urls = sc.get_urls(service_type='image', region_name='West')
+        self.assertEqual(urls, None)
+
+    def test_service_catalog_param_overrides_body_region(self):
+        self.AUTH_RESPONSE_BODY['access']['region_name'] = "North"
+        auth_ref = access.AccessInfo.factory(None, self.AUTH_RESPONSE_BODY)
+        sc = auth_ref.service_catalog
+
+        url = sc.url_for(service_type='image')
+        self.assertEqual(url, 'https://image.north.host/v1/')
+
+        url = sc.url_for(service_type='image', region_name='South')
+        self.assertEqual(url, 'https://image.south.host/v1/')
+
+        endpoints = sc.get_endpoints(service_type='image')
+        self.assertEqual(len(endpoints['image']), 1)
+        self.assertEqual(endpoints['image'][0]['publicURL'],
+                         'https://image.north.host/v1/')
+
+        endpoints = sc.get_endpoints(service_type='image', region_name='South')
+        self.assertEqual(len(endpoints['image']), 1)
+        self.assertEqual(endpoints['image'][0]['publicURL'],
+                         'https://image.south.host/v1/')

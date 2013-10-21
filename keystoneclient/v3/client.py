@@ -106,12 +106,12 @@ class Client(httpclient.HTTPClient):
     def serialize(self, entity):
         return jsonutils.dumps(entity, sort_keys=True)
 
-    def process_token(self):
+    def process_token(self, **kwargs):
         """Extract and process information from the new auth_ref.
 
         And set the relevant authentication information.
         """
-        super(Client, self).process_token()
+        super(Client, self).process_token(**kwargs)
         if self.auth_ref.domain_scoped:
             if not self.auth_ref.domain_id:
                 raise exceptions.AuthorizationFailure(

@@ -37,6 +37,16 @@ class ServiceCatalog(object):
         else:
             raise NotImplementedError('Unrecognized auth response')
 
+    def __init__(self, region_name=None):
+        self._region_name = region_name
+
+    @property
+    def region_name(self):
+        # FIXME(jamielennox): Having region_name set on the service catalog
+        # directly is deprecated. It should instead be provided as a parameter
+        # to calls made to the service_catalog. Provide appropriate warning.
+        return self._region_name
+
     @abc.abstractmethod
     def get_token(self):
         """Fetch token details from service catalog.
@@ -72,13 +82,15 @@ class ServiceCatalog(object):
                   service catalog.
         """
 
-    def get_endpoints(self, service_type=None, endpoint_type=None):
+    def get_endpoints(self, service_type=None, endpoint_type=None,
+                      region_name=None):
         """Fetch and filter endpoints for the specified service(s).
 
-        Returns endpoints for the specified service (or all) and
-        that contain the specified type (or all).
+        Returns endpoints for the specified service (or all) containing
+        the specified type (or all) and region (or all).
         """
         endpoint_type = self._normalize_endpoint_type(endpoint_type)
+        region_name = region_name or self._region_name
 
         sc = {}
 
@@ -97,20 +109,20 @@ class ServiceCatalog(object):
                 if (endpoint_type and not
                         self._is_endpoint_type_match(endpoint, endpoint_type)):
                     continue
-                if (self.region_name and
-                        self.region_name != endpoint.get('region')):
+                if region_name and region_name != endpoint.get('region'):
                     continue
                 sc[st].append(endpoint)
 
         return sc
 
     def _get_service_endpoints(self, attr, filter_value, service_type,
-                               endpoint_type):
+                               endpoint_type, region_name):
         """Fetch the endpoints of a particular service_type and handle
         the filtering.
         """
         sc_endpoints = self.get_endpoints(service_type=service_type,
-                                          endpoint_type=endpoint_type)
+                                          endpoint_type=endpoint_type,
+                                          region_name=region_name)
 
         try:
             endpoints = sc_endpoints[service_type]
@@ -129,7 +141,8 @@ class ServiceCatalog(object):
 
     @abc.abstractmethod
     def get_urls(self, attr=None, filter_value=None,
-                 service_type='identity', endpoint_type='publicURL'):
+                 service_type='identity', endpoint_type='publicURL',
+                 region_name=None):
         """Fetch endpoint urls from the service catalog.
 
         Fetch the endpoints from the service catalog for a particular
@@ -150,7 +163,8 @@ class ServiceCatalog(object):
         raise NotImplementedError()
 
     def url_for(self, attr=None, filter_value=None,
-                service_type='identity', endpoint_type='publicURL'):
+                service_type='identity', endpoint_type='publicURL',
+                region_name=None):
         """Fetch an endpoint from the service catalog.
 
         Fetch the specified endpoint from the service catalog for
@@ -167,16 +181,19 @@ class ServiceCatalog(object):
         urls = self.get_urls(attr=attr,
                              filter_value=filter_value,
                              service_type=service_type,
-                             endpoint_type=endpoint_type)
+                             endpoint_type=endpoint_type,
+                             region_name=region_name)
 
         try:
             return urls[0]
         except Exception:
             pass
 
-        msg = '%(endpoint)s endpoint for %(service)s not found'
+        msg = '%(endpoint)s endpoint for %(service)s%(region)s not found'
+        region = ' in %s region' % region_name if region_name else ''
         msg = msg % {'endpoint': endpoint_type,
-                     'service': service_type}
+                     'service': service_type,
+                     'region': region}
 
         raise exceptions.EndpointNotFound(msg)
 
@@ -199,7 +216,7 @@ class ServiceCatalogV2(ServiceCatalog):
 
     def __init__(self, resource_dict, region_name=None):
         self.catalog = resource_dict
-        self.region_name = region_name
+        super(ServiceCatalogV2, self).__init__(region_name=region_name)
 
     @classmethod
     def is_valid(cls, resource_dict):
@@ -232,12 +249,14 @@ class ServiceCatalogV2(ServiceCatalog):
         return token
 
     def get_urls(self, attr=None, filter_value=None,
-                 service_type='identity', endpoint_type='publicURL'):
+                 service_type='identity', endpoint_type='publicURL',
+                 region_name=None):
         endpoint_type = self._normalize_endpoint_type(endpoint_type)
         endpoints = self._get_service_endpoints(attr=attr,
                                                 filter_value=filter_value,
                                                 service_type=service_type,
-                                                endpoint_type=endpoint_type)
+                                                endpoint_type=endpoint_type,
+                                                region_name=region_name)
 
         if endpoints:
             return tuple([endpoint[endpoint_type] for endpoint in endpoints])
@@ -251,9 +270,9 @@ class ServiceCatalogV3(ServiceCatalog):
     """
 
     def __init__(self, token, resource_dict, region_name=None):
+        super(ServiceCatalogV3, self).__init__(region_name=region_name)
         self._auth_token = token
         self.catalog = resource_dict
-        self.region_name = region_name
 
     @classmethod
     def is_valid(cls, resource_dict):
@@ -294,11 +313,13 @@ class ServiceCatalogV3(ServiceCatalog):
         return token
 
     def get_urls(self, attr=None, filter_value=None,
-                 service_type='identity', endpoint_type='public'):
+                 service_type='identity', endpoint_type='public',
+                 region_name=None):
         endpoints = self._get_service_endpoints(attr=attr,
                                                 filter_value=filter_value,
                                                 service_type=service_type,
-                                                endpoint_type=endpoint_type)
+                                                endpoint_type=endpoint_type,
+                                                region_name=region_name)
 
         if endpoints:
             return tuple([endpoint['url'] for endpoint in endpoints])
