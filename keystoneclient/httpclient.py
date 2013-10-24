@@ -89,6 +89,9 @@ def request(url, method='GET', headers=None, original_ip=None, debug=False,
     if debug:
         string_parts = ['curl -i']
 
+        if not kwargs.get('verify', True):
+            string_parts.append(' --insecure')
+
         if method:
             string_parts.append(' -X %s' % method)
 
