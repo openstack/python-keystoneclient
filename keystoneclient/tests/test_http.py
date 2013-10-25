@@ -23,18 +23,22 @@ from keystoneclient import httpclient
 from keystoneclient.tests import utils
 
 RESPONSE_BODY = '{"hi": "there"}'
+AUTHED_TOKEN = "token"
 
 
-def get_client():
-    cl = httpclient.HTTPClient(username="username", password="password",
-                               tenant_id="tenant", auth_url="auth_test")
+def get_client(token=None):
+    if token:
+        cl = httpclient.HTTPClient(token=token, auth_url="auth_test")
+    else:
+        cl = httpclient.HTTPClient(username="username", password="password",
+                                   tenant_id="tenant", auth_url="auth_test")
     return cl
 
 
 def get_authed_client():
     cl = get_client()
     cl.management_url = "http://127.0.0.1:5000"
-    cl.auth_token = "token"
+    cl.auth_token = AUTHED_TOKEN
     return cl
 
 
@@ -143,6 +147,27 @@ class ClientTest(utils.TestCase):
         # defined in the module.
 
         client.HTTPClient
+
+    def test_auth_token_none(self):
+        cl = get_client()
+        self.assertEqual(cl.auth_token, None)
+
+    def test_auth_token_authed(self):
+        cl = get_authed_client()
+        self.assertEqual(cl.auth_token, AUTHED_TOKEN)
+
+    def test_auth_token_reauth(self):
+        cl = get_client(token='initial')
+        self.assertEqual(cl.auth_token, 'initial')
+
+        class FakeAccessInfo(object):
+            auth_token = 'updated'
+
+            def will_expire_soon(self, stale_duration=None):
+                return False
+
+        cl.auth_ref = FakeAccessInfo()
+        self.assertEqual(cl.auth_token, 'updated')
 
 
 class BasicRequestTests(utils.TestCase):
