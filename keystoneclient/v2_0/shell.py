@@ -236,7 +236,7 @@ def do_tenant_delete(kc, args):
            help='Name of new service (must be unique)')
 @utils.arg('--type', metavar='<type>', required=True,
            help='Service type (one of: identity, compute, network, '
-                'image, or object-store)')
+                'image, object-store, or other service identifier string)')
 @utils.arg('--description', metavar='<service-description>',
            help='Description of service')
 def do_service_create(kc, args):
