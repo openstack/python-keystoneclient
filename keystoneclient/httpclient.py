@@ -110,8 +110,8 @@ def request(url, method='GET', headers=None, original_ip=None, debug=False,
             url,
             headers=headers,
             **kwargs)
-    except requests.ConnectionError:
-        msg = 'Unable to establish connection to %s' % url
+    except requests.ConnectionError as e:
+        msg = 'Unable to establish connection to %s: %s' % (url, e)
         raise exceptions.ClientException(msg)
 
     if debug:
