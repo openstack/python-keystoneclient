@@ -101,11 +101,11 @@ def request(url, method='GET', headers=None, original_ip=None, debug=False,
             for header in six.iteritems(headers):
                 string_parts.append(' -H "%s: %s"' % header)
 
-        logger.debug("REQ: %s" % "".join(string_parts))
-
         data = kwargs.get('data')
         if data:
-            logger.debug("REQ BODY: %s\n" % data)
+            string_parts.append(" -d '%s'" % data)
+
+        logger.debug("REQ: %s\n", "".join(string_parts))
 
     try:
         resp = requests.request(
