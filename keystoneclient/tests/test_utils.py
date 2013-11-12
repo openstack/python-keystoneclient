@@ -12,6 +12,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import sys
+
+import mock
+import six
+
 from keystoneclient import exceptions
 from keystoneclient.tests import utils as test_utils
 from keystoneclient import utils
@@ -91,3 +96,49 @@ class FindResourceTestCase(test_utils.TestCase):
                           utils.find_resource,
                           self.manager,
                           9999)
+
+
+class FakeObject(object):
+    def __init__(self, name):
+        self.name = name
+
+
+class PrintTestCase(test_utils.TestCase):
+    def setUp(self):
+        super(PrintTestCase, self).setUp()
+        self.old_stdout = sys.stdout
+        self.stdout = six.moves.cStringIO()
+        sys.stdout = self.stdout
+
+    def tearDown(self):
+        super(PrintTestCase, self).tearDown()
+        sys.stdout = self.old_stdout
+        self.stdout = None
+
+    def test_print_list_unicode(self):
+        name = u'\u540d\u5b57'
+        objs = [FakeObject(name)]
+        # NOTE(Jeffrey4l) If the text's encode is proper, this method will not
+        # raise UnicodeEncodeError exceptions
+        utils.print_list(objs, ['name'])
+        self.assertIn(name, self.stdout.getvalue().decode('utf8'))
+
+    @mock.patch('keystoneclient.openstack.common.strutils.safe_encode')
+    def test_print_list_unicode_without_encode(self, safe_encode_mock):
+        safe_encode_mock.side_effect = lambda x, *args, **kwargs: x
+
+        name = u'\u540d\u5b57'
+        objs = [FakeObject(name)]
+        self.assertRaises(UnicodeEncodeError, utils.print_list, objs, ['name'])
+
+    def test_print_dict_unicode(self):
+        name = u'\u540d\u5b57'
+        utils.print_dict({'name': name})
+        self.assertIn(name, self.stdout.getvalue().decode('utf8'))
+
+    @mock.patch('keystoneclient.openstack.common.strutils.safe_encode')
+    def test_print_dict_unicode_without_encode(self, safe_encode_mock):
+        safe_encode_mock.side_effect = lambda x, *args, **kwargs: x
+
+        name = u'\u540d\u5b57'
+        self.assertRaises(UnicodeEncodeError, utils.print_dict, {'name': name})
