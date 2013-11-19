@@ -332,7 +332,8 @@ class ShellTests(utils.TestCase):
                  'password': 'newpass'}})
 
     def test_endpoint_create(self):
-        self.run_command('endpoint-create --service-id 1')
+        self.run_command('endpoint-create --service-id 1 '
+                         '--publicurl=http://example.com:1234/go')
         self.fake_client.assert_called_anytime(
             'POST', '/endpoints',
             {'endpoint':
@@ -340,7 +341,7 @@ class ShellTests(utils.TestCase):
                  'service_id': '1',
                  'region': 'regionOne',
                  'internalurl': None,
-                 'publicurl': None}})
+                 'publicurl': "http://example.com:1234/go"}})
 
     def test_endpoint_list(self):
         self.run_command('endpoint-list')
