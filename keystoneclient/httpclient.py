@@ -225,7 +225,8 @@ class HTTPClient(object):
         self.project_domain_name = None
 
         self.auth_url = None
-        self.management_url = None
+        self._endpoint = None
+        self._management_url = None
         self.timeout = float(timeout) if timeout is not None else None
 
         self.trust_id = None
@@ -244,7 +245,7 @@ class HTTPClient(object):
             self.project_name = self.auth_ref.project_name
             self.project_domain_id = self.auth_ref.project_domain_id
             self.auth_url = self.auth_ref.auth_url[0]
-            self.management_url = self.auth_ref.management_url[0]
+            self._management_url = self.auth_ref.management_url[0]
             self.auth_token = self.auth_ref.auth_token
             self.trust_id = self.auth_ref.trust_id
         else:
@@ -302,7 +303,7 @@ class HTTPClient(object):
         else:
             self.auth_token_from_user = None
         if endpoint:
-            self.management_url = endpoint.rstrip('/')
+            self._endpoint = endpoint.rstrip('/')
         self.region_name = region_name
 
         self.original_ip = original_ip
@@ -536,8 +537,8 @@ class HTTPClient(object):
             if not self.auth_ref.tenant_id:
                 raise exceptions.AuthorizationFailure(
                     "Token didn't provide tenant_id")
-            if self.management_url is None and self.auth_ref.management_url:
-                self.management_url = self.auth_ref.management_url[0]
+            if self.auth_ref.management_url:
+                self._management_url = self.auth_ref.management_url[0]
             self.project_name = self.auth_ref.tenant_name
             self.project_id = self.auth_ref.tenant_id
 
@@ -550,6 +551,17 @@ class HTTPClient(object):
         self.auth_domain_id = self.auth_ref.domain_id
         self.auth_tenant_id = self.auth_ref.tenant_id
         self.auth_user_id = self.auth_ref.user_id
+
+    @property
+    def management_url(self):
+        return self._endpoint or self._management_url
+
+    @management_url.setter
+    def management_url(self, value):
+        # NOTE(jamielennox): it's debatable here whether we should set
+        # _endpoint or _management_url. As historically management_url was set
+        # permanently setting _endpoint would better match that behaviour.
+        self._endpoint = value
 
     def get_raw_token_from_identity_service(self, auth_url, username=None,
                                             password=None, tenant_name=None,

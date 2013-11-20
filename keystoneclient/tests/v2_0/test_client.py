@@ -12,6 +12,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import copy
 import json
 
 import httpretty
@@ -104,3 +105,28 @@ class KeystoneClientTest(utils.TestCase):
                           client.Client,
                           username='exampleuser',
                           password='password')
+
+    @httpretty.activate
+    def test_management_url_is_updated(self):
+        second = copy.deepcopy(client_fixtures.PROJECT_SCOPED_TOKEN)
+        first_url = 'http://admin:35357/v2.0'
+        second_url = "http://secondurl:%d/v2.0'"
+
+        for entry in second['access']['serviceCatalog']:
+            if entry['type'] == 'identity':
+                entry['endpoints'] = [{'adminURL': second_url % 35357,
+                                       'internalURL': second_url % 5000,
+                                       'publicURL': second_url % 6000,
+                                       'region': 'RegionOne'}]
+
+        self.stub_auth(json=client_fixtures.PROJECT_SCOPED_TOKEN)
+        cl = client.Client(username='exampleuser',
+                           password='password',
+                           tenant_name='exampleproject',
+                           auth_url=self.TEST_URL)
+
+        self.assertEqual(cl.management_url, first_url)
+
+        self.stub_auth(json=second)
+        cl.authenticate()
+        self.assertEqual(cl.management_url, second_url % 35357)
