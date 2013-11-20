@@ -336,12 +336,12 @@ class HTTPClient(object):
 
     @property
     def auth_token(self):
-        if self.auth_token_from_user:
-            return self.auth_token_from_user
         if self.auth_ref:
             if self.auth_ref.will_expire_soon(self.stale_duration):
                 self.authenticate()
             return self.auth_ref.auth_token
+        elif self.auth_token_from_user:
+            return self.auth_token_from_user
 
     @auth_token.setter
     def auth_token(self, value):
