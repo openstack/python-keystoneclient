@@ -31,6 +31,8 @@ class UnauthenticatedTestCase(utils.TestCase):
 
 class TestCase(UnauthenticatedTestCase):
 
+    TEST_ADMIN_IDENTITY_ENDPOINT = "http://127.0.0.1:35357/v2.0"
+
     TEST_SERVICE_CATALOG = [{
         "endpoints": [{
             "adminURL": "http://cdn.admin-nets.local:8774/v1.0",
@@ -60,7 +62,7 @@ class TestCase(UnauthenticatedTestCase):
         "name": "glance"
     }, {
         "endpoints": [{
-            "adminURL": "http://127.0.0.1:35357/v2.0",
+            "adminURL": TEST_ADMIN_IDENTITY_ENDPOINT,
             "region": "RegionOne",
             "internalURL": "http://127.0.0.1:5000/v2.0",
             "publicURL": "http://127.0.0.1:5000/v2.0"

@@ -15,6 +15,7 @@
 import httpretty
 
 from keystoneclient import exceptions
+from keystoneclient.openstack.common import jsonutils
 from keystoneclient.tests.v3 import utils
 from keystoneclient.v3 import client
 
@@ -225,6 +226,27 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         self.assertRequestBodyIs(json=self.TEST_REQUEST_BODY)
 
     @httpretty.activate
+    def test_auth_url_token_authentication(self):
+        fake_token = 'fake_token'
+        fake_url = '/fake-url'
+        fake_resp = {'result': True}
+
+        self.stub_auth(json=self.TEST_RESPONSE_DICT)
+        self.stub_url('GET', [fake_url], json=fake_resp,
+                      base_url=self.TEST_ADMIN_IDENTITY_ENDPOINT)
+
+        cl = client.Client(auth_url=self.TEST_URL,
+                           token=fake_token)
+        body = jsonutils.loads(httpretty.last_request().body)
+        self.assertEqual(body['auth']['identity']['token']['id'], fake_token)
+
+        resp, body = cl.get(fake_url)
+        self.assertEqual(fake_resp, body)
+
+        self.assertEqual(httpretty.last_request().headers.get('X-Auth-Token'),
+                         self.TEST_TOKEN)
+
+    @httpretty.activate
     def test_authenticate_success_token_domain_scoped(self):
         ident = self.TEST_REQUEST_BODY['auth']['identity']
         del ident['password']
@@ -301,3 +323,45 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
                          self.TEST_RESPONSE_HEADERS["X-Subject-Token"])
         self.assertFalse('catalog' in cs.service_catalog.catalog)
         self.assertRequestBodyIs(json=self.TEST_REQUEST_BODY)
+
+    @httpretty.activate
+    def test_allow_override_of_auth_token(self):
+        fake_url = '/fake-url'
+        fake_token = 'fake_token'
+        fake_resp = {'result': True}
+
+        self.stub_auth(json=self.TEST_RESPONSE_DICT)
+        self.stub_url('GET', [fake_url], json=fake_resp,
+                      base_url=self.TEST_ADMIN_IDENTITY_ENDPOINT)
+
+        cl = client.Client(username='exampleuser',
+                           password='password',
+                           tenant_name='exampleproject',
+                           auth_url=self.TEST_URL)
+
+        self.assertEqual(cl.auth_token, self.TEST_TOKEN)
+
+        # the token returned from the authentication will be used
+        resp, body = cl.get(fake_url)
+        self.assertEqual(fake_resp, body)
+
+        self.assertEqual(httpretty.last_request().headers.get('X-Auth-Token'),
+                         self.TEST_TOKEN)
+
+        # then override that token and the new token shall be used
+        cl.auth_token = fake_token
+
+        resp, body = cl.get(fake_url)
+        self.assertEqual(fake_resp, body)
+
+        self.assertEqual(httpretty.last_request().headers.get('X-Auth-Token'),
+                         fake_token)
+
+        # if we clear that overriden token then we fall back to the original
+        del cl.auth_token
+
+        resp, body = cl.get(fake_url)
+        self.assertEqual(fake_resp, body)
+
+        self.assertEqual(httpretty.last_request().headers.get('X-Auth-Token'),
+                         self.TEST_TOKEN)
