@@ -12,10 +12,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import urlparse
 import uuid
 
 import httpretty
+from six.moves.urllib import parse as urlparse
 
 from keystoneclient.openstack.common import jsonutils
 from keystoneclient.tests import utils

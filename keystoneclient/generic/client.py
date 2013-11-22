@@ -16,7 +16,7 @@
 #    under the License.
 
 import logging
-import urlparse
+from six.moves.urllib import parse as urlparse
 
 from keystoneclient import exceptions
 from keystoneclient import httpclient
