@@ -243,20 +243,6 @@ class OpenStackIdentityShell(object):
                                  "network delays. Default is %s seconds." % (
                             access.STALE_TOKEN_DURATION))
 
-        #FIXME(heckj):
-        # deprecated command line options for essex compatibility. To be
-        # removed in Grizzly release cycle.
-        parser.add_argument('--token',
-                            metavar='<service-token>',
-                            dest='os_token',
-                            default=env('SERVICE_TOKEN'),
-                            help=argparse.SUPPRESS)
-        parser.add_argument('--endpoint',
-                            dest='os_endpoint',
-                            metavar='<service-endpoint>',
-                            default=env('SERVICE_ENDPOINT'),
-                            help=argparse.SUPPRESS)
-
         return parser
 
     def get_subcommand_parser(self, version):
