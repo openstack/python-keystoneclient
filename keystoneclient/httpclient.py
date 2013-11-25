@@ -95,7 +95,7 @@ def request(url, method='GET', headers=None, original_ip=None, debug=False,
         if method:
             string_parts.append(' -X %s' % method)
 
-        string_parts.append(' %s' % url)
+        string_parts.append(" '%s'" % url)
 
         if headers:
             for header in six.iteritems(headers):
