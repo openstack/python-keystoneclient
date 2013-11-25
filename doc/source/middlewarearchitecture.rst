@@ -141,6 +141,8 @@ a WSGI component. Example for the auth_token middleware::
     ;Uncomment next 2 lines if Keystone server is validating client cert
     ;certfile = <path to middleware public cert>
     ;keyfile = <path to middleware private cert>
+    ;Uncomment next line to opt-out of service catalog
+    ;include_service_catalog = False
 
 For services which have separate paste-deploy ini file, auth_token middleware
 can be alternatively configured in [keystone_authtoken] section in the main
@@ -197,6 +199,10 @@ Configuration Options
   encoded CA file/bundle that will be used to verify HTTPS connections.
 * ``insecure``: (optional, default `False`) Don't verify HTTPS connections
   (overrides `cafile`).
+* ``include_service_catalog``: (optional, default `True`) Indicate whether to
+  set the X-Service-Catalog header. If False, middleware will not ask for
+  service catalog on token validation and will not set the X-Service-Catalog
+  header.
 
 Caching for improved response
 -----------------------------

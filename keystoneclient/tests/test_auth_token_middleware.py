@@ -418,6 +418,8 @@ class CommonAuthTokenMiddlewareTest(object):
         self.assertEqual(self.response_status, 200)
         if with_catalog:
             self.assertTrue(req.headers.get('X-Service-Catalog'))
+        else:
+            self.assertNotIn('X-Service-Catalog', req.headers)
         self.assertEqual(body, ['SUCCESS'])
         self.assertTrue('keystone.token_info' in req.environ)
 
@@ -844,6 +846,14 @@ class CommonAuthTokenMiddlewareTest(object):
             self.middleware(req.environ, self.start_fake_response)
 
         self.assertEqual(mock_obj.call_count, times_retry)
+
+    def test_nocatalog(self):
+        conf = {
+            'include_service_catalog': False
+        }
+        self.set_middleware(conf=conf)
+        self.assert_valid_request_200(self.token_dict['uuid_token_default'],
+                                      with_catalog=False)
 
 
 class CertDownloadMiddlewareTest(BaseAuthTokenMiddlewareTest):

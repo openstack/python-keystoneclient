@@ -291,7 +291,13 @@ opts = [
                default=None,
                secret=True,
                help='(optional, mandatory if memcache_security_strategy is'
-               ' defined) this string is used for key derivation.')
+               ' defined) this string is used for key derivation.'),
+    cfg.BoolOpt('include_service_catalog',
+                default=True,
+                help='(optional) indicate whether to set the X-Service-Catalog'
+                ' header. If False, middleware will not ask for service'
+                ' catalog on token validation and will not set the'
+                ' X-Service-Catalog header.')
 ]
 CONF.register_opts(opts, group='keystone_authtoken')
 
@@ -460,6 +466,9 @@ class AuthProtocol(object):
         self.auth_version = None
         self.http_request_max_retries = \
             self._conf_get('http_request_max_retries')
+
+        self.include_service_catalog = self._conf_get(
+            'include_service_catalog')
 
     def _assert_valid_memcache_protection_config(self):
         if self._memcache_security_strategy:
@@ -921,11 +930,9 @@ class AuthProtocol(object):
         self.LOG.debug("Received request from user: %s with project_id : %s"
                        " and roles: %s ", user_id, project_id, roles)
 
-        try:
+        if self.include_service_catalog and catalog_key in catalog_root:
             catalog = catalog_root[catalog_key]
             rval['X-Service-Catalog'] = jsonutils.dumps(catalog)
-        except KeyError:
-            pass
 
         return rval
 
@@ -1090,9 +1097,13 @@ class AuthProtocol(object):
         if self.auth_version == 'v3.0':
             headers = {'X-Auth-Token': self.get_admin_token(),
                        'X-Subject-Token': safe_quote(user_token)}
+            path = '/v3/auth/tokens'
+            if not self.include_service_catalog:
+                # NOTE(gyee): only v3 API support this option
+                path = path + '?nocatalog'
             response, data = self._json_request(
                 'GET',
-                '/v3/auth/tokens',
+                path,
                 additional_headers=headers)
         else:
             headers = {'X-Auth-Token': self.get_admin_token()}
