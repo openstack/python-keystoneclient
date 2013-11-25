@@ -277,7 +277,7 @@ class OpenStackIdentityShell(object):
 
     def _find_actions(self, subparsers, actions_module):
         for attr in (a for a in dir(actions_module) if a.startswith('do_')):
-            # I prefer to be hypen-separated instead of underscores.
+            # I prefer to be hyphen-separated instead of underscores.
             command = attr[3:].replace('_', '-')
             callback = getattr(actions_module, attr)
             desc = callback.__doc__ or ''
@@ -337,7 +337,7 @@ class OpenStackIdentityShell(object):
                             args.os_password = getpass.getpass('OS Password: ')
                         except EOFError:
                             pass
-                    # No password because we did't have a tty or the
+                    # No password because we didn't have a tty or the
                     # user Ctl-D when prompted?
                     if not args.os_password:
                         raise exc.CommandError(
