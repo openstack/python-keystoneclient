@@ -31,6 +31,7 @@ import mock
 import webob
 
 from keystoneclient.common import cms
+from keystoneclient import exceptions
 from keystoneclient.middleware import auth_token
 from keystoneclient.openstack.common import jsonutils
 from keystoneclient.openstack.common import memorycache
@@ -886,7 +887,7 @@ class CertDownloadMiddlewareTest(BaseAuthTokenMiddlewareTest):
         httpretty.register_uri(httpretty.GET,
                                "%s/v2.0/certificates/signing" % BASE_URI,
                                status=404)
-        self.assertRaises(cms.subprocess.CalledProcessError,
+        self.assertRaises(exceptions.CertificateConfigError,
                           self.middleware.verify_signed_token,
                           client_fixtures.SIGNED_TOKEN_SCOPED)
 
