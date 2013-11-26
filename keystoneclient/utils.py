@@ -20,6 +20,7 @@ import prettytable
 import six
 
 from keystoneclient import exceptions
+from keystoneclient.openstack.common import strutils
 
 
 # Decorator for cli-args
@@ -56,7 +57,7 @@ def print_list(objs, fields, formatters={}, order_by=None):
 
     if order_by is None:
         order_by = fields[0]
-    print(pt.get_string(sortby=order_by))
+    print(strutils.safe_encode(pt.get_string(sortby=order_by)))
 
 
 def _word_wrap(string, max_length=0):
@@ -80,7 +81,7 @@ def print_dict(d, wrap=0):
             value = ''
         value = _word_wrap(value, max_length=wrap)
         pt.add_row([prop, value])
-    print(pt.get_string(sortby='Property'))
+    print(strutils.safe_encode(pt.get_string(sortby='Property')))
 
 
 def find_resource(manager, name_or_id):
