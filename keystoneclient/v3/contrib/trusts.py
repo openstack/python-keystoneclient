@@ -40,8 +40,8 @@ class TrustManager(base.CrudManager):
     def create(self, trustee_user, trustor_user, role_names=None,
                project=None, impersonation=False, expires_at=None):
         """Create a Trust.
-        :param string trustee_user: user who's authorization is being delegated
-        :param string trustor_user: user who is capable of consuming the trust
+        :param string trustee_user: user who is capable of consuming the trust
+        :param string trustor_user: user who's authorization is being delegated
         :param string role_names: subset of trustor's roles to be granted
         :param string project: project which the trustor is delegating
         :param boolean impersonation: enable explicit impersonation
