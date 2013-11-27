@@ -424,7 +424,7 @@ class AuthProtocol(object):
         self.signing_dirname = self._conf_get('signing_dir')
         if self.signing_dirname is None:
             self.signing_dirname = tempfile.mkdtemp(prefix='keystone-signing-')
-        self.LOG.info('Using %s as cache directory for signing certificate' %
+        self.LOG.info('Using %s as cache directory for signing certificate',
                       self.signing_dirname)
         self.verify_signing_dir()
 
@@ -541,7 +541,7 @@ class AuthProtocol(object):
             self.LOG.warning("Old keystone installation found...assuming v2.0")
             versions.append("v2.0")
         elif response.status_code != 300:
-            self.LOG.error('Unable to get version info from keystone: %s' %
+            self.LOG.error('Unable to get version info from keystone: %s',
                            response.status_code)
             raise ServiceError('Unable to get version info from keystone')
         else:
@@ -591,7 +591,7 @@ class AuthProtocol(object):
                 return self._reject_request(env, start_response)
 
         except ServiceError as e:
-            self.LOG.critical('Unable to obtain admin token: %s' % e)
+            self.LOG.critical('Unable to obtain admin token: %s', e)
             resp = MiniResp('Service unavailable', env)
             start_response('503 Service Unavailable', resp.headers)
             return resp.body
@@ -623,7 +623,7 @@ class AuthProtocol(object):
             'X-Tenant',
             'X-Role',
         )
-        self.LOG.debug('Removing headers from request environment: %s' %
+        self.LOG.debug('Removing headers from request environment: %s',
                        ','.join(auth_headers))
         self._remove_headers(env, auth_headers)
 
@@ -713,7 +713,7 @@ class AuthProtocol(object):
                     self.LOG.error('HTTP connection exception: %s', e)
                     raise NetworkError('Unable to communicate with keystone')
                 # NOTE(vish): sleep 0.5, 1, 2
-                self.LOG.warn('Retrying on HTTP connection exception: %s' % e)
+                self.LOG.warn('Retrying on HTTP connection exception: %s', e)
                 time.sleep(2.0 ** retry / 2)
                 retry += 1
 
@@ -1123,7 +1123,7 @@ class AuthProtocol(object):
                 'Keystone rejected admin token %s, resetting', headers)
             self.admin_token = None
         else:
-            self.LOG.error('Bad response code while validating token: %s' %
+            self.LOG.error('Bad response code while validating token: %s',
                            response.status_code)
         if retry:
             self.LOG.info('Retrying validation')
@@ -1170,7 +1170,7 @@ class AuthProtocol(object):
                     continue
                 raise
             except cms.subprocess.CalledProcessError as err:
-                self.LOG.warning('Verify error: %s' % err)
+                self.LOG.warning('Verify error: %s', err)
                 raise
             return output
 
@@ -1187,14 +1187,15 @@ class AuthProtocol(object):
             if not os.access(self.signing_dirname, os.W_OK):
                 raise ConfigurationError(
                     'unable to access signing_dir %s' % self.signing_dirname)
-            if os.stat(self.signing_dirname).st_uid != os.getuid():
+            uid = os.getuid()
+            if os.stat(self.signing_dirname).st_uid != uid:
                 self.LOG.warning(
-                    'signing_dir is not owned by %s' % os.getuid())
+                    'signing_dir is not owned by %s', uid)
             current_mode = stat.S_IMODE(os.stat(self.signing_dirname).st_mode)
             if current_mode != stat.S_IRWXU:
                 self.LOG.warning(
-                    'signing_dir mode is %s instead of %s' %
-                    (oct(current_mode), oct(stat.S_IRWXU)))
+                    'signing_dir mode is %s instead of %s',
+                    oct(current_mode), oct(stat.S_IRWXU))
         else:
             os.makedirs(self.signing_dirname, stat.S_IRWXU)
 
