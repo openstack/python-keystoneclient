@@ -362,7 +362,7 @@ class DiabloAuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
         req.headers['X-Auth-Token'] = self.token_id
         self.middleware(req.environ, self.start_fake_response)
         self.assertEqual(self.response_status, 200)
-        self.assertTrue('keystone.token_info' in req.environ)
+        self.assertIn('keystone.token_info', req.environ)
 
 
 class NoMemcacheAuthToken(BaseAuthTokenMiddlewareTest):
@@ -422,7 +422,7 @@ class CommonAuthTokenMiddlewareTest(object):
         else:
             self.assertNotIn('X-Service-Catalog', req.headers)
         self.assertEqual(body, ['SUCCESS'])
-        self.assertTrue('keystone.token_info' in req.environ)
+        self.assertIn('keystone.token_info', req.environ)
 
     def test_valid_uuid_request(self):
         self.assert_valid_request_200(self.token_dict['uuid_token_default'])
@@ -1043,7 +1043,7 @@ class v2AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
         body = self.middleware(req.environ, self.start_fake_response)
         self.assertEqual(self.response_status, 200)
         self.assertEqual(body, ['SUCCESS'])
-        self.assertTrue('keystone.token_info' in req.environ)
+        self.assertIn('keystone.token_info', req.environ)
 
     def assert_valid_last_url(self, token_id):
         self.assertLastPath("/testadmin/v2.0/tokens/%s" % token_id)
