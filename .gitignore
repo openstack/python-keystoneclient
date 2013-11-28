@@ -6,7 +6,7 @@ subunit.log
 cover
 *.pyc
 .idea
-*.swp
+*.sw?
 *.egg
 *~
 .tox
