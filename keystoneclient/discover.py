@@ -357,7 +357,7 @@ class Discover(object):
             try:
                 v = self._get_factory_from_response_entry(version_data,
                                                           **client_kwargs)
-            except exceptions.DiscoveryFailure, e:
+            except exceptions.DiscoveryFailure as e:
                 _logger.warning("Invalid entry: %s", e, exc_info=True)
             else:
                 versions[v.version] = v
