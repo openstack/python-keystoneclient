@@ -431,6 +431,10 @@ class OpenStackIdentityShell(object):
                 "2.0": shell_v2_0.CLIENT_CLASS,
             }[version]
         except KeyError:
+            if version:
+                msg = ('WARNING: unsupported identity-api-version %s, '
+                       'falling back to 2.0' % version)
+                print(msg)
             return shell_v2_0.CLIENT_CLASS
 
     def do_bash_completion(self, args):

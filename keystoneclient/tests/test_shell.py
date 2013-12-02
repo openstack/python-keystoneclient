@@ -200,6 +200,11 @@ class ShellTest(utils.TestCase):
                       'wilma', 'betty', '2.0', True, '500', True)
             self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
 
+            # Test os-identity-api-version fall back to 2.0
+            shell('--os-identity-api-version 3.0 user-list')
+            assert do_tenant_mock.called
+            self.assertTrue(b.os_identity_api_version, '2.0')
+
     def test_shell_user_create_args(self):
         """Test user-create args."""
         do_uc_mock = mock.MagicMock()
