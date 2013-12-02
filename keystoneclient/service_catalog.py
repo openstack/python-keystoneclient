@@ -16,10 +16,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import abc
+
+import six
 
 from keystoneclient import exceptions
 
 
+@six.add_metaclass(abc.ABCMeta)
 class ServiceCatalog(object):
     """Helper methods for dealing with a Keystone Service Catalog."""
 
@@ -33,6 +37,7 @@ class ServiceCatalog(object):
         else:
             raise NotImplementedError('Unrecognized auth response')
 
+    @abc.abstractmethod
     def get_token(self):
         """Fetch token details from service catalog.
 
@@ -47,14 +52,82 @@ class ServiceCatalog(object):
         """
         raise NotImplementedError()
 
+    @abc.abstractmethod
+    def _is_endpoint_type_match(self, endpoint, endpoint_type):
+        """Helper function to normalize endpoint matching across v2 and v3.
+
+        :returns: True if the provided endpoint matches the required
+        endpoint_type otherwise False.
+        """
+
+    @abc.abstractmethod
+    def _normalize_endpoint_type(self, endpoint_type):
+        """Handle differences in the way v2 and v3 catalogs specify endpoint.
+
+        Both v2 and v3 must be able to handle the endpoint style of the other.
+        For example v2 must be able to handle a 'public' endpoint_type and
+        v3 must be able to handle a 'publicURL' endpoint_type.
+
+        :returns: the endpoint string in the format appropriate for this
+                  service catalog.
+        """
+
     def get_endpoints(self, service_type=None, endpoint_type=None):
         """Fetch and filter endpoints for the specified service(s).
 
         Returns endpoints for the specified service (or all) and
         that contain the specified type (or all).
         """
-        raise NotImplementedError()
+        endpoint_type = self._normalize_endpoint_type(endpoint_type)
 
+        sc = {}
+
+        for service in (self.get_data() or []):
+            try:
+                st = service['type']
+            except KeyError:
+                continue
+
+            if service_type and service_type != st:
+                continue
+
+            sc[st] = []
+
+            for endpoint in service.get('endpoints', []):
+                if (endpoint_type and not
+                        self._is_endpoint_type_match(endpoint, endpoint_type)):
+                    continue
+                if (self.region_name and
+                        self.region_name != endpoint.get('region')):
+                    continue
+                sc[st].append(endpoint)
+
+        return sc
+
+    def _get_service_endpoints(self, attr, filter_value, service_type,
+                               endpoint_type):
+        """Fetch the endpoints of a particular service_type and handle
+        the filtering.
+        """
+        sc_endpoints = self.get_endpoints(service_type=service_type,
+                                          endpoint_type=endpoint_type)
+
+        try:
+            endpoints = sc_endpoints[service_type]
+        except KeyError:
+            return
+
+        # TODO(jamielennox): at least swiftclient is known to set attr and not
+        # filter_value and expects that to mean that filtering is ignored, so
+        # we can't check for the presence of attr. This behaviour should be
+        # deprecated and an appropriate warning provided.
+        if filter_value:
+            return [endpoint for endpoint in endpoints
+                    if endpoint.get(attr) == filter_value]
+
+        return endpoints
+
+    @abc.abstractmethod
     def get_urls(self, attr=None, filter_value=None,
                  service_type='identity', endpoint_type='publicURL'):
         """Fetch endpoint urls from the service catalog.
@@ -88,15 +161,33 @@ class ServiceCatalog(object):
                               `internal` or `internalURL`,
                               `admin` or 'adminURL`
         """
-        raise NotImplementedError()
+        if not self.get_data():
+            raise exceptions.EmptyCatalog('The service catalog is empty.')
 
+        urls = self.get_urls(attr=attr,
+                             filter_value=filter_value,
+                             service_type=service_type,
+                             endpoint_type=endpoint_type)
+
+        try:
+            return urls[0]
+        except Exception:
+            pass
+
+        msg = '%(endpoint)s endpoint for %(service)s not found'
+        msg = msg % {'endpoint': endpoint_type,
+                     'service': service_type}
+
+        raise exceptions.EndpointNotFound(msg)
+
+    @abc.abstractmethod
     def get_data(self):
         """Get the raw catalog structure.
 
         Get the version dependant catalog structure as it is presented within
         the resource.
 
-        :returns: dict containing raw catalog data or None
+        :returns: list containing raw catalog data entries or None
         """
         raise NotImplementedError()
 
@@ -117,6 +208,15 @@ class ServiceCatalogV2(ServiceCatalog):
         # will not work. Use 'token' attribute instead.
         return 'token' in resource_dict
 
+    def _normalize_endpoint_type(self, endpoint_type):
+        if endpoint_type and 'URL' not in endpoint_type:
+            endpoint_type = endpoint_type + 'URL'
+
+        return endpoint_type
+
+    def _is_endpoint_type_match(self, endpoint, endpoint_type):
+        return endpoint_type in endpoint
+
     def get_data(self):
         return self.catalog.get('serviceCatalog')
 
@@ -131,64 +231,18 @@ class ServiceCatalogV2(ServiceCatalog):
             pass
         return token
 
-    def get_endpoints(self, service_type=None, endpoint_type=None):
-        if endpoint_type and 'URL' not in endpoint_type:
-            endpoint_type = endpoint_type + 'URL'
-
-        sc = {}
-        for service in (self.get_data() or []):
-            if service_type and service_type != service['type']:
-                continue
-            sc[service['type']] = []
-            for endpoint in service['endpoints']:
-                if endpoint_type and endpoint_type not in endpoint:
-                    continue
-                sc[service['type']].append(endpoint)
-        return sc
-
     def get_urls(self, attr=None, filter_value=None,
                  service_type='identity', endpoint_type='publicURL'):
-        sc_endpoints = self.get_endpoints(service_type=service_type,
-                                          endpoint_type=endpoint_type)
-        endpoints = sc_endpoints.get(service_type)
-        if not endpoints:
-            return
+        endpoint_type = self._normalize_endpoint_type(endpoint_type)
+        endpoints = self._get_service_endpoints(attr=attr,
+                                                filter_value=filter_value,
+                                                service_type=service_type,
+                                                endpoint_type=endpoint_type)
 
-        if endpoint_type and 'URL' not in endpoint_type:
-            endpoint_type = endpoint_type + 'URL'
-
-        return tuple(endpoint[endpoint_type]
-                     for endpoint in endpoints
-                     if (endpoint_type in endpoint
-                         and (not self.region_name
-                              or endpoint.get('region') == self.region_name)
-                         and (not filter_value
-                              or endpoint.get(attr) == filter_value)))
-
-    def url_for(self, attr=None, filter_value=None,
-                service_type='identity', endpoint_type='publicURL'):
-        catalog = self.get_data()
-
-        if not catalog:
-            raise exceptions.EmptyCatalog('The service catalog is empty.')
-
-        if 'URL' not in endpoint_type:
-            endpoint_type = endpoint_type + 'URL'
-
-        for service in catalog:
-            if service['type'] != service_type:
-                continue
-
-            endpoints = service['endpoints']
-            for endpoint in endpoints:
-                if (self.region_name and
-                        endpoint.get('region') != self.region_name):
-                    continue
-                if not filter_value or endpoint.get(attr) == filter_value:
-                    return endpoint[endpoint_type]
-
-        raise exceptions.EndpointNotFound('%s endpoint for %s not found.' %
-                                          (endpoint_type, service_type))
+        if endpoints:
+            return tuple([endpoint[endpoint_type] for endpoint in endpoints])
+        else:
+            return None
 
 
 class ServiceCatalogV3(ServiceCatalog):
@@ -207,6 +261,18 @@ class ServiceCatalogV3(ServiceCatalog):
         # Unscoped token does not have 'catalog', checking this
         # will not work. Use 'methods' attribute instead.
         return 'methods' in resource_dict
+
+    def _normalize_endpoint_type(self, endpoint_type):
+        if endpoint_type:
+            endpoint_type = endpoint_type.rstrip('URL')
+
+        return endpoint_type
+
+    def _is_endpoint_type_match(self, endpoint, endpoint_type):
+        try:
+            return endpoint_type == endpoint['interface']
+        except KeyError:
+            return False
 
     def get_data(self):
         return self.catalog.get('catalog')
@@ -227,63 +293,14 @@ class ServiceCatalogV3(ServiceCatalog):
             pass
         return token
 
-    def get_endpoints(self, service_type=None, endpoint_type=None):
-        if endpoint_type:
-            endpoint_type = endpoint_type.rstrip('URL')
-        sc = {}
-        for service in (self.get_data() or []):
-            if service_type and service_type != service['type']:
-                continue
-            sc[service['type']] = []
-            for endpoint in service['endpoints']:
-                if endpoint_type and endpoint_type != endpoint['interface']:
-                    continue
-                sc[service['type']].append(endpoint)
-        return sc
-
     def get_urls(self, attr=None, filter_value=None,
                  service_type='identity', endpoint_type='public'):
-        if endpoint_type:
-            endpoint_type = endpoint_type.rstrip('URL')
-        sc_endpoints = self.get_endpoints(service_type=service_type,
-                                          endpoint_type=endpoint_type)
-        endpoints = sc_endpoints.get(service_type)
-        if not endpoints:
+        endpoints = self._get_service_endpoints(attr=attr,
+                                                filter_value=filter_value,
+                                                service_type=service_type,
+                                                endpoint_type=endpoint_type)
+
+        if endpoints:
+            return tuple([endpoint['url'] for endpoint in endpoints])
+        else:
             return None
-
-        urls = list()
-        for endpoint in endpoints:
-            if (endpoint['interface'] == endpoint_type
-                    and (not self.region_name
-                         or endpoint.get('region') == self.region_name)
-                    and (not filter_value
-                         or endpoint.get(attr) == filter_value)):
-                urls.append(endpoint['url'])
-        return tuple(urls)
-
-    def url_for(self, attr=None, filter_value=None,
-                service_type='identity', endpoint_type='public'):
-        catalog = self.get_data()
-
-        if not catalog:
-            raise exceptions.EmptyCatalog('The service catalog is empty.')
-
-        if endpoint_type:
-            endpoint_type = endpoint_type.rstrip('URL')
-
-        for service in catalog:
-            if service['type'] != service_type:
-                continue
-
-            endpoints = service['endpoints']
-            for endpoint in endpoints:
-                if endpoint.get('interface') != endpoint_type:
-                    continue
-                if (self.region_name and
-                        endpoint.get('region') != self.region_name):
-                    continue
-                if not filter_value or endpoint.get(attr) == filter_value:
-                    return endpoint['url']
-
-        raise exceptions.EndpointNotFound('%s endpoint for %s not found.' %
-                                          (endpoint_type, service_type))
