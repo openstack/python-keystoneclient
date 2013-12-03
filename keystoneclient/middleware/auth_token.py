@@ -445,7 +445,7 @@ class AuthProtocol(object):
 
         # Token caching via memcache
         self._cache = None
-        self._cache_initialized = False    # cache already initialzied?
+        self._cache_initialized = False    # cache already initialized?
         # memcache value treatment, ENCRYPT or MAC
         self._memcache_security_strategy = \
             self._conf_get('memcache_security_strategy')

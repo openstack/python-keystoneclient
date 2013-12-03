@@ -26,7 +26,7 @@ from keystoneclient.openstack.common import strutils
 # Decorator for cli-args
 def arg(*args, **kwargs):
     def _decorator(func):
-        # Because of the sematics of decorator composition if we just append
+        # Because of the semantics of decorator composition if we just append
         # to the options list positional options will appear to be backwards.
         func.__dict__.setdefault('arguments', []).insert(0, (args, kwargs))
         return func
