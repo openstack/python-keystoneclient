@@ -21,6 +21,7 @@ If set_subprocess() is not called, this module will pick Python's subprocess
 or eventlet.green.subprocess based on if os module is patched by eventlet.
 """
 
+import errno
 import hashlib
 import logging
 
@@ -57,6 +58,46 @@ def set_subprocess(_subprocess=None):
     subprocess = _subprocess
 
 
+def _check_files_accessible(files):
+    err = None
+    try:
+        for try_file in files:
+            with open(try_file, 'r'):
+                pass
+    except IOError as e:
+        # Catching IOError means there is an issue with
+        # the given file.
+        err = ('Hit OSError in _process_communicate_handle_oserror()\n'
+               'Likely due to %s: %s') % (try_file, e.strerror)
+
+    return err
+
+
+def _process_communicate_handle_oserror(process, text, files):
+    """Wrapper around process.communicate that checks for OSError."""
+
+    try:
+        output, err = process.communicate(text)
+    except OSError as e:
+        if e.errno != errno.EPIPE:
+            raise
+        # OSError with EPIPE only occurs with Python 2.6.x/old 2.7.x
+        # http://bugs.python.org/issue10963
+
+        # The quick exit is typically caused by the openssl command not being
+        # able to read an input file, so check ourselves if can't read a file.
+        err = _check_files_accessible(files)
+        if process.stderr:
+            err += process.stderr.read()
+
+        output = ""
+        retcode = -1
+    else:
+        retcode = process.poll()
+
+    return output, err, retcode
+
+
 def cms_verify(formatted, signing_cert_file_name, ca_file_name):
     """Verifies the signature of the contents IAW CMS syntax.
 
@@ -73,8 +114,8 @@ def cms_verify(formatted, signing_cert_file_name, ca_file_name):
                                stdin=subprocess.PIPE,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
-    output, err = process.communicate(formatted)
-    retcode = process.poll()
+    output, err, retcode = _process_communicate_handle_oserror(
+        process, formatted, (signing_cert_file_name, ca_file_name))
 
     # Do not log errors, as some happen in the positive thread
     # instead, catch them in the calling code and log them there.
@@ -184,8 +225,10 @@ def cms_sign_text(text, signing_cert_file_name, signing_key_file_name):
                                stdin=subprocess.PIPE,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
-    output, err = process.communicate(text)
-    retcode = process.poll()
+
+    output, err, retcode = _process_communicate_handle_oserror(
+        process, text, (signing_cert_file_name, signing_key_file_name))
+
     if retcode or "Error" in err:
         LOG.error('Signing error: %s' % err)
         raise subprocess.CalledProcessError(retcode, "openssl")

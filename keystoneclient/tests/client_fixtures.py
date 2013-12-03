@@ -28,7 +28,7 @@ TESTDIR = os.path.dirname(os.path.abspath(__file__))
 ROOTDIR = os.path.normpath(os.path.join(TESTDIR, '..', '..'))
 CERTDIR = os.path.join(ROOTDIR, 'examples', 'pki', 'certs')
 CMSDIR = os.path.join(ROOTDIR, 'examples', 'pki', 'cms')
-
+KEYDIR = os.path.join(ROOTDIR, 'examples', 'pki', 'private')
 
 # @TODO(mordred) This should become a testresources resource attached to the
 #                class
@@ -51,9 +51,17 @@ with open(os.path.join(CMSDIR, 'revocation_list.json')) as f:
     REVOCATION_LIST = jsonutils.loads(f.read())
 with open(os.path.join(CMSDIR, 'revocation_list.pem')) as f:
     SIGNED_REVOCATION_LIST = jsonutils.dumps({'signed': f.read()})
-with open(os.path.join(CERTDIR, 'signing_cert.pem')) as f:
+
+SIGNING_CERT_FILE = os.path.join(CERTDIR, 'signing_cert.pem')
+with open(SIGNING_CERT_FILE) as f:
     SIGNING_CERT = f.read()
-with open(os.path.join(CERTDIR, 'cacert.pem')) as f:
+
+SIGNING_KEY_FILE = os.path.join(KEYDIR, 'signing_key.pem')
+with open(SIGNING_KEY_FILE) as f:
+    SIGNING_KEY = f.read()
+
+SIGNING_CA_FILE = os.path.join(CERTDIR, 'cacert.pem')
+with open(SIGNING_CA_FILE) as f:
     SIGNING_CA = f.read()
 
 UUID_TOKEN_DEFAULT = "ec6c0710ec2f471498484c1b53ab4f9d"
