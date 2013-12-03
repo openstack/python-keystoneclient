@@ -86,9 +86,8 @@ class UserManager(base.ManagerWithFind):
         return self._update("/users/%s/OS-KSADM/tenant" % base.getid(user),
                             params, "user")
 
-    def create(self, name, password, email, tenant_id=None, enabled=True):
+    def create(self, name, password, email=None, tenant_id=None, enabled=True):
         """Create a user."""
-        # FIXME(ja): email should be optional, keystone currently requires it
         params = {"user": {"name": name,
                            "password": password,
                            "tenantId": tenant_id,
