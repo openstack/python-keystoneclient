@@ -29,6 +29,7 @@ import uuid
 import fixtures
 import httpretty
 import mock
+import testresources
 import webob
 
 from keystoneclient.common import cms
@@ -320,7 +321,10 @@ if tuple(sys.version_info)[0:2] < (2, 7):
     BaseAuthTokenMiddlewareTest = AdjustedBaseAuthTokenMiddlewareTest
 
 
-class MultiStepAuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
+class MultiStepAuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
+                                       testresources.ResourcedTestCase):
+
+    resources = [('examples', client_fixtures.EXAMPLES_RESOURCE)]
 
     @httpretty.activate
     def test_fetch_revocation_list_with_expire(self):
@@ -333,20 +337,24 @@ class MultiStepAuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
 
         responses = [httpretty.Response(body='', status=401),
                      httpretty.Response(
-                         body=client_fixtures.SIGNED_REVOCATION_LIST)]
+                         body=self.examples.SIGNED_REVOCATION_LIST)]
 
         httpretty.register_uri(httpretty.GET,
                                "%s/v2.0/tokens/revoked" % BASE_URI,
                                responses=responses)
 
         fetched_list = jsonutils.loads(self.middleware.fetch_revocation_list())
-        self.assertEqual(fetched_list, client_fixtures.REVOCATION_LIST)
+        self.assertEqual(fetched_list, self.examples.REVOCATION_LIST)
 
         # Check that 4 requests have been made
         self.assertEqual(len(httpretty.httpretty.latest_requests), 4)
 
 
-class DiabloAuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
+class DiabloAuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
+                                    testresources.ResourcedTestCase):
+
+    resources = [('examples', client_fixtures.EXAMPLES_RESOURCE)]
+
     """Auth Token middleware should understand Diablo keystone responses."""
     def setUp(self):
         # pre-diablo only had Tenant ID, which was also the Name
@@ -372,8 +380,8 @@ class DiabloAuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
                                "%s/v2.0/tokens" % BASE_URI,
                                body=FAKE_ADMIN_TOKEN)
 
-        self.token_id = client_fixtures.VALID_DIABLO_TOKEN
-        token_response = client_fixtures.JSON_TOKEN_RESPONSES[self.token_id]
+        self.token_id = self.examples.VALID_DIABLO_TOKEN
+        token_response = self.examples.JSON_TOKEN_RESPONSES[self.token_id]
 
         httpretty.register_uri(httpretty.GET,
                                "%s/v2.0/tokens/%s" % (BASE_URI, self.token_id),
@@ -507,7 +515,7 @@ class CommonAuthTokenMiddlewareTest(object):
         tmp_name = uuid.uuid4().hex
         test_parent_signing_dir = "/tmp/%s" % tmp_name
         self.middleware.signing_dirname = "/tmp/%s/%s" % ((tmp_name,) * 2)
-        self.middleware.signing_cert_file_name = "%s/test.pem" %\
+        self.middleware.signing_cert_file_name = "%s/test.pem" % \
             self.middleware.signing_dirname
         self.middleware.verify_signing_dir()
         # NOTE(wu_wenxiang): Verify if the signing dir was created as expected.
@@ -546,7 +554,7 @@ class CommonAuthTokenMiddlewareTest(object):
     def test_get_token_revocation_list_fetched_time_returns_utc(self):
         with TimezoneFixture('UTC-1'):
             self.middleware.token_revocation_list = jsonutils.dumps(
-                client_fixtures.REVOCATION_LIST)
+                self.examples.REVOCATION_LIST)
             self.middleware.token_revocation_list_fetched_time = None
             fetched_time = self.middleware.token_revocation_list_fetched_time
             self.assertTrue(timeutils.is_soon(fetched_time, 1))
@@ -562,7 +570,7 @@ class CommonAuthTokenMiddlewareTest(object):
         self.middleware.token_revocation_list_fetched_time = None
         os.remove(self.middleware.revoked_file_name)
         self.assertEqual(self.middleware.token_revocation_list,
-                         client_fixtures.REVOCATION_LIST)
+                         self.examples.REVOCATION_LIST)
 
     def test_get_revocation_list_returns_current_list_from_memory(self):
         self.assertEqual(self.middleware.token_revocation_list,
@@ -586,7 +594,7 @@ class CommonAuthTokenMiddlewareTest(object):
         # auth_token uses v2 to fetch this, so don't allow the v3
         # tests to override the fake http connection
         fetched_list = jsonutils.loads(self.middleware.fetch_revocation_list())
-        self.assertEqual(fetched_list, client_fixtures.REVOCATION_LIST)
+        self.assertEqual(fetched_list, self.examples.REVOCATION_LIST)
 
     def test_request_invalid_uuid_token(self):
         # remember because we are testing the middleware we stub the connection
@@ -603,7 +611,7 @@ class CommonAuthTokenMiddlewareTest(object):
 
     def test_request_invalid_signed_token(self):
         req = webob.Request.blank('/')
-        req.headers['X-Auth-Token'] = client_fixtures.INVALID_SIGNED_TOKEN
+        req.headers['X-Auth-Token'] = self.examples.INVALID_SIGNED_TOKEN
         self.middleware(req.environ, self.start_fake_response)
         self.assertEqual(self.response_status, 401)
         self.assertEqual(self.response_headers['WWW-Authenticate'],
@@ -747,23 +755,23 @@ class CommonAuthTokenMiddlewareTest(object):
         self.assertFalse(auth_token.will_expire_soon(fortyseconds))
 
     def test_token_is_v2_accepts_v2(self):
-        token = client_fixtures.UUID_TOKEN_DEFAULT
-        token_response = client_fixtures.TOKEN_RESPONSES[token]
+        token = self.examples.UUID_TOKEN_DEFAULT
+        token_response = self.examples.TOKEN_RESPONSES[token]
         self.assertTrue(auth_token._token_is_v2(token_response))
 
     def test_token_is_v2_rejects_v3(self):
-        token = client_fixtures.v3_UUID_TOKEN_DEFAULT
-        token_response = client_fixtures.TOKEN_RESPONSES[token]
+        token = self.examples.v3_UUID_TOKEN_DEFAULT
+        token_response = self.examples.TOKEN_RESPONSES[token]
         self.assertFalse(auth_token._token_is_v2(token_response))
 
     def test_token_is_v3_rejects_v2(self):
-        token = client_fixtures.UUID_TOKEN_DEFAULT
-        token_response = client_fixtures.TOKEN_RESPONSES[token]
+        token = self.examples.UUID_TOKEN_DEFAULT
+        token_response = self.examples.TOKEN_RESPONSES[token]
         self.assertFalse(auth_token._token_is_v3(token_response))
 
     def test_token_is_v3_accepts_v3(self):
-        token = client_fixtures.v3_UUID_TOKEN_DEFAULT
-        token_response = client_fixtures.TOKEN_RESPONSES[token]
+        token = self.examples.v3_UUID_TOKEN_DEFAULT
+        token_response = self.examples.TOKEN_RESPONSES[token]
         self.assertTrue(auth_token._token_is_v3(token_response))
 
     def test_encrypt_cache_data(self):
@@ -895,7 +903,11 @@ class CommonAuthTokenMiddlewareTest(object):
                                       with_catalog=False)
 
 
-class CertDownloadMiddlewareTest(BaseAuthTokenMiddlewareTest):
+class CertDownloadMiddlewareTest(BaseAuthTokenMiddlewareTest,
+                                 testresources.ResourcedTestCase):
+
+    resources = [('examples', client_fixtures.EXAMPLES_RESOURCE)]
+
     def setUp(self):
         super(CertDownloadMiddlewareTest, self).setUp()
         self.base_dir = tempfile.mkdtemp()
@@ -927,7 +939,7 @@ class CertDownloadMiddlewareTest(BaseAuthTokenMiddlewareTest):
                                status=404)
         self.assertRaises(exceptions.CertificateConfigError,
                           self.middleware.verify_signed_token,
-                          client_fixtures.SIGNED_TOKEN_SCOPED)
+                          self.examples.SIGNED_TOKEN_SCOPED)
 
     def test_fetch_signing_cert(self):
         data = 'FAKE CERT'
@@ -1005,7 +1017,8 @@ def network_error_response(method, uri, headers):
 
 
 class v2AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
-                                CommonAuthTokenMiddlewareTest):
+                                CommonAuthTokenMiddlewareTest,
+                                testresources.ResourcedTestCase):
     """v2 token specific tests.
 
     There are some differences between how the auth-token middleware handles
@@ -1022,17 +1035,19 @@ class v2AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
 
     """
 
+    resources = [('examples', client_fixtures.EXAMPLES_RESOURCE)]
+
     def setUp(self):
         super(v2AuthTokenMiddlewareTest, self).setUp()
 
         self.token_dict = {
-            'uuid_token_default': client_fixtures.UUID_TOKEN_DEFAULT,
-            'uuid_token_unscoped': client_fixtures.UUID_TOKEN_UNSCOPED,
-            'signed_token_scoped': client_fixtures.SIGNED_TOKEN_SCOPED,
+            'uuid_token_default': self.examples.UUID_TOKEN_DEFAULT,
+            'uuid_token_unscoped': self.examples.UUID_TOKEN_UNSCOPED,
+            'signed_token_scoped': self.examples.SIGNED_TOKEN_SCOPED,
             'signed_token_scoped_expired':
-            client_fixtures.SIGNED_TOKEN_SCOPED_EXPIRED,
-            'revoked_token': client_fixtures.REVOKED_TOKEN,
-            'revoked_token_hash': client_fixtures.REVOKED_TOKEN_HASH
+            self.examples.SIGNED_TOKEN_SCOPED_EXPIRED,
+            'revoked_token': self.examples.REVOKED_TOKEN,
+            'revoked_token_hash': self.examples.REVOKED_TOKEN_HASH
         }
 
         httpretty.httpretty.reset()
@@ -1049,16 +1064,16 @@ class v2AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
 
         httpretty.register_uri(httpretty.GET,
                                "%s/v2.0/tokens/revoked" % BASE_URI,
-                               body=client_fixtures.SIGNED_REVOCATION_LIST,
+                               body=self.examples.SIGNED_REVOCATION_LIST,
                                status=200)
 
-        for token in (client_fixtures.UUID_TOKEN_DEFAULT,
-                      client_fixtures.UUID_TOKEN_UNSCOPED,
-                      client_fixtures.UUID_TOKEN_NO_SERVICE_CATALOG):
+        for token in (self.examples.UUID_TOKEN_DEFAULT,
+                      self.examples.UUID_TOKEN_UNSCOPED,
+                      self.examples.UUID_TOKEN_NO_SERVICE_CATALOG):
             httpretty.register_uri(httpretty.GET,
                                    "%s/v2.0/tokens/%s" % (BASE_URI, token),
                                    body=
-                                   client_fixtures.JSON_TOKEN_RESPONSES[token])
+                                   self.examples.JSON_TOKEN_RESPONSES[token])
 
         httpretty.register_uri(httpretty.GET,
                                '%s/v2.0/tokens/%s' % (BASE_URI, ERROR_TOKEN),
@@ -1088,11 +1103,11 @@ class v2AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
 
     def test_default_tenant_uuid_token(self):
         self.assert_unscoped_default_tenant_auto_scopes(
-            client_fixtures.UUID_TOKEN_DEFAULT)
+            self.examples.UUID_TOKEN_DEFAULT)
 
     def test_default_tenant_signed_token(self):
         self.assert_unscoped_default_tenant_auto_scopes(
-            client_fixtures.SIGNED_TOKEN_SCOPED)
+            self.examples.SIGNED_TOKEN_SCOPED)
 
     def assert_unscoped_token_receives_401(self, token):
         """Unscoped requests with no default tenant ID should be rejected."""
@@ -1105,24 +1120,27 @@ class v2AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
 
     def test_unscoped_uuid_token_receives_401(self):
         self.assert_unscoped_token_receives_401(
-            client_fixtures.UUID_TOKEN_UNSCOPED)
+            self.examples.UUID_TOKEN_UNSCOPED)
 
     def test_unscoped_pki_token_receives_401(self):
         self.assert_unscoped_token_receives_401(
-            client_fixtures.SIGNED_TOKEN_UNSCOPED)
+            self.examples.SIGNED_TOKEN_UNSCOPED)
 
     def test_request_prevent_service_catalog_injection(self):
         req = webob.Request.blank('/')
         req.headers['X-Service-Catalog'] = '[]'
         req.headers['X-Auth-Token'] = \
-            client_fixtures.UUID_TOKEN_NO_SERVICE_CATALOG
+            self.examples.UUID_TOKEN_NO_SERVICE_CATALOG
         body = self.middleware(req.environ, self.start_fake_response)
         self.assertEqual(self.response_status, 200)
         self.assertFalse(req.headers.get('X-Service-Catalog'))
         self.assertEqual(body, ['SUCCESS'])
 
 
-class CrossVersionAuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
+class CrossVersionAuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
+                                          testresources.ResourcedTestCase):
+
+    resources = [('examples', client_fixtures.EXAMPLES_RESOURCE)]
 
     @httpretty.activate
     def test_valid_uuid_request_forced_to_2_0(self):
@@ -1149,27 +1167,28 @@ class CrossVersionAuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest):
                                "%s/v2.0/tokens" % BASE_URI,
                                body=FAKE_ADMIN_TOKEN)
 
-        token = client_fixtures.UUID_TOKEN_DEFAULT
+        token = self.examples.UUID_TOKEN_DEFAULT
         httpretty.register_uri(httpretty.GET,
                                "%s/v2.0/tokens/%s" % (BASE_URI, token),
                                body=
-                               client_fixtures.JSON_TOKEN_RESPONSES[token])
+                               self.examples.JSON_TOKEN_RESPONSES[token])
 
         self.set_middleware(conf=conf)
 
         # This tests will only work is auth_token has chosen to use the
         # lower, v2, api version
         req = webob.Request.blank('/')
-        req.headers['X-Auth-Token'] = client_fixtures.UUID_TOKEN_DEFAULT
+        req.headers['X-Auth-Token'] = self.examples.UUID_TOKEN_DEFAULT
         self.middleware(req.environ, self.start_fake_response)
         self.assertEqual(self.response_status, 200)
         self.assertEqual("/testadmin/v2.0/tokens/%s" %
-                         client_fixtures.UUID_TOKEN_DEFAULT,
+                         self.examples.UUID_TOKEN_DEFAULT,
                          httpretty.httpretty.last_request.path)
 
 
 class v3AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
-                                CommonAuthTokenMiddlewareTest):
+                                CommonAuthTokenMiddlewareTest,
+                                testresources.ResourcedTestCase):
     """Test auth_token middleware with v3 tokens.
 
     Re-execute the AuthTokenMiddlewareTest class tests, but with the
@@ -1193,19 +1212,22 @@ class v3AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
     the highest available auth version, i.e. v3.0
 
     """
+
+    resources = [('examples', client_fixtures.EXAMPLES_RESOURCE)]
+
     def setUp(self):
         super(v3AuthTokenMiddlewareTest, self).setUp(
             auth_version='v3.0',
             fake_app=v3FakeApp)
 
         self.token_dict = {
-            'uuid_token_default': client_fixtures.v3_UUID_TOKEN_DEFAULT,
-            'uuid_token_unscoped': client_fixtures.v3_UUID_TOKEN_UNSCOPED,
-            'signed_token_scoped': client_fixtures.SIGNED_v3_TOKEN_SCOPED,
+            'uuid_token_default': self.examples.v3_UUID_TOKEN_DEFAULT,
+            'uuid_token_unscoped': self.examples.v3_UUID_TOKEN_UNSCOPED,
+            'signed_token_scoped': self.examples.SIGNED_v3_TOKEN_SCOPED,
             'signed_token_scoped_expired':
-            client_fixtures.SIGNED_TOKEN_SCOPED_EXPIRED,
-            'revoked_token': client_fixtures.REVOKED_v3_TOKEN,
-            'revoked_token_hash': client_fixtures.REVOKED_v3_TOKEN_HASH
+            self.examples.SIGNED_TOKEN_SCOPED_EXPIRED,
+            'revoked_token': self.examples.REVOKED_v3_TOKEN,
+            'revoked_token_hash': self.examples.REVOKED_v3_TOKEN_HASH
         }
 
         httpretty.httpretty.reset()
@@ -1225,7 +1247,7 @@ class v3AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
         # TODO(jamielennox): there is no v3 revocation url yet, it uses v2
         httpretty.register_uri(httpretty.GET,
                                "%s/v2.0/tokens/revoked" % BASE_URI,
-                               body=client_fixtures.SIGNED_REVOCATION_LIST,
+                               body=self.examples.SIGNED_REVOCATION_LIST,
                                status=200)
 
         httpretty.register_uri(httpretty.GET,
@@ -1251,7 +1273,7 @@ class v3AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
             raise auth_token.NetworkError("Network connection error.")
 
         try:
-            response = client_fixtures.JSON_TOKEN_RESPONSES[token_id]
+            response = self.examples.JSON_TOKEN_RESPONSES[token_id]
         except KeyError:
             status = 404
 
@@ -1274,7 +1296,7 @@ class v3AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
             'HTTP_X_ROLE': '',
         }
         self.set_middleware(expected_env=delta_expected_env)
-        self.assert_valid_request_200(client_fixtures.v3_UUID_TOKEN_UNSCOPED,
+        self.assert_valid_request_200(self.examples.v3_UUID_TOKEN_UNSCOPED,
                                       with_catalog=False)
         self.assertLastPath('/testadmin/v3/auth/tokens')
 
@@ -1293,7 +1315,7 @@ class v3AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
         }
         self.set_middleware(expected_env=delta_expected_env)
         self.assert_valid_request_200(
-            client_fixtures.v3_UUID_TOKEN_DOMAIN_SCOPED)
+            self.examples.v3_UUID_TOKEN_DOMAIN_SCOPED)
         self.assertLastPath('/testadmin/v3/auth/tokens')
 
 
@@ -1512,3 +1534,7 @@ class TokenExpirationTest(BaseAuthTokenMiddlewareTest):
         expires = timeutils.strtime(some_time_earlier) + '-02:00'
         self.middleware._cache_put(token, data, expires)
         self.assertIsNone(self.middleware._cache_get(token))
+
+
+def load_tests(loader, tests, pattern):
+    return testresources.OptimisingTestSuite(tests)

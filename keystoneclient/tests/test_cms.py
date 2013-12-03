@@ -16,6 +16,7 @@ import os
 import subprocess
 
 import mock
+import testresources
 
 from keystoneclient.common import cms
 from keystoneclient import exceptions
@@ -23,9 +24,11 @@ from keystoneclient.tests import client_fixtures
 from keystoneclient.tests import utils
 
 
-class CMSTest(utils.TestCase):
+class CMSTest(utils.TestCase, testresources.ResourcedTestCase):
 
     """Unit tests for the keystoneclient.common.cms module."""
+
+    resources = [('examples', client_fixtures.EXAMPLES_RESOURCE)]
 
     def test_cms_verify(self):
         self.assertRaises(exceptions.CertificateConfigError,
@@ -39,33 +42,33 @@ class CMSTest(utils.TestCase):
                                'auth_token_scoped.pem')) as f:
             AUTH_TOKEN_SCOPED_CMS = f.read()
 
-        self.assertEqual(cms.token_to_cms(client_fixtures.SIGNED_TOKEN_SCOPED),
+        self.assertEqual(cms.token_to_cms(self.examples.SIGNED_TOKEN_SCOPED),
                          AUTH_TOKEN_SCOPED_CMS)
 
         tok = cms.cms_to_token(cms.token_to_cms(
-            client_fixtures.SIGNED_TOKEN_SCOPED))
-        self.assertEqual(tok, client_fixtures.SIGNED_TOKEN_SCOPED)
+            self.examples.SIGNED_TOKEN_SCOPED))
+        self.assertEqual(tok, self.examples.SIGNED_TOKEN_SCOPED)
 
     def test_ans1_token(self):
-        self.assertTrue(cms.is_ans1_token(client_fixtures.SIGNED_TOKEN_SCOPED))
+        self.assertTrue(cms.is_ans1_token(self.examples.SIGNED_TOKEN_SCOPED))
         self.assertFalse(cms.is_ans1_token('FOOBAR'))
 
     def test_cms_sign_token_no_files(self):
         self.assertRaises(subprocess.CalledProcessError,
                           cms.cms_sign_token,
-                          client_fixtures.SIGNED_TOKEN_SCOPED,
+                          self.examples.SIGNED_TOKEN_SCOPED,
                           '/no/such/file', '/no/such/key')
 
     def test_cms_sign_token_success(self):
         self.assertTrue(
-            cms.cms_sign_token(client_fixtures.SIGNED_TOKEN_SCOPED,
-                               client_fixtures.SIGNING_CERT_FILE,
-                               client_fixtures.SIGNING_KEY_FILE))
+            cms.cms_sign_token(self.examples.SIGNED_TOKEN_SCOPED,
+                               self.examples.SIGNING_CERT_FILE,
+                               self.examples.SIGNING_KEY_FILE))
 
     def test_cms_verify_token_no_files(self):
         self.assertRaises(exceptions.CertificateConfigError,
                           cms.cms_verify,
-                          client_fixtures.SIGNED_TOKEN_SCOPED,
+                          self.examples.SIGNED_TOKEN_SCOPED,
                           '/no/such/file', '/no/such/key')
 
     def test_cms_verify_token_no_oserror(self):
@@ -86,26 +89,30 @@ class CMSTest(utils.TestCase):
                 self.fail('Expected subprocess.CalledProcessError')
 
     def test_cms_verify_token_scoped(self):
-        cms_content = cms.token_to_cms(client_fixtures.SIGNED_TOKEN_SCOPED)
+        cms_content = cms.token_to_cms(self.examples.SIGNED_TOKEN_SCOPED)
         self.assertTrue(cms.cms_verify(cms_content,
-                                       client_fixtures.SIGNING_CERT_FILE,
-                                       client_fixtures.SIGNING_CA_FILE))
+                                       self.examples.SIGNING_CERT_FILE,
+                                       self.examples.SIGNING_CA_FILE))
 
     def test_cms_verify_token_scoped_expired(self):
         cms_content = cms.token_to_cms(
-            client_fixtures.SIGNED_TOKEN_SCOPED_EXPIRED)
+            self.examples.SIGNED_TOKEN_SCOPED_EXPIRED)
         self.assertTrue(cms.cms_verify(cms_content,
-                                       client_fixtures.SIGNING_CERT_FILE,
-                                       client_fixtures.SIGNING_CA_FILE))
+                                       self.examples.SIGNING_CERT_FILE,
+                                       self.examples.SIGNING_CA_FILE))
 
     def test_cms_verify_token_unscoped(self):
-        cms_content = cms.token_to_cms(client_fixtures.SIGNED_TOKEN_UNSCOPED)
+        cms_content = cms.token_to_cms(self.examples.SIGNED_TOKEN_UNSCOPED)
         self.assertTrue(cms.cms_verify(cms_content,
-                                       client_fixtures.SIGNING_CERT_FILE,
-                                       client_fixtures.SIGNING_CA_FILE))
+                                       self.examples.SIGNING_CERT_FILE,
+                                       self.examples.SIGNING_CA_FILE))
 
     def test_cms_verify_token_v3_scoped(self):
-        cms_content = cms.token_to_cms(client_fixtures.SIGNED_v3_TOKEN_SCOPED)
+        cms_content = cms.token_to_cms(self.examples.SIGNED_v3_TOKEN_SCOPED)
         self.assertTrue(cms.cms_verify(cms_content,
-                                       client_fixtures.SIGNING_CERT_FILE,
-                                       client_fixtures.SIGNING_CA_FILE))
+                                       self.examples.SIGNING_CERT_FILE,
+                                       self.examples.SIGNING_CA_FILE))
+
+
+def load_tests(loader, tests, pattern):
+    return testresources.OptimisingTestSuite(tests)
