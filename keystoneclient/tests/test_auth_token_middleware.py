@@ -23,6 +23,7 @@ import stat
 import sys
 import tempfile
 import testtools
+import time
 import uuid
 
 import fixtures
@@ -140,6 +141,33 @@ class DisableModuleFixture(fixtures.Fixture):
         finder = NoModuleFinder(self.module)
         self._finders.append(finder)
         sys.meta_path.insert(0, finder)
+
+
+class TimezoneFixture(fixtures.Fixture):
+    @staticmethod
+    def supported():
+        # tzset is only supported on Unix.
+        return hasattr(time, 'tzset')
+
+    def __init__(self, new_tz):
+        super(TimezoneFixture, self).__init__()
+        self.tz = new_tz
+        self.old_tz = os.environ.get('TZ', None)
+
+    def setUp(self):
+        super(TimezoneFixture, self).setUp()
+        if not self.supported():
+            raise NotImplementedError('timezone override is not supported.')
+        os.environ['TZ'] = self.tz
+        time.tzset()
+        self.addCleanup(self.cleanup)
+
+    def cleanup(self):
+        if self.old_tz is not None:
+            os.environ['TZ'] = self.old_tz
+        elif 'TZ' in os.environ:
+            del os.environ['TZ']
+        time.tzset()
 
 
 class FakeSwiftOldMemcacheClient(memorycache.Client):
@@ -509,9 +537,19 @@ class CommonAuthTokenMiddlewareTest(object):
     def test_get_token_revocation_list_fetched_time_returns_mtime(self):
         self.middleware.token_revocation_list_fetched_time = None
         mtime = os.path.getmtime(self.middleware.revoked_file_name)
-        fetched_time = datetime.datetime.fromtimestamp(mtime)
-        self.assertEqual(self.middleware.token_revocation_list_fetched_time,
-                         fetched_time)
+        fetched_time = datetime.datetime.utcfromtimestamp(mtime)
+        self.assertEqual(fetched_time,
+                         self.middleware.token_revocation_list_fetched_time)
+
+    @testtools.skipUnless(TimezoneFixture.supported(),
+                          'TimezoneFixture not supported')
+    def test_get_token_revocation_list_fetched_time_returns_utc(self):
+        with TimezoneFixture('UTC-1'):
+            self.middleware.token_revocation_list = jsonutils.dumps(
+                client_fixtures.REVOCATION_LIST)
+            self.middleware.token_revocation_list_fetched_time = None
+            fetched_time = self.middleware.token_revocation_list_fetched_time
+            self.assertTrue(timeutils.is_soon(fetched_time, 1))
 
     def test_get_token_revocation_list_fetched_time_returns_value(self):
         expected = self.middleware._token_revocation_list_fetched_time
