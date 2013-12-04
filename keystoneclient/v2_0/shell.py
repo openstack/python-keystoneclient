@@ -490,7 +490,7 @@ def do_endpoint_list(kc, args):
 @utils.arg('--service', '--service-id', '--service_id',
            metavar='<service>', required=True,
            help='Name or ID of service associated with Endpoint')
-@utils.arg('--publicurl', metavar='<public-url>',
+@utils.arg('--publicurl', metavar='<public-url>', required=True,
            help='Public URL endpoint')
 @utils.arg('--adminurl', metavar='<admin-url>',
            help='Admin URL endpoint')
