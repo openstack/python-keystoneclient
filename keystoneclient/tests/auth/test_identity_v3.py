@@ -15,6 +15,7 @@
 import copy
 
 import httpretty
+from six.moves import urllib
 
 from keystoneclient import access
 from keystoneclient.auth.identity import v3
@@ -32,7 +33,83 @@ class V3IdentityPlugin(utils.TestCase):
 
     TEST_PASS = 'password'
 
-    TEST_SERVICE_CATALOG = []
+    TEST_SERVICE_CATALOG = [{
+        "endpoints": [{
+            "url": "http://cdn.admin-nets.local:8774/v1.0/",
+            "region": "RegionOne",
+            "interface": "public"
+        }, {
+            "url": "http://127.0.0.1:8774/v1.0",
+            "region": "RegionOne",
+            "interface": "internal"
+        }, {
+            "url": "http://cdn.admin-nets.local:8774/v1.0",
+            "region": "RegionOne",
+            "interface": "admin"
+        }],
+        "type": "nova_compat"
+    }, {
+        "endpoints": [{
+            "url": "http://nova/novapi/public",
+            "region": "RegionOne",
+            "interface": "public"
+        }, {
+            "url": "http://nova/novapi/internal",
+            "region": "RegionOne",
+            "interface": "internal"
+        }, {
+            "url": "http://nova/novapi/admin",
+            "region": "RegionOne",
+            "interface": "admin"
+        }],
+        "type": "compute"
+    }, {
+        "endpoints": [{
+            "url": "http://glance/glanceapi/public",
+            "region": "RegionOne",
+            "interface": "public"
+        }, {
+            "url": "http://glance/glanceapi/internal",
+            "region": "RegionOne",
+            "interface": "internal"
+        }, {
+            "url": "http://glance/glanceapi/admin",
+            "region": "RegionOne",
+            "interface": "admin"
+        }],
+        "type": "image",
+        "name": "glance"
+    }, {
+        "endpoints": [{
+            "url": "http://127.0.0.1:5000/v3",
+            "region": "RegionOne",
+            "interface": "public"
+        }, {
+            "url": "http://127.0.0.1:5000/v3",
+            "region": "RegionOne",
+            "interface": "internal"
+        }, {
+            "url": TEST_ADMIN_URL,
+            "region": "RegionOne",
+            "interface": "admin"
+        }],
+        "type": "identity"
+    }, {
+        "endpoints": [{
+            "url": "http://swift/swiftapi/public",
+            "region": "RegionOne",
+            "interface": "public"
+        }, {
+            "url": "http://swift/swiftapi/internal",
+            "region": "RegionOne",
+            "interface": "internal"
+        }, {
+            "url": "http://swift/swiftapi/admin",
+            "region": "RegionOne",
+            "interface": "admin"
+        }],
+        "type": "object-store"
+    }]
 
     def setUp(self):
         super(V3IdentityPlugin, self).setUp()
@@ -232,3 +309,55 @@ class V3IdentityPlugin(utils.TestCase):
                         username=self.TEST_USER, password=self.TEST_PASS,
                         domain_id='x', trust_id='x')
         self.assertRaises(exceptions.AuthorizationFailure, a.get_auth_ref, s)
+
+    @httpretty.activate
+    def _do_service_url_test(self, base_url, endpoint_filter):
+        self.stub_auth(json=self.TEST_RESPONSE_DICT)
+        self.stub_url(httpretty.GET, ['path'],
+                      base_url=base_url,
+                      body='SUCCESS', status=200)
+
+        a = v3.Password(self.TEST_URL, username=self.TEST_USER,
+                        password=self.TEST_PASS)
+        s = session.Session(auth=a)
+
+        resp = s.get('/path', endpoint_filter=endpoint_filter)
+
+        self.assertEqual(resp.status_code, 200)
+        path = "%s/%s" % (urllib.parse.urlparse(base_url).path, 'path')
+        self.assertEqual(httpretty.last_request().path, path)
+
+    def test_service_url(self):
+        endpoint_filter = {'service_type': 'compute', 'interface': 'admin'}
+        self._do_service_url_test('http://nova/novapi/admin', endpoint_filter)
+
+    def test_service_url_defaults_to_public(self):
+        endpoint_filter = {'service_type': 'compute'}
+        self._do_service_url_test('http://nova/novapi/public', endpoint_filter)
+
+    @httpretty.activate
+    def test_endpoint_filter_without_service_type_fails(self):
+        self.stub_auth(json=self.TEST_RESPONSE_DICT)
+
+        a = v3.Password(self.TEST_URL, username=self.TEST_USER,
+                        password=self.TEST_PASS)
+        s = session.Session(auth=a)
+
+        self.assertRaises(exceptions.EndpointNotFound, s.get, '/path',
+                          endpoint_filter={'interface': 'admin'})
+
+    @httpretty.activate
+    def test_full_url_overrides_endpoint_filter(self):
+        self.stub_auth(json=self.TEST_RESPONSE_DICT)
+        self.stub_url(httpretty.GET, [],
+                      base_url='http://testurl/',
+                      body='SUCCESS', status=200)
+
+        a = v3.Password(self.TEST_URL, username=self.TEST_USER,
+                        password=self.TEST_PASS)
+        s = session.Session(auth=a)
+
+        resp = s.get('http://testurl/',
+                     endpoint_filter={'service_type': 'compute'})
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.text, 'SUCCESS')

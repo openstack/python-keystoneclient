@@ -250,6 +250,12 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         if self.auth_token_from_user:
             return self.auth_token_from_user
 
+    def get_endpoint(self, session, interface=None, **kwargs):
+        if interface == 'public':
+            return self.auth_url
+        else:
+            return self.management_url
+
     @auth_token.setter
     def auth_token(self, value):
         """Override the auth_token.
@@ -554,25 +560,27 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         resp = super(HTTPClient, self).request(url, method, **kwargs)
         return resp, self._decode_body(resp)
 
-    def _cs_request(self, url, method, **kwargs):
+    def _cs_request(self, url, method, management=True, **kwargs):
         """Makes an authenticated request to keystone endpoint by
         concatenating self.management_url and url and passing in method and
         any associated kwargs.
         """
+        interface = 'admin' if management else 'public'
+        endpoint_filter = kwargs.setdefault('endpoint_filter', {})
+        endpoint_filter.setdefault('service_type', 'identity')
+        endpoint_filter.setdefault('interface', interface)
 
-        is_management = kwargs.pop('management', True)
-
-        if is_management and self.management_url is None:
-            raise exceptions.AuthorizationFailure(
-                'Current authorization does not have a known management url')
-
-        url_to_use = self.auth_url
-        if is_management:
-            url_to_use = self.management_url
+        if self.region_name:
+            endpoint_filter.setdefault('region_name', self.region_name)
 
         kwargs.setdefault('authenticated', None)
-        return self.request(url_to_use + url, method,
-                            **kwargs)
+        try:
+            return self.request(url, method, **kwargs)
+        except exceptions.MissingAuthPlugin:
+            _logger.info('Cannot get authenticated endpoint without an '
+                         'auth plugin')
+            raise exceptions.AuthorizationFailure(
+                'Current authorization does not have a known management url')
 
     def get(self, url, **kwargs):
         return self._cs_request(url, 'GET', **kwargs)

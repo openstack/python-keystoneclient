@@ -14,6 +14,7 @@ import logging
 
 import requests
 import six
+from six.moves import urllib
 
 from keystoneclient import exceptions
 from keystoneclient.openstack.common import jsonutils
@@ -110,7 +111,7 @@ class Session(object):
 
     def request(self, url, method, json=None, original_ip=None,
                 user_agent=None, redirect=None, authenticated=None,
-                **kwargs):
+                endpoint_filter=None, **kwargs):
         """Send an HTTP request with the specified characteristics.
 
         Wrapper around `requests.Session.request` to handle tasks such as
@@ -119,7 +120,11 @@ class Session(object):
         Arguments that are not handled are passed through to the requests
         library.
 
-        :param string url: Fully qualified URL of HTTP request
+        :param string url: Path or fully qualified URL of HTTP request. If only
+                           a path is provided then endpoint_filter must also be
+                           provided such that the base URL can be determined.
+                           If a fully qualified URL is provided then
+                           endpoint_filter will be ignored.
         :param string method: The http method to use. (eg. 'GET', 'POST')
         :param string original_ip: Mark this request as forwarded for this ip.
                                    (optional)
@@ -136,6 +141,11 @@ class Session(object):
                                    request, False if not or None for attach if
                                    an auth_plugin is available.
                                    (optional, defaults to None)
+        :param dict endpoint_filter: Data to be provided to an auth plugin with
+                                     which it should be able to determine an
+                                     endpoint to use for this request. If not
+                                     provided then URL is expected to be a
+                                     fully qualified URL. (optional)
         :param kwargs: any other parameter that can be passed to
                        requests.Session.request (such as `headers`). Except:
                        'data' will be overwritten by the data in 'json' param.
@@ -160,6 +170,19 @@ class Session(object):
                 raise exceptions.AuthorizationFailure("No token Available")
 
             headers['X-Auth-Token'] = token
+
+        # if we are passed a fully qualified URL and a endpoint_filter we
+        # should ignore the filter. This will make it easier for clients who
+        # want to overrule the default endpoint_filter data added to all client
+        # requests. We check fully qualified here by the presence of a host.
+        url_data = urllib.parse.urlparse(url)
+        if endpoint_filter and not url_data.netloc:
+            base_url = self.get_endpoint(**endpoint_filter)
+
+            if not base_url:
+                raise exceptions.EndpointNotFound()
+
+            url = '%s/%s' % (base_url.rstrip('/'), url.lstrip('/'))
 
         if self.cert:
             kwargs.setdefault('cert', self.cert)
@@ -344,3 +367,11 @@ class Session(object):
         except exceptions.HTTPError as exc:
             raise exceptions.AuthorizationFailure("Authentication failure: "
                                                   "%s" % exc)
+
+    def get_endpoint(self, **kwargs):
+        """Get an endpoint as provided by the auth plugin."""
+        if not self.auth:
+            raise exceptions.MissingAuthPlugin('An auth plugin is required to '
+                                               'determine the endpoint URL.')
+
+        return self.auth.get_endpoint(self, **kwargs)

@@ -13,6 +13,7 @@
 # under the License.
 
 import httpretty
+from six.moves import urllib
 
 from keystoneclient.auth.identity import v2
 from keystoneclient import exceptions
@@ -29,7 +30,52 @@ class V2IdentityPlugin(utils.TestCase):
 
     TEST_PASS = 'password'
 
-    TEST_SERVICE_CATALOG = []
+    TEST_SERVICE_CATALOG = [{
+        "endpoints": [{
+            "adminURL": "http://cdn.admin-nets.local:8774/v1.0",
+            "region": "RegionOne",
+            "internalURL": "http://127.0.0.1:8774/v1.0",
+            "publicURL": "http://cdn.admin-nets.local:8774/v1.0/"
+        }],
+        "type": "nova_compat",
+        "name": "nova_compat"
+    }, {
+        "endpoints": [{
+            "adminURL": "http://nova/novapi/admin",
+            "region": "RegionOne",
+            "internalURL": "http://nova/novapi/internal",
+            "publicURL": "http://nova/novapi/public"
+        }],
+        "type": "compute",
+        "name": "nova"
+    }, {
+        "endpoints": [{
+            "adminURL": "http://glance/glanceapi/admin",
+            "region": "RegionOne",
+            "internalURL": "http://glance/glanceapi/internal",
+            "publicURL": "http://glance/glanceapi/public"
+        }],
+        "type": "image",
+        "name": "glance"
+    }, {
+        "endpoints": [{
+            "adminURL": TEST_ADMIN_URL,
+            "region": "RegionOne",
+            "internalURL": "http://127.0.0.1:5000/v2.0",
+            "publicURL": "http://127.0.0.1:5000/v2.0"
+        }],
+        "type": "identity",
+        "name": "keystone"
+    }, {
+        "endpoints": [{
+            "adminURL": "http://swift/swiftapi/admin",
+            "region": "RegionOne",
+            "internalURL": "http://swift/swiftapi/internal",
+            "publicURL": "http://swift/swiftapi/public"
+        }],
+        "type": "object-store",
+        "name": "swift"
+    }]
 
     def setUp(self):
         super(V2IdentityPlugin, self).setUp()
@@ -109,3 +155,55 @@ class V2IdentityPlugin(utils.TestCase):
 
         self.assertRequestBodyIs(json=req)
         self.assertEqual(s.auth.auth_ref.auth_token, self.TEST_TOKEN)
+
+    @httpretty.activate
+    def _do_service_url_test(self, base_url, endpoint_filter):
+        self.stub_auth(json=self.TEST_RESPONSE_DICT)
+        self.stub_url(httpretty.GET, ['path'],
+                      base_url=base_url,
+                      body='SUCCESS', status=200)
+
+        a = v2.Password(self.TEST_URL, username=self.TEST_USER,
+                        password=self.TEST_PASS)
+        s = session.Session(auth=a)
+
+        resp = s.get('/path', endpoint_filter=endpoint_filter)
+
+        self.assertEqual(resp.status_code, 200)
+        path = "%s/%s" % (urllib.parse.urlparse(base_url).path, 'path')
+        self.assertEqual(httpretty.last_request().path, path)
+
+    def test_service_url(self):
+        endpoint_filter = {'service_type': 'compute', 'interface': 'admin'}
+        self._do_service_url_test('http://nova/novapi/admin', endpoint_filter)
+
+    def test_service_url_defaults_to_public(self):
+        endpoint_filter = {'service_type': 'compute'}
+        self._do_service_url_test('http://nova/novapi/public', endpoint_filter)
+
+    @httpretty.activate
+    def test_endpoint_filter_without_service_type_fails(self):
+        self.stub_auth(json=self.TEST_RESPONSE_DICT)
+
+        a = v2.Password(self.TEST_URL, username=self.TEST_USER,
+                        password=self.TEST_PASS)
+        s = session.Session(auth=a)
+
+        self.assertRaises(exceptions.EndpointNotFound, s.get, '/path',
+                          endpoint_filter={'interface': 'admin'})
+
+    @httpretty.activate
+    def test_full_url_overrides_endpoint_filter(self):
+        self.stub_auth(json=self.TEST_RESPONSE_DICT)
+        self.stub_url(httpretty.GET, [],
+                      base_url='http://testurl/',
+                      body='SUCCESS', status=200)
+
+        a = v2.Password(self.TEST_URL, username=self.TEST_USER,
+                        password=self.TEST_PASS)
+        s = session.Session(auth=a)
+
+        resp = s.get('http://testurl/',
+                     endpoint_filter={'service_type': 'compute'})
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.text, 'SUCCESS')
