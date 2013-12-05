@@ -15,6 +15,7 @@
 
 import httpretty
 import mock
+import requests
 
 from keystoneclient import exceptions
 from keystoneclient import session as client_session
@@ -138,3 +139,86 @@ class SessionTests(utils.TestCase):
         self.stub_url(httpretty.GET, status=500)
         self.assertRaises(exceptions.InternalServerError,
                           session.get, self.TEST_URL)
+
+
+class RedirectTests(utils.TestCase):
+
+    REDIRECT_CHAIN = ['http://myhost:3445/',
+                      'http://anotherhost:6555/',
+                      'http://thirdhost/',
+                      'http://finaldestination:55/']
+
+    DEFAULT_REDIRECT_BODY = 'Redirect'
+    DEFAULT_RESP_BODY = 'Found'
+
+    def setup_redirects(self, method=httpretty.GET, status=305,
+                        redirect_kwargs={}, final_kwargs={}):
+        redirect_kwargs.setdefault('body', self.DEFAULT_REDIRECT_BODY)
+
+        for s, d in zip(self.REDIRECT_CHAIN, self.REDIRECT_CHAIN[1:]):
+            httpretty.register_uri(method, s, status=status, location=d,
+                                   **redirect_kwargs)
+
+        final_kwargs.setdefault('status', 200)
+        final_kwargs.setdefault('body', self.DEFAULT_RESP_BODY)
+        httpretty.register_uri(method, self.REDIRECT_CHAIN[-1], **final_kwargs)
+
+    def assertResponse(self, resp):
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.text, self.DEFAULT_RESP_BODY)
+
+    @httpretty.activate
+    def test_basic_get(self):
+        session = client_session.Session()
+        self.setup_redirects()
+        resp = session.get(self.REDIRECT_CHAIN[-2])
+        self.assertResponse(resp)
+
+    @httpretty.activate
+    def test_basic_post_keeps_correct_method(self):
+        session = client_session.Session()
+        self.setup_redirects(method=httpretty.POST, status=301)
+        resp = session.post(self.REDIRECT_CHAIN[-2])
+        self.assertResponse(resp)
+
+    @httpretty.activate
+    def test_redirect_forever(self):
+        session = client_session.Session(redirect=True)
+        self.setup_redirects()
+        resp = session.get(self.REDIRECT_CHAIN[0])
+        self.assertResponse(resp)
+        self.assertTrue(len(resp.history), len(self.REDIRECT_CHAIN))
+
+    @httpretty.activate
+    def test_no_redirect(self):
+        session = client_session.Session(redirect=False)
+        self.setup_redirects()
+        resp = session.get(self.REDIRECT_CHAIN[0])
+        self.assertEqual(resp.status_code, 305)
+        self.assertEqual(resp.url, self.REDIRECT_CHAIN[0])
+
+    @httpretty.activate
+    def test_redirect_limit(self):
+        self.setup_redirects()
+        for i in (1, 2):
+            session = client_session.Session(redirect=i)
+            resp = session.get(self.REDIRECT_CHAIN[0])
+            self.assertEqual(resp.status_code, 305)
+            self.assertEqual(resp.url, self.REDIRECT_CHAIN[i])
+            self.assertEqual(resp.text, self.DEFAULT_REDIRECT_BODY)
+
+    @httpretty.activate
+    def test_history_matches_requests(self):
+        self.setup_redirects(status=301)
+        session = client_session.Session(redirect=True)
+        req_resp = requests.get(self.REDIRECT_CHAIN[0],
+                                allow_redirects=True)
+
+        ses_resp = session.get(self.REDIRECT_CHAIN[0])
+
+        self.assertEqual(type(req_resp.history), type(ses_resp.history))
+        self.assertEqual(len(req_resp.history), len(ses_resp.history))
+
+        for r, s in zip(req_resp.history, ses_resp.history):
+            self.assertEqual(r.url, s.url)
+            self.assertEqual(r.status_code, s.status_code)
