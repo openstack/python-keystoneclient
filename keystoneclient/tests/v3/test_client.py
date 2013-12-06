@@ -136,9 +136,8 @@ class KeystoneClientTest(utils.TestCase):
                           username='exampleuser',
                           password='password')
 
-    @httpretty.activate
-    def test_management_url_is_updated(self):
-        second = copy.deepcopy(client_fixtures.PROJECT_SCOPED_TOKEN)
+    def _management_url_is_updated(self, fixture, **kwargs):
+        second = copy.deepcopy(fixture)
         first_url = 'http://admin:35357/v3'
         second_url = "http://secondurl:%d/v3'"
 
@@ -158,17 +157,27 @@ class KeystoneClientTest(utils.TestCase):
                     'interface': 'admin'
                 }]
 
-        self.stub_auth(json=client_fixtures.PROJECT_SCOPED_TOKEN)
+        self.stub_auth(json=fixture)
         cl = client.Client(username='exampleuser',
                            password='password',
-                           tenant_name='exampleproject',
-                           auth_url=self.TEST_URL)
+                           auth_url=self.TEST_URL,
+                           **kwargs)
 
         self.assertEqual(cl.management_url, first_url)
 
         self.stub_auth(json=second)
         cl.authenticate()
         self.assertEqual(cl.management_url, second_url % 35357)
+
+    @httpretty.activate
+    def test_management_url_is_updated_with_project(self):
+        self._management_url_is_updated(client_fixtures.PROJECT_SCOPED_TOKEN,
+                                        project_name='exampleproject')
+
+    @httpretty.activate
+    def test_management_url_is_updated_with_domain(self):
+        self._management_url_is_updated(client_fixtures.DOMAIN_SCOPED_TOKEN,
+                                        domain_name='exampledomain')
 
     @httpretty.activate
     def test_client_with_region_name_passes_to_service_catalog(self):
