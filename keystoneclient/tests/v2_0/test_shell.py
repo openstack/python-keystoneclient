@@ -12,11 +12,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import cStringIO
 import os
 import sys
 
 from mox3 import stubout
+import six
 from testtools import matchers
 
 from keystoneclient import httpclient
@@ -69,7 +69,7 @@ class ShellTests(utils.TestCase):
     def run_command(self, cmd):
         orig = sys.stdout
         try:
-            sys.stdout = cStringIO.StringIO()
+            sys.stdout = six.StringIO()
             if isinstance(cmd, list):
                 self.shell.main(cmd)
             else:

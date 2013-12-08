@@ -13,7 +13,6 @@
 #    under the License.
 
 import argparse
-import cStringIO
 import json
 import os
 import sys
@@ -21,6 +20,7 @@ import uuid
 
 import fixtures
 import mock
+import six
 import testtools
 from testtools import matchers
 
@@ -80,7 +80,7 @@ class ShellTest(utils.TestCase):
         clean_env = {}
         _old_env, os.environ = os.environ, clean_env.copy()
         try:
-            sys.stdout = cStringIO.StringIO()
+            sys.stdout = six.StringIO()
             _shell = openstack_shell.OpenStackIdentityShell()
             _shell.main(argstr.split())
         except SystemExit:
