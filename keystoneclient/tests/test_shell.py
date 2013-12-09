@@ -14,6 +14,7 @@
 
 import argparse
 import json
+import logging
 import os
 import sys
 import uuid
@@ -116,6 +117,15 @@ class ShellTest(utils.TestCase):
         with testtools.ExpectedException(
                 exceptions.CommandError, 'Expecting'):
             self.shell('user-list')
+
+    def test_debug(self):
+        logging_mock = mock.MagicMock()
+        with mock.patch('logging.basicConfig', logging_mock):
+            self.assertRaises(exceptions.CommandError,
+                              self.shell, '--debug user-list')
+            self.assertTrue(logging_mock.called)
+            self.assertEqual([(), {'level': logging.DEBUG}],
+                             list(logging_mock.call_args))
 
     def test_auth_password_authurl_no_username(self):
         with testtools.ExpectedException(
