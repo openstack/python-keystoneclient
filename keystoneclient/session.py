@@ -37,14 +37,18 @@ class Session(object):
     REDIRECT_STATUSES = (301, 302, 303, 305, 307)
     DEFAULT_REDIRECT_LIMIT = 30
 
-    def __init__(self, session=None, original_ip=None, verify=True, cert=None,
-                 timeout=None, user_agent=None,
+    def __init__(self, auth=None, session=None, original_ip=None, verify=True,
+                 cert=None, timeout=None, user_agent=None,
                  redirect=DEFAULT_REDIRECT_LIMIT):
         """Maintains client communication state and common functionality.
 
         As much as possible the parameters to this class reflect and are passed
         directly to the requests library.
 
+        :param auth: An authentication plugin to authenticate the session with.
+                     (optional, defaults to None)
+        :param requests.Session session: A requests session object that can be
+                                         used for issuing requests. (optional)
         :param string original_ip: The original IP of the requesting user
                                    which will be sent to identity service in a
                                    'Forwarded' header. (optional)
@@ -74,6 +78,7 @@ class Session(object):
         if not session:
             session = requests.Session()
 
+        self.auth = auth
         self.session = session
         self.original_ip = original_ip
         self.verify = verify
@@ -89,7 +94,8 @@ class Session(object):
             self.user_agent = user_agent
 
     def request(self, url, method, json=None, original_ip=None,
-                user_agent=None, redirect=None, **kwargs):
+                user_agent=None, redirect=None, authenticated=None,
+                **kwargs):
         """Send an HTTP request with the specified characteristics.
 
         Wrapper around `requests.Session.request` to handle tasks such as
@@ -111,6 +117,10 @@ class Session(object):
                                   can be followed by a request. Either an
                                   integer for a specific count or True/False
                                   for forever/never. (optional)
+        :param bool authenticated: True if a token should be attached to this
+                                   request, False if not or None for attach if
+                                   an auth_plugin is available.
+                                   (optional, defaults to None)
         :param kwargs: any other parameter that can be passed to
                        requests.Session.request (such as `headers`). Except:
                        'data' will be overwritten by the data in 'json' param.
@@ -124,6 +134,17 @@ class Session(object):
         """
 
         headers = kwargs.setdefault('headers', dict())
+
+        if authenticated is None:
+            authenticated = self.auth is not None
+
+        if authenticated:
+            token = self.get_token()
+
+            if not token:
+                raise exceptions.AuthorizationFailure("No token Available")
+
+            headers['X-Auth-Token'] = token
 
         if self.cert:
             kwargs.setdefault('cert', self.cert)
@@ -286,3 +307,10 @@ class Session(object):
                    session=kwargs.pop('session', None),
                    original_ip=kwargs.pop('original_ip', None),
                    user_agent=kwargs.pop('user_agent', None))
+
+    def get_token(self):
+        """Return a token as provided by the auth plugin."""
+        if not self.auth:
+            raise exceptions.MissingAuthPlugin("Token Required")
+
+        return self.auth.get_token(self)
