@@ -21,6 +21,7 @@ from keystoneclient import httpclient
 from keystoneclient.openstack.common import jsonutils
 from keystoneclient.v3.contrib import endpoint_filter
 from keystoneclient.v3.contrib import federation
+from keystoneclient.v3.contrib import oauth1
 from keystoneclient.v3.contrib import trusts
 from keystoneclient.v3 import credentials
 from keystoneclient.v3 import domains
@@ -99,6 +100,7 @@ class Client(httpclient.HTTPClient):
         self.domains = domains.DomainManager(self)
         self.federation = federation.FederationManager(self)
         self.groups = groups.GroupManager(self)
+        self.oauth1 = oauth1.create_oauth_manager(self)
         self.policies = policies.PolicyManager(self)
         self.projects = projects.ProjectManager(self)
         self.roles = roles.RoleManager(self)
