@@ -17,7 +17,7 @@ import logging
 import six
 
 from keystoneclient import exceptions
-from keystoneclient import httpclient
+from keystoneclient import session as client_session
 from keystoneclient.v2_0 import client as v2_client
 from keystoneclient.v3 import client as v3_client
 
@@ -81,13 +81,16 @@ class _KeystoneVersion(object):
     def __eq__(self, other):
         return self.version == other.version and self.status == other.status
 
-    def __call__(self, **kwargs):
+    def create_client(self, **kwargs):
         if kwargs:
             client_kwargs = self.client_kwargs.copy()
             client_kwargs.update(kwargs)
         else:
             client_kwargs = self.client_kwargs
         return self.client_class(**client_kwargs)
+
+    def __call__(self, **kwargs):
+        return self.create_client(**kwargs)
 
     @property
     def _str_ver(self):
@@ -132,28 +135,35 @@ def _normalize_version_number(version):
     raise TypeError("Invalid version specified: %s" % version)
 
 
-def available_versions(url, **kwargs):
+def available_versions(url, session=None, **kwargs):
     headers = {'Accept': 'application/json'}
 
-    client = httpclient.HTTPClient(**kwargs)
-    resp, body_resp = client.request(url, 'GET', headers=headers)
+    if not session:
+        session = client_session.Session.construct(kwargs)
 
-    # In the event of querying a root URL we will get back a list of
-    # available versions.
-    try:
-        return body_resp['versions']['values']
-    except (KeyError, TypeError):
-        pass
+    resp = session.get(url, headers=headers)
 
-    # Otherwise if we query an endpoint like /v2.0 then we will get back
-    # just the one available version.
     try:
-        return [body_resp['version']]
-    except (KeyError, TypeError):
+        body_resp = resp.json()
+    except ValueError:
         pass
+    else:
+        # In the event of querying a root URL we will get back a list of
+        # available versions.
+        try:
+            return body_resp['versions']['values']
+        except (KeyError, TypeError):
+            pass
+
+        # Otherwise if we query an endpoint like /v2.0 then we will get back
+        # just the one available version.
+        try:
+            return [body_resp['version']]
+        except KeyError:
+            pass
 
     raise exceptions.DiscoveryFailure("Invalid Response - Bad version"
-                                      " data returned: %s" % body_resp)
+                                      " data returned: %s" % resp.text)
 
 
 class Discover(object):
@@ -164,7 +174,7 @@ class Discover(object):
     operates upon the data that was retrieved.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, session=None, **kwargs):
         """Construct a new discovery object.
 
         The connection parameters associated with this method are the same
@@ -178,6 +188,9 @@ class Discover(object):
 
         The initialization process also queries the server.
 
+        :param Session session: A session object that will be used for
+                                communication. Clients will also be constructed
+                                with this session.
         :param string auth_url: Identity service endpoint for authorization.
                                 (optional)
         :param string endpoint: A user-supplied endpoint URL for the identity
@@ -185,25 +198,41 @@ class Discover(object):
         :param string original_ip: The original IP of the requesting user
                                    which will be sent to identity service in a
                                    'Forwarded' header. (optional)
+                                   DEPRECATED: use the session object. This is
+                                   ignored if a session is provided.
         :param boolean debug: Enables debug logging of all request and
                               responses to the identity service.
                               default False (optional)
+                              DEPRECATED: use the session object. This is
+                              ignored if a session is provided.
         :param string cacert: Path to the Privacy Enhanced Mail (PEM) file
                               which contains the trusted authority X.509
                               certificates needed to established SSL connection
                               with the identity service. (optional)
+                              DEPRECATED: use the session object. This is
+                              ignored if a session is provided.
         :param string key: Path to the Privacy Enhanced Mail (PEM) file which
                            contains the unencrypted client private key needed
                            to established two-way SSL connection with the
                            identity service. (optional)
+                           DEPRECATED: use the session object. This is
+                           ignored if a session is provided.
         :param string cert: Path to the Privacy Enhanced Mail (PEM) file which
                             contains the corresponding X.509 client certificate
                             needed to established two-way SSL connection with
                             the identity service. (optional)
+                            DEPRECATED: use the session object. This is
+                            ignored if a session is provided.
         :param boolean insecure: Does not perform X.509 certificate validation
                                  when establishing SSL connection with identity
                                  service. default: False (optional)
+                                 DEPRECATED: use the session object. This is
+                                 ignored if a session is provided.
         """
+
+        if not session:
+            session = client_session.Session.construct(kwargs)
+        kwargs['session'] = session
 
         url = kwargs.get('endpoint') or kwargs.get('auth_url')
         if not url:
@@ -212,7 +241,7 @@ class Discover(object):
                                               'auth_url or endpoint')
 
         self._client_kwargs = kwargs
-        self._available_versions = available_versions(url, **kwargs)
+        self._available_versions = available_versions(url, session=session)
 
     def _get_client_constructor_kwargs(self, kwargs_dict={}, **kwargs):
         client_kwargs = self._client_kwargs.copy()
@@ -420,4 +449,4 @@ class Discover(object):
 
             raise exceptions.VersionNotAvailable(msg)
 
-        return chosen()
+        return chosen.create_client()
