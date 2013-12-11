@@ -117,7 +117,7 @@ class Ec2Signer(object):
     def _calc_signature_1(self, params):
         """Generate AWS signature version 1 string."""
         keys = list(params)
-        keys.sort(cmp=lambda x, y: cmp(x.lower(), y.lower()))
+        keys.sort(key=six.text_type.lower)
         for key in keys:
             self.hmac.update(key)
             val = self._get_utf8_value(params[key])
