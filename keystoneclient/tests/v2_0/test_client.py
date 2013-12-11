@@ -130,3 +130,25 @@ class KeystoneClientTest(utils.TestCase):
         self.stub_auth(json=second)
         cl.authenticate()
         self.assertEqual(cl.management_url, second_url % 35357)
+
+    @httpretty.activate
+    def test_client_with_region_name_passes_to_service_catalog(self):
+        # NOTE(jamielennox): this is deprecated behaviour that should be
+        # removed ASAP, however must remain compatible.
+        self.stub_auth(json=client_fixtures.AUTH_RESPONSE_BODY)
+
+        cl = client.Client(username='exampleuser',
+                           password='password',
+                           tenant_name='exampleproject',
+                           auth_url=self.TEST_URL,
+                           region_name='North')
+        self.assertEqual(cl.service_catalog.url_for(service_type='image'),
+                         'https://image.north.host/v1/')
+
+        cl = client.Client(username='exampleuser',
+                           password='password',
+                           tenant_name='exampleproject',
+                           auth_url=self.TEST_URL,
+                           region_name='South')
+        self.assertEqual(cl.service_catalog.url_for(service_type='image'),
+                         'https://image.south.host/v1/')
