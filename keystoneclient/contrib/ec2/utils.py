@@ -22,9 +22,9 @@ import base64
 import hashlib
 import hmac
 import re
-import urllib
 
 import six
+from six.moves import urllib
 
 
 class Ec2Signer(object):
@@ -134,8 +134,8 @@ class Ec2Signer(object):
         pairs = []
         for key in keys:
             val = Ec2Signer._get_utf8_value(params[key])
-            val = urllib.quote(val, safe='-_~')
-            pairs.append(urllib.quote(key, safe='') + '=' + val)
+            val = urllib.parse.quote(val, safe='-_~')
+            pairs.append(urllib.parse.quote(key, safe='') + '=' + val)
         qs = '&'.join(pairs)
         return qs
 

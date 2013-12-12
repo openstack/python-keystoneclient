@@ -151,10 +151,10 @@ import requests
 import stat
 import tempfile
 import time
-import urllib
 
 import netaddr
 import six
+from six.moves import urllib
 
 from keystoneclient.common import cms
 from keystoneclient import exceptions
@@ -343,7 +343,7 @@ def confirm_token_not_expired(data):
 
 def safe_quote(s):
     """URL-encode strings that are not already URL-encoded."""
-    return urllib.quote(s) if s == urllib.unquote(s) else s
+    return urllib.parse.quote(s) if s == urllib.parse.unquote(s) else s
 
 
 class InvalidUserToken(Exception):

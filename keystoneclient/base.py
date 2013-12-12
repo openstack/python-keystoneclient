@@ -23,9 +23,9 @@ Base utilities to build API operation managers and objects on top of.
 
 import abc
 import functools
-import urllib
 
 import six
+from six.moves import urllib
 
 from keystoneclient import exceptions
 from keystoneclient.openstack.common import strutils
@@ -331,10 +331,14 @@ class CrudManager(Manager):
     def list(self, **kwargs):
         url = self.build_url(dict_args_in_out=kwargs)
 
+        if kwargs:
+            query = '?%s' % urllib.parse.urlencode(kwargs)
+        else:
+            query = ''
         return self._list(
             '%(url)s%(query)s' % {
                 'url': url,
-                'query': '?%s' % urllib.urlencode(kwargs) if kwargs else '',
+                'query': query,
             },
             self.collection_key)
 
@@ -364,10 +368,14 @@ class CrudManager(Manager):
         """Find a single item with attributes matching ``**kwargs``."""
         url = self.build_url(dict_args_in_out=kwargs)
 
+        if kwargs:
+            query = '?%s' % urllib.parse.urlencode(kwargs)
+        else:
+            query = ''
         rl = self._list(
             '%(url)s%(query)s' % {
                 'url': url,
-                'query': '?%s' % urllib.urlencode(kwargs) if kwargs else '',
+                'query': query,
             },
             self.collection_key)
         num = len(rl)

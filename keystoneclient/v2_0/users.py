@@ -14,7 +14,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import urllib
+from six.moves import urllib
 
 from keystoneclient import base
 
@@ -113,7 +113,7 @@ class UserManager(base.ManagerWithFind):
 
         query = ""
         if params:
-            query = "?" + urllib.urlencode(params)
+            query = "?" + urllib.parse.urlencode(params)
 
         if not tenant_id:
             return self._list("/users%s" % query, "users")

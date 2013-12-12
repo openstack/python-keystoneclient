@@ -14,9 +14,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import urllib
-
 import six
+from six.moves import urllib
 
 from keystoneclient import base
 
@@ -108,7 +107,7 @@ class TenantManager(base.ManagerWithFind):
 
         query = ""
         if params:
-            query = "?" + urllib.urlencode(params)
+            query = "?" + urllib.parse.urlencode(params)
 
         reset = 0
         if self.api.management_url is None:
