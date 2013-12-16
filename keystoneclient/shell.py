@@ -26,6 +26,7 @@ from __future__ import print_function
 
 import argparse
 import getpass
+import logging
 import os
 import six
 import sys
@@ -378,6 +379,9 @@ class OpenStackIdentityShell(object):
         elif args.func == self.do_bash_completion:
             self.do_bash_completion(args)
             return 0
+
+        if args.debug:
+            logging.basicConfig(level=logging.DEBUG)
 
         # TODO(heckj): supporting backwards compatibility with environment
         # variables. To be removed after DEVSTACK is updated, ideally in
