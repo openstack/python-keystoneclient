@@ -38,7 +38,88 @@ DOMAIN_SCOPED_TOKEN = {
         'methods': [
             'password'
         ],
-        'catalog': {},
+        'catalog': [{
+            'endpoints': [{
+                'url':
+                'http://public.com:8776/v1/None',
+                'region': 'RegionOne',
+                'interface': 'public'
+            }, {
+                'url':
+                'http://internal:8776/v1/None',
+                'region': 'RegionOne',
+                'interface': 'internal'
+            }, {
+                'url':
+                'http://admin:8776/v1/None',
+                'region': 'RegionOne',
+                'interface': 'admin'
+            }],
+            'type': 'volume'
+        }, {
+            'endpoints': [{
+                'url': 'http://public.com:9292/v1',
+                'region': 'RegionOne',
+                'interface': 'public'
+            }, {
+                'url': 'http://internal:9292/v1',
+                'region': 'RegionOne',
+                'interface': 'internal'
+            }, {
+                'url': 'http://admin:9292/v1',
+                'region': 'RegionOne',
+                'interface': 'admin'
+            }],
+            'type': 'image'
+        }, {
+            'endpoints': [{
+                'url':
+                'http://public.com:8774/v1.1/None',
+                'region': 'RegionOne',
+                'interface': 'public'
+            }, {
+                'url':
+                'http://internal:8774/v1.1/None',
+                'region': 'RegionOne',
+                'interface': 'internal'
+            }, {
+                'url':
+                'http://admin:8774/v1.1/None',
+                'region': 'RegionOne',
+                'interface': 'admin'
+            }],
+            'type': 'compute'
+        }, {
+            'endpoints': [{
+                'url': 'http://public.com:8773/services/Cloud',
+                'region': 'RegionOne',
+                'interface': 'public'
+            }, {
+                'url': 'http://internal:8773/services/Cloud',
+                'region': 'RegionOne',
+                'interface': 'internal'
+            }, {
+                'url': 'http://admin:8773/services/Admin',
+                'region': 'RegionOne',
+                'interface': 'admin'
+            }],
+            'type': 'ec2'
+        }, {
+            'endpoints': [{
+                'url': 'http://public.com:5000/v3',
+                'region': 'RegionOne',
+                'interface': 'public'
+            }, {
+                'url': 'http://internal:5000/v3',
+                'region': 'RegionOne',
+                'interface': 'internal'
+            }, {
+                'url': 'http://admin:35357/v3',
+                'region': 'RegionOne',
+                'interface': 'admin'
+            }],
+            'type': 'identity'
+        }],
         'expires_at': '2010-11-01T03:32:15-05:00',
         'user': {
             'domain': {
