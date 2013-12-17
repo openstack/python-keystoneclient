@@ -395,7 +395,6 @@ class OpenStackIdentityShell(object):
                                                  key=args.os_key,
                                                  cert=args.os_cert,
                                                  insecure=args.insecure,
-                                                 debug=args.debug,
                                                  timeout=args.timeout)
         else:
             self.auth_check(args)

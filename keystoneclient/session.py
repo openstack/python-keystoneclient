@@ -34,7 +34,7 @@ class Session(object):
     user_agent = None
 
     def __init__(self, session=None, original_ip=None, verify=True, cert=None,
-                 timeout=None, debug=False, user_agent=None):
+                 timeout=None, user_agent=None):
         """Maintains client communication state and common functionality.
 
         As much as possible the parameters to this class reflect and are passed
@@ -70,7 +70,6 @@ class Session(object):
         self.verify = verify
         self.cert = cert
         self.timeout = None
-        self.debug = debug
 
         if timeout is not None:
             self.timeout = float(timeout)
@@ -79,8 +78,8 @@ class Session(object):
         if user_agent is not None:
             self.user_agent = user_agent
 
-    def request(self, url, method, json=None, original_ip=None, debug=None,
-                logger=None, user_agent=None, **kwargs):
+    def request(self, url, method, json=None, original_ip=None,
+                user_agent=None, **kwargs):
         """Send an HTTP request with the specified characteristics.
 
         Wrapper around `requests.Session.request` to handle tasks such as
@@ -94,11 +93,9 @@ class Session(object):
         :param string original_ip: Mark this request as forwarded for this ip.
                                    (optional)
         :param dict headers: Headers to be included in the request. (optional)
-        :param bool debug: Enable debug logging. (Defaults to False)
         :param kwargs: any other parameter that can be passed to
              requests.Session.request (such as `headers`) or `json`
              that will be encoded as JSON and used as `data` argument
-        :param logging.Logger logger: A logger to output to. (optional)
         :param json: Some data to be represented as JSON. (optional)
         :param string user_agent: A user_agent to use for the request. If
                                   present will override one present in headers.
@@ -133,31 +130,24 @@ class Session(object):
             headers['Content-Type'] = 'application/json'
             kwargs['data'] = jsonutils.dumps(json)
 
-        if not logger:
-            logger = _logger
-
-        if debug is None:
-            debug = self.debug
-
         kwargs.setdefault('verify', self.verify)
 
-        if debug:
-            string_parts = ['curl -i']
+        string_parts = ['curl -i']
 
-            if method:
-                string_parts.extend([' -X ', method])
+        if method:
+            string_parts.extend([' -X ', method])
 
-            string_parts.extend([' ', url])
+        string_parts.extend([' ', url])
 
-            if headers:
-                for header in six.iteritems(headers):
-                    string_parts.append(' -H "%s: %s"' % header)
+        if headers:
+            for header in six.iteritems(headers):
+                string_parts.append(' -H "%s: %s"' % header)
 
-            logger.debug('REQ: %s', ''.join(string_parts))
+        _logger.debug('REQ: %s', ''.join(string_parts))
 
-            data = kwargs.get('data')
-            if data:
-                logger.debug('REQ BODY: %s', data)
+        data = kwargs.get('data')
+        if data:
+            _logger.debug('REQ BODY: %s', data)
 
         try:
             resp = self.session.request(method, url, **kwargs)
@@ -171,13 +161,12 @@ class Session(object):
             msg = 'Unable to establish connection to %s' % url
             raise exceptions.ConnectionError(msg)
 
-        if debug:
-            logger.debug('RESP: [%s] %s\nRESP BODY: %s\n',
-                         resp.status_code, resp.headers, resp.text)
+        _logger.debug('RESP: [%s] %s\nRESP BODY: %s\n',
+                      resp.status_code, resp.headers, resp.text)
 
         if resp.status_code >= 400:
-            logger.debug('Request returned failure status: %s',
-                         resp.status_code)
+            _logger.debug('Request returned failure status: %s',
+                          resp.status_code)
             raise exceptions.from_response(resp, method, url)
 
         return resp

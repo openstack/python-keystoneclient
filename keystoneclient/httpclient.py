@@ -24,8 +24,6 @@ OpenStack Client interface. Handles the REST calls and responses.
 import logging
 from six.moves.urllib import parse as urlparse
 
-import requests
-
 try:
     import keyring
     import pickle
@@ -96,9 +94,7 @@ class HTTPClient(object):
         :param string cert: DEPRECATED: use session. (optional)
         :param boolean insecure: DEPRECATED: use session. (optional)
         :param string original_ip: DEPRECATED: use session. (optional)
-        :param boolean debug: Enables debug logging of all request and
-                              responses to identity service.
-                              default False (optional)
+        :param boolean debug: DEPRECATED: use logging configuration. (optional)
         :param dict auth_ref: To allow for consumers of the client to manage
                               their own caching strategy, you may initialize a
                               client with a previously captured auth_reference
@@ -240,20 +236,11 @@ class HTTPClient(object):
             session = client_session.Session(verify=verify,
                                              cert=session_cert,
                                              original_ip=original_ip,
-                                             timeout=timeout,
-                                             debug=debug)
+                                             timeout=timeout)
 
         self.session = session
         self.domain = ''
-
-        # logging setup
         self.debug_log = debug
-        if self.debug_log and not _logger.handlers:
-            ch = logging.StreamHandler()
-            _logger.setLevel(logging.DEBUG)
-            _logger.addHandler(ch)
-            if hasattr(requests, 'logging'):
-                requests.logging.getLogger(requests.__name__).addHandler(ch)
 
         # keyring setup
         if use_keyring and keyring is None:

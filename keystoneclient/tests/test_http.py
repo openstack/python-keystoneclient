@@ -15,11 +15,13 @@
 # under the License.
 
 import httpretty
+import logging
 import six
 from testtools import matchers
 
 from keystoneclient import exceptions
 from keystoneclient import httpclient
+from keystoneclient import session
 from keystoneclient.tests import utils
 
 RESPONSE_BODY = '{"hi": "there"}'
@@ -151,7 +153,17 @@ class BasicRequestTests(utils.TestCase):
 
     def setUp(self):
         super(BasicRequestTests, self).setUp()
-        self.logger = FakeLog()
+        self.logger_message = six.moves.cStringIO()
+        handler = logging.StreamHandler(self.logger_message)
+        handler.setLevel(logging.DEBUG)
+
+        self.logger = logging.getLogger(session.__name__)
+        level = self.logger.getEffectiveLevel()
+        self.logger.setLevel(logging.DEBUG)
+        self.logger.addHandler(handler)
+
+        self.addCleanup(self.logger.removeHandler, handler)
+        self.addCleanup(self.logger.setLevel, level)
 
     def request(self, method='GET', response='Test Response', status=200,
                 url=None, **kwargs):
@@ -160,8 +172,7 @@ class BasicRequestTests(utils.TestCase):
 
         httpretty.register_uri(method, url, body=response, status=status)
 
-        return httpclient.request(url, method, debug=True,
-                                  logger=self.logger, **kwargs)
+        return httpclient.request(url, method, **kwargs)
 
     @httpretty.activate
     def test_basic_params(self):
@@ -173,13 +184,15 @@ class BasicRequestTests(utils.TestCase):
 
         self.assertEqual(httpretty.last_request().method, method)
 
-        self.assertThat(self.logger.debug_log, matchers.Contains('curl'))
-        self.assertThat(self.logger.debug_log, matchers.Contains('-X %s' %
-                                                                 method))
-        self.assertThat(self.logger.debug_log, matchers.Contains(self.url))
+        logger_message = self.logger_message.getvalue()
 
-        self.assertThat(self.logger.debug_log, matchers.Contains(str(status)))
-        self.assertThat(self.logger.debug_log, matchers.Contains(response))
+        self.assertThat(logger_message, matchers.Contains('curl'))
+        self.assertThat(logger_message, matchers.Contains('-X %s' %
+                                                          method))
+        self.assertThat(logger_message, matchers.Contains(self.url))
+
+        self.assertThat(logger_message, matchers.Contains(str(status)))
+        self.assertThat(logger_message, matchers.Contains(response))
 
     @httpretty.activate
     def test_headers(self):
@@ -191,12 +204,13 @@ class BasicRequestTests(utils.TestCase):
             self.assertRequestHeaderEqual(k, v)
 
         for header in six.iteritems(headers):
-            self.assertThat(self.logger.debug_log,
+            self.assertThat(self.logger_message.getvalue(),
                             matchers.Contains('-H "%s: %s"' % header))
 
     @httpretty.activate
     def test_body(self):
         data = "BODY DATA"
         self.request(response=data)
-        self.assertThat(self.logger.debug_log, matchers.Contains('BODY:'))
-        self.assertThat(self.logger.debug_log, matchers.Contains(data))
+        logger_message = self.logger_message.getvalue()
+        self.assertThat(logger_message, matchers.Contains('BODY:'))
+        self.assertThat(logger_message, matchers.Contains(data))
