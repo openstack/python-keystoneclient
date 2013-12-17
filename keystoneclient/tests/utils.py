@@ -79,7 +79,7 @@ class TestCase(testtools.TestCase):
         activated for the request.
         """
         headers = httpretty.last_request().headers
-        self.assertEqual(headers.getheader(name), val)
+        self.assertEqual(headers.get(name), val)
 
 
 if tuple(sys.version_info)[0:2] < (2, 7):
