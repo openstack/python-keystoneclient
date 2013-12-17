@@ -135,15 +135,15 @@ class Session(object):
         string_parts = ['curl -i']
 
         if method:
-            string_parts.extend([' -X ', method])
+            string_parts.extend(['-X', method])
 
-        string_parts.extend([' ', url])
+        string_parts.append(url)
 
         if headers:
             for header in six.iteritems(headers):
-                string_parts.append(' -H "%s: %s"' % header)
+                string_parts.append('-H "%s: %s"' % header)
 
-        _logger.debug('REQ: %s', ''.join(string_parts))
+        _logger.debug('REQ: %s', ' '.join(string_parts))
 
         data = kwargs.get('data')
         if data:
