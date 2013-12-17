@@ -149,6 +149,16 @@ class Session(object):
         if data:
             _logger.debug('REQ BODY: %s', data)
 
+        resp = self._send_request(url, method, **kwargs)
+
+        if resp.status_code >= 400:
+            _logger.debug('Request returned failure status: %s',
+                          resp.status_code)
+            raise exceptions.from_response(resp, method, url)
+
+        return resp
+
+    def _send_request(self, url, method, **kwargs):
         try:
             resp = self.session.request(method, url, **kwargs)
         except requests.exceptions.SSLError:
@@ -164,10 +174,16 @@ class Session(object):
         _logger.debug('RESP: [%s] %s\nRESP BODY: %s\n',
                       resp.status_code, resp.headers, resp.text)
 
-        if resp.status_code >= 400:
-            _logger.debug('Request returned failure status: %s',
-                          resp.status_code)
-            raise exceptions.from_response(resp, method, url)
+        # NOTE(jamielennox): The requests lib will handle the majority of
+        # redirections. Where it fails is when POSTs are redirected which
+        # is apparently something handled differently by each browser which
+        # requests forces us to do the most compliant way (which we don't want)
+        # see: https://en.wikipedia.org/wiki/Post/Redirect/Get
+        # Nova and other direct users don't do this. Is it still relevant?
+        if resp.status_code in (301, 302, 305):
+            # Redirected. Reissue the request to the new location.
+            return self._send_request(resp.headers['location'],
+                                      method, **kwargs)
 
         return resp
 
