@@ -109,7 +109,7 @@ class TestResponse(requests.Response):
         self._text = None
         super(TestResponse, self).__init__()
         if isinstance(data, dict):
-            self.status_code = data.get('status_code', None)
+            self.status_code = data.get('status_code', 200)
             headers = data.get('headers')
             if headers:
                 self.headers.update(headers)
