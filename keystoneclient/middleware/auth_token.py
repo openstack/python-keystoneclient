@@ -1241,8 +1241,11 @@ class AuthProtocol(object):
         """
         self._token_revocation_list = jsonutils.loads(value)
         self.token_revocation_list_fetched_time = timeutils.utcnow()
-        with open(self.revoked_file_name, 'w') as f:
+
+        with tempfile.NamedTemporaryFile(dir=self.signing_dirname,
+                                         delete=False) as f:
             f.write(value)
+        os.rename(f.name, self.revoked_file_name)
 
     def fetch_revocation_list(self, retry=True):
         headers = {'X-Auth-Token': self.get_admin_token()}
