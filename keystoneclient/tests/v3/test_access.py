@@ -77,7 +77,7 @@ class AccessInfoTest(utils.TestCase):
         self.assertTrue(auth_ref)
         self.assertIn('methods', auth_ref)
         self.assertIn('catalog', auth_ref)
-        self.assertFalse(auth_ref['catalog'])
+        self.assertTrue(auth_ref['catalog'])
 
         self.assertEqual(auth_ref.auth_token,
                          '3e2813b7ba0b4006840c3825860b86ed')
