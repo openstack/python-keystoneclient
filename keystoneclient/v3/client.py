@@ -117,8 +117,8 @@ class Client(httpclient.HTTPClient):
             if not self.auth_ref.domain_id:
                 raise exceptions.AuthorizationFailure(
                     "Token didn't provide domain_id")
-            if self.management_url is None and self.auth_ref.management_url:
-                self.management_url = self.auth_ref.management_url[0]
+            if self.auth_ref.management_url:
+                self._management_url = self.auth_ref.management_url[0]
             self.domain_name = self.auth_ref.domain_name
             self.domain_id = self.auth_ref.domain_id
 
