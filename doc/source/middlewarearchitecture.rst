@@ -119,9 +119,9 @@ a WSGI component. Example for the auth_token middleware::
     paste.app_factory = myService:app_factory
 
     [pipeline:main]
-    pipeline = tokenauth myService
+    pipeline = authtoken myService
 
-    [filter:tokenauth]
+    [filter:authtoken]
     paste.filter_factory = keystone.middleware.auth_token:filter_factory
     auth_host = 127.0.0.1
     auth_port = 35357
