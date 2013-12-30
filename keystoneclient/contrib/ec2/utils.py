@@ -101,9 +101,9 @@ class Ec2Signer(object):
     @staticmethod
     def _get_utf8_value(value):
         """Get the UTF8-encoded version of a value."""
-        if not isinstance(value, str) and not isinstance(value, unicode):
+        if not isinstance(value, (six.binary_type, six.text_type)):
             value = str(value)
-        if isinstance(value, unicode):
+        if isinstance(value, six.text_type):
             return value.encode('utf-8')
         else:
             return value
