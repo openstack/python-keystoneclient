@@ -269,7 +269,8 @@ class BaseAuthTokenMiddlewareTest(testtools.TestCase):
         self.middleware = auth_token.AuthProtocol(fake_app(self.expected_env),
                                                   self.conf)
         self.middleware._iso8601 = iso8601
-        self.middleware.revoked_file_name = tempfile.mkstemp()[1]
+        self.middleware.revoked_file_name = tempfile.mkstemp(
+            dir=self.middleware.signing_dirname)[1]
         self.middleware.token_revocation_list = jsonutils.dumps(
             {"revoked": [], "extra": "success"})
 
