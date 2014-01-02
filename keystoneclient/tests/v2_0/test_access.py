@@ -14,6 +14,8 @@
 
 import datetime
 
+import testresources
+
 from keystoneclient import access
 from keystoneclient.openstack.common import timeutils
 from keystoneclient.tests import client_fixtures as token_data
@@ -22,11 +24,12 @@ from keystoneclient.tests.v2_0 import utils
 
 UNSCOPED_TOKEN = client_fixtures.UNSCOPED_TOKEN
 PROJECT_SCOPED_TOKEN = client_fixtures.PROJECT_SCOPED_TOKEN
-DIABLO_TOKEN = token_data.TOKEN_RESPONSES[token_data.VALID_DIABLO_TOKEN]
-GRIZZLY_TOKEN = token_data.TOKEN_RESPONSES[token_data.SIGNED_TOKEN_SCOPED_KEY]
 
 
-class AccessInfoTest(utils.TestCase):
+class AccessInfoTest(utils.TestCase, testresources.ResourcedTestCase):
+
+    resources = [('examples', token_data.EXAMPLES_RESOURCE)]
+
     def test_building_unscoped_accessinfo(self):
         auth_ref = access.AccessInfo.factory(body=UNSCOPED_TOKEN)
 
@@ -100,7 +103,9 @@ class AccessInfoTest(utils.TestCase):
         self.assertFalse(auth_ref.domain_scoped)
 
     def test_diablo_token(self):
-        auth_ref = access.AccessInfo.factory(body=DIABLO_TOKEN)
+        diablo_token = self.examples.TOKEN_RESPONSES[
+            self.examples.VALID_DIABLO_TOKEN]
+        auth_ref = access.AccessInfo.factory(body=diablo_token)
 
         self.assertTrue(auth_ref)
         self.assertEqual(auth_ref.username, 'user_name1')
@@ -113,7 +118,9 @@ class AccessInfoTest(utils.TestCase):
         self.assertFalse(auth_ref.scoped)
 
     def test_grizzly_token(self):
-        auth_ref = access.AccessInfo.factory(body=GRIZZLY_TOKEN)
+        grizzly_token = self.examples.TOKEN_RESPONSES[
+            self.examples.SIGNED_TOKEN_SCOPED_KEY]
+        auth_ref = access.AccessInfo.factory(body=grizzly_token)
 
         self.assertEqual(auth_ref.project_id, 'tenant_id1')
         self.assertEqual(auth_ref.project_name, 'tenant_name1')
@@ -121,3 +128,7 @@ class AccessInfoTest(utils.TestCase):
         self.assertEqual(auth_ref.project_domain_name, 'Default')
         self.assertEqual(auth_ref.user_domain_id, 'default')
         self.assertEqual(auth_ref.user_domain_name, 'Default')
+
+
+def load_tests(loader, tests, pattern):
+    return testresources.OptimisingTestSuite(tests)
