@@ -157,7 +157,7 @@ class HTTPClient(object):
             self.project_domain_id = self.auth_ref.project_domain_id
             self.auth_url = self.auth_ref.auth_url[0]
             self._management_url = self.auth_ref.management_url[0]
-            self.auth_token = self.auth_ref.auth_token
+            self.auth_token_from_user = self.auth_ref.auth_token
             self.trust_id = self.auth_ref.trust_id
             if self.auth_ref.has_service_catalog():
                 self.region_name = self.auth_ref.service_catalog.region_name
@@ -219,6 +219,7 @@ class HTTPClient(object):
             self._endpoint = endpoint.rstrip('/')
         if region_name:
             self.region_name = region_name
+        self._auth_token = None
 
         if not session:
             verify = cacert or True
@@ -252,20 +253,28 @@ class HTTPClient(object):
 
     @property
     def auth_token(self):
-        if self.auth_token_from_user:
-            return self.auth_token_from_user
+        if self._auth_token:
+            return self._auth_token
         if self.auth_ref:
             if self.auth_ref.will_expire_soon(self.stale_duration):
                 self.authenticate()
             return self.auth_ref.auth_token
+        if self.auth_token_from_user:
+            return self.auth_token_from_user
 
     @auth_token.setter
     def auth_token(self, value):
-        self.auth_token_from_user = value
+        """Override the auth_token.
+
+        If an application sets auth_token explicitly then it will always be
+        used and override any past or future retrieved token.
+        """
+        self._auth_token = value
 
     @auth_token.deleter
     def auth_token(self):
-        del self.auth_token_from_user
+        self._auth_token = None
+        self.auth_token_from_user = None
 
     @property
     def service_catalog(self):
