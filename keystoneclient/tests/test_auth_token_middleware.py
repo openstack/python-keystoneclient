@@ -378,6 +378,7 @@ class DiabloAuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
 
         httpretty.httpretty.reset()
         httpretty.enable()
+        self.addCleanup(httpretty.disable)
 
         httpretty.register_uri(httpretty.GET,
                                "%s/" % BASE_URI,
@@ -396,10 +397,6 @@ class DiabloAuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
                                body=token_response)
 
         self.set_middleware()
-
-    def tearDown(self):
-        httpretty.disable()
-        super(DiabloAuthTokenMiddlewareTest, self).tearDown()
 
     def test_valid_diablo_response(self):
         req = webob.Request.blank('/')
@@ -1083,6 +1080,7 @@ class CertDownloadMiddlewareTest(BaseAuthTokenMiddlewareTest,
     def setUp(self):
         super(CertDownloadMiddlewareTest, self).setUp()
         self.base_dir = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, self.base_dir)
         self.cert_dir = os.path.join(self.base_dir, 'certs')
         os.mkdir(self.cert_dir)
         conf = {
@@ -1091,11 +1089,7 @@ class CertDownloadMiddlewareTest(BaseAuthTokenMiddlewareTest,
         self.set_middleware(conf=conf)
 
         httpretty.enable()
-
-    def tearDown(self):
-        httpretty.disable()
-        shutil.rmtree(self.base_dir)
-        super(CertDownloadMiddlewareTest, self).tearDown()
+        self.addCleanup(httpretty.disable)
 
     # Usually we supply a signed_dir with pre-installed certificates,
     # so invocation of /usr/bin/openssl succeeds. This time we give it
@@ -1226,6 +1220,7 @@ class v2AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
 
         httpretty.httpretty.reset()
         httpretty.enable()
+        self.addCleanup(httpretty.disable)
 
         httpretty.register_uri(httpretty.GET,
                                "%s/" % BASE_URI,
@@ -1256,10 +1251,6 @@ class v2AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
                                body=network_error_response)
 
         self.set_middleware()
-
-    def tearDown(self):
-        httpretty.disable()
-        super(v2AuthTokenMiddlewareTest, self).tearDown()
 
     def assert_unscoped_default_tenant_auto_scopes(self, token):
         """Unscoped v2 requests with a default tenant should "auto-scope."
@@ -1411,6 +1402,7 @@ class v3AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
 
         httpretty.httpretty.reset()
         httpretty.enable()
+        self.addCleanup(httpretty.disable)
 
         httpretty.register_uri(httpretty.GET,
                                "%s" % BASE_URI,
@@ -1434,10 +1426,6 @@ class v3AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
                                body=self.token_response)
 
         self.set_middleware()
-
-    def tearDown(self):
-        httpretty.disable()
-        super(v3AuthTokenMiddlewareTest, self).tearDown()
 
     def token_response(self, request, uri, headers):
         auth_id = request.headers.get('X-Auth-Token')
@@ -1515,9 +1503,6 @@ class TokenExpirationTest(BaseAuthTokenMiddlewareTest):
                                               subsecond=True)
         self.one_hour_earlier = timeutils.isotime(self.now + self.delta,
                                                   subsecond=True)
-
-    def tearDown(self):
-        super(TokenExpirationTest, self).tearDown()
 
     def create_v2_token_fixture(self, expires=None):
         v2_fixture = {

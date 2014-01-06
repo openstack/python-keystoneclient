@@ -108,12 +108,9 @@ class PrintTestCase(test_utils.TestCase):
         super(PrintTestCase, self).setUp()
         self.old_stdout = sys.stdout
         self.stdout = six.moves.cStringIO()
+        self.addCleanup(setattr, self, 'stdout', None)
         sys.stdout = self.stdout
-
-    def tearDown(self):
-        super(PrintTestCase, self).tearDown()
-        sys.stdout = self.old_stdout
-        self.stdout = None
+        self.addCleanup(setattr, sys, 'stdout', self.old_stdout)
 
     def test_print_list_unicode(self):
         name = u'\u540d\u5b57'
