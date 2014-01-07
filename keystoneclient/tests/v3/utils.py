@@ -154,6 +154,7 @@ class CrudTests(object):
 
     def new_ref(self, **kwargs):
         kwargs.setdefault('id', uuid.uuid4().hex)
+        kwargs.setdefault(uuid.uuid4().hex, uuid.uuid4().hex)
         return kwargs
 
     def encode(self, entity):
@@ -223,16 +224,20 @@ class CrudTests(object):
                 ref[attr],
                 'Expected different %s' % attr)
 
-    @httpretty.activate
-    def test_list(self, ref_list=None, expected_path=None, **filter_kwargs):
-        ref_list = ref_list or [self.new_ref(), self.new_ref()]
-
+    def _get_expected_path(self, expected_path=None):
         if not expected_path:
             if self.path_prefix:
                 expected_path = 'v3/%s/%s' % (self.path_prefix,
                                               self.collection_key)
             else:
                 expected_path = 'v3/%s' % self.collection_key
+
+        return expected_path
+
+    @httpretty.activate
+    def test_list(self, ref_list=None, expected_path=None, **filter_kwargs):
+        ref_list = ref_list or [self.new_ref(), self.new_ref()]
+        expected_path = self._get_expected_path(expected_path)
 
         httpretty.register_uri(httpretty.GET,
                                urlparse.urljoin(self.TEST_URL, expected_path),
@@ -241,6 +246,19 @@ class CrudTests(object):
         returned_list = self.manager.list(**filter_kwargs)
         self.assertEqual(len(ref_list), len(returned_list))
         [self.assertTrue(isinstance(r, self.model)) for r in returned_list]
+
+    @httpretty.activate
+    def test_list_params(self):
+        ref_list = [self.new_ref()]
+        filter_kwargs = {uuid.uuid4().hex: uuid.uuid4().hex}
+        expected_path = self._get_expected_path()
+
+        httpretty.register_uri(httpretty.GET,
+                               urlparse.urljoin(self.TEST_URL, expected_path),
+                               body=jsonutils.dumps(self.encode(ref_list)))
+
+        self.manager.list(**filter_kwargs)
+        self.assertQueryStringContains(**filter_kwargs)
 
     @httpretty.activate
     def test_find(self, ref=None):

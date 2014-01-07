@@ -19,6 +19,7 @@ import httpretty
 import mock
 from mox3 import mox
 import requests
+import six
 from six.moves.urllib import parse as urlparse
 import testtools
 
@@ -77,6 +78,13 @@ class TestCase(testtools.TestCase):
         """
         expected = urlparse.parse_qs(qs)
         self.assertEqual(expected, httpretty.last_request().querystring)
+
+    def assertQueryStringContains(self, **kwargs):
+        qs = httpretty.last_request().querystring
+
+        for k, v in six.iteritems(kwargs):
+            self.assertIn(k, qs)
+            self.assertIn(v, qs[k])
 
     def assertRequestHeaderEqual(self, name, val):
         """Verify that the last request made contains a header and its value

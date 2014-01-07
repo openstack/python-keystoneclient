@@ -47,23 +47,30 @@ class PolicyManager(base.CrudManager):
     collection_key = 'policies'
     key = 'policy'
 
-    def create(self, blob, type='application/json'):
+    def create(self, blob, type='application/json', **kwargs):
         return super(PolicyManager, self).create(
             blob=blob,
-            type=type)
+            type=type,
+            **kwargs)
 
     def get(self, policy):
         return super(PolicyManager, self).get(
             policy_id=base.getid(policy))
 
-    def list(self):
-        return super(PolicyManager, self).list()
+    def list(self, **kwargs):
+        """List policies.
 
-    def update(self, entity, blob=None, type=None):
+        ``**kwargs`` allows filter criteria to be passed where
+         supported by the server.
+        """
+        return super(PolicyManager, self).list(**kwargs)
+
+    def update(self, entity, blob=None, type=None, **kwargs):
         return super(PolicyManager, self).update(
             policy_id=base.getid(entity),
             blob=blob,
-            type=type)
+            type=type,
+            **kwargs)
 
     def delete(self, policy):
         return super(PolicyManager, self).delete(

@@ -33,25 +33,33 @@ class DomainManager(base.CrudManager):
     collection_key = 'domains'
     key = 'domain'
 
-    def create(self, name, description=None, enabled=True):
+    def create(self, name, description=None, enabled=True, **kwargs):
         return super(DomainManager, self).create(
             name=name,
             description=description,
-            enabled=enabled)
+            enabled=enabled,
+            **kwargs)
 
     def get(self, domain):
         return super(DomainManager, self).get(
             domain_id=base.getid(domain))
 
-    def list(self):
-        return super(DomainManager, self).list()
+    def list(self, **kwargs):
+        """List domains.
 
-    def update(self, domain, name=None, description=None, enabled=True):
+        ``**kwargs`` allows filter criteria to be passed where
+         supported by the server.
+        """
+        return super(DomainManager, self).list(**kwargs)
+
+    def update(self, domain, name=None,
+               description=None, enabled=True, **kwargs):
         return super(DomainManager, self).update(
             domain_id=base.getid(domain),
             name=name,
             description=description,
-            enabled=enabled)
+            enabled=enabled,
+            **kwargs)
 
     def delete(self, domain):
         return super(DomainManager, self).delete(

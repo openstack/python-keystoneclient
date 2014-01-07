@@ -46,7 +46,7 @@ class UserManager(base.CrudManager):
 
     def create(self, name, domain=None, project=None, password=None,
                email=None, description=None, enabled=True,
-               default_project=None):
+               default_project=None, **kwargs):
         """Create a user.
 
         .. warning::
@@ -67,7 +67,8 @@ class UserManager(base.CrudManager):
             password=password,
             email=email,
             description=description,
-            enabled=enabled)
+            enabled=enabled,
+            **kwargs)
 
     def list(self, project=None, domain=None, group=None, default_project=None,
              **kwargs):
@@ -107,7 +108,7 @@ class UserManager(base.CrudManager):
 
     def update(self, user, name=None, domain=None, project=None, password=None,
                email=None, description=None, enabled=None,
-               default_project=None):
+               default_project=None, **kwargs):
         """Update a user.
 
         .. warning::
@@ -129,7 +130,8 @@ class UserManager(base.CrudManager):
             password=password,
             email=email,
             description=description,
-            enabled=enabled)
+            enabled=enabled,
+            **kwargs)
 
     def add_to_group(self, user, group):
         self._require_user_and_group(user, group)

@@ -49,11 +49,12 @@ class GroupManager(base.CrudManager):
     collection_key = 'groups'
     key = 'group'
 
-    def create(self, name, domain=None, description=None):
+    def create(self, name, domain=None, description=None, **kwargs):
         return super(GroupManager, self).create(
             name=name,
             domain_id=base.getid(domain),
-            description=description)
+            description=description,
+            **kwargs)
 
     def list(self, user=None, domain=None, **kwargs):
         """List groups.
@@ -77,11 +78,12 @@ class GroupManager(base.CrudManager):
         return super(GroupManager, self).get(
             group_id=base.getid(group))
 
-    def update(self, group, name=None, description=None):
+    def update(self, group, name=None, description=None, **kwargs):
         return super(GroupManager, self).update(
             group_id=base.getid(group),
             name=name,
-            description=description)
+            description=description,
+            **kwargs)
 
     def delete(self, group):
         return super(GroupManager, self).delete(
