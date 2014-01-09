@@ -64,7 +64,7 @@ class UserTests(utils.TestCase, utils.CrudTests):
                          entity=ref_list)
 
         returned_list = self.manager.list(group=group_id)
-        self.assertTrue(len(returned_list))
+        self.assertEqual(len(ref_list), len(returned_list))
         [self.assertTrue(isinstance(r, self.model)) for r in returned_list]
 
     @httpretty.activate

@@ -239,7 +239,7 @@ class CrudTests(object):
                                body=jsonutils.dumps(self.encode(ref_list)))
 
         returned_list = self.manager.list(**filter_kwargs)
-        self.assertTrue(len(returned_list))
+        self.assertEqual(len(ref_list), len(returned_list))
         [self.assertTrue(isinstance(r, self.model)) for r in returned_list]
 
     @httpretty.activate
