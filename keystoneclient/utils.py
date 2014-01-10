@@ -101,7 +101,7 @@ def find_resource(manager, name_or_id):
 
     # finally try to find entity by name
     try:
-        if isinstance(name_or_id, str):
+        if isinstance(name_or_id, six.binary_type):
             name_or_id = name_or_id.decode('utf-8', 'strict')
         return manager.find(name=name_or_id)
     except exceptions.NotFound:
