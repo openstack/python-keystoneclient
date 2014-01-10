@@ -455,6 +455,15 @@ class HTTPClient(object):
             except Exception as e:
                 _logger.warning("Failed to store token into keyring %s" % (e))
 
+    def _process_management_url(self, region_name):
+        try:
+            self._management_url = self.auth_ref.service_catalog.url_for(
+                service_type='identity',
+                endpoint_type='admin',
+                region_name=region_name)
+        except exceptions.EndpointNotFound:
+            _logger.warning("Failed to retrieve management_url from token")
+
     def process_token(self, region_name=None):
         """Extract and process information from the new auth_ref.
 
@@ -467,14 +476,7 @@ class HTTPClient(object):
             if not self.auth_ref.tenant_id:
                 raise exceptions.AuthorizationFailure(
                     "Token didn't provide tenant_id")
-            try:
-                self._management_url = self.auth_ref.service_catalog.url_for(
-                    service_type='identity',
-                    endpoint_type='admin',
-                    region_name=region_name or self.region_name)
-            except exceptions.EndpointNotFound:
-                _logger.warning("Failed to retrieve management_url from token")
-
+            self._process_management_url(region_name)
             self.project_name = self.auth_ref.tenant_name
             self.project_id = self.auth_ref.tenant_id
 
