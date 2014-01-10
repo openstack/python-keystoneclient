@@ -12,7 +12,7 @@ Contents:
 
    releases
    man/keystone
-   using-api
+   using-api-v2
 
    api/autoindex
 
