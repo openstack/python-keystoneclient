@@ -151,31 +151,17 @@ class Client(httpclient.HTTPClient):
                                       headers={'Accept':
                                                'application/json'})
             if resp.status_code in (200, 204):  # some cases we get No Content
-                try:
-                    results = {}
-                    if 'extensions' in body:
-                        if 'values' in body['extensions']:
-                            # Parse correct format (per contract)
-                            for extension in body['extensions']['values']:
-                                alias, name = \
-                                    self._get_extension_info(
-                                        extension
-                                    )
-                                results[alias] = name
-                            return results
-                        else:
-                            # Support incorrect, but prevalent format
-                            for extension in body['extensions']:
-                                alias, name = \
-                                    self._get_extension_info(extension)
-                                results[alias] = name
-                            return results
-                    else:
-                        results['message'] = ("Unrecognized extensions "
-                                              "response from %s" % url)
-                    return results
-                except KeyError:
-                    raise exceptions.AuthorizationFailure()
+                if 'extensions' in body and 'values' in body['extensions']:
+                    # Parse correct format (per contract)
+                    extensions = body['extensions']['values']
+                elif 'extensions' in body:
+                    # Support incorrect, but prevalent format
+                    extensions = body['extensions']
+                else:
+                    return dict(message=(
+                        'Unrecognized extensions response from %s' % url))
+
+                return dict(self._get_extension_info(e) for e in extensions)
             elif resp.status_code == 305:
                 return self._check_keystone_extensions(resp['location'])
             else:
