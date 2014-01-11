@@ -445,6 +445,7 @@ class ShellTest(utils.TestCase):
                    ' --os-auth-url=blah.com endpoint-list'))
             request_mock.assert_called_with(mock.ANY, mock.ANY,
                                             timeout=2,
+                                            allow_redirects=False,
                                             headers=mock.ANY,
                                             verify=mock.ANY)
 
