@@ -152,11 +152,17 @@ def safe_encode(text, incoming=None,
                     sys.getdefaultencoding())
 
     if isinstance(text, six.text_type):
-        return text.encode(encoding, errors)
+        if six.PY3:
+            return text.encode(encoding, errors).decode(incoming)
+        else:
+            return text.encode(encoding, errors)
     elif text and encoding != incoming:
         # Decode text before encoding it with `encoding`
         text = safe_decode(text, incoming, errors)
-        return text.encode(encoding, errors)
+        if six.PY3:
+            return text.encode(encoding, errors).decode(incoming)
+        else:
+            return text.encode(encoding, errors)
 
     return text
 
