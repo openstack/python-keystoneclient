@@ -716,16 +716,16 @@ class CommonAuthTokenMiddlewareTest(object):
         token = self.token_dict['signed_token_scoped']
         req.headers['X-Auth-Token'] = token
         req.environ.update(extra_environ)
-        try:
-            now = datetime.datetime.utcnow()
-            timeutils.set_time_override(now)
+        timeutils_utcnow = 'keystoneclient.openstack.common.timeutils.utcnow'
+        now = datetime.datetime.utcnow()
+        with mock.patch(timeutils_utcnow) as mock_utcnow:
+            mock_utcnow.return_value = now
             self.middleware(req.environ, self.start_fake_response)
             self.assertNotEqual(self._get_cached_token(token), None)
-            expired = now + datetime.timedelta(seconds=token_cache_time)
-            timeutils.set_time_override(expired)
+        expired = now + datetime.timedelta(seconds=token_cache_time)
+        with mock.patch(timeutils_utcnow) as mock_utcnow:
+            mock_utcnow.return_value = expired
             self.assertEqual(self._get_cached_token(token), None)
-        finally:
-            timeutils.clear_time_override()
 
     def test_old_swift_memcache_set_expired(self):
         extra_conf = {'cache': 'swift.cache'}
@@ -1331,7 +1331,6 @@ class TokenEncodingTest(testtools.TestCase):
 class TokenExpirationTest(BaseAuthTokenMiddlewareTest):
     def setUp(self):
         super(TokenExpirationTest, self).setUp()
-        timeutils.set_time_override()
         self.now = timeutils.utcnow()
         self.delta = datetime.timedelta(hours=1)
         self.one_hour_ago = timeutils.isotime(self.now - self.delta,
@@ -1341,7 +1340,6 @@ class TokenExpirationTest(BaseAuthTokenMiddlewareTest):
 
     def tearDown(self):
         super(TokenExpirationTest, self).tearDown()
-        timeutils.clear_time_override()
 
     def create_v2_token_fixture(self, expires=None):
         v2_fixture = {
@@ -1423,20 +1421,22 @@ class TokenExpirationTest(BaseAuthTokenMiddlewareTest):
                           auth_token.confirm_token_not_expired,
                           data)
 
-    def test_v2_token_with_timezone_offset_not_expired(self):
+    @mock.patch('keystoneclient.openstack.common.timeutils.utcnow')
+    def test_v2_token_with_timezone_offset_not_expired(self, mock_utcnow):
         current_time = timeutils.parse_isotime('2000-01-01T00:01:10.000123Z')
         current_time = timeutils.normalize_time(current_time)
-        timeutils.set_time_override(current_time)
+        mock_utcnow.return_value = current_time
         data = self.create_v2_token_fixture(
             expires='2000-01-01T00:05:10.000123-05:00')
         expected_expires = '2000-01-01T05:05:10.000123Z'
         actual_expires = auth_token.confirm_token_not_expired(data)
         self.assertEqual(actual_expires, expected_expires)
 
-    def test_v2_token_with_timezone_offset_expired(self):
+    @mock.patch('keystoneclient.openstack.common.timeutils.utcnow')
+    def test_v2_token_with_timezone_offset_expired(self, mock_utcnow):
         current_time = timeutils.parse_isotime('2000-01-01T00:01:10.000123Z')
         current_time = timeutils.normalize_time(current_time)
-        timeutils.set_time_override(current_time)
+        mock_utcnow.return_value = current_time
         data = self.create_v2_token_fixture(
             expires='2000-01-01T00:05:10.000123+05:00')
         data['access']['token']['expires'] = '2000-01-01T00:05:10.000123+05:00'
@@ -1456,10 +1456,11 @@ class TokenExpirationTest(BaseAuthTokenMiddlewareTest):
                           auth_token.confirm_token_not_expired,
                           data)
 
-    def test_v3_token_with_timezone_offset_not_expired(self):
+    @mock.patch('keystoneclient.openstack.common.timeutils.utcnow')
+    def test_v3_token_with_timezone_offset_not_expired(self, mock_utcnow):
         current_time = timeutils.parse_isotime('2000-01-01T00:01:10.000123Z')
         current_time = timeutils.normalize_time(current_time)
-        timeutils.set_time_override(current_time)
+        mock_utcnow.return_value = current_time
         data = self.create_v3_token_fixture(
             expires='2000-01-01T00:05:10.000123-05:00')
         expected_expires = '2000-01-01T05:05:10.000123Z'
@@ -1467,10 +1468,11 @@ class TokenExpirationTest(BaseAuthTokenMiddlewareTest):
         actual_expires = auth_token.confirm_token_not_expired(data)
         self.assertEqual(actual_expires, expected_expires)
 
-    def test_v3_token_with_timezone_offset_expired(self):
+    @mock.patch('keystoneclient.openstack.common.timeutils.utcnow')
+    def test_v3_token_with_timezone_offset_expired(self, mock_utcnow):
         current_time = timeutils.parse_isotime('2000-01-01T00:01:10.000123Z')
         current_time = timeutils.normalize_time(current_time)
-        timeutils.set_time_override(current_time)
+        mock_utcnow.return_value = current_time
         data = self.create_v3_token_fixture(
             expires='2000-01-01T00:05:10.000123+05:00')
         self.assertRaises(auth_token.InvalidUserToken,
