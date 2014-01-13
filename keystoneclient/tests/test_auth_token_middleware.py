@@ -674,7 +674,7 @@ class CommonAuthTokenMiddlewareTest(object):
         token = self.token_dict['signed_token_scoped']
         req.headers['X-Auth-Token'] = token
         self.middleware(req.environ, self.start_fake_response)
-        self.assertNotEqual(self._get_cached_token(token), None)
+        self.assertIsNotNone(self._get_cached_token(token))
 
     def test_expired(self):
         httpretty.disable()
@@ -721,11 +721,11 @@ class CommonAuthTokenMiddlewareTest(object):
         with mock.patch(timeutils_utcnow) as mock_utcnow:
             mock_utcnow.return_value = now
             self.middleware(req.environ, self.start_fake_response)
-            self.assertNotEqual(self._get_cached_token(token), None)
+            self.assertIsNotNone(self._get_cached_token(token))
         expired = now + datetime.timedelta(seconds=token_cache_time)
         with mock.patch(timeutils_utcnow) as mock_utcnow:
             mock_utcnow.return_value = expired
-            self.assertEqual(self._get_cached_token(token), None)
+            self.assertIsNone(self._get_cached_token(token))
 
     def test_old_swift_memcache_set_expired(self):
         extra_conf = {'cache': 'swift.cache'}
@@ -878,7 +878,7 @@ class CommonAuthTokenMiddlewareTest(object):
         req.headers['X-Auth-Token'] = ERROR_TOKEN
         self.middleware.http_request_max_retries = 0
         self.middleware(req.environ, self.start_fake_response)
-        self.assertEqual(self._get_cached_token(ERROR_TOKEN), None)
+        self.assertIsNone(self._get_cached_token(ERROR_TOKEN))
         self.assert_valid_last_url(ERROR_TOKEN)
 
     def test_http_request_max_retries(self):
