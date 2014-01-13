@@ -258,9 +258,9 @@ class CrudTests(object):
                 'Expected different %s' % attr)
 
         if hasattr(ref, 'name'):
-            self.assertQueryStringIs({'name': ref['name']})
+            self.assertQueryStringIs('name=%s' % ref['name'])
         else:
-            self.assertQueryStringIs({})
+            self.assertQueryStringIs('')
 
     @httpretty.activate
     def test_update(self, ref=None, req_ref=None):
