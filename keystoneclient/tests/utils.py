@@ -19,6 +19,7 @@ import httpretty
 import mock
 from mox3 import mox
 import requests
+from six.moves.urllib import parse as urlparse
 import testtools
 
 from keystoneclient.openstack.common import jsonutils
@@ -69,8 +70,13 @@ class TestCase(testtools.TestCase):
         elif body:
             self.assertEqual(body, httpretty.last_request().body)
 
-    def assertQueryStringIs(self, val):
-        self.assertEqual(httpretty.last_request().querystring, val)
+    def assertQueryStringIs(self, qs=''):
+        """Verify the QueryString matches what is expected.
+
+        The qs parameter should be of the format \'foo=bar&abc=xyz\'
+        """
+        expected = urlparse.parse_qs(qs)
+        self.assertEqual(expected, httpretty.last_request().querystring)
 
     def assertRequestHeaderEqual(self, name, val):
         """Verify that the last request made contains a header and its value

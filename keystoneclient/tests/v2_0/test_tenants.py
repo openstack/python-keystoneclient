@@ -141,7 +141,7 @@ class TenantTests(utils.TestCase):
         self.stub_url(httpretty.GET, ['tenants'], json=self.TEST_TENANTS)
 
         tenant_list = self.client.tenants.list(limit=1)
-        self.assertQueryStringIs({'limit': ['1']})
+        self.assertQueryStringIs('limit=1')
         [self.assertTrue(isinstance(t, tenants.Tenant)) for t in tenant_list]
 
     @httpretty.activate
@@ -149,7 +149,7 @@ class TenantTests(utils.TestCase):
         self.stub_url(httpretty.GET, ['tenants'], json=self.TEST_TENANTS)
 
         tenant_list = self.client.tenants.list(marker=1)
-        self.assertQueryStringIs({'marker': ['1']})
+        self.assertQueryStringIs('marker=1')
         [self.assertTrue(isinstance(t, tenants.Tenant)) for t in tenant_list]
 
     @httpretty.activate
@@ -157,7 +157,7 @@ class TenantTests(utils.TestCase):
         self.stub_url(httpretty.GET, ['tenants'], json=self.TEST_TENANTS)
 
         tenant_list = self.client.tenants.list(limit=1, marker=1)
-        self.assertQueryStringIs({'marker': ['1'], 'limit': ['1']})
+        self.assertQueryStringIs('marker=1&limit=1')
         [self.assertTrue(isinstance(t, tenants.Tenant)) for t in tenant_list]
 
     @httpretty.activate
