@@ -99,14 +99,19 @@ class Examples(fixtures.Fixture):
         self.v3_UUID_TOKEN_BIND = '2f61f73e1c854cbb9534c487f9bd63c2'
         self.v3_UUID_TOKEN_UNKNOWN_BIND = '7ed9781b62cd4880b8d8c6788ab1d1e2'
 
-        self.REVOKED_TOKEN_HASH = utils.hash_signed_token(self.REVOKED_TOKEN)
+        revoked_token = self.REVOKED_TOKEN
+        if isinstance(revoked_token, six.text_type):
+            revoked_token = revoked_token.encode('utf-8')
+        self.REVOKED_TOKEN_HASH = utils.hash_signed_token(revoked_token)
         self.REVOKED_TOKEN_LIST = (
             {'revoked': [{'id': self.REVOKED_TOKEN_HASH,
                           'expires': timeutils.utcnow()}]})
         self.REVOKED_TOKEN_LIST_JSON = jsonutils.dumps(self.REVOKED_TOKEN_LIST)
 
-        self.REVOKED_v3_TOKEN_HASH = utils.hash_signed_token(
-            self.REVOKED_v3_TOKEN)
+        revoked_v3_token = self.REVOKED_v3_TOKEN
+        if isinstance(revoked_v3_token, six.text_type):
+            revoked_v3_token = revoked_v3_token.encode('utf-8')
+        self.REVOKED_v3_TOKEN_HASH = utils.hash_signed_token(revoked_v3_token)
         self.REVOKED_v3_TOKEN_LIST = (
             {'revoked': [{'id': self.REVOKED_v3_TOKEN_HASH,
                           'expires': timeutils.utcnow()}]})

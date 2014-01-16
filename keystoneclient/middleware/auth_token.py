@@ -1232,6 +1232,8 @@ class AuthProtocol(object):
         if not revoked_tokens:
             return
         revoked_ids = (x['id'] for x in revoked_tokens)
+        if isinstance(signed_text, six.text_type):
+            signed_text = signed_text.encode('utf-8')
         token_id = utils.hash_signed_token(signed_text)
         for revoked_id in revoked_ids:
             if token_id == revoked_id:

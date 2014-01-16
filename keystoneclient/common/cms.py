@@ -24,6 +24,7 @@ or eventlet.green.subprocess based on if os module is patched by eventlet.
 import errno
 import hashlib
 import logging
+import six
 
 from keystoneclient import exceptions
 
@@ -263,6 +264,8 @@ def cms_hash_token(token_id):
         return None
     if is_ans1_token(token_id):
         hasher = hashlib.md5()
+        if isinstance(token_id, six.text_type):
+            token_id = token_id.encode('utf-8')
         hasher.update(token_id)
         return hasher.hexdigest()
     else:
