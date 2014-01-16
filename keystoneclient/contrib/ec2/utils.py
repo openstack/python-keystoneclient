@@ -110,19 +110,19 @@ class Ec2Signer(object):
 
     def _calc_signature_0(self, params):
         """Generate AWS signature version 0 string."""
-        s = params['Action'] + params['Timestamp']
+        s = (params['Action'] + params['Timestamp']).encode('utf-8')
         self.hmac.update(s)
-        return base64.b64encode(self.hmac.digest())
+        return base64.b64encode(self.hmac.digest()).decode('utf-8')
 
     def _calc_signature_1(self, params):
         """Generate AWS signature version 1 string."""
         keys = list(params)
         keys.sort(key=six.text_type.lower)
         for key in keys:
-            self.hmac.update(key)
+            self.hmac.update(key.encode('utf-8'))
             val = self._get_utf8_value(params[key])
             self.hmac.update(val)
-        return base64.b64encode(self.hmac.digest())
+        return base64.b64encode(self.hmac.digest()).decode('utf-8')
 
     @staticmethod
     def _canonical_qs(params):
@@ -149,8 +149,8 @@ class Ec2Signer(object):
             current_hmac = self.hmac
             params['SignatureMethod'] = 'HmacSHA1'
         string_to_sign += self._canonical_qs(params)
-        current_hmac.update(string_to_sign)
-        b64 = base64.b64encode(current_hmac.digest())
+        current_hmac.update(string_to_sign.encode('utf-8'))
+        b64 = base64.b64encode(current_hmac.digest()).decode('utf-8')
         return b64
 
     def _calc_signature_4(self, params, verb, server_string, path, headers,
@@ -166,7 +166,7 @@ class Ec2Signer(object):
             http://docs.aws.amazon.com/general/latest/gr/
             signature-v4-examples.html#signature-v4-examples-python
             """
-            k_date = sign(self._get_utf8_value("AWS4" + self.secret_key),
+            k_date = sign(self._get_utf8_value(b"AWS4" + self.secret_key),
                           datestamp)
             k_region = sign(k_date, region_name)
             k_service = sign(k_region, service_name)
@@ -257,6 +257,7 @@ class Ec2Signer(object):
         # Create the string to sign
         # http://docs.aws.amazon.com/general/latest/gr/
         # sigv4-create-string-to-sign.html
+        cr = cr.encode('utf-8')
         string_to_sign = '\n'.join(('AWS4-HMAC-SHA256',
                                     param_date,
                                     credential_scope,
