@@ -82,7 +82,7 @@ class TenantTests(utils.TestCase):
             req_body['tenant']['enabled'],
             extravalue01=req_body['tenant']['extravalue01'],
             name="dont overwrite priors")
-        self.assertTrue(isinstance(tenant, tenants.Tenant))
+        self.assertIsInstance(tenant, tenants.Tenant)
         self.assertEqual(tenant.id, 4)
         self.assertEqual(tenant.name, "tenantX")
         self.assertEqual(tenant.description, "Like tenant 9, but better.")
@@ -125,7 +125,7 @@ class TenantTests(utils.TestCase):
         self.stub_url(httpretty.GET, ['tenants', '1'], json=resp)
 
         t = self.client.tenants.get(1)
-        self.assertTrue(isinstance(t, tenants.Tenant))
+        self.assertIsInstance(t, tenants.Tenant)
         self.assertEqual(t.id, 1)
         self.assertEqual(t.name, 'admin')
 
@@ -134,7 +134,7 @@ class TenantTests(utils.TestCase):
         self.stub_url(httpretty.GET, ['tenants'], json=self.TEST_TENANTS)
 
         tenant_list = self.client.tenants.list()
-        [self.assertTrue(isinstance(t, tenants.Tenant)) for t in tenant_list]
+        [self.assertIsInstance(t, tenants.Tenant) for t in tenant_list]
 
     @httpretty.activate
     def test_list_limit(self):
@@ -142,7 +142,7 @@ class TenantTests(utils.TestCase):
 
         tenant_list = self.client.tenants.list(limit=1)
         self.assertQueryStringIs('limit=1')
-        [self.assertTrue(isinstance(t, tenants.Tenant)) for t in tenant_list]
+        [self.assertIsInstance(t, tenants.Tenant) for t in tenant_list]
 
     @httpretty.activate
     def test_list_marker(self):
@@ -150,7 +150,7 @@ class TenantTests(utils.TestCase):
 
         tenant_list = self.client.tenants.list(marker=1)
         self.assertQueryStringIs('marker=1')
-        [self.assertTrue(isinstance(t, tenants.Tenant)) for t in tenant_list]
+        [self.assertIsInstance(t, tenants.Tenant) for t in tenant_list]
 
     @httpretty.activate
     def test_list_limit_marker(self):
@@ -158,7 +158,7 @@ class TenantTests(utils.TestCase):
 
         tenant_list = self.client.tenants.list(limit=1, marker=1)
         self.assertQueryStringIs('marker=1&limit=1')
-        [self.assertTrue(isinstance(t, tenants.Tenant)) for t in tenant_list]
+        [self.assertIsInstance(t, tenants.Tenant) for t in tenant_list]
 
     @httpretty.activate
     def test_update(self):
@@ -191,7 +191,7 @@ class TenantTests(utils.TestCase):
             req_body['tenant']['enabled'],
             extravalue01=req_body['tenant']['extravalue01'],
             name="dont overwrite priors")
-        self.assertTrue(isinstance(tenant, tenants.Tenant))
+        self.assertIsInstance(tenant, tenants.Tenant)
         self.assertRequestBodyIs(json=req_body)
         self.assertEqual(tenant.id, 4)
         self.assertEqual(tenant.name, "tenantX")
@@ -223,7 +223,7 @@ class TenantTests(utils.TestCase):
                                             req_body['tenant']['name'],
                                             req_body['tenant']['description'],
                                             req_body['tenant']['enabled'])
-        self.assertTrue(isinstance(tenant, tenants.Tenant))
+        self.assertIsInstance(tenant, tenants.Tenant)
         self.assertRequestBodyIs(json=req_body)
         self.assertEqual(tenant.id, 4)
         self.assertEqual(tenant.name, "tenantX")
@@ -263,7 +263,7 @@ class TenantTests(utils.TestCase):
         tenant = self.client.tenants.resource_class(self.client.tenants,
                                                     req_body['tenant'])
         tenant.add_user('foo', 'barrr')
-        self.assertTrue(isinstance(tenant, tenants.Tenant))
+        self.assertIsInstance(tenant, tenants.Tenant)
 
     @httpretty.activate
     def test_tenant_remove_user(self):
@@ -284,4 +284,4 @@ class TenantTests(utils.TestCase):
         tenant = self.client.tenants.resource_class(self.client.tenants,
                                                     req_body['tenant'])
         tenant.remove_user('foo', 'barrr')
-        self.assertTrue(isinstance(tenant, tenants.Tenant))
+        self.assertIsInstance(tenant, tenants.Tenant)

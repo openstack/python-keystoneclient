@@ -40,7 +40,7 @@ class EC2Tests(utils.TestCase):
                                        'OS-EC2'], json=resp_body)
 
         cred = self.client.ec2.create(user_id, tenant_id)
-        self.assertTrue(isinstance(cred, ec2.EC2))
+        self.assertIsInstance(cred, ec2.EC2)
         self.assertEqual(cred.tenant_id, tenant_id)
         self.assertEqual(cred.enabled, True)
         self.assertEqual(cred.access, 'access')
@@ -64,7 +64,7 @@ class EC2Tests(utils.TestCase):
                                       'OS-EC2', 'access'], json=resp_body)
 
         cred = self.client.ec2.get(user_id, 'access')
-        self.assertTrue(isinstance(cred, ec2.EC2))
+        self.assertIsInstance(cred, ec2.EC2)
         self.assertEqual(cred.tenant_id, tenant_id)
         self.assertEqual(cred.enabled, True)
         self.assertEqual(cred.access, 'access')

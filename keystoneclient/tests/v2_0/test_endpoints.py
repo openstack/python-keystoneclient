@@ -71,7 +71,7 @@ class EndpointTests(utils.TestCase):
             internalurl=req_body['endpoint']['internalurl'],
             service_id=req_body['endpoint']['service_id']
         )
-        self.assertTrue(isinstance(endpoint, endpoints.Endpoint))
+        self.assertIsInstance(endpoint, endpoints.Endpoint)
         self.assertRequestBodyIs(json=req_body)
 
     @httpretty.activate
@@ -84,5 +84,5 @@ class EndpointTests(utils.TestCase):
         self.stub_url(httpretty.GET, ['endpoints'], json=self.TEST_ENDPOINTS)
 
         endpoint_list = self.client.endpoints.list()
-        [self.assertTrue(isinstance(r, endpoints.Endpoint))
+        [self.assertIsInstance(r, endpoints.Endpoint)
          for r in endpoint_list]

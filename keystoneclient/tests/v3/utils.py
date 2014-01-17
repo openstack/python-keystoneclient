@@ -201,7 +201,7 @@ class CrudTests(object):
         self.stub_entity(httpretty.POST, entity=req_ref, status=201)
 
         returned = self.manager.create(**parameterize(manager_ref))
-        self.assertTrue(isinstance(returned, self.model))
+        self.assertIsInstance(returned, self.model)
         for attr in req_ref:
             self.assertEqual(
                 getattr(returned, attr),
@@ -216,7 +216,7 @@ class CrudTests(object):
         self.stub_entity(httpretty.GET, id=ref['id'], entity=ref)
 
         returned = self.manager.get(ref['id'])
-        self.assertTrue(isinstance(returned, self.model))
+        self.assertIsInstance(returned, self.model)
         for attr in ref:
             self.assertEqual(
                 getattr(returned, attr),
@@ -240,7 +240,7 @@ class CrudTests(object):
 
         returned_list = self.manager.list(**filter_kwargs)
         self.assertEqual(len(ref_list), len(returned_list))
-        [self.assertTrue(isinstance(r, self.model)) for r in returned_list]
+        [self.assertIsInstance(r, self.model) for r in returned_list]
 
     @httpretty.activate
     def test_find(self, ref=None):
@@ -250,7 +250,7 @@ class CrudTests(object):
         self.stub_entity(httpretty.GET, entity=ref_list)
 
         returned = self.manager.find(name=getattr(ref, 'name', None))
-        self.assertTrue(isinstance(returned, self.model))
+        self.assertIsInstance(returned, self.model)
         for attr in ref:
             self.assertEqual(
                 getattr(returned, attr),
@@ -276,7 +276,7 @@ class CrudTests(object):
         req_ref.pop('id')
 
         returned = self.manager.update(ref['id'], **parameterize(req_ref))
-        self.assertTrue(isinstance(returned, self.model))
+        self.assertIsInstance(returned, self.model)
         for attr in ref:
             self.assertEqual(
                 getattr(returned, attr),

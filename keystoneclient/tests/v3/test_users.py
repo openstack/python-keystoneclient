@@ -65,7 +65,7 @@ class UserTests(utils.TestCase, utils.CrudTests):
 
         returned_list = self.manager.list(group=group_id)
         self.assertEqual(len(ref_list), len(returned_list))
-        [self.assertTrue(isinstance(r, self.model)) for r in returned_list]
+        [self.assertIsInstance(r, self.model) for r in returned_list]
 
     @httpretty.activate
     def test_check_user_in_group(self):
@@ -115,7 +115,7 @@ class UserTests(utils.TestCase, utils.CrudTests):
         params = utils.parameterize(param_ref)
 
         returned = self.manager.create(**params)
-        self.assertTrue(isinstance(returned, self.model))
+        self.assertIsInstance(returned, self.model)
         for attr in ref:
             self.assertEqual(
                 getattr(returned, attr),
@@ -142,7 +142,7 @@ class UserTests(utils.TestCase, utils.CrudTests):
         params = utils.parameterize(param_ref)
 
         returned = self.manager.create(**params)
-        self.assertTrue(isinstance(returned, self.model))
+        self.assertIsInstance(returned, self.model)
         for attr in ref:
             self.assertEqual(
                 getattr(returned, attr),
@@ -168,7 +168,7 @@ class UserTests(utils.TestCase, utils.CrudTests):
         params = utils.parameterize(param_ref)
 
         returned = self.manager.update(ref['id'], **params)
-        self.assertTrue(isinstance(returned, self.model))
+        self.assertIsInstance(returned, self.model)
         for attr in ref:
             self.assertEqual(
                 getattr(returned, attr),
@@ -192,7 +192,7 @@ class UserTests(utils.TestCase, utils.CrudTests):
         params = utils.parameterize(param_ref)
 
         returned = self.manager.update(ref['id'], **params)
-        self.assertTrue(isinstance(returned, self.model))
+        self.assertIsInstance(returned, self.model)
         for attr in ref:
             self.assertEqual(
                 getattr(returned, attr),

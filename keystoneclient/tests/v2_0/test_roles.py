@@ -53,7 +53,7 @@ class RoleTests(utils.TestCase):
 
         role = self.client.roles.create(req_body['role']['name'])
         self.assertRequestBodyIs(json=req_body)
-        self.assertTrue(isinstance(role, roles.Role))
+        self.assertIsInstance(role, roles.Role)
         self.assertEqual(role.id, 3)
         self.assertEqual(role.name, req_body['role']['name'])
 
@@ -68,7 +68,7 @@ class RoleTests(utils.TestCase):
                       json={'role': self.TEST_ROLES['roles']['values'][0]})
 
         role = self.client.roles.get(1)
-        self.assertTrue(isinstance(role, roles.Role))
+        self.assertIsInstance(role, roles.Role)
         self.assertEqual(role.id, 1)
         self.assertEqual(role.name, 'admin')
 
@@ -78,7 +78,7 @@ class RoleTests(utils.TestCase):
                       json=self.TEST_ROLES)
 
         role_list = self.client.roles.list()
-        [self.assertTrue(isinstance(r, roles.Role)) for r in role_list]
+        [self.assertIsInstance(r, roles.Role) for r in role_list]
 
     @httpretty.activate
     def test_roles_for_user(self):
@@ -86,7 +86,7 @@ class RoleTests(utils.TestCase):
                       json=self.TEST_ROLES)
 
         role_list = self.client.roles.roles_for_user('foo')
-        [self.assertTrue(isinstance(r, roles.Role)) for r in role_list]
+        [self.assertIsInstance(r, roles.Role) for r in role_list]
 
     @httpretty.activate
     def test_roles_for_user_tenant(self):
@@ -94,7 +94,7 @@ class RoleTests(utils.TestCase):
                                       'roles'], json=self.TEST_ROLES)
 
         role_list = self.client.roles.roles_for_user('foo', 'barrr')
-        [self.assertTrue(isinstance(r, roles.Role)) for r in role_list]
+        [self.assertIsInstance(r, roles.Role) for r in role_list]
 
     @httpretty.activate
     def test_add_user_role(self):
