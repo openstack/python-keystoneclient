@@ -1316,7 +1316,8 @@ class AuthProtocol(object):
         if list_is_current:
             # Load the list from disk if required
             if not self._token_revocation_list:
-                with open(self.revoked_file_name, 'r') as f:
+                open_kwargs = {'encoding': 'utf-8'} if six.PY3 else {}
+                with open(self.revoked_file_name, 'r', **open_kwargs) as f:
                     self._token_revocation_list = jsonutils.loads(f.read())
         else:
             self.token_revocation_list = self.fetch_revocation_list()
@@ -1334,6 +1335,10 @@ class AuthProtocol(object):
 
         with tempfile.NamedTemporaryFile(dir=self.signing_dirname,
                                          delete=False) as f:
+            # In Python2, encoding is slow so the following check avoids it if
+            # it is not absolutely necessary.
+            if isinstance(value, six.text_type):
+                value = value.encode('utf-8')
             f.write(value)
         os.rename(f.name, self.revoked_file_name)
 
