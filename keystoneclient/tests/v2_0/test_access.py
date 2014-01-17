@@ -22,6 +22,7 @@ from keystoneclient.tests import client_fixtures as token_data
 from keystoneclient.tests.v2_0 import client_fixtures
 from keystoneclient.tests.v2_0 import utils
 
+
 UNSCOPED_TOKEN = client_fixtures.UNSCOPED_TOKEN
 PROJECT_SCOPED_TOKEN = client_fixtures.PROJECT_SCOPED_TOKEN
 

@@ -13,12 +13,12 @@
 #    under the License.
 
 import mock
-
 import requests
 
 from keystoneclient import httpclient
 from keystoneclient import session
 from keystoneclient.tests import utils
+
 
 FAKE_RESPONSE = utils.TestResponse({
     "status_code": 200,

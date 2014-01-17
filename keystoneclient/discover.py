@@ -13,12 +13,14 @@
 # under the License.
 
 import logging
+
 import six
 
 from keystoneclient import exceptions
 from keystoneclient import httpclient
 from keystoneclient.v2_0 import client as v2_client
 from keystoneclient.v3 import client as v3_client
+
 
 _logger = logging.getLogger(__name__)
 

@@ -15,6 +15,7 @@
 from keystoneclient import discover
 from keystoneclient import httpclient
 
+
 # Using client.HTTPClient is deprecated. Use httpclient.HTTPClient instead.
 HTTPClient = httpclient.HTTPClient
 

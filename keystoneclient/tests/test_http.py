@@ -14,8 +14,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import httpretty
 import logging
+
+import httpretty
 import six
 from testtools import matchers
 
@@ -23,6 +24,7 @@ from keystoneclient import exceptions
 from keystoneclient import httpclient
 from keystoneclient import session
 from keystoneclient.tests import utils
+
 
 RESPONSE_BODY = '{"hi": "there"}'
 

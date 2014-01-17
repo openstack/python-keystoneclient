@@ -21,6 +21,7 @@ from keystoneclient.openstack.common import jsonutils
 from keystoneclient.tests import utils
 from keystoneclient.v3 import client
 
+
 TestResponse = utils.TestResponse
 
 

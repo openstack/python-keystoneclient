@@ -22,6 +22,7 @@ OpenStack Client interface. Handles the REST calls and responses.
 """
 
 import logging
+
 from six.moves.urllib import parse as urlparse
 
 try:

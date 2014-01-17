@@ -28,11 +28,11 @@ import argparse
 import getpass
 import logging
 import os
-import six
 import sys
 
-import keystoneclient
+import six
 
+import keystoneclient
 from keystoneclient import access
 from keystoneclient.contrib.bootstrap import shell as shell_bootstrap
 from keystoneclient import exceptions as exc

@@ -28,6 +28,7 @@ try:
 except ImportError:
     keyring = None
 
+
 PROJECT_SCOPED_TOKEN = client_fixtures.PROJECT_SCOPED_TOKEN
 
 # These mirror values from PROJECT_SCOPED_TOKEN

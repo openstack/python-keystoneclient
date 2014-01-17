@@ -23,6 +23,7 @@ from keystoneclient.tests import utils
 from keystoneclient.v2_0 import client as v2_client
 from keystoneclient.v3 import client as v3_client
 
+
 BASE_HOST = 'http://keystone.example.com'
 BASE_URL = "%s:5000/" % BASE_HOST
 UPDATED = '2013-03-06T00:00:00Z'

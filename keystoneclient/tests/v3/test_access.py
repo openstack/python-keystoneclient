@@ -19,6 +19,7 @@ from keystoneclient.openstack.common import timeutils
 from keystoneclient.tests.v3 import client_fixtures
 from keystoneclient.tests.v3 import utils
 
+
 TOKEN_RESPONSE = utils.TestResponse({
     "headers": client_fixtures.AUTH_RESPONSE_HEADERS
 })
