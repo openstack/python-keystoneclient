@@ -75,15 +75,17 @@ class Client(httpclient.HTTPClient):
 
     def _local_keystone_exists(self):
         """Checks if Keystone is available on default local port 35357."""
-        return self._check_keystone_versions("http://localhost:35357")
+        results = self._check_keystone_versions("http://localhost:35357")
+        if results is None:
+            results = self._check_keystone_versions("https://localhost:35357")
+        return results
 
     def _check_keystone_versions(self, url):
         """Calls Keystone URL and detects the available API versions."""
         try:
-            client = httpclient.HTTPClient()
-            resp, body = client.request(url, "GET",
-                                        headers={'Accept':
-                                                 'application/json'})
+            resp, body = self.request(url, "GET",
+                                      headers={'Accept':
+                                               'application/json'})
             # Multiple Choices status code is returned by the root
             # identity endpoint, with references to one or more
             # Identity API versions -- v3 spec
@@ -143,12 +145,11 @@ class Client(httpclient.HTTPClient):
     def _check_keystone_extensions(self, url):
         """Calls Keystone URL and detects the available extensions."""
         try:
-            client = httpclient.HTTPClient()
             if not url.endswith("/"):
                 url += '/'
-            resp, body = client.request("%sextensions" % url, "GET",
-                                        headers={'Accept':
-                                                 'application/json'})
+            resp, body = self.request("%sextensions" % url, "GET",
+                                      headers={'Accept':
+                                               'application/json'})
             if resp.status_code in (200, 204):  # some cases we get No Content
                 try:
                     results = {}
