@@ -188,6 +188,8 @@ class FakeSwiftOldMemcacheClient(memorycache.Client):
 class FakeApp(object):
     """This represents a WSGI app protected by the auth_token middleware."""
 
+    SUCCESS = b'SUCCESS'
+
     def __init__(self, expected_env=None):
         self.expected_env = dict(EXPECTED_V2_DEFAULT_ENV_RESPONSE)
 
@@ -199,7 +201,7 @@ class FakeApp(object):
             assert env[k] == v, '%s != %s' % (env[k], v)
 
         resp = webob.Response()
-        resp.body = 'SUCCESS'
+        resp.body = FakeApp.SUCCESS
         return resp(env, start_response)
 
 
@@ -465,7 +467,7 @@ class CommonAuthTokenMiddlewareTest(object):
             self.assertTrue(req.headers.get('X-Service-Catalog'))
         else:
             self.assertNotIn('X-Service-Catalog', req.headers)
-        self.assertEqual(body, ['SUCCESS'])
+        self.assertEqual(body, [FakeApp.SUCCESS])
         self.assertIn('keystone.token_info', req.environ)
 
     def test_valid_uuid_request(self):
@@ -933,7 +935,7 @@ class CommonAuthTokenMiddlewareTest(object):
 
         if success:
             self.assertEqual(self.response_status, 200)
-            self.assertEqual(body, ['SUCCESS'])
+            self.assertEqual(body, [FakeApp.SUCCESS])
             self.assertIn('keystone.token_info', req.environ)
             self.assert_valid_last_url(token)
         else:
@@ -1271,7 +1273,7 @@ class v2AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
         req.headers['X-Auth-Token'] = token
         body = self.middleware(req.environ, self.start_fake_response)
         self.assertEqual(self.response_status, 200)
-        self.assertEqual(body, ['SUCCESS'])
+        self.assertEqual(body, [FakeApp.SUCCESS])
         self.assertIn('keystone.token_info', req.environ)
 
     def assert_valid_last_url(self, token_id):
@@ -1310,7 +1312,7 @@ class v2AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
         body = self.middleware(req.environ, self.start_fake_response)
         self.assertEqual(self.response_status, 200)
         self.assertFalse(req.headers.get('X-Service-Catalog'))
-        self.assertEqual(body, ['SUCCESS'])
+        self.assertEqual(body, [FakeApp.SUCCESS])
 
 
 class CrossVersionAuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
