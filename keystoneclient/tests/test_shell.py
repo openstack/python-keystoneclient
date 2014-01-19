@@ -62,6 +62,10 @@ class ShellTest(utils.TestCase):
     def setUp(self):
 
         super(ShellTest, self).setUp()
+        for var in os.environ:
+            if var.startswith("OS_"):
+                self.useFixture(fixtures.EnvironmentVariable(var, ""))
+
         for var in self.FAKE_ENV:
             self.useFixture(fixtures.EnvironmentVariable(var,
                             self.FAKE_ENV[var]))
