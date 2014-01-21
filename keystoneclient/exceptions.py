@@ -51,3 +51,8 @@ class VersionNotAvailable(DiscoveryFailure):
 
 class MissingAuthPlugin(ClientException):
     """An authenticated request is required but no plugin available."""
+
+
+class NoMatchingPlugin(ClientException):
+    """There were no auth plugins that could be created from the parameters
+    provided."""

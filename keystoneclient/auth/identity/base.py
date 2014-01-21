@@ -22,6 +22,9 @@ LOG = logging.getLogger(__name__)
 @six.add_metaclass(abc.ABCMeta)
 class BaseIdentityPlugin(base.BaseAuthPlugin):
 
+    # we count a token as valid if it is valid for at least this many seconds
+    MIN_TOKEN_LIFE_SECONDS = 1
+
     def __init__(self,
                  auth_url=None,
                  username=None,
@@ -32,12 +35,14 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
         super(BaseIdentityPlugin, self).__init__()
 
         self.auth_url = auth_url
+        self.auth_ref = None
+
+        # NOTE(jamielennox): DEPRECATED. The following should not really be set
+        # here but handled by the individual auth plugin.
         self.username = username
         self.password = password
         self.token = token
         self.trust_id = trust_id
-
-        self.auth_ref = None
 
     @abc.abstractmethod
     def get_auth_ref(self, session, **kwargs):
@@ -48,11 +53,40 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
         This function should not be called independently and is expected to be
         invoked via the do_authenticate function.
 
+        This function will be invoked if the AcessInfo object cached by the
+        plugin is not valid. Thus plugins should always fetch a new AccessInfo
+        when invoked. If you are looking to just retrieve the current auth
+        data then you should use get_access.
+
+        :raises HTTPError: An error from an invalid HTTP response.
+
         :returns AccessInfo: Token access information.
         """
 
     def get_token(self, session, **kwargs):
-        if not self.auth_ref or self.auth_ref.will_expire_soon(1):
+        """Return a valid auth token.
+
+        If a valid token is not present then a new one will be fetched using
+        the session and kwargs.
+
+        :raises HTTPError: An error from an invalid HTTP response.
+
+        :return string: A valid token.
+        """
+        return self.get_access(session, **kwargs).auth_token
+
+    def get_access(self, session, **kwargs):
+        """Fetch or return a current AccessInfo object.
+
+        If a valid AccessInfo is present then it is returned otherwise kwargs
+        and session are used to fetch a new one.
+
+        :raises HTTPError: An error from an invalid HTTP response.
+
+        :returns AccessInfo: Valid AccessInfo
+        """
+        if (not self.auth_ref or
+                self.auth_ref.will_expire_soon(self.MIN_TOKEN_LIFE_SECONDS)):
             self.auth_ref = self.get_auth_ref(session, **kwargs)
 
-        return self.auth_ref.auth_token
+        return self.auth_ref
