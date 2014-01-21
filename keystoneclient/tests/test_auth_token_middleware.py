@@ -108,6 +108,13 @@ class NoModuleFinder(object):
             raise ImportError
 
 
+def cleanup_revoked_file(filename):
+    try:
+        os.remove(filename)
+    except OSError:
+        pass
+
+
 class DisableModuleFixture(fixtures.Fixture):
     """A fixture to provide support for unloading/disabling modules."""
 
@@ -273,16 +280,12 @@ class BaseAuthTokenMiddlewareTest(testtools.TestCase):
         self.middleware._iso8601 = iso8601
         self.middleware.revoked_file_name = tempfile.mkstemp(
             dir=self.middleware.signing_dirname)[1]
+
+        self.addCleanup(cleanup_revoked_file,
+                        self.middleware.revoked_file_name)
+
         self.middleware.token_revocation_list = jsonutils.dumps(
             {"revoked": [], "extra": "success"})
-
-    def tearDown(self):
-        testtools.TestCase.tearDown(self)
-        if self.middleware:
-            try:
-                os.remove(self.middleware.revoked_file_name)
-            except OSError:
-                pass
 
     def start_fake_response(self, status, headers):
         self.response_status = int(status.split(' ', 1)[0])
