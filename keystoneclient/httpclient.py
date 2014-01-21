@@ -433,7 +433,7 @@ class HTTPClient(object):
                 auth_ref = keyring.get_password("keystoneclient_auth",
                                                 keyring_key)
                 if auth_ref:
-                    auth_ref = pickle.loads(auth_ref)
+                    auth_ref = pickle.loads(str(auth_ref))
                     if auth_ref.will_expire_soon(self.stale_duration):
                         # token has expired, don't use it
                         auth_ref = None
