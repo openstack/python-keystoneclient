@@ -278,8 +278,11 @@ class BaseAuthTokenMiddlewareTest(testtools.TestCase):
         self.middleware = auth_token.AuthProtocol(fake_app(self.expected_env),
                                                   self.conf)
         self.middleware._iso8601 = iso8601
-        self.middleware.revoked_file_name = tempfile.mkstemp(
-            dir=self.middleware.signing_dirname)[1]
+
+        with tempfile.NamedTemporaryFile(dir=self.middleware.signing_dirname,
+                                         delete=False) as f:
+            pass
+        self.middleware.revoked_file_name = f.name
 
         self.addCleanup(cleanup_revoked_file,
                         self.middleware.revoked_file_name)
