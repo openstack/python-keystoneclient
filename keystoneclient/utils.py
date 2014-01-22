@@ -137,13 +137,6 @@ def isunauthenticated(f):
     return getattr(f, 'unauthenticated', False)
 
 
-def string_to_bool(arg):
-    if isinstance(arg, bool):
-        return arg
-
-    return arg.strip().lower() in ('t', 'true', 'yes', '1')
-
-
 def hash_signed_token(signed_text):
     hash_ = hashlib.md5()
     hash_.update(signed_text)

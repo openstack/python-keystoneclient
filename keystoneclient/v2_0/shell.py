@@ -21,6 +21,7 @@ import sys
 
 import six
 
+from keystoneclient.openstack.common import strutils
 from keystoneclient import utils
 from keystoneclient.v2_0 import client
 
@@ -86,7 +87,7 @@ def do_user_create(kc, args):
         tenant_id = None
     user = kc.users.create(args.name, args.passwd, args.email,
                            tenant_id=tenant_id,
-                           enabled=utils.string_to_bool(args.enabled))
+                           enabled=strutils.bool_from_string(args.enabled))
     utils.print_dict(user._info)
 
 
@@ -105,7 +106,7 @@ def do_user_update(kc, args):
     if args.email is not None:
         kwargs['email'] = args.email
     if args.enabled:
-        kwargs['enabled'] = utils.string_to_bool(args.enabled)
+        kwargs['enabled'] = strutils.bool_from_string(args.enabled)
 
     if not len(kwargs):
         print("User not updated, no arguments present.")
@@ -197,7 +198,7 @@ def do_tenant_create(kc, args):
     """Create new tenant."""
     tenant = kc.tenants.create(args.name,
                                description=args.description,
-                               enabled=utils.string_to_bool(args.enabled))
+                               enabled=strutils.bool_from_string(args.enabled))
     utils.print_dict(tenant._info)
 
 
@@ -217,7 +218,7 @@ def do_tenant_update(kc, args):
     if args.description is not None:
         kwargs.update({'description': args.description})
     if args.enabled:
-        kwargs.update({'enabled': utils.string_to_bool(args.enabled)})
+        kwargs.update({'enabled': strutils.bool_from_string(args.enabled)})
 
     if kwargs == {}:
         print("Tenant not updated, no arguments present.")
