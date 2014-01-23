@@ -39,7 +39,7 @@ class ExceptionsArgsTest(utils.TestCase):
                          json_data=json_data),
             method,
             url)
-        self.assertTrue(isinstance(ex, ex_cls))
+        self.assertIsInstance(ex, ex_cls)
         self.assertEqual(ex.message, json_data["error"]["message"])
         self.assertEqual(ex.details, json_data["error"]["details"])
         self.assertEqual(ex.method, method)

@@ -63,7 +63,7 @@ class ServiceTests(utils.TestCase):
             req_body['OS-KSADM:service']['name'],
             req_body['OS-KSADM:service']['type'],
             req_body['OS-KSADM:service']['description'])
-        self.assertTrue(isinstance(service, services.Service))
+        self.assertIsInstance(service, services.Service)
         self.assertEqual(service.id, 3)
         self.assertEqual(service.name, req_body['OS-KSADM:service']['name'])
         self.assertRequestBodyIs(json=req_body)
@@ -83,7 +83,7 @@ class ServiceTests(utils.TestCase):
                       json={'OS-KSADM:service': test_services})
 
         service = self.client.services.get(1)
-        self.assertTrue(isinstance(service, services.Service))
+        self.assertIsInstance(service, services.Service)
         self.assertEqual(service.id, 1)
         self.assertEqual(service.name, 'nova')
         self.assertEqual(service.type, 'compute')
@@ -94,5 +94,5 @@ class ServiceTests(utils.TestCase):
                       json=self.TEST_SERVICES)
 
         service_list = self.client.services.list()
-        [self.assertTrue(isinstance(r, services.Service))
+        [self.assertIsInstance(r, services.Service)
          for r in service_list]
