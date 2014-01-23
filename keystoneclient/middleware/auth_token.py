@@ -1063,7 +1063,7 @@ class AuthProtocol(object):
             cache_key = CACHE_KEY_TEMPLATE % memcache_crypt.get_cache_key(keys)
             data_to_store = memcache_crypt.protect_data(keys, serialized_data)
 
-        # Historically the swift cache conection used the argument
+        # Historically the swift cache connection used the argument
         # timeout= for the cache timeout, but this has been unified
         # with the official python memcache client with time= since
         # grizzly, we still need to handle folsom for a while until

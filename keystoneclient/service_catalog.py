@@ -201,7 +201,7 @@ class ServiceCatalog(object):
     def get_data(self):
         """Get the raw catalog structure.
 
-        Get the version dependant catalog structure as it is presented within
+        Get the version dependent catalog structure as it is presented within
         the resource.
 
         :returns: list containing raw catalog data entries or None
