@@ -35,6 +35,8 @@ import hashlib
 import hmac
 import math
 import os
+import six
+import sys
 
 # make sure pycrypto is available
 try:
@@ -82,19 +84,26 @@ def assert_crypto_availability(f):
     return wrapper
 
 
-def constant_time_compare(first, second):
-    """Returns True if both string inputs are equal, otherwise False.
+if sys.version_info >= (3, 3):
+    constant_time_compare = hmac.compare_digest
+else:
+    def constant_time_compare(first, second):
+        """Returns True if both string inputs are equal, otherwise False.
 
-    This function should take a constant amount of time regardless of
-    how many characters in the strings match.
+        This function should take a constant amount of time regardless of
+        how many characters in the strings match.
 
-    """
-    if len(first) != len(second):
-        return False
-    result = 0
-    for x, y in zip(first, second):
-        result |= ord(x) ^ ord(y)
-    return result == 0
+        """
+        if len(first) != len(second):
+            return False
+        result = 0
+        if six.PY3 and isinstance(first, bytes) and isinstance(second, bytes):
+            for x, y in zip(first, second):
+                result |= x ^ y
+        else:
+            for x, y in zip(first, second):
+                result |= ord(x) ^ ord(y)
+        return result == 0
 
 
 def derive_keys(token, secret, strategy):
@@ -132,7 +141,7 @@ def encrypt_data(key, data):
     iv = os.urandom(16)
     cipher = AES.new(key, AES.MODE_CBC, iv)
     padding = 16 - len(data) % 16
-    return iv + cipher.encrypt(data + chr(padding) * padding)
+    return iv + cipher.encrypt(data + six.int2byte(padding) * padding)
 
 
 @assert_crypto_availability
@@ -147,8 +156,7 @@ def decrypt_data(key, data):
 
     # Strip the last n padding bytes where n is the last value in
     # the plaintext
-    padding = ord(result[-1])
-    return result[:-1 * padding]
+    return result[:-1 * six.byte2int([result[-1]])]
 
 
 def protect_data(keys, data):
@@ -156,7 +164,7 @@ def protect_data(keys, data):
     protected string suitable for storage in the cache.
 
     """
-    if keys['strategy'] == 'ENCRYPT':
+    if keys['strategy'] == b'ENCRYPT':
         data = encrypt_data(keys['ENCRYPTION'], data)
 
     encoded_data = base64.b64encode(data)
@@ -188,7 +196,7 @@ def unprotect_data(keys, signed_data):
     data = base64.b64decode(signed_data[DIGEST_LENGTH_B64:])
 
     # then if necessary decrypt the data
-    if keys['strategy'] == 'ENCRYPT':
+    if keys['strategy'] == b'ENCRYPT':
         data = decrypt_data(keys['ENCRYPTION'], data)
 
     return data
