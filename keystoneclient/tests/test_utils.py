@@ -14,7 +14,6 @@
 
 import sys
 
-import mock
 import six
 
 from keystoneclient import exceptions
@@ -123,22 +122,7 @@ class PrintTestCase(test_utils.TestCase):
         utils.print_list(objs, ['name'])
         self.assertIn(name, self.stdout.getvalue().decode('utf8'))
 
-    @mock.patch('keystoneclient.openstack.common.strutils.safe_encode')
-    def test_print_list_unicode_without_encode(self, safe_encode_mock):
-        safe_encode_mock.side_effect = lambda x, *args, **kwargs: x
-
-        name = u'\u540d\u5b57'
-        objs = [FakeObject(name)]
-        self.assertRaises(UnicodeEncodeError, utils.print_list, objs, ['name'])
-
     def test_print_dict_unicode(self):
         name = u'\u540d\u5b57'
         utils.print_dict({'name': name})
         self.assertIn(name, self.stdout.getvalue().decode('utf8'))
-
-    @mock.patch('keystoneclient.openstack.common.strutils.safe_encode')
-    def test_print_dict_unicode_without_encode(self, safe_encode_mock):
-        safe_encode_mock.side_effect = lambda x, *args, **kwargs: x
-
-        name = u'\u540d\u5b57'
-        self.assertRaises(UnicodeEncodeError, utils.print_dict, {'name': name})
