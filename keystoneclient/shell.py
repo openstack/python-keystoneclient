@@ -241,8 +241,8 @@ class OpenStackIdentityShell(object):
                                  "determine whether a token has expired "
                                  "when retrieving it from keyring. This "
                                  "is useful in mitigating process or "
-                                 "network delays. Default is %s seconds." % (
-                            access.STALE_TOKEN_DURATION))
+                                 "network delays. Default is %s seconds." %
+                                 access.STALE_TOKEN_DURATION)
 
         return parser
 

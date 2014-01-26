@@ -99,7 +99,7 @@ class FakeHTTPClient(fakes.FakeClient):
                          {"tenantId": "1",
                           "id": "3",
                           "name": "Member"}],
-                 "name": "joeuser"}}
+                     "name": "joeuser"}}
              }
         ]
         return (200, body)
@@ -116,11 +116,10 @@ class FakeHTTPClient(fakes.FakeClient):
                  {"name": "joeuser",
                   "tenantName": "customer-x",
                   "id": "1",
-                  "roles": [
-                  {"serviceId": "1",
-                          "id": "3",
-                          "name": "Member"}],
-                 "tenantId": "1"}}
+                  "roles": [{"serviceId": "1",
+                             "id": "3",
+                             "name": "Member"}],
+                  "tenantId": "1"}}
              }
         ]
         return (200, body)
@@ -183,28 +182,30 @@ class FakeHTTPClient(fakes.FakeClient):
     def get(self, **kw):
         body = {
             "version": {
-            "id": "v2.0",
-            "status": "beta",
-            "updated": "2011-11-19T00:00:00Z",
-            "links": [
-                {"rel": "self",
-                 "href": "http://127.0.0.1:35357/v2.0/"},
-                {"rel": "describedby",
-                 "type": "text/html",
-                 "href": "http://docs.openstack.org/"
-                         "api/openstack-identity-service/2.0/content/"},
-                {"rel": "describedby",
-                 "type": "application/pdf",
-                 "href": "http://docs.openstack.org/api/"
-                 "openstack-identity-service/2.0/identity-dev-guide-2.0.pdf"},
-                {"rel": "describedby",
-                 "type": "application/vnd.sun.wadl+xml",
-                 "href": "http://127.0.0.1:35357/v2.0/identity-admin.wadl"}],
-            "media-types": [
-                {"base": "application/xml",
-                 "type": "application/vnd.openstack.identity-v2.0+xml"},
-                {"base": "application/json",
-                 "type": "application/vnd.openstack.identity-v2.0+json"}]
+                "id": "v2.0",
+                "status": "beta",
+                "updated": "2011-11-19T00:00:00Z",
+                "links": [
+                    {"rel": "self",
+                     "href": "http://127.0.0.1:35357/v2.0/"},
+                    {"rel": "describedby",
+                     "type": "text/html",
+                     "href": "http://docs.openstack.org/"
+                            "api/openstack-identity-service/2.0/content/"},
+                    {"rel": "describedby",
+                     "type": "application/pdf",
+                     "href": "http://docs.openstack.org/api/"
+                     "openstack-identity-service/2.0/"
+                     "identity-dev-guide-2.0.pdf"},
+                    {"rel": "describedby",
+                     "type": "application/vnd.sun.wadl+xml",
+                     "href":
+                     "http://127.0.0.1:35357/v2.0/identity-admin.wadl"}],
+                "media-types": [
+                    {"base": "application/xml",
+                     "type": "application/vnd.openstack.identity-v2.0+xml"},
+                    {"base": "application/json",
+                     "type": "application/vnd.openstack.identity-v2.0+json"}]
             }
         }
         return (200, body)
@@ -418,14 +419,14 @@ class FakeHTTPClient(fakes.FakeClient):
     def get_OS_KSADM_services(self, **kw):
         body = {
             "OS-KSADM:services": [
-            {"description": None,
-             "type": "compute",
-             "id": "1",
-             "name": "service1"},
-            {"description": None,
-             "type": "identity",
-             "id": "2",
-             "name": "service2"}]
+                {"description": None,
+                 "type": "compute",
+                 "id": "1",
+                 "name": "service1"},
+                {"description": None,
+                 "type": "identity",
+                 "id": "2",
+                 "name": "service2"}]
         }
         return (200, body)
 
