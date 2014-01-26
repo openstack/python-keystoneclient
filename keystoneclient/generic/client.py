@@ -158,7 +158,7 @@ class Client(httpclient.HTTPClient):
                             for extension in body['extensions']['values']:
                                 alias, name = \
                                     self._get_extension_info(
-                                        extension['extension']
+                                        extension
                                     )
                                 results[alias] = name
                             return results
