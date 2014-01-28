@@ -47,28 +47,35 @@ class CredentialManager(base.CrudManager):
             raise ValueError(
                 "Credential requires blob to be specified")
 
-    def create(self, user, type, blob=None, data=None, project=None):
+    def create(self, user, type, blob=None, data=None, project=None, **kwargs):
         return super(CredentialManager, self).create(
             user_id=base.getid(user),
             type=type,
             blob=self._get_data_blob(blob, data),
-            project_id=base.getid(project))
+            project_id=base.getid(project),
+            **kwargs)
 
     def get(self, credential):
         return super(CredentialManager, self).get(
             credential_id=base.getid(credential))
 
-    def list(self):
-        return super(CredentialManager, self).list()
+    def list(self, **kwargs):
+        """List credentials.
+
+        If ``**kwargs`` are provided, then filter credentials with
+        attributes matching ``**kwargs``.
+        """
+        return super(CredentialManager, self).list(**kwargs)
 
     def update(self, credential, user, type=None, blob=None, data=None,
-               project=None):
+               project=None, **kwargs):
         return super(CredentialManager, self).update(
             credential_id=base.getid(credential),
             user_id=base.getid(user),
             type=type,
             blob=self._get_data_blob(blob, data),
-            project_id=base.getid(project))
+            project_id=base.getid(project),
+            **kwargs)
 
     def delete(self, credential):
         return super(CredentialManager, self).delete(

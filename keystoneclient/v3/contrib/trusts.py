@@ -38,7 +38,8 @@ class TrustManager(base.CrudManager):
     base_url = '/OS-TRUST'
 
     def create(self, trustee_user, trustor_user, role_names=None,
-               project=None, impersonation=False, expires_at=None):
+               project=None, impersonation=False, expires_at=None,
+               **kwargs):
         """Create a Trust.
         :param string trustee_user: user who is capable of consuming the trust
         :param string trustor_user: user who's authorization is being delegated
@@ -65,17 +66,19 @@ class TrustManager(base.CrudManager):
             project_id=base.getid(project),
             roles=roles,
             trustee_user_id=base.getid(trustee_user),
-            trustor_user_id=base.getid(trustor_user))
+            trustor_user_id=base.getid(trustor_user),
+            **kwargs)
 
     def update(self):
         raise exceptions.HTTPNotImplemented("Update not supported for trusts")
 
-    def list(self, trustee_user=None, trustor_user=None):
+    def list(self, trustee_user=None, trustor_user=None, **kwargs):
         """List Trusts."""
         trustee_user_id = base.getid(trustee_user)
         trustor_user_id = base.getid(trustor_user)
         return super(TrustManager, self).list(trustee_user_id=trustee_user_id,
-                                              trustor_user_id=trustor_user_id)
+                                              trustor_user_id=trustor_user_id,
+                                              **kwargs)
 
     def get(self, trust):
         """Get a specific trust."""
