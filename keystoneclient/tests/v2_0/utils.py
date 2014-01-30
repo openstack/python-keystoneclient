@@ -17,6 +17,7 @@ import httpretty
 from keystoneclient.tests import utils
 from keystoneclient.v2_0 import client
 
+
 TestResponse = utils.TestResponse
 
 

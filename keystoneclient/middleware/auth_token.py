@@ -164,6 +164,7 @@ from keystoneclient.openstack.common import memorycache
 from keystoneclient.openstack.common import timeutils
 from keystoneclient import utils
 
+
 CONF = None
 # to pass gate before oslo-config is deployed everywhere,
 # try application copies first

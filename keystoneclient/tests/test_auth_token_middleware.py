@@ -16,20 +16,20 @@
 
 import calendar
 import datetime
-import iso8601
 import os
 import shutil
 import stat
 import sys
 import tempfile
-import testtools
 import time
 import uuid
 
 import fixtures
 import httpretty
+import iso8601
 import mock
 import testresources
+import testtools
 import webob
 
 from keystoneclient.common import cms

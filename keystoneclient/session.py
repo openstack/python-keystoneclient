@@ -20,6 +20,7 @@ import six
 from keystoneclient import exceptions
 from keystoneclient.openstack.common import jsonutils
 
+
 USER_AGENT = 'python-keystoneclient'
 
 _logger = logging.getLogger(__name__)
