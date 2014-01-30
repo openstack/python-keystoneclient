@@ -44,6 +44,8 @@ class AccessInfoTest(utils.TestCase, testresources.ResourcedTestCase):
         self.assertEqual(auth_ref.username, 'exampleuser')
         self.assertEqual(auth_ref.user_id, 'c4da488862bd435c9e6c0275a0d0e49a')
 
+        self.assertEqual(auth_ref.role_names, [])
+
         self.assertEqual(auth_ref.tenant_name, None)
         self.assertEqual(auth_ref.tenant_id, None)
 
@@ -84,6 +86,8 @@ class AccessInfoTest(utils.TestCase, testresources.ResourcedTestCase):
         self.assertEqual(auth_ref.username, 'exampleuser')
         self.assertEqual(auth_ref.user_id, 'c4da488862bd435c9e6c0275a0d0e49a')
 
+        self.assertEqual(auth_ref.role_names, ['Member'])
+
         self.assertEqual(auth_ref.tenant_name, 'exampleproject')
         self.assertEqual(auth_ref.tenant_id,
                          '225da22d3ce34b15877ea70b2a575f58')
@@ -116,6 +120,7 @@ class AccessInfoTest(utils.TestCase, testresources.ResourcedTestCase):
         self.assertEqual(auth_ref.project_domain_name, 'Default')
         self.assertEqual(auth_ref.user_domain_id, 'default')
         self.assertEqual(auth_ref.user_domain_name, 'Default')
+        self.assertEqual(auth_ref.role_names, ['role1', 'role2'])
         self.assertFalse(auth_ref.scoped)
 
     def test_grizzly_token(self):
@@ -129,6 +134,7 @@ class AccessInfoTest(utils.TestCase, testresources.ResourcedTestCase):
         self.assertEqual(auth_ref.project_domain_name, 'Default')
         self.assertEqual(auth_ref.user_domain_id, 'default')
         self.assertEqual(auth_ref.user_domain_name, 'Default')
+        self.assertEqual(auth_ref.role_names, ['role1', 'role2'])
 
 
 def load_tests(loader, tests, pattern):
