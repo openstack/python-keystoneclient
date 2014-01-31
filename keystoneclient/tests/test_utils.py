@@ -120,9 +120,19 @@ class PrintTestCase(test_utils.TestCase):
         # NOTE(Jeffrey4l) If the text's encode is proper, this method will not
         # raise UnicodeEncodeError exceptions
         utils.print_list(objs, ['name'])
-        self.assertIn(name, self.stdout.getvalue().decode('utf8'))
+        output = self.stdout.getvalue()
+        # In Python 2, output will be bytes, while in Python 3, it will not.
+        # Let's decode the value if needed.
+        if isinstance(output, six.binary_type):
+            output = output.decode('utf-8')
+        self.assertIn(name, output)
 
     def test_print_dict_unicode(self):
         name = u'\u540d\u5b57'
         utils.print_dict({'name': name})
-        self.assertIn(name, self.stdout.getvalue().decode('utf8'))
+        output = self.stdout.getvalue()
+        # In Python 2, output will be bytes, while in Python 3, it will not.
+        # Let's decode the value if needed.
+        if isinstance(output, six.binary_type):
+            output = output.decode('utf-8')
+        self.assertIn(name, output)
