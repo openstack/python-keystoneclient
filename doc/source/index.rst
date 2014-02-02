@@ -1,9 +1,10 @@
 Python bindings to the OpenStack Identity API (Keystone)
 ========================================================
 
-This is a client for OpenStack Identity API. There's :doc:`a Python API
-<using-api>` (the :mod:`keystoneclient` module), and a :doc:`command-line script
-<shell>` (installed as :program:`keystone`).
+This is a client for OpenStack Identity API. There's a Python API for
+:doc:`Identity API v3 <using-api-v3>` and :doc:`v2 <using-api-v2>` (the
+:mod:`keystoneclient` modules), and a :doc:`command-line script <shell>`
+(installed as :program:`keystone`).
 
 Contents:
 
@@ -13,6 +14,7 @@ Contents:
    releases
    man/keystone
    using-api-v2
+   using-api-v3
 
    api/autoindex
 
