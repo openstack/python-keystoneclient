@@ -16,6 +16,8 @@ Contents:
    using-api-v2
    using-api-v3
 
+   middlewarearchitecture
+
    api/modules
 
 Contributing
