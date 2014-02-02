@@ -28,7 +28,8 @@ This WSGI component:
 * Collects and forwards identity information based on a valid token
   such as user name, tenant, etc
 
-Refer to: http://keystone.openstack.org/middlewarearchitecture.html
+Refer to: http://docs.openstack.org/developer/python-keystoneclient/
+middlewarearchitecture.html
 
 HEADERS
 -------
