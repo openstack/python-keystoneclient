@@ -178,13 +178,6 @@ class TimezoneFixture(fixtures.Fixture):
         time.tzset()
 
 
-class FakeSwiftOldMemcacheClient(memorycache.Client):
-    # NOTE(vish,chmou): old swift memcache uses param timeout instead of time
-    def set(self, key, value, timeout=0, min_compress_len=0):
-        sup = super(FakeSwiftOldMemcacheClient, self)
-        sup.set(key, value, timeout, min_compress_len)
-
-
 class FakeApp(object):
     """This represents a WSGI app protected by the auth_token middleware."""
 
@@ -735,11 +728,6 @@ class CommonAuthTokenMiddlewareTest(object):
         with mock.patch(timeutils_utcnow) as mock_utcnow:
             mock_utcnow.return_value = expired
             self.assertIsNone(self._get_cached_token(token))
-
-    def test_old_swift_memcache_set_expired(self):
-        extra_conf = {'cache': 'swift.cache'}
-        extra_environ = {'swift.cache': FakeSwiftOldMemcacheClient()}
-        self.test_memcache_set_expired(extra_conf, extra_environ)
 
     def test_swift_memcache_set_expired(self):
         extra_conf = {'cache': 'swift.cache'}
