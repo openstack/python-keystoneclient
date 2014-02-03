@@ -165,11 +165,12 @@ class Session(object):
             for header in six.iteritems(headers):
                 string_parts.append('-H "%s: %s"' % header)
 
-        _logger.debug('REQ: %s', ' '.join(string_parts))
+        try:
+            string_parts.append("-d '%s'" % kwargs['data'])
+        except KeyError:
+            pass
 
-        data = kwargs.get('data')
-        if data:
-            _logger.debug('REQ BODY: %s', data)
+        _logger.debug('REQ: %s', ' '.join(string_parts))
 
         # Force disable requests redirect handling. We will manage this below.
         kwargs['allow_redirects'] = False

@@ -146,13 +146,15 @@ class SessionTests(utils.TestCase):
         session = client_session.Session(verify=False)
         headers = {'HEADERA': 'HEADERVALB'}
         body = 'BODYRESPONSE'
+        data = 'BODYDATA'
         self.stub_url(httpretty.POST, body=body)
-        session.post(self.TEST_URL, headers=headers)
+        session.post(self.TEST_URL, headers=headers, data=data)
 
         self.assertIn('curl', self.logger.output)
         self.assertIn('POST', self.logger.output)
         self.assertIn('--insecure', self.logger.output)
         self.assertIn(body, self.logger.output)
+        self.assertIn("'%s'" % data, self.logger.output)
 
         for k, v in six.iteritems(headers):
             self.assertIn(k, self.logger.output)
