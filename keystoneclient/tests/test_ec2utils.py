@@ -29,9 +29,6 @@ class Ec2SignerTest(testtools.TestCase):
         self.secret = '89cdf9e94e2643cab35b8b8ac5a51f83'
         self.signer = utils.Ec2Signer(self.secret)
 
-    def tearDown(self):
-        super(Ec2SignerTest, self).tearDown()
-
     def test_v4_creds_header(self):
         auth_str = 'AWS4-HMAC-SHA256 blah'
         credentials = {'host': '127.0.0.1',

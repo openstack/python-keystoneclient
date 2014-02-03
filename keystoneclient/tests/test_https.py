@@ -50,10 +50,7 @@ class ClientTest(utils.TestCase):
         self.request_patcher = mock.patch.object(requests, 'request',
                                                  self.mox.CreateMockAnything())
         self.request_patcher.start()
-
-    def tearDown(self):
-        self.request_patcher.stop()
-        super(ClientTest, self).tearDown()
+        self.addCleanup(self.request_patcher.stop)
 
     @mock.patch.object(session.requests.Session, 'request')
     def test_get(self, MOCK_REQUEST):
