@@ -14,21 +14,18 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import httpretty
+import mock
 import testtools
 import webob
 
 from keystoneclient.middleware import s3_token
 from keystoneclient.openstack.common import jsonutils
+from keystoneclient.tests import utils
 
 
-class FakeHTTPResponse(object):
-    def __init__(self, status, body):
-        self.status = status
-        self.body = body
-        self.reason = ""
-
-    def read(self):
-        return self.body
+GOOD_RESPONSE = {'access': {'token': {'id': 'TOKEN_ID',
+                                      'tenant': {'id': 'TENANT_ID'}}}}
 
 
 class FakeApp(object):
@@ -39,47 +36,41 @@ class FakeApp(object):
         return resp(env, start_response)
 
 
-class FakeHTTPConnection(object):
-    def __init__(self, *args):
-        return
+class S3TokenMiddlewareTestBase(utils.TestCase):
 
-    def getresponse(self):
-        return self.resp
+    TEST_PROTOCOL = 'https'
+    TEST_HOST = 'fakehost'
+    TEST_PORT = 35357
+    TEST_URL = '%s://%s:%d/v2.0/s3tokens' % (TEST_PROTOCOL,
+                                             TEST_HOST,
+                                             TEST_PORT)
 
-    def close(self):
-        pass
-
-    def request(self, method, path, **kwargs):
-        pass
-
-
-class S3TokenMiddlewareTestBase(testtools.TestCase):
     def setUp(self):
         super(S3TokenMiddlewareTestBase, self).setUp()
+
+        self.conf = {
+            'auth_host': self.TEST_HOST,
+            'auth_port': self.TEST_PORT,
+            'auth_protocol': self.TEST_PROTOCOL,
+        }
+
+        httpretty.reset()
+        httpretty.enable()
+        self.addCleanup(httpretty.disable)
 
     def start_fake_response(self, status, headers):
         self.response_status = int(status.split(' ', 1)[0])
         self.response_headers = dict(headers)
 
 
-def good_request(cls, method, path, **kwargs):
-    cls.status = 201
-    ret = {'access': {'token':
-                      {'id': 'TOKEN_ID',
-                       'tenant': {'id': 'TENANT_ID'}}}}
-    body = jsonutils.dumps(ret)
-    cls.resp = FakeHTTPResponse(cls.status, body)
-
-
 class S3TokenMiddlewareTestGood(S3TokenMiddlewareTestBase):
-    def setup_middleware_fake(self):
-        self.middleware.http_client_class = FakeHTTPConnection
-        self.middleware.http_client_class.request = good_request
 
     def setUp(self):
-        self.middleware = s3_token.S3Token(FakeApp(), {})
-        self.setup_middleware_fake()
         super(S3TokenMiddlewareTestGood, self).setUp()
+        self.middleware = s3_token.S3Token(FakeApp(), self.conf)
+
+        httpretty.register_uri(httpretty.POST, self.TEST_URL,
+                               status=201, body=jsonutils.dumps(GOOD_RESPONSE))
 
     # Ignore the request and pass to the next middleware in the
     # pipeline if no path has been specified.
@@ -111,8 +102,9 @@ class S3TokenMiddlewareTestGood(S3TokenMiddlewareTestBase):
 
     def test_authorized_http(self):
         self.middleware = (
-            s3_token.filter_factory({'auth_protocol': 'http'})(FakeApp()))
-        self.setup_middleware_fake()
+            s3_token.filter_factory({'auth_protocol': 'http',
+                                     'auth_host': self.TEST_HOST,
+                                     'auth_port': self.TEST_PORT})(FakeApp()))
         req = webob.Request.blank('/v1/AUTH_cfa/c/o')
         req.headers['Authorization'] = 'access:signature'
         req.headers['X-Storage-Token'] = 'token'
@@ -131,24 +123,19 @@ class S3TokenMiddlewareTestGood(S3TokenMiddlewareTestBase):
 
 class S3TokenMiddlewareTestBad(S3TokenMiddlewareTestBase):
     def setUp(self):
-        self.middleware = s3_token.S3Token(FakeApp(), {})
-        self.middleware.http_client_class = FakeHTTPConnection
         super(S3TokenMiddlewareTestBad, self).setUp()
+        self.middleware = s3_token.S3Token(FakeApp(), self.conf)
 
     def test_unauthorized_token(self):
-        def request(self, method, path, **kwargs):
-            ret = {"error":
-                   {"message": "EC2 access key not found.",
-                    "code": 401,
-                    "title": "Unauthorized"}}
-            body = jsonutils.dumps(ret)
-            self.status = 403
-            self.resp = FakeHTTPResponse(self.status, body)
-
+        ret = {"error":
+               {"message": "EC2 access key not found.",
+                "code": 401,
+                "title": "Unauthorized"}}
+        httpretty.register_uri(httpretty.POST, self.TEST_URL,
+                               status=403, body=jsonutils.dumps(ret))
         req = webob.Request.blank('/v1/AUTH_cfa/c/o')
         req.headers['Authorization'] = 'access:signature'
         req.headers['X-Storage-Token'] = 'token'
-        self.middleware.http_client_class.request = request
         resp = req.get_response(self.middleware)
         s3_denied_req = self.middleware.deny_request('AccessDenied')
         self.assertEqual(resp.body, s3_denied_req.body)
@@ -165,29 +152,24 @@ class S3TokenMiddlewareTestBad(S3TokenMiddlewareTestBase):
         self.assertEqual(resp.status_int, s3_invalid_req.status_int)
 
     def test_fail_to_connect_to_keystone(self):
-        def request(self, method, path, **kwargs):
-            raise s3_token.ServiceError
-        self.middleware.http_client_class.request = request
+        with mock.patch.object(self.middleware, '_json_request') as o:
+            s3_invalid_req = self.middleware.deny_request('InvalidURI')
+            o.side_effect = s3_token.ServiceError(s3_invalid_req)
 
-        req = webob.Request.blank('/v1/AUTH_cfa/c/o')
-        req.headers['Authorization'] = 'access:signature'
-        req.headers['X-Storage-Token'] = 'token'
-        self.middleware.http_client_class.status = 503
-        resp = req.get_response(self.middleware)
-        s3_invalid_req = self.middleware.deny_request('InvalidURI')
-        self.assertEqual(resp.body, s3_invalid_req.body)
-        self.assertEqual(resp.status_int, s3_invalid_req.status_int)
+            req = webob.Request.blank('/v1/AUTH_cfa/c/o')
+            req.headers['Authorization'] = 'access:signature'
+            req.headers['X-Storage-Token'] = 'token'
+            resp = req.get_response(self.middleware)
+            self.assertEqual(resp.body, s3_invalid_req.body)
+            self.assertEqual(resp.status_int, s3_invalid_req.status_int)
 
     def test_bad_reply(self):
-        def request(self, method, path, **kwargs):
-            body = "<badreply>"
-            self.status = 201
-            self.resp = FakeHTTPResponse(self.status, body)
+        httpretty.register_uri(httpretty.POST, self.TEST_URL,
+                               status=201, body="<badreply>")
 
         req = webob.Request.blank('/v1/AUTH_cfa/c/o')
         req.headers['Authorization'] = 'access:signature'
         req.headers['X-Storage-Token'] = 'token'
-        self.middleware.http_client_class.request = request
         resp = req.get_response(self.middleware)
         s3_invalid_req = self.middleware.deny_request('InvalidURI')
         self.assertEqual(resp.body, s3_invalid_req.body)
