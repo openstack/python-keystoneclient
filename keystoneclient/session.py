@@ -51,7 +51,8 @@ class Session(object):
         :param verify: The verification arguments to pass to requests. These
                        are of the same form as requests expects, so True or
                        False to verify (or not) against system certificates or
-                       a path to a bundle or CA certs to check against.
+                       a path to a bundle or CA certs to check against or None
+                       for requests to attempt to locate and use certificates.
                        (optional, defaults to True)
         :param cert: A client certificate to pass to requests. These are of the
                      same form as requests expects. Either a single filename
@@ -149,6 +150,11 @@ class Session(object):
         kwargs.setdefault('verify', self.verify)
 
         string_parts = ['curl -i']
+
+        # NOTE(jamielennox): None means let requests do its default validation
+        # so we need to actually check that this is False.
+        if self.verify is False:
+            string_parts.append('--insecure')
 
         if method:
             string_parts.extend(['-X', method])

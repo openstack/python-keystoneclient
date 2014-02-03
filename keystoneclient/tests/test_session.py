@@ -16,6 +16,7 @@
 import httpretty
 import mock
 import requests
+import six
 
 from keystoneclient import exceptions
 from keystoneclient import session as client_session
@@ -139,6 +140,23 @@ class SessionTests(utils.TestCase):
         self.stub_url(httpretty.GET, status=500)
         self.assertRaises(exceptions.InternalServerError,
                           session.get, self.TEST_URL)
+
+    @httpretty.activate
+    def test_session_debug_output(self):
+        session = client_session.Session(verify=False)
+        headers = {'HEADERA': 'HEADERVALB'}
+        body = 'BODYRESPONSE'
+        self.stub_url(httpretty.POST, body=body)
+        session.post(self.TEST_URL, headers=headers)
+
+        self.assertIn('curl', self.logger.output)
+        self.assertIn('POST', self.logger.output)
+        self.assertIn('--insecure', self.logger.output)
+        self.assertIn(body, self.logger.output)
+
+        for k, v in six.iteritems(headers):
+            self.assertIn(k, self.logger.output)
+            self.assertIn(v, self.logger.output)
 
 
 class RedirectTests(utils.TestCase):

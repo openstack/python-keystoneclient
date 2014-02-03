@@ -12,9 +12,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import logging
 import sys
 import time
 
+import fixtures
 import httpretty
 import mock
 from mox3 import mox
@@ -40,6 +42,7 @@ class TestCase(testtools.TestCase):
     def setUp(self):
         super(TestCase, self).setUp()
         self.mox = mox.Mox()
+        self.logger = self.useFixture(fixtures.FakeLogger(level=logging.DEBUG))
         self.time_patcher = mock.patch.object(time, 'time', lambda: 1234)
         self.time_patcher.start()
 
