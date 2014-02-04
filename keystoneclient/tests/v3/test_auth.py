@@ -13,6 +13,7 @@
 #    under the License.
 
 import httpretty
+import six
 
 from keystoneclient import exceptions
 from keystoneclient.openstack.common import jsonutils
@@ -237,7 +238,10 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
 
         cl = client.Client(auth_url=self.TEST_URL,
                            token=fake_token)
-        body = jsonutils.loads(httpretty.last_request().body)
+        body = httpretty.last_request().body
+        if six.PY3:
+            body = body.decode('utf-8')
+        body = jsonutils.loads(body)
         self.assertEqual(body['auth']['identity']['token']['id'], fake_token)
 
         resp, body = cl.get(fake_url)

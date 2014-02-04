@@ -65,11 +65,15 @@ class TestCase(testtools.TestCase):
         httpretty.register_uri(method, url, **kwargs)
 
     def assertRequestBodyIs(self, body=None, json=None):
+        last_request_body = httpretty.last_request().body
+        if six.PY3:
+            last_request_body = last_request_body.decode('utf-8')
+
         if json:
-            val = jsonutils.loads(httpretty.last_request().body)
+            val = jsonutils.loads(last_request_body)
             self.assertEqual(json, val)
         elif body:
-            self.assertEqual(body, httpretty.last_request().body)
+            self.assertEqual(body, last_request_body)
 
     def assertQueryStringIs(self, qs=''):
         """Verify the QueryString matches what is expected.
