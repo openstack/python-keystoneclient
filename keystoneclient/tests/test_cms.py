@@ -36,7 +36,7 @@ class CMSTest(utils.TestCase, testresources.ResourcedTestCase):
                           'no_exist_cert_file',
                           'no_exist_ca_file')
 
-    def test_token_to_cms_to_token(self):
+    def test_token_tocms_to_token(self):
         with open(os.path.join(client_fixtures.CMSDIR,
                                'auth_token_scoped.pem')) as f:
             AUTH_TOKEN_SCOPED_CMS = f.read()
@@ -55,14 +55,20 @@ class CMSTest(utils.TestCase, testresources.ResourcedTestCase):
     def test_cms_sign_token_no_files(self):
         self.assertRaises(subprocess.CalledProcessError,
                           cms.cms_sign_token,
-                          self.examples.SIGNED_TOKEN_SCOPED,
+                          self.examples.TOKEN_SCOPED_DATA,
+                          '/no/such/file', '/no/such/key')
+
+    def test_cms_sign_token_no_files_pkiz(self):
+        self.assertRaises(subprocess.CalledProcessError,
+                          cms.pkiz_sign,
+                          self.examples.TOKEN_SCOPED_DATA,
                           '/no/such/file', '/no/such/key')
 
     def test_cms_sign_token_success(self):
         self.assertTrue(
-            cms.cms_sign_token(self.examples.SIGNED_TOKEN_SCOPED,
-                               self.examples.SIGNING_CERT_FILE,
-                               self.examples.SIGNING_KEY_FILE))
+            cms.pkiz_sign(self.examples.TOKEN_SCOPED_DATA,
+                          self.examples.SIGNING_CERT_FILE,
+                          self.examples.SIGNING_KEY_FILE))
 
     def test_cms_verify_token_no_files(self):
         self.assertRaises(exceptions.CertificateConfigError,

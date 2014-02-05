@@ -14,6 +14,7 @@
 
 import calendar
 import datetime
+import json
 import os
 import shutil
 import stat
@@ -532,6 +533,12 @@ class CommonAuthTokenMiddlewareTest(object):
             #ensure that signed requests do not generate HTTP traffic
             self.assertLastPath(None)
 
+    def test_valid_signed_compressed_request(self):
+        self.assert_valid_request_200(
+            self.token_dict['signed_token_scoped_pkiz'])
+        # ensure that signed requests do not generate HTTP traffic
+        self.assertLastPath(None)
+
     def test_revoked_token_receives_401(self):
         self.middleware.token_revocation_list = self.get_revocation_list_json()
         req = webob.Request.blank('/')
@@ -572,10 +579,27 @@ class CommonAuthTokenMiddlewareTest(object):
                           self.middleware.verify_signed_token,
                           self.token_dict['revoked_token'])
 
+    def test_verify_signed_token_raises_exception_for_revoked_pkiz_token(self):
+        self.middleware.token_revocation_list = (
+            self.examples.REVOKED_TOKEN_PKIZ_LIST_JSON)
+        self.assertRaises(auth_token.InvalidUserToken,
+                          self.middleware.verify_pkiz_token,
+                          self.token_dict['revoked_token_pkiz'])
+
+    def assertIsValidJSON(self, text):
+        json.loads(text)
+
     def test_verify_signed_token_succeeds_for_unrevoked_token(self):
         self.middleware.token_revocation_list = self.get_revocation_list_json()
-        self.middleware.verify_signed_token(
+        text = self.middleware.verify_signed_token(
             self.token_dict['signed_token_scoped'])
+        self.assertIsValidJSON(text)
+
+    def test_verify_signed_compressed_token_succeeds_for_unrevoked_token(self):
+        self.middleware.token_revocation_list = self.get_revocation_list_json()
+        text = self.middleware.verify_pkiz_token(
+            self.token_dict['signed_token_scoped_pkiz'])
+        self.assertIsValidJSON(text)
 
     def test_verify_signing_dir_create_while_missing(self):
         tmp_name = uuid.uuid4().hex
@@ -671,9 +695,17 @@ class CommonAuthTokenMiddlewareTest(object):
         req = webob.Request.blank('/')
         req.headers['X-Auth-Token'] = self.examples.INVALID_SIGNED_TOKEN
         self.middleware(req.environ, self.start_fake_response)
-        self.assertEqual(self.response_status, 401)
-        self.assertEqual(self.response_headers['WWW-Authenticate'],
-                         "Keystone uri='https://keystone.example.com:1234'")
+        self.assertEqual(401, self.response_status)
+        self.assertEqual("Keystone uri='https://keystone.example.com:1234'",
+                         self.response_headers['WWW-Authenticate'])
+
+    def test_request_invalid_signed_pkiz_token(self):
+        req = webob.Request.blank('/')
+        req.headers['X-Auth-Token'] = self.examples.INVALID_SIGNED_PKIZ_TOKEN
+        self.middleware(req.environ, self.start_fake_response)
+        self.assertEqual(401, self.response_status)
+        self.assertEqual("Keystone uri='https://keystone.example.com:1234'",
+                         self.response_headers['WWW-Authenticate'])
 
     def test_request_no_token(self):
         req = webob.Request.blank('/')
@@ -1293,9 +1325,11 @@ class v2AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
             'uuid_token_bind': self.examples.UUID_TOKEN_BIND,
             'uuid_token_unknown_bind': self.examples.UUID_TOKEN_UNKNOWN_BIND,
             'signed_token_scoped': self.examples.SIGNED_TOKEN_SCOPED,
+            'signed_token_scoped_pkiz': self.examples.SIGNED_TOKEN_SCOPED_PKIZ,
             'signed_token_scoped_expired':
             self.examples.SIGNED_TOKEN_SCOPED_EXPIRED,
             'revoked_token': self.examples.REVOKED_TOKEN,
+            'revoked_token_pkiz': self.examples.REVOKED_TOKEN_PKIZ,
             'revoked_token_hash': self.examples.REVOKED_TOKEN_HASH
         }
 
@@ -1475,9 +1509,12 @@ class v3AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
             'uuid_token_unknown_bind':
             self.examples.v3_UUID_TOKEN_UNKNOWN_BIND,
             'signed_token_scoped': self.examples.SIGNED_v3_TOKEN_SCOPED,
+            'signed_token_scoped_pkiz':
+            self.examples.SIGNED_v3_TOKEN_SCOPED_PKIZ,
             'signed_token_scoped_expired':
             self.examples.SIGNED_TOKEN_SCOPED_EXPIRED,
             'revoked_token': self.examples.REVOKED_v3_TOKEN,
+            'revoked_token_pkiz': self.examples.REVOKED_v3_TOKEN_PKIZ,
             'revoked_token_hash': self.examples.REVOKED_v3_TOKEN_HASH
         }
 

@@ -875,7 +875,9 @@ class AuthProtocol(object):
                             'Token is marked as having been revoked')
                         raise InvalidUserToken(
                             'Token authorization failed')
-
+            elif cms.is_pkiz(user_token):
+                verified = self.verify_pkiz_token(user_token)
+                data = jsonutils.loads(verified)
             elif cms.is_asn1_token(user_token):
                 verified = self.verify_signed_token(user_token)
                 data = jsonutils.loads(verified)
@@ -1228,7 +1230,7 @@ class AuthProtocol(object):
         revoked_ids = (x['id'] for x in revoked_tokens)
         return token_id in revoked_ids
 
-    def cms_verify(self, data):
+    def cms_verify(self, data, inform=cms.PKI_ASN1_FORM):
         """Verifies the signature of the provided data's IAW CMS syntax.
 
         If either of the certificate files might be missing, fetch them and
@@ -1236,9 +1238,9 @@ class AuthProtocol(object):
         """
         def verify():
             try:
-                return cms.cms_verify(
-                    data, self.signing_cert_file_name,
-                    self.signing_ca_file_name).decode('utf-8')
+                return cms.cms_verify(data, self.signing_cert_file_name,
+                                      self.signing_ca_file_name,
+                                      inform=inform).decode('utf-8')
             except cms.subprocess.CalledProcessError as err:
                 self.LOG.warning('Verify error: %s', err)
                 raise
@@ -1265,7 +1267,19 @@ class AuthProtocol(object):
             raise InvalidUserToken('Token has been revoked')
 
         formatted = cms.token_to_cms(signed_text)
-        return self.cms_verify(formatted)
+        verified = self.cms_verify(formatted)
+        return verified
+
+    def verify_pkiz_token(self, signed_text):
+        if self.is_signed_token_revoked(signed_text):
+            raise InvalidUserToken('Token has been revoked')
+        try:
+            uncompressed = cms.pkiz_uncompress(signed_text)
+            verified = self.cms_verify(uncompressed, inform=cms.PKIZ_CMS_FORM)
+            return verified
+        # TypeError If the signed_text is not zlib compressed
+        except TypeError:
+            raise InvalidUserToken(signed_text)
 
     def verify_signing_dir(self):
         if os.path.exists(self.signing_dirname):

@@ -37,6 +37,14 @@ class CertificateConfigError(Exception):
         super(CertificateConfigError, self).__init__(msg)
 
 
+class CMSError(Exception):
+    """Error reading the certificate"""
+    def __init__(self, output):
+        self.output = output
+        msg = ("Unable to sign or verify data.")
+        super(CMSError, self).__init__(msg)
+
+
 class EmptyCatalog(EndpointNotFound):
     """The service catalog is empty."""
     pass
