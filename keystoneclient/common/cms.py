@@ -42,7 +42,7 @@ def _ensure_subprocess():
     if not subprocess:
         try:
             from eventlet import patcher
-            if patcher.already_patched.get('os'):
+            if patcher.already_patched:
                 from eventlet.green import subprocess
             else:
                 import subprocess
