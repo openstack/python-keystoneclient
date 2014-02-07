@@ -49,3 +49,7 @@ class DiscoveryFailure(ClientException):
 
 class VersionNotAvailable(DiscoveryFailure):
     """Discovery failed as the version you requested is not available."""
+
+
+class MissingAuthPlugin(ClientException):
+    """An authenticated request is required but no plugin available."""

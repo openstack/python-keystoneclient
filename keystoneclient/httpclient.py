@@ -39,6 +39,8 @@ if not hasattr(urlparse, 'parse_qsl'):
 
 
 from keystoneclient import access
+from keystoneclient.auth import base
+from keystoneclient import baseclient
 from keystoneclient import exceptions
 from keystoneclient.openstack.common import jsonutils
 from keystoneclient import session as client_session
@@ -52,7 +54,7 @@ USER_AGENT = client_session.USER_AGENT
 request = client_session.request
 
 
-class HTTPClient(object):
+class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
 
     def __init__(self, username=None, tenant_id=None, tenant_name=None,
                  password=None, auth_url=None, region_name=None, endpoint=None,
@@ -121,7 +123,6 @@ class HTTPClient(object):
 
         """
         # set baseline defaults
-
         self.user_id = None
         self.username = None
         self.user_domain_id = None
@@ -223,8 +224,9 @@ class HTTPClient(object):
 
         if not session:
             session = client_session.Session.construct(kwargs)
+            session.auth = self
 
-        self.session = session
+        super(HTTPClient, self).__init__(session=session)
         self.domain = ''
         self.debug_log = debug
 
@@ -235,6 +237,9 @@ class HTTPClient(object):
         self.force_new_token = force_new_token
         self.stale_duration = stale_duration or access.STALE_TOKEN_DURATION
         self.stale_duration = int(self.stale_duration)
+
+    def get_token(self, session, **kwargs):
+        return self.auth_token
 
     @property
     def auth_token(self):
@@ -377,14 +382,21 @@ class HTTPClient(object):
         if auth_ref is None or self.force_new_token:
             new_token_needed = True
             kwargs['password'] = password
-            resp, body = self.get_raw_token_from_identity_service(**kwargs)
+            resp = self.get_raw_token_from_identity_service(**kwargs)
 
-            # TODO(jamielennox): passing region_name here is wrong but required
-            # for backwards compatibility. Deprecate and provide warning.
-            self.auth_ref = access.AccessInfo.factory(resp, body,
-                                                      region_name=region_name)
+            if isinstance(resp, access.AccessInfo):
+                self.auth_ref = resp
+            else:
+                self.auth_ref = access.AccessInfo.factory(*resp)
+
+            # NOTE(jamielennox): The original client relies on being able to
+            # push the region name into the service catalog but new auth
+            # it in.
+            if region_name:
+                self.auth_ref.service_catalog._region_name = region_name
         else:
             self.auth_ref = auth_ref
+
         self.process_token(region_name=region_name)
         if new_token_needed:
             self.store_auth_ref_into_keyring(keyring_key)
@@ -540,7 +552,8 @@ class HTTPClient(object):
         except KeyError:
             pass
 
-        resp = self.session.request(url, method, **kwargs)
+        kwargs.setdefault('authenticated', False)
+        resp = super(HTTPClient, self).request(url, method, **kwargs)
         return resp, self._decode_body(resp)
 
     def _cs_request(self, url, method, **kwargs):
@@ -559,13 +572,9 @@ class HTTPClient(object):
         if is_management:
             url_to_use = self.management_url
 
-        kwargs.setdefault('headers', {})
-        if self.auth_token:
-            kwargs['headers']['X-Auth-Token'] = self.auth_token
-
-        resp, body = self.request(url_to_use + url, method,
-                                  **kwargs)
-        return resp, body
+        kwargs.setdefault('authenticated', None)
+        return self.request(url_to_use + url, method,
+                            **kwargs)
 
     def get(self, url, **kwargs):
         return self._cs_request(url, 'GET', **kwargs)
