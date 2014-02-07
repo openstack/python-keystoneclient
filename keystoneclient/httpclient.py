@@ -55,14 +55,13 @@ request = client_session.request
 class HTTPClient(object):
 
     def __init__(self, username=None, tenant_id=None, tenant_name=None,
-                 password=None, auth_url=None, region_name=None, timeout=None,
-                 endpoint=None, token=None, cacert=None, key=None,
-                 cert=None, insecure=False, original_ip=None, debug=False,
-                 auth_ref=None, use_keyring=False, force_new_token=False,
-                 stale_duration=None, user_id=None, user_domain_id=None,
-                 user_domain_name=None, domain_id=None, domain_name=None,
-                 project_id=None, project_name=None, project_domain_id=None,
-                 project_domain_name=None, trust_id=None, session=None):
+                 password=None, auth_url=None, region_name=None, endpoint=None,
+                 token=None, debug=False, auth_ref=None, use_keyring=False,
+                 force_new_token=False, stale_duration=None, user_id=None,
+                 user_domain_id=None, user_domain_name=None, domain_id=None,
+                 domain_name=None, project_id=None, project_name=None,
+                 project_domain_id=None, project_domain_name=None,
+                 trust_id=None, session=None, **kwargs):
         """Construct a new http client
 
         :param string user_id: User ID for authentication. (optional)
@@ -223,22 +222,7 @@ class HTTPClient(object):
         self._auth_token = None
 
         if not session:
-            verify = cacert or True
-            if insecure:
-                verify = False
-
-            session_cert = None
-            if cert and key:
-                session_cert = (cert, key)
-            elif cert:
-                _logger.warn("Client cert was provided without corresponding "
-                             "key. Ignoring.")
-
-            timeout = float(timeout) if timeout is not None else None
-            session = client_session.Session(verify=verify,
-                                             cert=session_cert,
-                                             original_ip=original_ip,
-                                             timeout=timeout)
+            session = client_session.Session.construct(kwargs)
 
         self.session = session
         self.domain = ''

@@ -14,13 +14,14 @@
 
 from keystoneclient import discover
 from keystoneclient import httpclient
+from keystoneclient import session as client_session
 
 
 # Using client.HTTPClient is deprecated. Use httpclient.HTTPClient instead.
 HTTPClient = httpclient.HTTPClient
 
 
-def Client(version=None, unstable=False, **kwargs):
+def Client(version=None, unstable=False, session=None, **kwargs):
     """Factory function to create a new identity service client.
 
     :param tuple version: The required version of the identity API. If
@@ -29,6 +30,9 @@ def Client(version=None, unstable=False, **kwargs):
                           at least the specified minor version. For example to
                           specify the 3.1 API use (3, 1).
     :param bool unstable: Accept endpoints not marked as 'stable'. (optional)
+    :param Session session: A session object to be used for communication. If
+                            one is not provided it will be constructed from the
+                            provided kwargs. (optional)
     :param kwargs: Additional arguments are passed through to the client
                    that is being created.
     :returns: New keystone client object
@@ -37,6 +41,8 @@ def Client(version=None, unstable=False, **kwargs):
     :raises: DiscoveryFailure if the server's response is invalid
     :raises: VersionNotAvailable if a suitable client cannot be found.
     """
+    if not session:
+        session = client_session.Session.construct(kwargs)
 
-    return discover.Discover(**kwargs).create_client(version=version,
-                                                     unstable=unstable)
+    d = discover.Discover(session=session, **kwargs)
+    return d.create_client(version=version, unstable=unstable)

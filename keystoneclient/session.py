@@ -249,3 +249,40 @@ class Session(object):
 
     def patch(self, url, **kwargs):
         return self.request(url, 'PATCH', **kwargs)
+
+    @classmethod
+    def construct(cls, kwargs):
+        """Handles constructing a session from the older HTTPClient args as
+        well as the new request style arguments.
+
+        *DEPRECATED*: This function is purely for bridging the gap between
+        older client arguments and the session arguments that they relate to.
+        It is not intended to be used as a generic Session Factory.
+
+        This function purposefully modifies the input kwargs dictionary so that
+        the remaining kwargs dict can be reused and passed on to other
+        functionswithout session arguments.
+
+        """
+        verify = kwargs.pop('verify', None)
+        cacert = kwargs.pop('cacert', None)
+        cert = kwargs.pop('cert', None)
+        key = kwargs.pop('key', None)
+        insecure = kwargs.pop('insecure', False)
+
+        if verify is None:
+            if insecure:
+                verify = False
+            else:
+                verify = cacert or True
+
+        if cert and key:
+            # passing cert and key together is deprecated in favour of the
+            # requests lib form of having the cert and key as a tuple
+            cert = (cert, key)
+
+        return cls(verify=verify, cert=cert,
+                   timeout=kwargs.pop('timeout', None),
+                   session=kwargs.pop('session', None),
+                   original_ip=kwargs.pop('original_ip', None),
+                   user_agent=kwargs.pop('user_agent', None))
