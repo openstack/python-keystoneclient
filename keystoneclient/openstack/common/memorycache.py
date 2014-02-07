@@ -1,5 +1,3 @@
-# vim: tabstop=4 shiftwidth=4 softtabstop=4
-
 # Copyright 2010 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
@@ -57,11 +55,11 @@ class Client(object):
     def get(self, key):
         """Retrieves the value for a key or None.
 
-           this expunges expired keys during each get
+        This expunges expired keys during each get.
         """
 
         now = timeutils.utcnow_ts()
-        for k in self.cache.keys():
+        for k in list(self.cache):
             (timeout, _value) = self.cache[k]
             if timeout and now >= timeout:
                 del self.cache[k]
