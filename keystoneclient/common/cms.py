@@ -114,7 +114,8 @@ def cms_verify(formatted, signing_cert_file_name, ca_file_name):
                                 "-nocerts", "-noattr"],
                                stdin=subprocess.PIPE,
                                stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
+                               stderr=subprocess.PIPE,
+                               universal_newlines=True)
     output, err, retcode = _process_communicate_handle_oserror(
         process, formatted, (signing_cert_file_name, ca_file_name))
 
@@ -225,7 +226,8 @@ def cms_sign_text(text, signing_cert_file_name, signing_key_file_name):
                                 "-nocerts", "-noattr"],
                                stdin=subprocess.PIPE,
                                stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
+                               stderr=subprocess.PIPE,
+                               universal_newlines=True)
 
     output, err, retcode = _process_communicate_handle_oserror(
         process, text, (signing_cert_file_name, signing_key_file_name))
