@@ -17,6 +17,7 @@
 import httpretty
 import mock
 import requests
+import six
 import testtools
 import webob
 
@@ -126,9 +127,12 @@ class S3TokenMiddlewareTestGood(S3TokenMiddlewareTestBase):
         self.middleware = (
             s3_token.filter_factory({'insecure': True})(FakeApp()))
 
+        text_return_value = jsonutils.dumps(GOOD_RESPONSE)
+        if six.PY3:
+            text_return_value = text_return_value.encode()
         MOCK_REQUEST.return_value = utils.TestResponse({
             'status_code': 201,
-            'text': jsonutils.dumps(GOOD_RESPONSE)})
+            'text': text_return_value})
 
         req = webob.Request.blank('/v1/AUTH_cfa/c/o')
         req.headers['Authorization'] = 'access:signature'
