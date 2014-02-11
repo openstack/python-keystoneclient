@@ -1064,19 +1064,9 @@ class AuthProtocol(object):
             cache_key = CACHE_KEY_TEMPLATE % memcache_crypt.get_cache_key(keys)
             data_to_store = memcache_crypt.protect_data(keys, serialized_data)
 
-        # Historically the swift cache connection used the argument
-        # timeout= for the cache timeout, but this has been unified
-        # with the official python memcache client with time= since
-        # grizzly, we still need to handle folsom for a while until
-        # this could get removed.
-        try:
-            self._cache.set(cache_key,
-                            data_to_store,
-                            time=self.token_cache_time)
-        except(TypeError):
-            self._cache.set(cache_key,
-                            data_to_store,
-                            timeout=self.token_cache_time)
+        self._cache.set(cache_key,
+                        data_to_store,
+                        time=self.token_cache_time)
 
     def _invalid_user_token(self, msg=False):
         # NOTE(jamielennox): use False as the default so that None is valid
