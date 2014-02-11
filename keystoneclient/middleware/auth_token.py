@@ -1022,6 +1022,8 @@ class AuthProtocol(object):
             # Note that 'invalid' and (data, expires) are the only
             # valid types of serialized cache entries, so there is not
             # a collision with jsonutils.loads(serialized) == None.
+            if not isinstance(serialized, six.string_types):
+                serialized = serialized.decode('utf-8')
             cached = jsonutils.loads(serialized)
             if cached == 'invalid':
                 self.LOG.debug('Cached Token %s is marked unauthorized',
@@ -1053,14 +1055,20 @@ class AuthProtocol(object):
 
         """
         serialized_data = jsonutils.dumps(data)
+        if isinstance(serialized_data, six.text_type):
+            serialized_data = serialized_data.encode('utf-8')
         if self._memcache_security_strategy is None:
             cache_key = CACHE_KEY_TEMPLATE % token_id
             data_to_store = serialized_data
         else:
+            secret_key = self._memcache_secret_key
+            if isinstance(secret_key, six.string_types):
+                secret_key = secret_key.encode('utf-8')
+            security_strategy = self._memcache_security_strategy
+            if isinstance(security_strategy, six.string_types):
+                security_strategy = security_strategy.encode('utf-8')
             keys = memcache_crypt.derive_keys(
-                token_id,
-                self._memcache_secret_key,
-                self._memcache_security_strategy)
+                token_id, secret_key, security_strategy)
             cache_key = CACHE_KEY_TEMPLATE % memcache_crypt.get_cache_key(keys)
             data_to_store = memcache_crypt.protect_data(keys, serialized_data)
 

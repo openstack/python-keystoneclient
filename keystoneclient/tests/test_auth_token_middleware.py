@@ -777,7 +777,7 @@ class CommonAuthTokenMiddlewareTest(object):
             'memcache_secret_key': 'mysecret'
         }
         self.set_middleware(conf=conf)
-        token = 'my_token'
+        token = b'my_token'
         some_time_later = timeutils.utcnow() + datetime.timedelta(hours=4)
         expires = timeutils.strtime(some_time_later)
         data = ('this_data', expires)
@@ -793,7 +793,7 @@ class CommonAuthTokenMiddlewareTest(object):
             'memcache_secret_key': 'mysecret'
         }
         self.set_middleware(conf=conf)
-        token = 'my_token'
+        token = b'my_token'
         some_time_later = timeutils.utcnow() + datetime.timedelta(hours=4)
         expires = timeutils.strtime(some_time_later)
         data = ('this_data', expires)
