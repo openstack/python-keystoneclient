@@ -998,10 +998,16 @@ class AuthProtocol(object):
                 key = CACHE_KEY_TEMPLATE % token_id
                 serialized = self._cache.get(key)
             else:
+                secret_key = self._memcache_secret_key
+                if isinstance(secret_key, six.string_types):
+                    secret_key = secret_key.encode('utf-8')
+                security_strategy = self._memcache_security_strategy
+                if isinstance(security_strategy, six.string_types):
+                    security_strategy = security_strategy.encode('utf-8')
                 keys = memcache_crypt.derive_keys(
                     token_id,
-                    self._memcache_secret_key,
-                    self._memcache_security_strategy)
+                    secret_key,
+                    security_strategy)
                 cache_key = CACHE_KEY_TEMPLATE % (
                     memcache_crypt.get_cache_key(keys))
                 raw_cached = self._cache.get(cache_key)
