@@ -127,6 +127,11 @@ class HttpError(ClientException):
         super(HttpError, self).__init__(formatted_string)
 
 
+class HTTPRedirection(HttpError):
+    """HTTP Redirection."""
+    message = "HTTP Redirection"
+
+
 class HTTPClientError(HttpError):
     """Client-side HTTP error.
 
@@ -142,6 +147,16 @@ class HttpServerError(HttpError):
     erred or is incapable of performing the request.
     """
     message = "HTTP Server Error"
+
+
+class MultipleChoices(HTTPRedirection):
+    """HTTP 300 - Multiple Choices.
+
+    Indicates multiple options for the resource that the client may follow.
+    """
+
+    http_status = 300
+    message = "Multiple Choices"
 
 
 class BadRequest(HTTPClientError):
@@ -425,10 +440,10 @@ def from_response(response, method, url):
         except ValueError:
             pass
         else:
-            if hasattr(body, "keys"):
-                error = body[body.keys()[0]]
-                kwargs["message"] = error.get("message", None)
-                kwargs["details"] = error.get("details", None)
+            if isinstance(body, dict):
+                error = list(body.values())[0]
+                kwargs["message"] = error.get("message")
+                kwargs["details"] = error.get("details")
     elif content_type.startswith("text/"):
         kwargs["details"] = response.text
 
