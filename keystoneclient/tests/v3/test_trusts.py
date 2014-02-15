@@ -86,13 +86,13 @@ class TrustTests(utils.TestCase, utils.CrudTests):
         super(TrustTests, self).test_create(ref=ref, req_ref=req_ref)
 
     def test_list_filter_trustor(self):
-        ep = 'v3/OS-TRUST/trusts?trustor_user_id=12345'
-        super(TrustTests, self).test_list(expected_path=ep,
+        expected_query = {'trustor_user_id': '12345'}
+        super(TrustTests, self).test_list(expected_query=expected_query,
                                           trustor_user='12345')
 
     def test_list_filter_trustee(self):
-        ep = 'v3/OS-TRUST/trusts?trustee_user_id=12345'
-        super(TrustTests, self).test_list(expected_path=ep,
+        expected_query = {'trustee_user_id': '12345'}
+        super(TrustTests, self).test_list(expected_query=expected_query,
                                           trustee_user='12345')
 
     def test_update(self):

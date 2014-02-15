@@ -13,6 +13,7 @@
 import uuid
 
 import httpretty
+import six
 from six.moves.urllib import parse as urlparse
 
 from keystoneclient.openstack.common import jsonutils
@@ -234,7 +235,8 @@ class CrudTests(object):
         return expected_path
 
     @httpretty.activate
-    def test_list(self, ref_list=None, expected_path=None, **filter_kwargs):
+    def test_list(self, ref_list=None, expected_path=None,
+                  expected_query=None, **filter_kwargs):
         ref_list = ref_list or [self.new_ref(), self.new_ref()]
         expected_path = self._get_expected_path(expected_path)
 
@@ -245,6 +247,22 @@ class CrudTests(object):
         returned_list = self.manager.list(**filter_kwargs)
         self.assertEqual(len(ref_list), len(returned_list))
         [self.assertIsInstance(r, self.model) for r in returned_list]
+
+        # register_uri doesn't match the querystring component, so we have to
+        # explicitly test the querystring component passed by the manager
+        qs_args = httpretty.last_request().querystring
+        qs_args_expected = expected_query or filter_kwargs
+        for key, value in six.iteritems(qs_args_expected):
+            self.assertIn(key, qs_args)
+            # The httppretty.querystring value is a list
+            # Note we convert the value to a string, as the query string
+            # is always a string and the filter_kwargs may contain non-string
+            # values, for example a boolean, causing the comaprison to fail.
+            self.assertIn(str(value), qs_args[key])
+
+        # Also check that no query string args exist which are not expected
+        for key in qs_args:
+            self.assertIn(key, qs_args_expected)
 
     @httpretty.activate
     def test_list_params(self):
