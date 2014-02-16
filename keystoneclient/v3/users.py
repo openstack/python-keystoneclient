@@ -51,7 +51,7 @@ class UserManager(base.CrudManager):
 
         .. warning::
 
-        The project argument is deprecated, use default_project instead.
+          The project argument is deprecated, use default_project instead.
 
         If both default_project and project is provided, the default_project
         will be used.
@@ -82,7 +82,7 @@ class UserManager(base.CrudManager):
 
         .. warning::
 
-        The project argument is deprecated, use default_project instead.
+          The project argument is deprecated, use default_project instead.
 
         If both default_project and project is provided, the default_project
         will be used.
@@ -113,7 +113,7 @@ class UserManager(base.CrudManager):
 
         .. warning::
 
-        The project argument is deprecated, use default_project instead.
+          The project argument is deprecated, use default_project instead.
 
         If both default_project and project is provided, the default_project
         will be used.

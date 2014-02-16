@@ -16,7 +16,7 @@ Contents:
    using-api-v2
    using-api-v3
 
-   api/autoindex
+   api/modules
 
 Contributing
 ============
