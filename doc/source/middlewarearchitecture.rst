@@ -121,25 +121,124 @@ a WSGI component. Example for the auth_token middleware::
 
     [filter:authtoken]
     paste.filter_factory = keystoneclient.middleware.auth_token:filter_factory
-    auth_host = 127.0.0.1
-    auth_port = 35357
-    auth_protocol = http
-    admin_token = Super999Sekret888Password777
-    admin_user = admin
-    admin_password = SuperSekretPassword
-    admin_tenant_name = service
-    ;Uncomment next line to use Swift MemcacheRing
-    ;cache = swift.cache
-    ;Uncomment next line and check ip:port to use memcached to cache tokens
-    ;memcached_servers = 127.0.0.1:11211
-    ;Uncomment next 2 lines to turn on memcache protection
-    ;memcache_security_strategy = ENCRYPT
-    ;memcache_secret_key = change_me
-    ;Uncomment next 2 lines if Keystone server is validating client cert
-    ;certfile = <path to middleware public cert>
-    ;keyfile = <path to middleware private cert>
-    ;Uncomment next line to opt-out of service catalog
-    ;include_service_catalog = False
+
+    # Prefix to prepend at the beginning of the path (string
+    # value)
+    #auth_admin_prefix=
+
+    # Host providing the admin Identity API endpoint (string
+    # value)
+    auth_host=127.0.0.1
+
+    # Port of the admin Identity API endpoint (integer value)
+    auth_port=35357
+
+    # Protocol of the admin Identity API endpoint(http or https)
+    # (string value)
+    auth_protocol=https
+
+    # Complete public Identity API endpoint (string value)
+    #auth_uri=<None>
+
+    # API version of the admin Identity API endpoint (string
+    # value)
+    #auth_version=<None>
+
+    # Do not handle authorization requests within the middleware,
+    # but delegate the authorization decision to downstream WSGI
+    # components (boolean value)
+    #delay_auth_decision=false
+
+    # Request timeout value for communicating with Identity API
+    # server. (boolean value)
+    #http_connect_timeout=<None>
+
+    # How many times are we trying to reconnect when communicating
+    # with Identity API Server. (integer value)
+    #http_request_max_retries=3
+
+    # Single shared secret with the Keystone configuration used
+    # for bootstrapping a Keystone installation, or otherwise
+    # bypassing the normal authentication process. (string value)
+    #admin_token=<None>
+
+    # Keystone account username (string value)
+    #admin_user=<None>
+
+    # Keystone account password (string value)
+    admin_password=SuperSekretPassword
+
+    # Keystone service account tenant name to validate user tokens
+    # (string value)
+    #admin_tenant_name=admin
+
+    # Env key for the swift cache (string value)
+    #cache=<None>
+
+    # Required if Keystone server requires client certificate
+    # (string value)
+    #certfile=<None>
+
+    # Required if Keystone server requires client certificate
+    # (string value)
+    #keyfile=<None>
+
+    # A PEM encoded Certificate Authority to use when verifying
+    # HTTPs connections. Defaults to system CAs. (string value)
+    #cafile=<None>
+
+    # Verify HTTPS connections. (boolean value)
+    #insecure=false
+
+    # Directory used to cache files related to PKI tokens (string
+    # value)
+    #signing_dir=<None>
+
+    # If defined, the memcache server(s) to use for caching (list
+    # value)
+    # Deprecated group/name - [DEFAULT]/memcache_servers
+    #memcached_servers=<None>
+
+    # In order to prevent excessive requests and validations, the
+    # middleware uses an in-memory cache for the tokens the
+    # Keystone API returns. This is only valid if memcache_servers
+    # is defined. Set to -1 to disable caching completely.
+    # (integer value)
+    #token_cache_time=300
+
+    # Value only used for unit testing (integer value)
+    #revocation_cache_time=1
+
+    # (optional) if defined, indicate whether token data should be
+    # authenticated or authenticated and encrypted. Acceptable
+    # values are MAC or ENCRYPT.  If MAC, token data is
+    # authenticated (with HMAC) in the cache. If ENCRYPT, token
+    # data is encrypted and authenticated in the cache. If the
+    # value is not one of these options or empty, auth_token will
+    # raise an exception on initialization. (string value)
+    #memcache_security_strategy=<None>
+
+    # (optional, mandatory if memcache_security_strategy is
+    # defined) this string is used for key derivation. (string
+    # value)
+    #memcache_secret_key=<None>
+
+    # (optional) indicate whether to set the X-Service-Catalog
+    # header. If False, middleware will not ask for service
+    # catalog on token validation and will not set the X-Service-
+    # Catalog header. (boolean value)
+    #include_service_catalog=true
+
+    # Used to control the use and type of token binding. Can be
+    # set to: "disabled" to not check token binding. "permissive"
+    # (default) to validate binding information if the bind type
+    # is of a form known to the server and ignore it if not.
+    # "strict" like "permissive" but if the bind type is unknown
+    # the token will be rejected. "required" any form of token
+    # binding is needed to be allowed. Finally the name of a
+    # binding method that must be present in tokens. (string
+    # value)
+    #enforce_token_bind=permissive
 
 For services which have a separate paste-deploy ini file, auth_token middleware
 can be alternatively configured in [keystone_authtoken] section in the main
@@ -162,6 +261,7 @@ and set in nova.conf::
     admin_user = admin
     admin_password = SuperSekretPassword
     admin_tenant_name = service
+    # Any of the options that could be set in api-paste.ini can be set here.
 
 Note that middleware parameters in paste config take priority, they must be
 removed to use values in [keystone_authtoken] section.
