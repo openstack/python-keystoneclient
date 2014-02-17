@@ -26,7 +26,7 @@ import six
 from six.moves import urllib
 
 from keystoneclient import exceptions
-from keystoneclient.openstack.common import strutils
+from keystoneclient.openstack.common.apiclient import base
 
 
 def getid(obj):
@@ -385,82 +385,11 @@ class CrudManager(Manager):
             return rl[0]
 
 
-class Resource(object):
+class Resource(base.Resource):
     """Base class for OpenStack resources (tenant, user, etc.).
 
     This is pretty much just a bag for attributes.
     """
 
-    HUMAN_ID = False
-    NAME_ATTR = 'name'
-
-    def __init__(self, manager, info, loaded=False):
-        """Populate and bind to a manager.
-
-        :param manager: Manager object
-        :param info: dictionary representing resource attributes
-        :param loaded: prevent lazy-loading if set to True
-        """
-        self.manager = manager
-        self._info = {}
-        self._add_details(info)
-        self._loaded = loaded
-
-    @property
-    def human_id(self):
-        """Human-readable ID which can be used for bash completion.
-        """
-        if self.NAME_ATTR in self.__dict__ and self.HUMAN_ID:
-            return strutils.to_slug(getattr(self, self.NAME_ATTR))
-        return None
-
-    def _add_details(self, info):
-        for (k, v) in six.iteritems(info):
-            setattr(self, k, v)
-            self._info[k] = v
-
-    def __getattr__(self, k):
-        if k not in self.__dict__:
-            #NOTE(bcwaldon): disallow lazy-loading if already loaded once
-            if not self.is_loaded():
-                self.get()
-                return self.__getattr__(k)
-
-            raise AttributeError(k)
-        else:
-            return self.__dict__[k]
-
-    def __repr__(self):
-        reprkeys = sorted(k for k in self.__dict__ if k[0] != '_' and
-                          k != 'manager')
-        info = ", ".join("%s=%s" % (k, getattr(self, k)) for k in reprkeys)
-        return "<%s %s>" % (self.__class__.__name__, info)
-
-    def get(self):
-        # set_loaded() first ... so if we have to bail, we know we tried.
-        self.set_loaded(True)
-        if not hasattr(self.manager, 'get'):
-            return
-
-        new = self.manager.get(self.id)
-        if new:
-            self._add_details(new._info)
-
     def delete(self):
         return self.manager.delete(self)
-
-    def __eq__(self, other):
-        if not isinstance(other, Resource):
-            return NotImplemented
-        # two resources of different types are not equal
-        if not isinstance(other, self.__class__):
-            return False
-        if hasattr(self, 'id') and hasattr(other, 'id'):
-            return self.id == other.id
-        return self._info == other._info
-
-    def is_loaded(self):
-        return self._loaded
-
-    def set_loaded(self, val):
-        self._loaded = val
