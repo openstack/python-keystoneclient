@@ -29,3 +29,15 @@ class DomainTests(utils.TestCase, utils.CrudTests):
         kwargs.setdefault('enabled', True)
         kwargs.setdefault('name', uuid.uuid4().hex)
         return kwargs
+
+    def test_list_filter_name(self):
+        super(DomainTests, self).test_list(name='adomain123')
+
+    def test_list_filter_enabled(self):
+        super(DomainTests, self).test_list(enabled=True)
+
+    def test_list_filter_disabled(self):
+        # False is converted to '0' ref bug #1267530
+        expected_query = {'enabled': '0'}
+        super(DomainTests, self).test_list(expected_query=expected_query,
+                                           enabled=False)

@@ -50,6 +50,10 @@ class DomainManager(base.CrudManager):
         ``**kwargs`` allows filter criteria to be passed where
          supported by the server.
         """
+        # Ref bug #1267530 we have to pass 0 for False to get the expected
+        # results on all keystone versions
+        if kwargs.get('enabled') is False:
+            kwargs['enabled'] = 0
         return super(DomainManager, self).list(**kwargs)
 
     def update(self, domain, name=None,
