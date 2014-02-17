@@ -17,7 +17,14 @@ Exception definitions.
 """
 
 #flake8: noqa
-from keystoneclient.apiclient.exceptions import *
+from keystoneclient.openstack.common.apiclient.exceptions import *
+
+# NOTE(akurilin): This alias should be left here to support backwards
+# compatibility until we are sure that usage of these exceptions in
+# projects is correct.
+ConnectionError = ConnectionRefused
+HTTPNotImplemented = HttpNotImplemented
+Timeout = RequestTimeout
 
 
 class CertificateConfigError(Exception):
@@ -29,16 +36,13 @@ class CertificateConfigError(Exception):
         super(CertificateConfigError, self).__init__(msg)
 
 
-class ConnectionError(ClientException):
-    """Something went wrong trying to connect to a server"""
+class EmptyCatalog(EndpointNotFound):
+    """The service catalog is empty."""
+    pass
 
 
-class SSLError(ConnectionError):
+class SSLError(ConnectionRefused):
     """An SSL error occurred."""
-
-
-class Timeout(ClientException):
-    """The request timed out."""
 
 
 class DiscoveryFailure(ClientException):

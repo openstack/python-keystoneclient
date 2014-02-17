@@ -13,6 +13,16 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import warnings
+
+# NOTE(akurilin): Module 'keystoneclient.apiclient' contains only exceptions
+# which are deprecated, so this module must also be deprecated which helps
+# to report 'deprecated' status of exceptions for next kind of imports
+#       from keystoneclient.apiclient import exceptions
+
+warnings.warn("The 'keystoneclient.apiclient' module is deprecated since "
+              "v.0.7.1. Use 'keystoneclient.exceptions' instead of this "
+              "module.", DeprecationWarning)
 
 __all__ = [
     'exceptions',
