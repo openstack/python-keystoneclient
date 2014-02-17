@@ -289,9 +289,9 @@ class BaseAuthTokenMiddlewareTest(testtools.TestCase):
 
     def assertLastPath(self, path):
         if path:
-            self.assertEqual(path, httpretty.httpretty.last_request.path)
+            self.assertEqual(path, httpretty.last_request().path)
         else:
-            self.assertIsInstance(httpretty.httpretty.last_request,
+            self.assertIsInstance(httpretty.last_request(),
                                   httpretty.core.HTTPrettyRequestEmpty)
 
 if tuple(sys.version_info)[0:2] < (2, 7):
@@ -369,7 +369,7 @@ class DiabloAuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
         super(DiabloAuthTokenMiddlewareTest, self).setUp(
             expected_env=expected_env)
 
-        httpretty.httpretty.reset()
+        httpretty.reset()
         httpretty.enable()
         self.addCleanup(httpretty.disable)
 
@@ -1106,7 +1106,7 @@ class CertDownloadMiddlewareTest(BaseAuthTokenMiddlewareTest,
             self.assertEqual(f.read(), data)
 
         self.assertEqual("/testadmin/v2.0/certificates/signing",
-                         httpretty.httpretty.last_request.path)
+                         httpretty.last_request().path)
 
     def test_fetch_signing_ca(self):
         data = 'FAKE CA'
@@ -1119,7 +1119,7 @@ class CertDownloadMiddlewareTest(BaseAuthTokenMiddlewareTest,
             self.assertEqual(f.read(), data)
 
         self.assertEqual("/testadmin/v2.0/certificates/ca",
-                         httpretty.httpretty.last_request.path)
+                         httpretty.last_request().path)
 
     def test_prefix_trailing_slash(self):
         self.conf['auth_admin_prefix'] = '/newadmin/'
@@ -1136,12 +1136,12 @@ class CertDownloadMiddlewareTest(BaseAuthTokenMiddlewareTest,
         self.middleware.fetch_ca_cert()
 
         self.assertEqual('/newadmin/v2.0/certificates/ca',
-                         httpretty.httpretty.last_request.path)
+                         httpretty.last_request().path)
 
         self.middleware.fetch_signing_cert()
 
         self.assertEqual('/newadmin/v2.0/certificates/signing',
-                         httpretty.httpretty.last_request.path)
+                         httpretty.last_request().path)
 
     def test_without_prefix(self):
         self.conf['auth_admin_prefix'] = ''
@@ -1158,12 +1158,12 @@ class CertDownloadMiddlewareTest(BaseAuthTokenMiddlewareTest,
         self.middleware.fetch_ca_cert()
 
         self.assertEqual('/v2.0/certificates/ca',
-                         httpretty.httpretty.last_request.path)
+                         httpretty.last_request().path)
 
         self.middleware.fetch_signing_cert()
 
         self.assertEqual('/v2.0/certificates/signing',
-                         httpretty.httpretty.last_request.path)
+                         httpretty.last_request().path)
 
 
 def network_error_response(method, uri, headers):
@@ -1206,7 +1206,7 @@ class v2AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
             'revoked_token_hash': self.examples.REVOKED_TOKEN_HASH
         }
 
-        httpretty.httpretty.reset()
+        httpretty.reset()
         httpretty.enable()
         self.addCleanup(httpretty.disable)
 
@@ -1338,7 +1338,7 @@ class CrossVersionAuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
         self.assertEqual(self.response_status, 200)
         self.assertEqual("/testadmin/v2.0/tokens/%s" %
                          self.examples.UUID_TOKEN_DEFAULT,
-                         httpretty.httpretty.last_request.path)
+                         httpretty.last_request().path)
 
 
 class v3AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
@@ -1388,7 +1388,7 @@ class v3AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
             'revoked_token_hash': self.examples.REVOKED_v3_TOKEN_HASH
         }
 
-        httpretty.httpretty.reset()
+        httpretty.reset()
         httpretty.enable()
         self.addCleanup(httpretty.disable)
 

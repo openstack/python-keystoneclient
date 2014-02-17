@@ -316,7 +316,7 @@ class ClientDiscoveryTests(utils.TestCase):
         ip = '192.168.1.1'
         self.assertCreatesV3(auth_url=BASE_URL, original_ip=ip)
 
-        self.assertThat(httpretty.httpretty.last_request.headers['forwarded'],
+        self.assertThat(httpretty.last_request().headers['forwarded'],
                         matchers.Contains(ip))
 
     def test_discover_bad_args(self):
