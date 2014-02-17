@@ -23,7 +23,7 @@ Abstract
 
 The Keystone middleware architecture supports a common authentication protocol
 in use between the OpenStack projects. By using keystone as a common
-authentication and authorization mechanisms, the OpenStack project can plug in
+authentication and authorization mechanism, the OpenStack project can plug in
 to existing authentication and authorization systems in use by existing
 environments.
 
@@ -31,10 +31,8 @@ In this document, we describe the architecture and responsibilities of the
 authentication middleware which acts as the internal API mechanism for
 OpenStack projects based on the WSGI standard.
 
-For the architecture of keystone and its services, please see
-:doc:`architecture`. This documentation primarily describes the implementation
-in ``keystoneclient/middleware/auth_token.py``
-(:py:class:`keystoneclient.middleware.auth_token.AuthProtocol`)
+This documentation describes the implementation in
+:class:`keystoneclient.middleware.auth_token`
 
 Specification Overview
 ======================
@@ -57,7 +55,7 @@ of the middleware processing is:
 
   * if valid, populate additional headers representing the identity that has
     been authenticated and authorized
-  * in invalid, or not token present, reject the request (HTTPUnauthorized)
+  * if invalid, or no token present, reject the request (HTTPUnauthorized)
     or pass along a header indicating the request is unauthorized (configurable
     in the middleware)
   * if the keystone service is unavailable to validate the token, reject
@@ -75,8 +73,8 @@ Figure 1. Authentication Component
    :height: 180
    :alt: An Authentication Component
 
-The middleware may also be configured to operated in a 'delegated mode'.
-In this mode, the decision reject an unauthenticated client is delegated to
+The middleware may also be configured to operate in a 'delegated mode'.
+In this mode, the decision to reject an unauthenticated client is delegated to
 the OpenStack service, as illustrated in :ref:`authComponentDelegated`.
 
 Here, requests are forwarded to the OpenStack service with an identity status
@@ -102,7 +100,7 @@ Deployment Strategy
 ===================
 
 The middleware is intended to be used inline with OpenStack wsgi components,
-based on the openstack-common WSGI middleware class. It is typically deployed
+based on the Oslo WSGI middleware class. It is typically deployed
 as a configuration element in a paste configuration pipeline of other
 middleware components, with the pipeline terminating in the service
 application. The middleware conforms to the python WSGI standard [PEP-333]_.
@@ -122,11 +120,10 @@ a WSGI component. Example for the auth_token middleware::
     pipeline = authtoken myService
 
     [filter:authtoken]
-    paste.filter_factory = keystone.middleware.auth_token:filter_factory
+    paste.filter_factory = keystoneclient.middleware.auth_token:filter_factory
     auth_host = 127.0.0.1
     auth_port = 35357
     auth_protocol = http
-    auth_uri = http://127.0.0.1:5000/
     admin_token = Super999Sekret888Password777
     admin_user = admin
     admin_password = SuperSekretPassword
@@ -144,13 +141,13 @@ a WSGI component. Example for the auth_token middleware::
     ;Uncomment next line to opt-out of service catalog
     ;include_service_catalog = False
 
-For services which have separate paste-deploy ini file, auth_token middleware
+For services which have a separate paste-deploy ini file, auth_token middleware
 can be alternatively configured in [keystone_authtoken] section in the main
 config file. For example in Nova, all middleware parameters can be removed
 from api-paste.ini::
 
     [filter:authtoken]
-    paste.filter_factory = keystone.middleware.auth_token:filter_factory
+    paste.filter_factory = keystoneclient.middleware.auth_token:filter_factory
 
 and set in nova.conf::
 
@@ -162,7 +159,6 @@ and set in nova.conf::
     auth_host = 127.0.0.1
     auth_port = 35357
     auth_protocol = http
-    auth_uri = http://127.0.0.1:5000/
     admin_user = admin
     admin_password = SuperSekretPassword
     admin_tenant_name = service
@@ -282,8 +278,8 @@ unsuccessful.
 Extended the request with additional User Information
 -----------------------------------------------------
 
-:py:class:`keystone.middleware.auth_token.AuthProtocol` extends the request
-with additional information if the user has been authenticated.
+:py:class:`keystoneclient.middleware.auth_token.AuthProtocol` extends the
+request with additional information if the user has been authenticated.
 
 
 X-Identity-Status
