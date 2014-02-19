@@ -55,6 +55,8 @@ request = client_session.request
 
 class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
 
+    version = None
+
     @utils.positional(enforcement=utils.positional.WARN)
     def __init__(self, username=None, tenant_id=None, tenant_name=None,
                  password=None, auth_url=None, region_name=None, endpoint=None,
@@ -568,10 +570,17 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         concatenating self.management_url and url and passing in method and
         any associated kwargs.
         """
+        # NOTE(jamielennox): remember that if you use the legacy client mode
+        # (you create a client without a session) then this HTTPClient object
+        # is the auth plugin you are using. Values in the endpoint_filter may
+        # be ignored and you should look at get_endpoint to figure out what.
         interface = 'admin' if management else 'public'
         endpoint_filter = kwargs.setdefault('endpoint_filter', {})
         endpoint_filter.setdefault('service_type', 'identity')
         endpoint_filter.setdefault('interface', interface)
+
+        if self.version:
+            endpoint_filter.setdefault('version', self.version)
 
         if self.region_name:
             endpoint_filter.setdefault('region_name', self.region_name)
