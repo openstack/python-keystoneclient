@@ -155,6 +155,7 @@ import netaddr
 import six
 from six.moves import urllib
 
+from keystoneclient import access
 from keystoneclient.common import cms
 from keystoneclient import exceptions
 from keystoneclient.middleware import memcache_crypt
@@ -863,96 +864,39 @@ class AuthProtocol(object):
         :raise InvalidUserToken when unable to parse token object
 
         """
-        def get_tenant_info():
-            """Returns a (tenant_id, tenant_name) tuple from context."""
-            def essex():
-                """Essex puts the tenant ID and name on the token."""
-                return (token['tenant']['id'], token['tenant']['name'])
+        auth_ref = access.AccessInfo.factory(body=token_info)
+        roles = ",".join(auth_ref.role_names)
 
-            def pre_diablo():
-                """Pre-diablo, Keystone only provided tenantId."""
-                return (token['tenantId'], token['tenantId'])
-
-            def default_tenant():
-                """Pre-grizzly, assume the user's default tenant."""
-                return (user['tenantId'], user['tenantName'])
-
-            for method in [essex, pre_diablo, default_tenant]:
-                try:
-                    return method()
-                except KeyError:
-                    pass
-
+        if _token_is_v2(token_info) and not auth_ref.project_id:
             raise InvalidUserToken('Unable to determine tenancy.')
-
-        # For clarity. set all those attributes that are optional in
-        # either a v2 or v3 token to None first
-        domain_id = None
-        domain_name = None
-        project_id = None
-        project_name = None
-        user_domain_id = None
-        user_domain_name = None
-        project_domain_id = None
-        project_domain_name = None
-
-        if _token_is_v2(token_info):
-            user = token_info['access']['user']
-            token = token_info['access']['token']
-            roles = ','.join([role['name'] for role in user.get('roles', [])])
-            catalog_root = token_info['access']
-            catalog_key = 'serviceCatalog'
-            project_id, project_name = get_tenant_info()
-        else:
-            #v3 token
-            token = token_info['token']
-            user = token['user']
-            user_domain_id = user['domain']['id']
-            user_domain_name = user['domain']['name']
-            roles = (','.join([role['name']
-                     for role in token.get('roles', [])]))
-            catalog_root = token
-            catalog_key = 'catalog'
-            # For v3, the server will put in the default project if there is
-            # one, so no need for us to add it here (like we do for a v2 token)
-            if 'domain' in token:
-                domain_id = token['domain']['id']
-                domain_name = token['domain']['name']
-            elif 'project' in token:
-                project_id = token['project']['id']
-                project_name = token['project']['name']
-                project_domain_id = token['project']['domain']['id']
-                project_domain_name = token['project']['domain']['name']
-
-        user_id = user['id']
-        user_name = user['name']
 
         rval = {
             'X-Identity-Status': 'Confirmed',
-            'X-Domain-Id': domain_id,
-            'X-Domain-Name': domain_name,
-            'X-Project-Id': project_id,
-            'X-Project-Name': project_name,
-            'X-Project-Domain-Id': project_domain_id,
-            'X-Project-Domain-Name': project_domain_name,
-            'X-User-Id': user_id,
-            'X-User-Name': user_name,
-            'X-User-Domain-Id': user_domain_id,
-            'X-User-Domain-Name': user_domain_name,
+            'X-Domain-Id': auth_ref.domain_id,
+            'X-Domain-Name': auth_ref.domain_name,
+            'X-Project-Id': auth_ref.project_id,
+            'X-Project-Name': auth_ref.project_name,
+            'X-Project-Domain-Id': auth_ref.project_domain_id,
+            'X-Project-Domain-Name': auth_ref.project_domain_name,
+            'X-User-Id': auth_ref.user_id,
+            'X-User-Name': auth_ref.username,
+            'X-User-Domain-Id': auth_ref.user_domain_id,
+            'X-User-Domain-Name': auth_ref.user_domain_name,
             'X-Roles': roles,
             # Deprecated
-            'X-User': user_name,
-            'X-Tenant-Id': project_id,
-            'X-Tenant-Name': project_name,
-            'X-Tenant': project_name,
+            'X-User': auth_ref.username,
+            'X-Tenant-Id': auth_ref.project_id,
+            'X-Tenant-Name': auth_ref.project_name,
+            'X-Tenant': auth_ref.project_name,
             'X-Role': roles,
         }
 
         self.LOG.debug("Received request from user: %s with project_id : %s"
-                       " and roles: %s ", user_id, project_id, roles)
+                       " and roles: %s ",
+                       auth_ref.user_id, auth_ref.project_id, roles)
 
-        if self.include_service_catalog and catalog_key in catalog_root:
-            catalog = catalog_root[catalog_key]
+        if self.include_service_catalog and auth_ref.has_service_catalog():
+            catalog = auth_ref.service_catalog.get_data()
             rval['X-Service-Catalog'] = jsonutils.dumps(catalog)
 
         return rval
