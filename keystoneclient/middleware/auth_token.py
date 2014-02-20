@@ -411,7 +411,7 @@ class AuthProtocol(object):
         auth_host = self._conf_get('auth_host')
         auth_port = int(self._conf_get('auth_port'))
         auth_protocol = self._conf_get('auth_protocol')
-        self.auth_admin_prefix = self._conf_get('auth_admin_prefix')
+        auth_admin_prefix = self._conf_get('auth_admin_prefix')
         self.auth_uri = self._conf_get('auth_uri')
 
         if netaddr.valid_ipv6(auth_host):
@@ -431,6 +431,10 @@ class AuthProtocol(object):
             # FIXME(dolph): drop support for this fallback behavior as
             # documented in bug 1207517
             self.auth_uri = self.request_uri
+
+        if auth_admin_prefix:
+            self.request_uri = "%s/%s" % (self.request_uri,
+                                          auth_admin_prefix.strip('/'))
 
         # SSL
         self.cert_file = self._conf_get('certfile')
@@ -761,8 +765,6 @@ class AuthProtocol(object):
 
         if body:
             kwargs['data'] = jsonutils.dumps(body)
-
-        path = self.auth_admin_prefix + path
 
         response = self._http_request(method, path, **kwargs)
 
@@ -1366,8 +1368,7 @@ class AuthProtocol(object):
         return self.cms_verify(data['signed'])
 
     def fetch_signing_cert(self):
-        path = self.auth_admin_prefix.rstrip('/')
-        path += '/v2.0/certificates/signing'
+        path = '/v2.0/certificates/signing'
         response = self._http_request('GET', path)
 
         def write_cert_file(data):
@@ -1389,7 +1390,7 @@ class AuthProtocol(object):
             raise ServiceError('invalid json response')
 
     def fetch_ca_cert(self):
-        path = self.auth_admin_prefix.rstrip('/') + '/v2.0/certificates/ca'
+        path = '/v2.0/certificates/ca'
         response = self._http_request('GET', path)
 
         if response.status_code != 200:
