@@ -136,7 +136,7 @@ class ServiceCatalogTest(utils.TestCase):
         self.assertEqual(urls[0], 'https://image.south.host/v1/')
 
         urls = sc.get_urls(service_type='image', region_name='West')
-        self.assertEqual(urls, None)
+        self.assertIsNone(urls)
 
     def test_service_catalog_param_overrides_body_region(self):
         self.AUTH_RESPONSE_BODY['access']['region_name'] = "North"

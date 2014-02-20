@@ -44,11 +44,11 @@ class AccessInfoTest(utils.TestCase, testresources.ResourcedTestCase):
 
         self.assertEqual(auth_ref.role_names, [])
 
-        self.assertEqual(auth_ref.tenant_name, None)
-        self.assertEqual(auth_ref.tenant_id, None)
+        self.assertIsNone(auth_ref.tenant_name)
+        self.assertIsNone(auth_ref.tenant_id)
 
-        self.assertEqual(auth_ref.auth_url, None)
-        self.assertEqual(auth_ref.management_url, None)
+        self.assertIsNone(auth_ref.auth_url)
+        self.assertIsNone(auth_ref.management_url)
 
         self.assertFalse(auth_ref.scoped)
         self.assertFalse(auth_ref.domain_scoped)

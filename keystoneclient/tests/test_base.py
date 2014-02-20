@@ -72,7 +72,7 @@ class BaseTest(utils.TestCase):
 
     def test_human_id(self):
         r = base.Resource(None, {"name": "1 of !"})
-        self.assertEqual(r.human_id, None)
+        self.assertIsNone(r.human_id)
         r = HumanReadable(None, {"name": "1 of !"})
         self.assertEqual(r.human_id, "1-of")
 
