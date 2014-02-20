@@ -530,7 +530,7 @@ class AccessInfoV3(AccessInfo):
 
     @property
     def role_names(self):
-        return [r['name'] for r in self['user'].get('roles', [])]
+        return [r['name'] for r in self.get('roles', [])]
 
     @property
     def username(self):

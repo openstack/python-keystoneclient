@@ -126,23 +126,23 @@ DOMAIN_SCOPED_TOKEN = {
             },
             'id': 'c4da488862bd435c9e6c0275a0d0e49a',
             'name': 'exampleuser',
-            'roles': [
-                {
-                    "id": "76e72a",
-                    "links": {
-                        "self": "http://identity:35357/v3/roles/76e72a"
-                    },
-                    "name": "admin"
-                },
-                {
-                    "id": "f4f392",
-                    "links": {
-                        "self": "http://identity:35357/v3/roles/f4f392"
-                    },
-                    "name": "member"
-                }
-            ],
         },
+        'roles': [
+            {
+                "id": "76e72a",
+                "links": {
+                    "self": "http://identity:35357/v3/roles/76e72a"
+                },
+                "name": "admin"
+            },
+            {
+                "id": "f4f392",
+                "links": {
+                    "self": "http://identity:35357/v3/roles/f4f392"
+                },
+                "name": "member"
+            }
+        ],
         'domain': {
             'id': '8e9283b7ba0b1038840c3842058b86ab',
             'name': 'anotherdomain'
@@ -245,23 +245,23 @@ PROJECT_SCOPED_TOKEN = {
             },
             'id': 'c4da488862bd435c9e6c0275a0d0e49a',
             'name': 'exampleuser',
-            'roles': [
-                {
-                    "id": "76e72a",
-                    "links": {
-                        "self": "http://identity:35357/v3/roles/76e72a"
-                    },
-                    "name": "admin"
-                },
-                {
-                    "id": "f4f392",
-                    "links": {
-                        "self": "http://identity:35357/v3/roles/f4f392"
-                    },
-                    "name": "member"
-                }
-            ],
         },
+        'roles': [
+            {
+                "id": "76e72a",
+                "links": {
+                    "self": "http://identity:35357/v3/roles/76e72a"
+                },
+                "name": "admin"
+            },
+            {
+                "id": "f4f392",
+                "links": {
+                    "self": "http://identity:35357/v3/roles/f4f392"
+                },
+                "name": "member"
+            }
+        ],
         'project': {
             'domain': {
                 'id': '4e6893b7ba0b4006840c3845660b86ed',
