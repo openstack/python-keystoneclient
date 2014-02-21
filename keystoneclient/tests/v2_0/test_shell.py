@@ -13,6 +13,7 @@
 import os
 import sys
 
+import mock
 from mox3 import stubout
 import six
 from testtools import matchers
@@ -101,6 +102,20 @@ class ShellTests(utils.TestCase):
                  'enabled': True,
                  'name': 'new-user',
                  'tenantId': None}})
+
+    @mock.patch('sys.stdin', autospec=True)
+    def test_user_create_password_prompt(self, mock_stdin):
+        with mock.patch('getpass.getpass') as mock_getpass:
+            mock_getpass.return_value = 'newpass'
+            self.run_command('user-create --name new-user --pass')
+            self.fake_client.assert_called_anytime(
+                'POST', '/users',
+                {'user':
+                    {'email': None,
+                     'password': 'newpass',
+                     'enabled': True,
+                     'name': 'new-user',
+                     'tenantId': None}})
 
     def test_user_get(self):
         self.run_command('user-get 1')

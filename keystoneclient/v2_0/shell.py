@@ -27,6 +27,7 @@ from keystoneclient.v2_0 import client
 
 
 CLIENT_CLASS = client.Client
+ASK_FOR_PASSWORD = object()
 
 
 def require_service_catalog(f):
@@ -71,8 +72,8 @@ def do_user_get(kc, args):
 @utils.arg('--tenant', '--tenant-id', metavar='<tenant>',
            help='New user default tenant')
 @utils.arg('--tenant_id', help=argparse.SUPPRESS)
-@utils.arg('--pass', metavar='<pass>', dest='passwd',
-           help='New user password')
+@utils.arg('--pass', metavar='<pass>', dest='passwd', nargs='?',
+           const=ASK_FOR_PASSWORD, help='New user password')
 @utils.arg('--email', metavar='<email>',
            help='New user email address')
 @utils.arg('--enabled', metavar='<true|false>', default=True,
@@ -85,7 +86,10 @@ def do_user_create(kc, args):
         tenant_id = args.tenant_id
     else:
         tenant_id = None
-    user = kc.users.create(args.name, args.passwd, args.email,
+    new_passwd = args.passwd
+    if args.passwd is ASK_FOR_PASSWORD:
+        new_passwd = utils.prompt_for_password()
+    user = kc.users.create(args.name, new_passwd, args.email,
                            tenant_id=tenant_id,
                            enabled=strutils.bool_from_string(args.enabled))
     utils.print_dict(user._info)
