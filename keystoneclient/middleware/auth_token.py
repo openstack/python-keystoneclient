@@ -1160,8 +1160,8 @@ class AuthProtocol(object):
 
         """
         if self._cache:
-                self.LOG.debug('Storing %s token in memcache', token_id)
-                self._cache_store(token_id, (data, expires))
+            self.LOG.debug('Storing %s token in memcache', token_id)
+            self._cache_store(token_id, (data, expires))
 
     def _cache_store_invalid(self, token_id):
         """Store invalid token in cache."""
