@@ -268,13 +268,12 @@ opts = [
                help='Directory used to cache files related to PKI tokens'),
     cfg.ListOpt('memcached_servers',
                 deprecated_name='memcache_servers',
-                help='If defined, the memcache server(s) to use for'
-                ' caching'),
+                help='If defined, the memcache server(s) to use for caching'),
     cfg.IntOpt('token_cache_time',
                default=300,
                help='In order to prevent excessive requests and validations,'
                ' the middleware uses an in-memory cache for the tokens the'
-               ' Keystone API returns. This is only valid if memcache_servers'
+               ' Keystone API returns. This is only valid if memcached_servers'
                ' is defined. Set to -1 to disable caching completely.'),
     cfg.IntOpt('revocation_cache_time',
                default=1,
