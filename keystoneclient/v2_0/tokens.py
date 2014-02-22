@@ -27,7 +27,7 @@ class Token(base.Resource):
 
     @property
     def tenant(self):
-        return self._info['token'].get('tenant', None)
+        return self._info['token'].get('tenant')
 
 
 class TokenManager(base.Manager):

@@ -64,7 +64,7 @@ def env(*vars, **kwargs):
 
     """
     for v in vars:
-        value = os.environ.get(v, None)
+        value = os.environ.get(v)
         if value:
             return value
     return kwargs.get('default', '')

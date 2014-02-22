@@ -134,7 +134,7 @@ class TestResponse(requests.Response):
                 self.headers.update(headers)
             # Fake the text attribute to streamline Response creation
             # _content is defined by requests.Response
-            self._content = data.get('text', None)
+            self._content = data.get('text')
         else:
             self.status_code = data
 
