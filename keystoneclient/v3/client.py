@@ -124,6 +124,8 @@ class Client(httpclient.HTTPClient):
             self._process_management_url(kwargs.get('region_name'))
             self.domain_name = self.auth_ref.domain_name
             self.domain_id = self.auth_ref.domain_id
+        if self._management_url:
+            self._management_url = self._management_url.replace('/v2.0', '/v3')
 
     def get_raw_token_from_identity_service(self, auth_url, user_id=None,
                                             username=None,
