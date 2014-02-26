@@ -503,7 +503,7 @@ class AuthProtocol(object):
         cache = self._conf_get('cache')
         memcache_servers = self._conf_get('memcached_servers')
 
-        if cache and env.get(cache, None) is not None:
+        if cache and env.get(cache) is not None:
             # use the cache from the upstream filter
             self.LOG.info('Using %s memcache for caching token', cache)
             self._cache = env.get(cache)

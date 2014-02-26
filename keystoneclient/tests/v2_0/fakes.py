@@ -48,7 +48,7 @@ class FakeHTTPClient(fakes.FakeClient):
                                  (method, url, callback))
 
         # Note the call
-        self.callstack.append((method, url, kwargs.get('body', None)))
+        self.callstack.append((method, url, kwargs.get('body')))
 
         if not hasattr(self, callback):
             raise AssertionError('Called unknown API method: %s %s, '
@@ -56,7 +56,7 @@ class FakeHTTPClient(fakes.FakeClient):
                                  (method, url, callback))
 
         # Note the call
-        self.callstack.append((method, url, kwargs.get('body', None)))
+        self.callstack.append((method, url, kwargs.get('body')))
 
         status, body = getattr(self, callback)(**kwargs)
         r = utils.TestResponse({

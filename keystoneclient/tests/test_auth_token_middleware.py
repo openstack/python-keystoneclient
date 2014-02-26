@@ -158,7 +158,7 @@ class TimezoneFixture(fixtures.Fixture):
     def __init__(self, new_tz):
         super(TimezoneFixture, self).__init__()
         self.tz = new_tz
-        self.old_tz = os.environ.get('TZ', None)
+        self.old_tz = os.environ.get('TZ')
 
     def setUp(self):
         super(TimezoneFixture, self).setUp()
