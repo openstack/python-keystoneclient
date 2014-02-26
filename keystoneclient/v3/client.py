@@ -15,6 +15,7 @@
 
 import logging
 
+from keystoneclient.auth.identity import v3 as v3_auth
 from keystoneclient import exceptions
 from keystoneclient import httpclient
 from keystoneclient.openstack.common import jsonutils
@@ -102,7 +103,9 @@ class Client(httpclient.HTTPClient):
         self.users = users.UserManager(self)
         self.trusts = trusts.TrustManager(self)
 
-        if self.management_url is None:
+        # DEPRECATED: if session is passed then we go to the new behaviour of
+        # authenticating on the first required call.
+        if 'session' not in kwargs and self.management_url is None:
             self.authenticate()
 
     def serialize(self, entity):
@@ -136,112 +139,35 @@ class Client(httpclient.HTTPClient):
                                             **kwargs):
         """Authenticate against the v3 Identity API.
 
-        :returns: (``resp``, ``body``) if authentication was successful.
+        :returns: access.AccessInfo if authentication was successful.
         :raises: AuthorizationFailure if unable to authenticate or validate
                  the existing authorization token
         :raises: Unauthorized if authentication fails due to invalid token
 
         """
         try:
-            return self._do_auth(
-                auth_url,
-                user_id=user_id,
-                username=username,
-                user_domain_id=user_domain_id,
-                user_domain_name=user_domain_name,
-                password=password,
-                domain_id=domain_id,
-                domain_name=domain_name,
-                project_id=project_id,
-                project_name=project_name,
-                project_domain_id=project_domain_id,
-                project_domain_name=project_domain_name,
-                token=token,
-                trust_id=trust_id)
+            if auth_url is None:
+                raise ValueError("Cannot authenticate without an auth_url")
+
+            a = v3_auth.Auth.factory(auth_url,
+                                     username=username,
+                                     password=password,
+                                     token=token,
+                                     trust_id=trust_id,
+                                     user_id=user_id,
+                                     domain_id=domain_id,
+                                     domain_name=domain_name,
+                                     user_domain_id=user_domain_id,
+                                     user_domain_name=user_domain_name,
+                                     project_id=project_id,
+                                     project_name=project_name,
+                                     project_domain_id=project_domain_id,
+                                     project_domain_name=project_domain_name)
+
+            return a.get_auth_ref(self.session)
         except (exceptions.AuthorizationFailure, exceptions.Unauthorized):
             _logger.debug('Authorization failed.')
             raise
         except Exception as e:
             raise exceptions.AuthorizationFailure('Authorization failed: '
                                                   '%s' % e)
-
-    def _do_auth(self, auth_url, user_id=None, username=None,
-                 user_domain_id=None, user_domain_name=None, password=None,
-                 domain_id=None, domain_name=None,
-                 project_id=None, project_name=None, project_domain_id=None,
-                 project_domain_name=None, token=None, trust_id=None):
-        headers = {}
-        if auth_url is None:
-            raise ValueError("Cannot authenticate without a valid auth_url")
-        url = auth_url + "/auth/tokens"
-        body = {'auth': {'identity': {}}}
-        ident = body['auth']['identity']
-
-        if token:
-            headers['X-Auth-Token'] = token
-
-            ident['methods'] = ['token']
-            ident['token'] = {}
-            ident['token']['id'] = token
-
-        if password:
-            ident['methods'] = ['password']
-            ident['password'] = {}
-            ident['password']['user'] = {}
-            user = ident['password']['user']
-            user['password'] = password
-
-            if user_id:
-                user['id'] = user_id
-            elif username:
-                user['name'] = username
-
-                if user_domain_id or user_domain_name:
-                    user['domain'] = {}
-                if user_domain_id:
-                    user['domain']['id'] = user_domain_id
-                elif user_domain_name:
-                    user['domain']['name'] = user_domain_name
-
-        if (domain_id or domain_name) and (project_id or project_name):
-            raise ValueError('Authentication cannot be scoped to both domain'
-                             ' and project.')
-
-        if domain_id or domain_name:
-            body['auth']['scope'] = {}
-            scope = body['auth']['scope']
-            scope['domain'] = {}
-
-            if domain_id:
-                scope['domain']['id'] = domain_id
-            elif domain_name:
-                scope['domain']['name'] = domain_name
-
-        if project_id or project_name:
-            body['auth']['scope'] = {}
-            scope = body['auth']['scope']
-            scope['project'] = {}
-
-            if project_id:
-                scope['project']['id'] = project_id
-            elif project_name:
-                scope['project']['name'] = project_name
-
-                if project_domain_id or project_domain_name:
-                    scope['project']['domain'] = {}
-                if project_domain_id:
-                    scope['project']['domain']['id'] = project_domain_id
-                elif project_domain_name:
-                    scope['project']['domain']['name'] = project_domain_name
-
-        if trust_id:
-            body['auth']['scope'] = {}
-            scope = body['auth']['scope']
-            scope['OS-TRUST:trust'] = {}
-            scope['OS-TRUST:trust']['id'] = trust_id
-
-        if not (ident or token):
-            raise ValueError('Authentication method required (e.g. password)')
-
-        resp, body = self.request(url, 'POST', body=body, headers=headers)
-        return resp, body
