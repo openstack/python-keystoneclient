@@ -314,8 +314,17 @@ class Session(object):
                    user_agent=kwargs.pop('user_agent', None))
 
     def get_token(self):
-        """Return a token as provided by the auth plugin."""
+        """Return a token as provided by the auth plugin.
+
+        :raises AuthorizationFailure: if a new token fetch fails.
+
+        :returns string: A valid token.
+        """
         if not self.auth:
             raise exceptions.MissingAuthPlugin("Token Required")
 
-        return self.auth.get_token(self)
+        try:
+            return self.auth.get_token(self)
+        except exceptions.HTTPError as exc:
+            raise exceptions.AuthorizationFailure("Authentication failure: "
+                                                  "%s" % exc)
