@@ -66,20 +66,19 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
     def get_token(self, session, **kwargs):
         """Return a valid auth token.
 
-        If a valid token is not present then a new one will be fetched using
-        the session and kwargs.
+        If a valid token is not present then a new one will be fetched.
 
         :raises HTTPError: An error from an invalid HTTP response.
 
         :return string: A valid token.
         """
-        return self.get_access(session, **kwargs).auth_token
+        return self.get_access(session).auth_token
 
     def get_access(self, session, **kwargs):
         """Fetch or return a current AccessInfo object.
 
-        If a valid AccessInfo is present then it is returned otherwise kwargs
-        and session are used to fetch a new one.
+        If a valid AccessInfo is present then it is returned otherwise a new
+        one will be fetched.
 
         :raises HTTPError: An error from an invalid HTTP response.
 
@@ -87,6 +86,6 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
         """
         if (not self.auth_ref or
                 self.auth_ref.will_expire_soon(self.MIN_TOKEN_LIFE_SECONDS)):
-            self.auth_ref = self.get_auth_ref(session, **kwargs)
+            self.auth_ref = self.get_auth_ref(session)
 
         return self.auth_ref
