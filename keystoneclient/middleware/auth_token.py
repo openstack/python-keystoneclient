@@ -233,12 +233,6 @@ opts = [
                default=3,
                help='How many times are we trying to reconnect when'
                ' communicating with Identity API Server.'),
-    cfg.StrOpt('http_handler',
-               default=None,
-               help='Allows to pass in the name of a fake http_handler'
-               ' callback function used instead of httplib.HTTPConnection or'
-               ' httplib.HTTPSConnection. Useful for unit testing where'
-               ' network is not available.'),
     cfg.StrOpt('admin_token',
                secret=True,
                help='Single shared secret with the Keystone configuration'
