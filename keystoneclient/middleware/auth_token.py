@@ -1324,6 +1324,24 @@ class AuthProtocol(object):
             self.token_revocation_list = self.fetch_revocation_list()
         return self._token_revocation_list
 
+    def _atomic_write_to_signing_dir(self, file_name, value):
+        # In Python2, encoding is slow so the following check avoids it if it
+        # is not absolutely necessary.
+        if isinstance(value, six.text_type):
+            value = value.encode('utf-8')
+
+        def _atomic_write(destination, data):
+            with tempfile.NamedTemporaryFile(dir=self.signing_dirname,
+                                             delete=False) as f:
+                f.write(data)
+            os.rename(f.name, destination)
+
+        try:
+            _atomic_write(file_name, value)
+        except (OSError, IOError):
+            self.verify_signing_dir()
+            _atomic_write(file_name, value)
+
     @token_revocation_list.setter
     def token_revocation_list(self, value):
         """Save a revocation list to memory and to disk.
@@ -1333,15 +1351,7 @@ class AuthProtocol(object):
         """
         self._token_revocation_list = jsonutils.loads(value)
         self.token_revocation_list_fetched_time = timeutils.utcnow()
-
-        with tempfile.NamedTemporaryFile(dir=self.signing_dirname,
-                                         delete=False) as f:
-            # In Python2, encoding is slow so the following check avoids it if
-            # it is not absolutely necessary.
-            if isinstance(value, six.text_type):
-                value = value.encode('utf-8')
-            f.write(value)
-        os.rename(f.name, self.revoked_file_name)
+        self._atomic_write_to_signing_dir(self.revoked_file_name, value)
 
     def fetch_revocation_list(self, retry=True):
         headers = {'X-Auth-Token': self.get_admin_token()}
@@ -1360,42 +1370,18 @@ class AuthProtocol(object):
             raise ServiceError('Revocation list improperly formatted.')
         return self.cms_verify(data['signed'])
 
-    def fetch_signing_cert(self):
-        path = '/v2.0/certificates/signing'
+    def _fetch_cert_file(self, cert_file_name, cert_type):
+        path = '/v2.0/certificates/' + cert_type
         response = self._http_request('GET', path)
-
-        def write_cert_file(data):
-            with open(self.signing_cert_file_name, 'w') as certfile:
-                certfile.write(data)
-
         if response.status_code != 200:
             raise exceptions.CertificateConfigError(response.text)
+        self._atomic_write_to_signing_dir(cert_file_name, response.text)
 
-        try:
-            try:
-                write_cert_file(response.text)
-            except IOError:
-                self.verify_signing_dir()
-                write_cert_file(response.text)
-        except (AssertionError, KeyError):
-            self.LOG.warn(
-                "Unexpected response from keystone service: %s", response.text)
-            raise ServiceError('invalid json response')
+    def fetch_signing_cert(self):
+        self._fetch_cert_file(self.signing_cert_file_name, 'signing')
 
     def fetch_ca_cert(self):
-        path = '/v2.0/certificates/ca'
-        response = self._http_request('GET', path)
-
-        if response.status_code != 200:
-            raise exceptions.CertificateConfigError(response.text)
-
-        try:
-            with open(self.signing_ca_file_name, 'w') as certfile:
-                certfile.write(response.text)
-        except (AssertionError, KeyError):
-            self.LOG.warn(
-                "Unexpected response from keystone service: %s", response.text)
-            raise ServiceError('invalid json response')
+        self._fetch_cert_file(self.signing_ca_file_name, 'ca')
 
 
 def filter_factory(global_conf, **local_conf):
