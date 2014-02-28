@@ -42,6 +42,7 @@ from keystoneclient import baseclient
 from keystoneclient import exceptions
 from keystoneclient.openstack.common import jsonutils
 from keystoneclient import session as client_session
+from keystoneclient import utils
 
 
 _logger = logging.getLogger(__name__)
@@ -54,6 +55,7 @@ request = client_session.request
 
 class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
 
+    @utils.positional(enforcement=utils.positional.WARN)
     def __init__(self, username=None, tenant_id=None, tenant_name=None,
                  password=None, auth_url=None, region_name=None, endpoint=None,
                  token=None, debug=False, auth_ref=None, use_keyring=False,
@@ -287,6 +289,7 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         """
         return self.project_name
 
+    @utils.positional(enforcement=utils.positional.WARN)
     def authenticate(self, username=None, password=None, tenant_name=None,
                      tenant_id=None, auth_url=None, token=None,
                      user_id=None, domain_name=None, domain_id=None,
@@ -496,6 +499,7 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         # permanently setting _endpoint would better match that behaviour.
         self._endpoint = value
 
+    @utils.positional(enforcement=utils.positional.WARN)
     def get_raw_token_from_identity_service(self, auth_url, username=None,
                                             password=None, tenant_name=None,
                                             tenant_id=None, token=None,

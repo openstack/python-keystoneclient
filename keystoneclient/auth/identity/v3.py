@@ -20,12 +20,14 @@ import six
 from keystoneclient import access
 from keystoneclient.auth.identity import base
 from keystoneclient import exceptions
+from keystoneclient import utils
 
 _logger = logging.getLogger(__name__)
 
 
 class Auth(base.BaseIdentityPlugin):
 
+    @utils.positional()
     def __init__(self, auth_url, auth_methods,
                  trust_id=None,
                  domain_id=None,

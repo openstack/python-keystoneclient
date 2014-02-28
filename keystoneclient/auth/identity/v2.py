@@ -19,6 +19,7 @@ import six
 from keystoneclient import access
 from keystoneclient.auth.identity import base
 from keystoneclient import exceptions
+from keystoneclient import utils
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -51,6 +52,7 @@ class Auth(base.BaseIdentityPlugin):
         msg = 'A username and password or token is required.'
         raise exceptions.NoMatchingPlugin(msg)
 
+    @utils.positional()
     def __init__(self, auth_url,
                  trust_id=None,
                  tenant_id=None,

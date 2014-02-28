@@ -15,6 +15,7 @@
 #    under the License.
 
 from keystoneclient import base
+from keystoneclient import utils
 
 
 class Service(base.Resource):
@@ -36,6 +37,7 @@ class ServiceManager(base.CrudManager):
     collection_key = 'services'
     key = 'service'
 
+    @utils.positional(1, enforcement=utils.positional.WARN)
     def create(self, name, type, enabled=True, **kwargs):
         return super(ServiceManager, self).create(
             name=name,
@@ -47,6 +49,7 @@ class ServiceManager(base.CrudManager):
         return super(ServiceManager, self).get(
             service_id=base.getid(service))
 
+    @utils.positional(enforcement=utils.positional.WARN)
     def update(self, service, name=None, type=None, enabled=None, **kwargs):
         return super(ServiceManager, self).update(
             service_id=base.getid(service),

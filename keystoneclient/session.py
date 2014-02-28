@@ -17,6 +17,7 @@ import six
 
 from keystoneclient import exceptions
 from keystoneclient.openstack.common import jsonutils
+from keystoneclient import utils
 
 
 USER_AGENT = 'python-keystoneclient'
@@ -51,6 +52,7 @@ class Session(object):
     REDIRECT_STATUSES = (301, 302, 303, 305, 307)
     DEFAULT_REDIRECT_LIMIT = 30
 
+    @utils.positional(2, enforcement=utils.positional.WARN)
     def __init__(self, auth=None, session=None, original_ip=None, verify=True,
                  cert=None, timeout=None, user_agent=None,
                  redirect=DEFAULT_REDIRECT_LIMIT):
@@ -108,6 +110,7 @@ class Session(object):
         if user_agent is not None:
             self.user_agent = user_agent
 
+    @utils.positional(enforcement=utils.positional.WARN)
     def request(self, url, method, json=None, original_ip=None,
                 user_agent=None, redirect=None, authenticated=None,
                 **kwargs):

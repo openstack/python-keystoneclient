@@ -16,6 +16,7 @@
 
 from keystoneclient import base
 from keystoneclient import exceptions
+from keystoneclient import utils
 
 
 VALID_INTERFACES = ['public', 'admin', 'internal']
@@ -48,6 +49,7 @@ class EndpointManager(base.CrudManager):
             msg = msg % ', '.join(VALID_INTERFACES)
             raise exceptions.ValidationError(msg)
 
+    @utils.positional(1, enforcement=utils.positional.WARN)
     def create(self, service, url, interface=None, region=None, enabled=True,
                **kwargs):
         self._validate_interface(interface)
@@ -63,6 +65,7 @@ class EndpointManager(base.CrudManager):
         return super(EndpointManager, self).get(
             endpoint_id=base.getid(endpoint))
 
+    @utils.positional(enforcement=utils.positional.WARN)
     def list(self, service=None, interface=None, region=None, enabled=None,
              **kwargs):
         """List endpoints.
@@ -78,6 +81,7 @@ class EndpointManager(base.CrudManager):
             enabled=enabled,
             **kwargs)
 
+    @utils.positional(enforcement=utils.positional.WARN)
     def update(self, endpoint, service=None, url=None, interface=None,
                region=None, enabled=None, **kwargs):
         self._validate_interface(interface)

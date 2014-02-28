@@ -15,6 +15,7 @@
 #    under the License.
 
 from keystoneclient import base
+from keystoneclient import utils
 
 
 class Project(base.Resource):
@@ -27,6 +28,7 @@ class Project(base.Resource):
         * enabled: boolean to indicate if project is enabled
 
     """
+    @utils.positional(enforcement=utils.positional.WARN)
     def update(self, name=None, description=None, enabled=None):
         kwargs = {
             'name': name if name is not None else self.name,
@@ -51,6 +53,7 @@ class ProjectManager(base.CrudManager):
     collection_key = 'projects'
     key = 'project'
 
+    @utils.positional(1, enforcement=utils.positional.WARN)
     def create(self, name, domain, description=None, enabled=True, **kwargs):
         return super(ProjectManager, self).create(
             domain_id=base.getid(domain),
@@ -59,6 +62,7 @@ class ProjectManager(base.CrudManager):
             enabled=enabled,
             **kwargs)
 
+    @utils.positional(enforcement=utils.positional.WARN)
     def list(self, domain=None, user=None, **kwargs):
         """List projects.
 
@@ -78,6 +82,7 @@ class ProjectManager(base.CrudManager):
         return super(ProjectManager, self).get(
             project_id=base.getid(project))
 
+    @utils.positional(enforcement=utils.positional.WARN)
     def update(self, project, name=None, domain=None, description=None,
                enabled=None, **kwargs):
         return super(ProjectManager, self).update(

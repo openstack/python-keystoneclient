@@ -15,6 +15,7 @@
 #    under the License.
 
 from keystoneclient import base
+from keystoneclient import utils
 
 
 class Credential(base.Resource):
@@ -47,6 +48,7 @@ class CredentialManager(base.CrudManager):
             raise ValueError(
                 "Credential requires blob to be specified")
 
+    @utils.positional(1, enforcement=utils.positional.WARN)
     def create(self, user, type, blob=None, data=None, project=None, **kwargs):
         return super(CredentialManager, self).create(
             user_id=base.getid(user),
@@ -67,6 +69,7 @@ class CredentialManager(base.CrudManager):
         """
         return super(CredentialManager, self).list(**kwargs)
 
+    @utils.positional(2, enforcement=utils.positional.WARN)
     def update(self, credential, user, type=None, blob=None, data=None,
                project=None, **kwargs):
         return super(CredentialManager, self).update(
