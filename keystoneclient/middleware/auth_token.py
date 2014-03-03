@@ -1417,3 +1417,30 @@ def app_factory(global_conf, **local_conf):
     conf = global_conf.copy()
     conf.update(local_conf)
     return AuthProtocol(None, conf)
+
+
+if __name__ == '__main__':
+    """Run this module directly to start a protected echo service::
+
+        $ python -m keystoneclient.middleware.auth_token
+
+    When the ``auth_token`` module authenticates a request, the echo service
+    will respond with all the environment variables presented to it by this
+    module.
+
+    """
+    def echo_app(environ, start_response):
+        """A WSGI application that echoes the CGI environment to the user."""
+        start_response('200 OK', [('Content-Type', 'application/json')])
+        environment = dict((k, v) for k, v in six.iteritems(environ)
+                           if k.startswith('HTTP_X_'))
+        yield jsonutils.dumps(environment)
+
+    from wsgiref import simple_server
+
+    # hardcode any non-default configuration here
+    conf = {'auth_protocol': 'http', 'admin_token': 'ADMIN'}
+    app = AuthProtocol(echo_app, conf)
+    server = simple_server.make_server('', 8000, app)
+    print('Serving on port 8000 (Ctrl+C to end)...')
+    server.serve_forever()
