@@ -498,7 +498,7 @@ class AuthProtocol(object):
                 raise ConfigurationError('memcache_security_strategy must be '
                                          'ENCRYPT or MAC')
             if not self._memcache_secret_key:
-                raise ConfigurationError('mecmache_secret_key must be defined '
+                raise ConfigurationError('memcache_secret_key must be defined '
                                          'when a memcache_security_strategy '
                                          'is defined')
 
