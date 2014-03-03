@@ -1070,7 +1070,7 @@ class CertDownloadMiddlewareTest(BaseAuthTokenMiddlewareTest,
         self.base_dir = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, self.base_dir)
         self.cert_dir = os.path.join(self.base_dir, 'certs')
-        os.mkdir(self.cert_dir)
+        os.makedirs(self.cert_dir, stat.S_IRWXU)
         conf = {
             'signing_dir': self.cert_dir,
         }
