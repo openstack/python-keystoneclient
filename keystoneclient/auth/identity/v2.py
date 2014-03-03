@@ -25,7 +25,7 @@ from keystoneclient import exceptions
 class Auth(base.BaseIdentityPlugin):
 
     @staticmethod
-    def factory(auth_url, **kwargs):
+    def _factory(auth_url, **kwargs):
         """Construct a plugin appropriate to your available arguments.
 
         This function should only be used for loading authentication from a

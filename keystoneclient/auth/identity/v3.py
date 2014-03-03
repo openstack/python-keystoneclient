@@ -104,7 +104,7 @@ class Auth(base.BaseIdentityPlugin):
                                    **resp.json()['token'])
 
     @staticmethod
-    def factory(auth_url, **kwargs):
+    def _factory(auth_url, **kwargs):
         """Construct a plugin appropriate to your available arguments.
 
         This function is intended as a convenience and backwards compatibility.
@@ -116,11 +116,11 @@ class Auth(base.BaseIdentityPlugin):
 
         # NOTE(jamielennox): kwargs extraction is outside the if statement to
         # clear up additional args that might be passed but not valid for type.
-        method_kwargs = PasswordMethod.extract_kwargs(kwargs)
+        method_kwargs = PasswordMethod._extract_kwargs(kwargs)
         if method_kwargs.get('password'):
             methods.append(PasswordMethod(**method_kwargs))
 
-        method_kwargs = TokenMethod.extract_kwargs(kwargs)
+        method_kwargs = TokenMethod._extract_kwargs(kwargs)
         if method_kwargs.get('token'):
             methods.append(TokenMethod(**method_kwargs))
 
@@ -144,10 +144,10 @@ class AuthMethod(object):
     the factory method and don't work as well with AuthConstructors.
     """
 
-    method_parameters = []
+    _method_parameters = []
 
     def __init__(self, **kwargs):
-        for param in self.method_parameters:
+        for param in self._method_parameters:
             setattr(self, param, kwargs.pop(param, None))
 
         if kwargs:
@@ -155,10 +155,10 @@ class AuthMethod(object):
             raise AttributeError(msg)
 
     @classmethod
-    def extract_kwargs(cls, kwargs):
+    def _extract_kwargs(cls, kwargs):
         """Remove parameters related to this method from other kwargs."""
         return dict([(p, kwargs.pop(p, None))
-                     for p in cls.method_parameters])
+                     for p in cls._method_parameters])
 
     @abc.abstractmethod
     def get_auth_data(self, headers=None):
@@ -172,7 +172,7 @@ class AuthMethod(object):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class AuthConstructor(Auth):
+class _AuthConstructor(Auth):
     """AuthConstructor is a means of creating an Auth Plugin that contains
     only one authentication method. This is generally the required usage.
 
@@ -181,21 +181,21 @@ class AuthConstructor(Auth):
     creates the auth plugin with only that authentication method.
     """
 
-    auth_method_class = None
+    _auth_method_class = None
 
     def __init__(self, auth_url, *args, **kwargs):
-        method_kwargs = self.auth_method_class.extract_kwargs(kwargs)
-        method = self.auth_method_class(*args, **method_kwargs)
-        super(AuthConstructor, self).__init__(auth_url, [method], **kwargs)
+        method_kwargs = self._auth_method_class._extract_kwargs(kwargs)
+        method = self._auth_method_class(*args, **method_kwargs)
+        super(_AuthConstructor, self).__init__(auth_url, [method], **kwargs)
 
 
 class PasswordMethod(AuthMethod):
 
-    method_parameters = ['user_id',
-                         'username',
-                         'user_domain_id',
-                         'user_domain_name',
-                         'password']
+    _method_parameters = ['user_id',
+                          'username',
+                          'user_domain_id',
+                          'user_domain_name',
+                          'password']
 
     def __init__(self, **kwargs):
         """Construct a User/Password based authentication method.
@@ -224,13 +224,13 @@ class PasswordMethod(AuthMethod):
         return 'password', {'user': user}
 
 
-class Password(AuthConstructor):
-    auth_method_class = PasswordMethod
+class Password(_AuthConstructor):
+    _auth_method_class = PasswordMethod
 
 
 class TokenMethod(AuthMethod):
 
-    method_parameters = ['token']
+    _method_parameters = ['token']
 
     def __init__(self, **kwargs):
         """Construct a Auth plugin to fetch a token from a token.
@@ -244,8 +244,8 @@ class TokenMethod(AuthMethod):
         return 'token', {'id': self.token}
 
 
-class Token(AuthConstructor):
-    auth_method_class = TokenMethod
+class Token(_AuthConstructor):
+    _auth_method_class = TokenMethod
 
     def __init__(self, auth_url, token, **kwargs):
         super(Token, self).__init__(auth_url, token=token, **kwargs)
