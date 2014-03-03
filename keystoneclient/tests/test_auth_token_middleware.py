@@ -524,6 +524,16 @@ class CommonAuthTokenMiddlewareTest(object):
         self.assert_valid_request_200(self.token_dict['uuid_token_default'])
         self.assert_valid_last_url(self.token_dict['uuid_token_default'])
 
+    def test_valid_uuid_request_with_identity_uri(self):
+        for opt in ['auth_host', 'auth_port', 'auth_protocol',
+                    'auth_admin_prefix']:
+            del self.conf[opt]
+        self.conf['identity_uri'] = \
+            'https://keystone.example.com:1234/testadmin/'
+        self.set_middleware()
+        self.assert_valid_request_200(self.token_dict['uuid_token_default'])
+        self.assert_valid_last_url(self.token_dict['uuid_token_default'])
+
     def test_valid_signed_request(self):
         self.assert_valid_request_200(
             self.token_dict['signed_token_scoped'])
