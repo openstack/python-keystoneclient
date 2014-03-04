@@ -1216,7 +1216,7 @@ class AuthProtocol(object):
                            response.status_code)
         if retry:
             self.LOG.info('Retrying validation')
-            return self._validate_user_token(user_token, env, False)
+            return self.verify_uuid_token(user_token, False)
         else:
             self.LOG.warn("Invalid user token: %s. Keystone response: %s.",
                           user_token, data)
