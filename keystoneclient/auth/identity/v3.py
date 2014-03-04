@@ -15,6 +15,7 @@
 import abc
 import logging
 
+import oauthlib.oauth1 as oauth1
 import six
 
 from keystoneclient import access
@@ -127,6 +128,10 @@ class Auth(base.BaseIdentityPlugin):
         method_kwargs = TokenMethod._extract_kwargs(kwargs)
         if method_kwargs.get('token'):
             methods.append(TokenMethod(**method_kwargs))
+
+        method_kwargs = OAuthMethod._extract_kwargs(kwargs)
+        if method_kwargs.get('consumer_key'):
+            methods.append(OAuthMethod(**method_kwargs))
 
         if not methods:
             msg = 'A username and password or token is required.'
@@ -255,3 +260,37 @@ class Token(_AuthConstructor):
 
     def __init__(self, auth_url, token, **kwargs):
         super(Token, self).__init__(auth_url, token=token, **kwargs)
+
+
+class OAuthMethod(AuthMethod):
+
+    _method_parameters = ['consumer_key',
+                          'consumer_secret',
+                          'access_key',
+                          'access_secret']
+
+    def __init__(self, **kwargs):
+        """Construct an OAuth based authentication method.
+
+        :param string consumer_key: Consumer key.
+        :param string consumer_secret: Consumer secret.
+        :param string access_key: Access token key.
+        :param string access_secret: Access token secret.
+        """
+        super(OAuthMethod, self).__init__(**kwargs)
+
+    def get_auth_data(self, session, auth, headers, **kwargs):
+        # Add the oauth specific content into the headers
+        oc = oauth1.Client(self.consumer_key,
+                           client_secret=self.consumer_secret,
+                           resource_owner_key=self.access_key,
+                           resource_owner_secret=self.access_secret,
+                           signature_method=oauth1.SIGNATURE_HMAC)
+        o_url, o_headers, o_body = oc.sign(auth.token_url, http_method='POST')
+
+        headers.update(o_headers)
+        return 'oauth1', {}
+
+
+class OAuth(_AuthConstructor):
+    _auth_method_class = OAuthMethod
