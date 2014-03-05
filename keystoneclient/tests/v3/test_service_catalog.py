@@ -171,3 +171,51 @@ class ServiceCatalogTest(utils.TestCase):
         for endpoint in endpoints['image']:
             self.assertEqual(endpoint['url'],
                              self.south_endpoints[endpoint['interface']])
+
+    def test_service_catalog_service_name(self):
+        auth_ref = access.AccessInfo.factory(resp=None,
+                                             body=self.AUTH_RESPONSE_BODY)
+        sc = auth_ref.service_catalog
+
+        url = sc.url_for(service_name='glance', endpoint_type='public',
+                         service_type='image', region_name='North')
+        self.assertEqual('http://glance.north.host/glanceapi/public', url)
+
+        url = sc.url_for(service_name='glance', endpoint_type='public',
+                         service_type='image', region_name='South')
+        self.assertEqual('http://glance.south.host/glanceapi/public', url)
+
+        self.assertRaises(exceptions.EndpointNotFound, sc.url_for,
+                          service_name='glance', service_type='compute')
+
+        urls = sc.get_urls(service_type='image', service_name='glance',
+                           endpoint_type='public')
+
+        self.assertIn('http://glance.north.host/glanceapi/public', urls)
+        self.assertIn('http://glance.south.host/glanceapi/public', urls)
+
+        urls = sc.get_urls(service_type='image', service_name='Servers',
+                           endpoint_type='public')
+
+        self.assertIsNone(urls)
+
+    def test_service_catalog_without_name(self):
+        pr_auth_ref = access.AccessInfo.factory(
+            resp=None,
+            body=client_fixtures.PROJECT_SCOPED_TOKEN)
+        pr_sc = pr_auth_ref.service_catalog
+
+        # this will work because there are no service names on that token
+        url_ref = 'http://public.com:8774/v2/225da22d3ce34b15877ea70b2a575f58'
+        url = pr_sc.url_for(service_type='compute', service_name='NotExist',
+                            endpoint_type='public')
+        self.assertEqual(url_ref, url)
+
+        ab_auth_ref = access.AccessInfo.factory(resp=None,
+                                                body=self.AUTH_RESPONSE_BODY)
+        ab_sc = ab_auth_ref.service_catalog
+
+        # this won't work because there is a name and it's not this one
+        self.assertRaises(exceptions.EndpointNotFound, ab_sc.url_for,
+                          service_type='compute', service_name='NotExist',
+                          endpoint_type='public')
