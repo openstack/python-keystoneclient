@@ -1259,6 +1259,7 @@ class AuthProtocol(object):
                                           self.signing_ca_file_name):
                     self.fetch_ca_cert()
                     continue
+                self.LOG.error('CMS Verify output: %s', err.output)
                 raise
             except cms.subprocess.CalledProcessError as err:
                 self.LOG.warning('Verify error: %s', err)
