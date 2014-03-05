@@ -277,7 +277,7 @@ opts = [
                ' configurable duration (in seconds). Set to -1 to disable'
                ' caching completely.'),
     cfg.IntOpt('revocation_cache_time',
-               default=300,
+               default=10,
                help='Determines the frequency at which the list of revoked'
                ' tokens is retrieved from the Identity service (in seconds). A'
                ' high number of revocation events combined with a low cache'
@@ -832,7 +832,7 @@ class AuthProtocol(object):
             raise ServiceError('invalid json response')
 
     def _validate_user_token(self, user_token, env, retry=True):
-        """Authenticate user using PKI
+        """Authenticate user token
 
         :param user_token: user's token id
         :param retry: Ignored, as it is not longer relevant
@@ -847,12 +847,17 @@ class AuthProtocol(object):
             token_id = cms.cms_hash_token(user_token)
             cached = self._cache_get(token_id)
             if cached:
-                return cached
-            if cms.is_asn1_token(user_token):
+                data = cached
+            elif cms.is_asn1_token(user_token):
                 verified = self.verify_signed_token(user_token)
                 data = jsonutils.loads(verified)
             else:
                 data = self.verify_uuid_token(user_token, retry)
+            # A token stored in Memcached might have been revoked
+            # regardless of initial mechanism used to validate it,
+            # and needs to be checked.
+            if self._is_token_id_in_revoked_list(token_id):
+                raise InvalidUserToken('Token authorization failed')
             expires = confirm_token_not_expired(data)
             self._confirm_token_bind(data, env)
             self._cache_put(token_id, data, expires)
@@ -1182,19 +1187,20 @@ class AuthProtocol(object):
 
     def is_signed_token_revoked(self, signed_text):
         """Indicate whether the token appears in the revocation list."""
-        revocation_list = self.token_revocation_list
-        revoked_tokens = revocation_list.get('revoked', [])
-        if not revoked_tokens:
-            return
-        revoked_ids = (x['id'] for x in revoked_tokens)
         if isinstance(signed_text, six.text_type):
             signed_text = signed_text.encode('utf-8')
         token_id = utils.hash_signed_token(signed_text)
-        for revoked_id in revoked_ids:
-            if token_id == revoked_id:
-                self.LOG.debug('Token is marked as having been revoked')
-                return True
-        return False
+        return self._is_token_id_in_revoked_list(token_id)
+
+    def _is_token_id_in_revoked_list(self, token_id):
+        """Indicate whether the token_id appears in the revocation list."""
+        revocation_list = self.token_revocation_list
+        revoked_tokens = revocation_list.get('revoked', None)
+        if not revoked_tokens:
+            return False
+
+        revoked_ids = (x['id'] for x in revoked_tokens)
+        return token_id in revoked_ids
 
     def cms_verify(self, data):
         """Verifies the signature of the provided data's IAW CMS syntax.
