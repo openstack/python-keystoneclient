@@ -73,11 +73,15 @@ class Auth(base.BaseIdentityPlugin):
             raise exceptions.AuthorizationFailure('Authentication method '
                                                   'required (e.g. password)')
 
-        if ((self.domain_id or self.domain_name) and
-                (self.project_id or self.project_name)):
+        mutual_exclusion = [bool(self.domain_id or self.domain_name),
+                            bool(self.project_id or self.project_name),
+                            bool(self.trust_id)]
+
+        if sum(mutual_exclusion) > 1:
             raise exceptions.AuthorizationFailure('Authentication cannot be '
-                                                  'scoped to both domain '
-                                                  'and project.')
+                                                  'scoped to multiple '
+                                                  'targets. Pick one of: '
+                                                  'project, domain or trust')
 
         if self.domain_id:
             body['auth']['scope'] = {'domain': {'id': self.domain_id}}
@@ -93,10 +97,8 @@ class Auth(base.BaseIdentityPlugin):
                 scope['project']['domain'] = {'id': self.project_domain_id}
             elif self.project_domain_name:
                 scope['project']['domain'] = {'name': self.project_domain_name}
-
-        if self.trust_id:
-            scope = body['auth'].setdefault('scope', {})
-            scope['OS-TRUST:trust'] = {'id': self.trust_id}
+        elif self.trust_id:
+            body['auth']['scope'] = {'OS-TRUST:trust': {'id': self.trust_id}}
 
         resp = session.post(url, json=body, headers=headers,
                             authenticated=False)
