@@ -58,16 +58,20 @@ class Auth(base.BaseIdentityPlugin):
         self.project_domain_id = project_domain_id
         self.project_domain_name = project_domain_name
 
+    @property
+    def token_url(self):
+        """The full URL where we will send authentication data."""
+        return '%s/auth/tokens' % self.auth_url.rstrip('/')
+
     def get_auth_ref(self, session, **kwargs):
         headers = {}
-        url = self.auth_url + "/auth/tokens"
         body = {'auth': {'identity': {}}}
         ident = body['auth']['identity']
 
         for method in self.auth_methods:
-            method, auth_data = method.get_auth_data(headers)
-            ident.setdefault('methods', []).append(method)
-            ident[method] = auth_data
+            name, auth_data = method.get_auth_data(session, self, headers)
+            ident.setdefault('methods', []).append(name)
+            ident[name] = auth_data
 
         if not ident:
             raise exceptions.AuthorizationFailure('Authentication method '
@@ -98,7 +102,7 @@ class Auth(base.BaseIdentityPlugin):
             scope = body['auth'].setdefault('scope', {})
             scope['OS-TRUST:trust'] = {'id': self.trust_id}
 
-        resp = session.post(url, json=body, headers=headers,
+        resp = session.post(self.token_url, json=body, headers=headers,
                             authenticated=False)
         return access.AccessInfoV3(resp.headers['X-Subject-Token'],
                                    **resp.json()['token'])
@@ -161,9 +165,11 @@ class AuthMethod(object):
                      for p in cls.method_parameters])
 
     @abc.abstractmethod
-    def get_auth_data(self, headers=None):
+    def get_auth_data(self, session, auth, headers, **kwargs):
         """Return the authentication section of an auth plugin.
 
+        :param Session session: The communication session.
+        :param Auth auth: The auth plugin calling the method.
         :param dict headers: The headers that will be sent with the auth
                              request if a plugin needs to add to them.
         :return tuple(string, dict): The identifier of this plugin and a dict
@@ -208,7 +214,7 @@ class PasswordMethod(AuthMethod):
         """
         super(PasswordMethod, self).__init__(**kwargs)
 
-    def get_auth_data(self, headers=None):
+    def get_auth_data(self, session, auth, headers, **kwargs):
         user = {'password': self.password}
 
         if self.user_id:
@@ -239,7 +245,7 @@ class TokenMethod(AuthMethod):
         """
         super(TokenMethod, self).__init__(**kwargs)
 
-    def get_auth_data(self, headers=None):
+    def get_auth_data(self, session, auth, headers, **kwargs):
         headers['X-Auth-Token'] = self.token
         return 'token', {'id': self.token}
 
