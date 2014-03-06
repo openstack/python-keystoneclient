@@ -262,16 +262,21 @@ opts = [
                help='Directory used to cache files related to PKI tokens'),
     cfg.ListOpt('memcached_servers',
                 deprecated_name='memcache_servers',
-                help='If defined, the memcache server(s) to use for caching'),
+                help='Optionally specify a list of memcached server(s) to'
+                ' use for caching. If left undefined, tokens will instead be'
+                ' cached in-process.'),
     cfg.IntOpt('token_cache_time',
                default=300,
-               help='In order to prevent excessive requests and validations,'
-               ' the middleware uses an in-memory cache for the tokens the'
-               ' Keystone API returns. This is only valid if memcached_servers'
-               ' is defined. Set to -1 to disable caching completely.'),
+               help='In order to prevent excessive effort spent validating'
+               ' tokens, the middleware caches previously-seen tokens for a'
+               ' configurable duration (in seconds). Set to -1 to disable'
+               ' caching completely.'),
     cfg.IntOpt('revocation_cache_time',
                default=1,
-               help='Value only used for unit testing'),
+               help='Determines the frequency at which the list of revoked'
+               ' tokens is retrieved from the Identity service (in seconds). A'
+               ' high number of revocation events combined with a low cache'
+               ' duration may significantly reduce performance.'),
     cfg.StrOpt('memcache_security_strategy',
                default=None,
                help='(optional) if defined, indicate whether token data'
