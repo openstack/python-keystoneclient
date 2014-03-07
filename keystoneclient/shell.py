@@ -94,7 +94,7 @@ class OpenStackIdentityShell(object):
         parser.add_argument('--version',
                             action='version',
                             version=keystoneclient.__version__,
-                            help="Shows the client version and exits")
+                            help="Shows the client version and exits.")
 
         parser.add_argument('--debug',
                             default=False,
@@ -105,14 +105,14 @@ class OpenStackIdentityShell(object):
                             default=600,
                             type=positive_non_zero_float,
                             metavar='<seconds>',
-                            help="Set request timeout (in seconds)")
+                            help="Set request timeout (in seconds).")
 
         parser.add_argument('--os-username',
                             metavar='<auth-user-name>',
                             default=env('OS_USERNAME'),
                             help='Name used for authentication with the '
                                  'OpenStack Identity service. '
-                                 'Defaults to env[OS_USERNAME]')
+                                 'Defaults to env[OS_USERNAME].')
         parser.add_argument('--os_username',
                             help=argparse.SUPPRESS)
 
@@ -121,7 +121,7 @@ class OpenStackIdentityShell(object):
                             default=env('OS_PASSWORD'),
                             help='Password used for authentication with the '
                                  'OpenStack Identity service. '
-                                 'Defaults to env[OS_PASSWORD]')
+                                 'Defaults to env[OS_PASSWORD].')
         parser.add_argument('--os_password',
                             help=argparse.SUPPRESS)
 
@@ -129,7 +129,7 @@ class OpenStackIdentityShell(object):
                             metavar='<auth-tenant-name>',
                             default=env('OS_TENANT_NAME'),
                             help='Tenant to request authorization on. '
-                                 'Defaults to env[OS_TENANT_NAME]')
+                                 'Defaults to env[OS_TENANT_NAME].')
         parser.add_argument('--os_tenant_name',
                             help=argparse.SUPPRESS)
 
@@ -137,7 +137,7 @@ class OpenStackIdentityShell(object):
                             metavar='<tenant-id>',
                             default=env('OS_TENANT_ID'),
                             help='Tenant to request authorization on. '
-                                 'Defaults to env[OS_TENANT_ID]')
+                                 'Defaults to env[OS_TENANT_ID].')
         parser.add_argument('--os_tenant_id',
                             help=argparse.SUPPRESS)
 
@@ -146,14 +146,15 @@ class OpenStackIdentityShell(object):
                             default=env('OS_AUTH_URL'),
                             help='Specify the Identity endpoint to use for '
                                  'authentication. '
-                                 'Defaults to env[OS_AUTH_URL]')
+                                 'Defaults to env[OS_AUTH_URL].')
         parser.add_argument('--os_auth_url',
                             help=argparse.SUPPRESS)
 
         parser.add_argument('--os-region-name',
                             metavar='<region-name>',
                             default=env('OS_REGION_NAME'),
-                            help='Defaults to env[OS_REGION_NAME]')
+                            help='Specify the region to use. '
+                                 'Defaults to env[OS_REGION_NAME].')
         parser.add_argument('--os_region_name',
                             help=argparse.SUPPRESS)
 
@@ -161,8 +162,9 @@ class OpenStackIdentityShell(object):
                             metavar='<identity-api-version>',
                             default=env('OS_IDENTITY_API_VERSION',
                                         'KEYSTONE_VERSION'),
-                            help='Defaults to env[OS_IDENTITY_API_VERSION]'
-                                 ' or 2.0')
+                            help='Specify Identity API version to use. '
+                                 'Defaults to env[OS_IDENTITY_API_VERSION]'
+                                 ' or 2.0.')
         parser.add_argument('--os_identity_api_version',
                             help=argparse.SUPPRESS)
 
@@ -172,7 +174,7 @@ class OpenStackIdentityShell(object):
                             help='Specify an existing token to use instead of '
                                  'retrieving one via authentication (e.g. '
                                  'with username & password). '
-                                 'Defaults to env[OS_SERVICE_TOKEN]')
+                                 'Defaults to env[OS_SERVICE_TOKEN].')
 
         parser.add_argument('--os-endpoint',
                             metavar='<service-endpoint>',
@@ -180,14 +182,14 @@ class OpenStackIdentityShell(object):
                             help='Specify an endpoint to use instead of '
                                  'retrieving one from the service catalog '
                                  '(via authentication). '
-                                 'Defaults to env[OS_SERVICE_ENDPOINT]')
+                                 'Defaults to env[OS_SERVICE_ENDPOINT].')
 
         parser.add_argument('--os-cacert',
                             metavar='<ca-certificate>',
                             default=env('OS_CACERT', default=None),
                             help='Specify a CA bundle file to use in '
                                  'verifying a TLS (https) server certificate. '
-                                 'Defaults to env[OS_CACERT]')
+                                 'Defaults to env[OS_CACERT].')
         parser.add_argument('--os_cacert',
                             help=argparse.SUPPRESS)
 
@@ -203,14 +205,14 @@ class OpenStackIdentityShell(object):
         parser.add_argument('--os-cert',
                             metavar='<certificate>',
                             default=env('OS_CERT'),
-                            help='Defaults to env[OS_CERT]')
+                            help='Defaults to env[OS_CERT].')
         parser.add_argument('--os_cert',
                             help=argparse.SUPPRESS)
 
         parser.add_argument('--os-key',
                             metavar='<key>',
                             default=env('OS_KEY'),
-                            help='Defaults to env[OS_KEY]')
+                            help='Defaults to env[OS_KEY].')
         parser.add_argument('--os_key',
                             help=argparse.SUPPRESS)
 
@@ -218,7 +220,7 @@ class OpenStackIdentityShell(object):
                             default=env('OS_CACHE', default=False),
                             action='store_true',
                             help='Use the auth token cache. '
-                                 'Defaults to env[OS_CACHE]')
+                                 'Defaults to env[OS_CACHE].')
         parser.add_argument('--os_cache',
                             help=argparse.SUPPRESS)
 
@@ -457,7 +459,7 @@ class OpenStackIdentityShell(object):
         print(' '.join(commands | options))
 
     @utils.arg('command', metavar='<subcommand>', nargs='?',
-               help='Display help for <subcommand>')
+               help='Display help for <subcommand>.')
     def do_help(self, args):
         """Display help about this program or one of its subcommands."""
         if getattr(args, 'command', None):
