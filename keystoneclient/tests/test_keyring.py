@@ -27,7 +27,7 @@ except ImportError:
     keyring = None
 
 
-PROJECT_SCOPED_TOKEN = client_fixtures.PROJECT_SCOPED_TOKEN
+PROJECT_SCOPED_TOKEN = client_fixtures.project_scoped_token()
 
 # These mirror values from PROJECT_SCOPED_TOKEN
 USERNAME = 'exampleuser'

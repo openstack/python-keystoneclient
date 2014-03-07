@@ -12,171 +12,111 @@
 
 from __future__ import unicode_literals
 
+from keystoneclient import fixture
 
-UNSCOPED_TOKEN = {
-    'access': {'serviceCatalog': {},
-               'token': {'expires': '2012-10-03T16:58:01Z',
-                         'id': '3e2813b7ba0b4006840c3825860b86ed'},
-               'user': {'id': 'c4da488862bd435c9e6c0275a0d0e49a',
-                        'name': 'exampleuser',
-                        'roles': [],
-                        'roles_links': [],
-                        'username': 'exampleuser'}
-               }
-}
 
-_TENANT_ID = '225da22d3ce34b15877ea70b2a575f58'
+def unscoped_token():
+    return fixture.V2Token(token_id='3e2813b7ba0b4006840c3825860b86ed',
+                           expires='2012-10-03T16:58:01Z',
+                           user_id='c4da488862bd435c9e6c0275a0d0e49a',
+                           user_name='exampleuser')
 
-PROJECT_SCOPED_TOKEN = {
-    'access': {
-        'serviceCatalog': [{
-            'endpoints': [{
-                'adminURL': 'http://admin:8776/v1/%s' % _TENANT_ID,
-                'internalURL': 'http://internal:8776/v1/%s' % _TENANT_ID,
-                'publicURL': 'http://public.com:8776/v1/%s' % _TENANT_ID,
-                'region': 'RegionOne'
-            }],
-            'endpoints_links': [],
-            'name': 'Volume Service',
-            'type': 'volume'},
-            {'endpoints': [{
-                'adminURL': 'http://admin:9292/v1',
-                'internalURL': 'http://internal:9292/v1',
-                'publicURL': 'http://public.com:9292/v1',
-                'region': 'RegionOne'
-            }],
-                'endpoints_links': [],
-                'name': 'Image Service',
-                'type': 'image'},
-            {'endpoints': [{
-                'adminURL': 'http://admin:8774/v2/%s' % _TENANT_ID,
-                'internalURL': 'http://internal:8774/v2/%s' % _TENANT_ID,
-                'publicURL': 'http://public.com:8774/v2/%s' % _TENANT_ID,
-                'region': 'RegionOne'
-            }],
-                'endpoints_links': [],
-                'name': 'Compute Service',
-                'type': 'compute'},
-            {'endpoints': [{
-                'adminURL': 'http://admin:8773/services/Admin',
-                'internalURL': 'http://internal:8773/services/Cloud',
-                'publicURL': 'http://public.com:8773/services/Cloud',
-                'region': 'RegionOne'
-            }],
-                'endpoints_links': [],
-                'name': 'EC2 Service',
-                'type': 'ec2'},
-            {'endpoints': [{
-                'adminURL': 'http://admin:35357/v2.0',
-                'internalURL': 'http://internal:5000/v2.0',
-                'publicURL': 'http://public.com:5000/v2.0',
-                'region': 'RegionOne'
-            }],
-                'endpoints_links': [],
-                'name': 'Identity Service',
-                'type': 'identity'}],
-        'token': {'expires': '2012-10-03T16:53:36Z',
-                  'id': '04c7d5ffaeef485f9dc69c06db285bdb',
-                  'tenant': {'description': '',
-                             'enabled': True,
-                             'id': '225da22d3ce34b15877ea70b2a575f58',
-                             'name': 'exampleproject'}},
-        'user': {'id': 'c4da488862bd435c9e6c0275a0d0e49a',
-                 'name': 'exampleuser',
-                 'roles': [{'id': 'edc12489faa74ee0aca0b8a0b4d74a74',
-                            'name': 'Member'}],
-                 'roles_links': [],
-                 'username': 'exampleuser'}
-    }
-}
 
-AUTH_RESPONSE_BODY = {
-    'access': {
-        'token': {
-            'id': 'ab48a9efdfedb23ty3494',
-            'expires': '2010-11-01T03:32:15-05:00',
-            'tenant': {
-                'id': '345',
-                'name': 'My Project'
-            }
-        },
-        'user': {
-            'id': '123',
-            'name': 'jqsmith',
-            'roles': [{
-                'id': '234',
-                'name': 'compute:admin'
-            }, {
-                'id': '235',
-                'name': 'object-store:admin',
-                'tenantId': '1'
-            }],
-            'roles_links': []
-        },
-        'serviceCatalog': [{
-            'name': 'Cloud Servers',
-            'type': 'compute',
-            'endpoints': [{
-                'tenantId': '1',
-                'publicURL': 'https://compute.north.host/v1/1234',
-                'internalURL': 'https://compute.north.host/v1/1234',
-                'region': 'North',
-                'versionId': '1.0',
-                'versionInfo': 'https://compute.north.host/v1.0/',
-                'versionList': 'https://compute.north.host/'
-            }, {
-                'tenantId': '2',
-                'publicURL': 'https://compute.north.host/v1.1/3456',
-                'internalURL': 'https://compute.north.host/v1.1/3456',
-                'region': 'North',
-                'versionId': '1.1',
-                'versionInfo': 'https://compute.north.host/v1.1/',
-                'versionList': 'https://compute.north.host/'
-            }],
-            'endpoints_links': []
-        }, {
-            'name': 'Cloud Files',
-            'type': 'object-store',
-            'endpoints': [{
-                'tenantId': '11',
-                'publicURL': 'https://swift.north.host/v1/blah',
-                'internalURL': 'https://swift.north.host/v1/blah',
-                'region': 'South',
-                'versionId': '1.0',
-                'versionInfo': 'uri',
-                'versionList': 'uri'
-            }, {
-                'tenantId': '2',
-                'publicURL': 'https://swift.north.host/v1.1/blah',
-                'internalURL': 'https://compute.north.host/v1.1/blah',
-                'region': 'South',
-                'versionId': '1.1',
-                'versionInfo': 'https://swift.north.host/v1.1/',
-                'versionList': 'https://swift.north.host/'
-            }],
-            'endpoints_links': [{
-                'rel': 'next',
-                'href': 'https://identity.north.host/v2.0/'
-                        'endpoints?marker=2'
-            }]
-        }, {
-            'name': 'Image Servers',
-            'type': 'image',
-            'endpoints': [{
-                'publicURL': 'https://image.north.host/v1/',
-                'internalURL': 'https://image-internal.north.host/v1/',
-                'region': 'North'
-            }, {
-                'publicURL': 'https://image.south.host/v1/',
-                'internalURL': 'https://image-internal.south.host/v1/',
-                'region': 'South'
-            }],
-            'endpoints_links': []
-        }],
-        'serviceCatalog_links': [{
-            'rel': 'next',
-            'href': ('https://identity.host/v2.0/endpoints?'
-                     'session=2hfh8Ar&marker=2')
-        }]
-    }
-}
+def project_scoped_token():
+    _TENANT_ID = '225da22d3ce34b15877ea70b2a575f58'
+
+    f = fixture.V2Token(token_id='04c7d5ffaeef485f9dc69c06db285bdb',
+                        expires='2012-10-03T16:53:36Z',
+                        tenant_id='225da22d3ce34b15877ea70b2a575f58',
+                        tenant_name='exampleproject',
+                        user_id='c4da488862bd435c9e6c0275a0d0e49a',
+                        user_name='exampleuser')
+
+    f.add_role(id='edc12489faa74ee0aca0b8a0b4d74a74',
+               name='Member')
+
+    s = f.add_service('volume', 'Volume Service')
+    s.add_endpoint(public='http://public.com:8776/v1/%s' % _TENANT_ID,
+                   admin='http://admin:8776/v1/%s' % _TENANT_ID,
+                   internal='http://internal:8776/v1/%s' % _TENANT_ID,
+                   region='RegionOne')
+
+    s = f.add_service('image', 'Image Service')
+    s.add_endpoint(public='http://public.com:9292/v1',
+                   admin='http://admin:9292/v1',
+                   internal='http://internal:9292/v1',
+                   region='RegionOne')
+
+    s = f.add_service('compute', 'Compute Service')
+    s.add_endpoint(public='http://public.com:8774/v2/%s' % _TENANT_ID,
+                   admin='http://admin:8774/v2/%s' % _TENANT_ID,
+                   internal='http://internal:8774/v2/%s' % _TENANT_ID,
+                   region='RegionOne')
+
+    s = f.add_service('ec2', 'EC2 Service')
+    s.add_endpoint(public='http://public.com:8773/services/Cloud',
+                   admin='http://admin:8773/services/Admin',
+                   internal='http://internal:8773/services/Cloud',
+                   region='RegionOne')
+
+    s = f.add_service('identity', 'Identity Service')
+    s.add_endpoint(public='http://public.com:5000/v2.0',
+                   admin='http://admin:35357/v2.0',
+                   internal='http://internal:5000/v2.0',
+                   region='RegionOne')
+
+    return f
+
+
+def auth_response_body():
+    f = fixture.V2Token(token_id='ab48a9efdfedb23ty3494',
+                        expires='2010-11-01T03:32:15-05:00',
+                        tenant_id='345',
+                        tenant_name='My Project',
+                        user_id='123',
+                        user_name='jqsmith')
+
+    f.add_role(id='234', name='compute:admin')
+    f.add_role(id='235', name='object-store:admin', tenantId='1')
+
+    s = f.add_service('compute', 'Cloud Servers')
+    s.add_endpoint(public='https://compute.north.host/v1/1234',
+                   internal='https://compute.north.host/v1/1234',
+                   region='North',
+                   tenant_id='1',
+                   versionId='1.0',
+                   versionInfo='https://compute.north.host/v1.0/',
+                   versionList='https://compute.north.host/')
+    s.add_endpoint(public='https://compute.north.host/v1.1/3456',
+                   internal='https://compute.north.host/v1.1/3456',
+                   region='North',
+                   tenant_id='2',
+                   versionId='1.1',
+                   versionInfo='https://compute.north.host/v1.1/',
+                   versionList='https://compute.north.host/')
+
+    s = f.add_service('object-store', 'Cloud Files')
+    s.add_endpoint(public='https://swift.north.host/v1/blah',
+                   internal='https://swift.north.host/v1/blah',
+                   region='South',
+                   tenant_id='11',
+                   versionId='1.0',
+                   versionInfo='uri',
+                   versionList='uri')
+    s.add_endpoint(public='https://swift.north.host/v1.1/blah',
+                   internal='https://compute.north.host/v1.1/blah',
+                   region='South',
+                   tenant_id='2',
+                   versionId='1.1',
+                   versionInfo='https://swift.north.host/v1.1/',
+                   versionList='https://swift.north.host/')
+
+    s = f.add_service('image', 'Image Servers')
+    s.add_endpoint(public='https://image.north.host/v1/',
+                   internal='https://image-internal.north.host/v1/',
+                   region='North')
+    s.add_endpoint(public='https://image.south.host/v1/',
+                   internal='https://image-internal.south.host/v1/',
+                   region='South')
+
+    return f

@@ -21,21 +21,16 @@ from keystoneclient.tests.v2_0 import client_fixtures
 from keystoneclient.tests.v2_0 import utils
 
 
-UNSCOPED_TOKEN = client_fixtures.UNSCOPED_TOKEN
-PROJECT_SCOPED_TOKEN = client_fixtures.PROJECT_SCOPED_TOKEN
-
-
 class AccessInfoTest(utils.TestCase, testresources.ResourcedTestCase):
 
     resources = [('examples', token_data.EXAMPLES_RESOURCE)]
 
     def test_building_unscoped_accessinfo(self):
-        auth_ref = access.AccessInfo.factory(body=UNSCOPED_TOKEN)
+        token = client_fixtures.unscoped_token()
+        auth_ref = access.AccessInfo.factory(body=token)
 
         self.assertTrue(auth_ref)
         self.assertIn('token', auth_ref)
-        self.assertIn('serviceCatalog', auth_ref)
-        self.assertFalse(auth_ref['serviceCatalog'])
 
         self.assertEqual(auth_ref.auth_token,
                          '3e2813b7ba0b4006840c3825860b86ed')
@@ -60,19 +55,20 @@ class AccessInfoTest(utils.TestCase, testresources.ResourcedTestCase):
         self.assertEqual(auth_ref.user_domain_id, 'default')
         self.assertEqual(auth_ref.user_domain_name, 'Default')
 
-        self.assertEqual(auth_ref.expires, timeutils.parse_isotime(
-                         UNSCOPED_TOKEN['access']['token']['expires']))
+        self.assertEqual(auth_ref.expires, token.expires)
 
     def test_will_expire_soon(self):
+        token = client_fixtures.unscoped_token()
         expires = timeutils.utcnow() + datetime.timedelta(minutes=5)
-        UNSCOPED_TOKEN['access']['token']['expires'] = expires.isoformat()
-        auth_ref = access.AccessInfo.factory(body=UNSCOPED_TOKEN)
+        token.expires = expires
+        auth_ref = access.AccessInfo.factory(body=token)
         self.assertFalse(auth_ref.will_expire_soon(stale_duration=120))
         self.assertTrue(auth_ref.will_expire_soon(stale_duration=300))
         self.assertFalse(auth_ref.will_expire_soon())
 
     def test_building_scoped_accessinfo(self):
-        auth_ref = access.AccessInfo.factory(body=PROJECT_SCOPED_TOKEN)
+        auth_ref = access.AccessInfo.factory(
+            body=client_fixtures.project_scoped_token())
 
         self.assertTrue(auth_ref)
         self.assertIn('token', auth_ref)

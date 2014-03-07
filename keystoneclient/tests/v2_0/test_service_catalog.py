@@ -10,8 +10,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import copy
-
 from keystoneclient import access
 from keystoneclient import exceptions
 from keystoneclient.tests.v2_0 import client_fixtures
@@ -21,8 +19,7 @@ from keystoneclient.tests.v2_0 import utils
 class ServiceCatalogTest(utils.TestCase):
     def setUp(self):
         super(ServiceCatalogTest, self).setUp()
-        self.AUTH_RESPONSE_BODY = copy.deepcopy(
-            client_fixtures.AUTH_RESPONSE_BODY)
+        self.AUTH_RESPONSE_BODY = client_fixtures.auth_response_body()
 
     def test_building_a_service_catalog(self):
         auth_ref = access.AccessInfo.factory(None, self.AUTH_RESPONSE_BODY)

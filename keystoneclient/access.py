@@ -372,7 +372,7 @@ class AccessInfoV2(AccessInfo):
 
     @property
     def role_names(self):
-        return [r['name'] for r in self['user']['roles']]
+        return [r['name'] for r in self['user'].get('roles', [])]
 
     @property
     def domain_name(self):

@@ -10,12 +10,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import copy
 import json
 
 import httpretty
 
 from keystoneclient import exceptions
+from keystoneclient import fixture
 from keystoneclient.tests.v2_0 import client_fixtures
 from keystoneclient.tests.v2_0 import utils
 from keystoneclient.v2_0 import client
@@ -25,7 +25,7 @@ class KeystoneClientTest(utils.TestCase):
 
     @httpretty.activate
     def test_unscoped_init(self):
-        self.stub_auth(json=client_fixtures.UNSCOPED_TOKEN)
+        self.stub_auth(json=client_fixtures.unscoped_token())
 
         c = client.Client(username='exampleuser',
                           password='password',
@@ -39,7 +39,7 @@ class KeystoneClientTest(utils.TestCase):
 
     @httpretty.activate
     def test_scoped_init(self):
-        self.stub_auth(json=client_fixtures.PROJECT_SCOPED_TOKEN)
+        self.stub_auth(json=client_fixtures.project_scoped_token())
 
         c = client.Client(username='exampleuser',
                           password='password',
@@ -54,7 +54,7 @@ class KeystoneClientTest(utils.TestCase):
 
     @httpretty.activate
     def test_auth_ref_load(self):
-        self.stub_auth(json=client_fixtures.PROJECT_SCOPED_TOKEN)
+        self.stub_auth(json=client_fixtures.project_scoped_token())
 
         cl = client.Client(username='exampleuser',
                            password='password',
@@ -75,7 +75,7 @@ class KeystoneClientTest(utils.TestCase):
 
     @httpretty.activate
     def test_auth_ref_load_with_overridden_arguments(self):
-        self.stub_auth(json=client_fixtures.PROJECT_SCOPED_TOKEN)
+        self.stub_auth(json=client_fixtures.project_scoped_token())
 
         cl = client.Client(username='exampleuser',
                            password='password',
@@ -106,34 +106,38 @@ class KeystoneClientTest(utils.TestCase):
 
     @httpretty.activate
     def test_management_url_is_updated(self):
-        second = copy.deepcopy(client_fixtures.PROJECT_SCOPED_TOKEN)
-        first_url = 'http://admin:35357/v2.0'
-        second_url = "http://secondurl:%d/v2.0'"
+        first = fixture.V2Token()
+        first.set_scope()
+        admin_url = 'http://admin:35357/v2.0'
+        second_url = 'http://secondurl:35357/v2.0'
 
-        for entry in second['access']['serviceCatalog']:
-            if entry['type'] == 'identity':
-                entry['endpoints'] = [{'adminURL': second_url % 35357,
-                                       'internalURL': second_url % 5000,
-                                       'publicURL': second_url % 6000,
-                                       'region': 'RegionOne'}]
+        s = first.add_service('identity')
+        s.add_endpoint(public='http://public.com:5000/v2.0',
+                       admin=admin_url)
 
-        self.stub_auth(json=client_fixtures.PROJECT_SCOPED_TOKEN)
+        second = fixture.V2Token()
+        second.set_scope()
+        s = second.add_service('identity')
+        s.add_endpoint(public='http://secondurl:5000/v2.0',
+                       admin=second_url)
+
+        self.stub_auth(json=first)
         cl = client.Client(username='exampleuser',
                            password='password',
                            tenant_name='exampleproject',
                            auth_url=self.TEST_URL)
-
-        self.assertEqual(cl.management_url, first_url)
+        cl.authenticate()
+        self.assertEqual(cl.management_url, admin_url)
 
         self.stub_auth(json=second)
         cl.authenticate()
-        self.assertEqual(cl.management_url, second_url % 35357)
+        self.assertEqual(cl.management_url, second_url)
 
     @httpretty.activate
     def test_client_with_region_name_passes_to_service_catalog(self):
         # NOTE(jamielennox): this is deprecated behaviour that should be
         # removed ASAP, however must remain compatible.
-        self.stub_auth(json=client_fixtures.AUTH_RESPONSE_BODY)
+        self.stub_auth(json=client_fixtures.auth_response_body())
 
         cl = client.Client(username='exampleuser',
                            password='password',
