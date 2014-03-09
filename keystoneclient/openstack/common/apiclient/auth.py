@@ -76,7 +76,7 @@ def load_plugin_from_args(args):
     alphabetical order.
 
     :type args: argparse.Namespace
-    :raises: AuthorizationFailure
+    :raises: AuthPluginOptionsMissing
     """
     auth_system = args.os_auth_system
     if auth_system:
