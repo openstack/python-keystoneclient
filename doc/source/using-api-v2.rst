@@ -1,5 +1,5 @@
 =================
-The client v2 API
+The Client v2 API
 =================
 
 Introduction
