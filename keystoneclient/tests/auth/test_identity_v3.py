@@ -65,12 +65,6 @@ class V3IdentityPlugin(utils.TestCase):
             },
         }
 
-    def _plugin(self, auth_url=TEST_URL, **kwargs):
-        return v3.Auth.factory(auth_url, **kwargs)
-
-    def _session(self, **kwargs):
-        return session.Session(auth=self._plugin(**kwargs))
-
     def stub_auth(self, subject_token=None, **kwargs):
         if not subject_token:
             subject_token = self.TEST_TOKEN
@@ -99,8 +93,9 @@ class V3IdentityPlugin(utils.TestCase):
     @httpretty.activate
     def test_authenticate_with_username_password_domain_scoped(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
-        s = self._session(username=self.TEST_USER, password=self.TEST_PASS,
-                          domain_id=self.TEST_DOMAIN_ID)
+        a = v3.Password(self.TEST_URL, username=self.TEST_USER,
+                        password=self.TEST_PASS, domain_id=self.TEST_DOMAIN_ID)
+        s = session.Session(a)
         s.get_token()
 
         req = {'auth': {'identity':
@@ -114,8 +109,10 @@ class V3IdentityPlugin(utils.TestCase):
     @httpretty.activate
     def test_authenticate_with_username_password_project_scoped(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
-        s = self._session(username=self.TEST_USER, password=self.TEST_PASS,
-                          project_id=self.TEST_DOMAIN_ID)
+        a = v3.Password(self.TEST_URL, username=self.TEST_USER,
+                        password=self.TEST_PASS,
+                        project_id=self.TEST_DOMAIN_ID)
+        s = session.Session(a)
         s.get_token()
 
         req = {'auth': {'identity':
@@ -142,7 +139,8 @@ class V3IdentityPlugin(utils.TestCase):
         self.assertEqual(s.auth.auth_ref.auth_token, self.TEST_TOKEN)
 
     def test_missing_auth_params(self):
-        self.assertRaises(exceptions.AuthorizationFailure, self._plugin)
+        self.assertRaises(exceptions.AuthorizationFailure, v3.Auth._factory,
+                          self.TEST_URL)
 
     @httpretty.activate
     def test_with_expired(self):
@@ -151,7 +149,8 @@ class V3IdentityPlugin(utils.TestCase):
         d = copy.deepcopy(self.TEST_RESPONSE_DICT)
         d['token']['expires_at'] = '2000-01-01T00:00:10.000123Z'
 
-        a = self._plugin(username='username', password='password')
+        a = v3.Password(self.TEST_URL, username='username',
+                        password='password')
         a.auth_ref = access.AccessInfo.factory(body=d)
         s = session.Session(auth=a)
 
@@ -161,16 +160,18 @@ class V3IdentityPlugin(utils.TestCase):
                          self.TEST_RESPONSE_DICT['token']['expires_at'])
 
     def test_with_domain_and_project_scoping(self):
-        a = self._plugin(username='username', password='password',
-                         project_id='project', domain_id='domain')
+        a = v3.Password(self.TEST_URL, username='username',
+                        password='password', project_id='project',
+                        domain_id='domain')
         self.assertRaises(exceptions.AuthorizationFailure,
                           a.get_token, None)
 
     @httpretty.activate
     def test_with_trust_id(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
-        s = self._session(username=self.TEST_USER, password=self.TEST_PASS,
-                          trust_id='trust')
+        a = v3.Password(self.TEST_URL, username=self.TEST_USER,
+                        password=self.TEST_PASS, trust_id='trust')
+        s = session.Session(a)
         s.get_token()
 
         req = {'auth': {'identity':
@@ -184,8 +185,10 @@ class V3IdentityPlugin(utils.TestCase):
     @httpretty.activate
     def test_with_multiple_mechanisms_factory(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
-        s = self._session(username=self.TEST_USER, password=self.TEST_PASS,
-                          trust_id='trust', token='foo')
+        p = v3.PasswordMethod(username=self.TEST_USER, password=self.TEST_PASS)
+        t = v3.TokenMethod(token='foo')
+        a = v3.Auth(self.TEST_URL, [p, t], trust_id='trust')
+        s = session.Session(a)
         s.get_token()
 
         req = {'auth': {'identity':

@@ -149,20 +149,20 @@ class Client(httpclient.HTTPClient):
             if auth_url is None:
                 raise ValueError("Cannot authenticate without an auth_url")
 
-            a = v3_auth.Auth.factory(auth_url,
-                                     username=username,
-                                     password=password,
-                                     token=token,
-                                     trust_id=trust_id,
-                                     user_id=user_id,
-                                     domain_id=domain_id,
-                                     domain_name=domain_name,
-                                     user_domain_id=user_domain_id,
-                                     user_domain_name=user_domain_name,
-                                     project_id=project_id,
-                                     project_name=project_name,
-                                     project_domain_id=project_domain_id,
-                                     project_domain_name=project_domain_name)
+            a = v3_auth.Auth._factory(auth_url,
+                                      username=username,
+                                      password=password,
+                                      token=token,
+                                      trust_id=trust_id,
+                                      user_id=user_id,
+                                      domain_id=domain_id,
+                                      domain_name=domain_name,
+                                      user_domain_id=user_domain_id,
+                                      user_domain_name=user_domain_name,
+                                      project_id=project_id,
+                                      project_name=project_name,
+                                      project_domain_id=project_domain_id,
+                                      project_domain_name=project_domain_name)
 
             return a.get_auth_ref(self.session)
         except (exceptions.AuthorizationFailure, exceptions.Unauthorized):

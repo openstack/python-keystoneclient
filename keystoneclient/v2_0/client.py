@@ -159,13 +159,13 @@ class Client(httpclient.HTTPClient):
             if auth_url is None:
                 raise ValueError("Cannot authenticate without an auth_url")
 
-            a = v2_auth.Auth.factory(auth_url,
-                                     username=username,
-                                     password=password,
-                                     token=token,
-                                     trust_id=trust_id,
-                                     tenant_id=project_id or tenant_id,
-                                     tenant_name=project_name or tenant_name)
+            a = v2_auth.Auth._factory(auth_url,
+                                      username=username,
+                                      password=password,
+                                      token=token,
+                                      trust_id=trust_id,
+                                      tenant_id=project_id or tenant_id,
+                                      tenant_name=project_name or tenant_name)
 
             return a.get_auth_ref(self.session)
         except (exceptions.AuthorizationFailure, exceptions.Unauthorized):

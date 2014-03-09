@@ -49,20 +49,15 @@ class V2IdentityPlugin(utils.TestCase):
             },
         }
 
-    def _plugin(self, auth_url=TEST_URL, **kwargs):
-        return v2.Auth.factory(auth_url, **kwargs)
-
-    def _session(self, **kwargs):
-        return session.Session(auth=self._plugin(**kwargs))
-
     def stub_auth(self, **kwargs):
         self.stub_url(httpretty.POST, ['tokens'], **kwargs)
 
     @httpretty.activate
     def test_authenticate_with_username_password(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
-        s = self._session(username=self.TEST_USER, password=self.TEST_PASS)
-        self.assertIsInstance(s.auth, v2.Password)
+        a = v2.Password(self.TEST_URL, username=self.TEST_USER,
+                        password=self.TEST_PASS)
+        s = session.Session(a)
         s.get_token()
 
         req = {'auth': {'passwordCredentials': {'username': self.TEST_USER,
@@ -73,9 +68,9 @@ class V2IdentityPlugin(utils.TestCase):
     @httpretty.activate
     def test_authenticate_with_username_password_scoped(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
-        s = self._session(username=self.TEST_USER, password=self.TEST_PASS,
-                          tenant_id=self.TEST_TENANT_ID)
-        self.assertIsInstance(s.auth, v2.Password)
+        a = v2.Password(self.TEST_URL, username=self.TEST_USER,
+                        password=self.TEST_PASS, tenant_id=self.TEST_TENANT_ID)
+        s = session.Session(a)
         s.get_token()
 
         req = {'auth': {'passwordCredentials': {'username': self.TEST_USER,
@@ -87,8 +82,8 @@ class V2IdentityPlugin(utils.TestCase):
     @httpretty.activate
     def test_authenticate_with_token(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
-        s = self._session(token='foo')
-        self.assertIsInstance(s.auth, v2.Token)
+        a = v2.Token(self.TEST_URL, 'foo')
+        s = session.Session(a)
         s.get_token()
 
         req = {'auth': {'token': {'id': 'foo'}}}
@@ -97,13 +92,15 @@ class V2IdentityPlugin(utils.TestCase):
         self.assertEqual(s.auth.auth_ref.auth_token, self.TEST_TOKEN)
 
     def test_missing_auth_params(self):
-        self.assertRaises(exceptions.NoMatchingPlugin, self._plugin)
+        self.assertRaises(exceptions.NoMatchingPlugin, v2.Auth._factory,
+                          self.TEST_URL)
 
     @httpretty.activate
     def test_with_trust_id(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
-        s = self._session(username=self.TEST_USER, password=self.TEST_PASS,
-                          trust_id='trust')
+        a = v2.Password(self.TEST_URL, username=self.TEST_USER,
+                        password=self.TEST_PASS, trust_id='trust')
+        s = session.Session(a)
         s.get_token()
 
         req = {'auth': {'passwordCredentials': {'username': self.TEST_USER,
