@@ -1204,8 +1204,9 @@ class AuthProtocol(object):
         """
         def verify():
             try:
-                return cms.cms_verify(data, self.signing_cert_file_name,
-                                      self.signing_ca_file_name)
+                return cms.cms_verify(
+                    data, self.signing_cert_file_name,
+                    self.signing_ca_file_name).decode('utf-8')
             except cms.subprocess.CalledProcessError as err:
                 self.LOG.warning('Verify error: %s', err)
                 raise
