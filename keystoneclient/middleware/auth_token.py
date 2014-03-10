@@ -272,7 +272,7 @@ opts = [
                ' configurable duration (in seconds). Set to -1 to disable'
                ' caching completely.'),
     cfg.IntOpt('revocation_cache_time',
-               default=1,
+               default=300,
                help='Determines the frequency at which the list of revoked'
                ' tokens is retrieved from the Identity service (in seconds). A'
                ' high number of revocation events combined with a low cache'
