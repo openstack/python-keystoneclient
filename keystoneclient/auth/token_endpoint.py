@@ -37,3 +37,14 @@ class Token(base.BaseAuthPlugin):
         parameters passed to the plugin.
         """
         return self.endpoint
+
+    def get_options(self):
+        options = super(Token, self).get_options()
+
+        options.extend([
+            cfg.StrOpt('endpoint',
+                       help='The endpoint that will always be used'),
+            cfg.StrOpt('token', help='The token that will always be used'),
+        ])
+
+        return options

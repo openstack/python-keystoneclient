@@ -12,6 +12,7 @@
 
 import abc
 
+from oslo.config import cfg
 import six
 
 from keystoneclient import access
@@ -22,6 +23,18 @@ from keystoneclient import utils
 
 @six.add_metaclass(abc.ABCMeta)
 class Auth(base.BaseIdentityPlugin):
+
+    @classmethod
+    def get_options(cls):
+        options = super(Auth, cls).get_options()
+
+        options.extend([
+            cfg.StrOpt('tenant-id', help='Tenant ID'),
+            cfg.StrOpt('tenant-name', help='Tenant Name'),
+            cfg.StrOpt('trust-id', help='Trust ID'),
+        ])
+
+        return options
 
     @utils.positional()
     def __init__(self, auth_url,
@@ -90,6 +103,20 @@ class Password(Auth):
         return {'passwordCredentials': {'username': self.username,
                                         'password': self.password}}
 
+    @classmethod
+    def get_options(cls):
+        options = super(Password, cls).get_options()
+
+        options.extend([
+            cfg.StrOpt('user-name',
+                       dest='username',
+                       deprecated_name='username',
+                       help='Username to login with'),
+            cfg.StrOpt('password', help='Password to use'),
+        ])
+
+        return options
+
 
 class Token(Auth):
 
@@ -106,3 +133,13 @@ class Token(Auth):
         if headers is not None:
             headers['X-Auth-Token'] = self.token
         return {'token': {'id': self.token}}
+
+    @classmethod
+    def get_options(cls):
+        options = super(Token, cls).get_options()
+
+        options.extend([
+            cfg.StrOpt('token', help='Token'),
+        ])
+
+        return options
