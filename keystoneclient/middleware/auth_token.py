@@ -152,6 +152,7 @@ import tempfile
 import time
 
 import netaddr
+from oslo.config import cfg
 import six
 from six.moves import urllib
 
@@ -163,23 +164,6 @@ from keystoneclient.openstack.common import memorycache
 from keystoneclient.openstack.common import timeutils
 from keystoneclient import utils
 
-
-CONF = None
-# to pass gate before oslo-config is deployed everywhere,
-# try application copies first
-for app in 'nova', 'glance', 'quantum', 'cinder':
-    try:
-        cfg = __import__('%s.openstack.common.cfg' % app,
-                         fromlist=['%s.openstack.common' % app])
-        # test which application middleware is running in
-        if hasattr(cfg, 'CONF') and 'config_file' in cfg.CONF:
-            CONF = cfg.CONF
-            break
-    except ImportError:
-        pass
-if not CONF:
-    from oslo.config import cfg
-    CONF = cfg.CONF
 
 # alternative middleware configuration in the main application's
 # configuration file e.g. in nova.conf
@@ -197,6 +181,7 @@ if not CONF:
 # 'swift.cache' key. However it could be different, depending on deployment.
 # To use Swift memcache, you must set the 'cache' option to the environment
 # key where the Swift cache object is stored.
+
 opts = [
     cfg.StrOpt('auth_admin_prefix',
                default='',
@@ -308,6 +293,8 @@ opts = [
                ' token binding is needed to be allowed. Finally the name of a'
                ' binding method that must be present in tokens.'),
 ]
+
+CONF = cfg.CONF
 CONF.register_opts(opts, group='keystone_authtoken')
 
 LIST_OF_VERSIONS_TO_ATTEMPT = ['v2.0', 'v3.0']
