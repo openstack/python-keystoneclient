@@ -73,7 +73,8 @@ def do_user_get(kc, args):
            help='New user default tenant.')
 @utils.arg('--tenant_id', help=argparse.SUPPRESS)
 @utils.arg('--pass', metavar='<pass>', dest='passwd', nargs='?',
-           const=ASK_FOR_PASSWORD, help='New user password.')
+           const=ASK_FOR_PASSWORD, help='New user password; '
+           'required for some auth backends.')
 @utils.arg('--email', metavar='<email>',
            help='New user email address.')
 @utils.arg('--enabled', metavar='<true|false>', default=True,
