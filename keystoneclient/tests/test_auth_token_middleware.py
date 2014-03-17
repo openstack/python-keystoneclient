@@ -1644,7 +1644,7 @@ class TokenExpirationTest(BaseAuthTokenMiddlewareTest):
         """Ensure we cannot retrieve a token from the cache.
 
         Getting a token from the cache should return None when the token data
-        in the cache stores the expires time as a *nix style timestamp.
+        in the cache stores the expires time as a \*nix style timestamp.
 
         """
         token = 'mytoken'

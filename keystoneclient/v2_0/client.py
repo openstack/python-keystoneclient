@@ -57,7 +57,7 @@ class Client(httpclient.HTTPClient):
     :param string key: Path to the Privacy Enhanced Mail (PEM) file which
                        contains the unencrypted client private key needed
                        to established two-way SSL connection with the
-                      identity service. (optional)
+                       identity service. (optional)
     :param string cacert: Path to the Privacy Enhanced Mail (PEM) file which
                           contains the trusted authority X.509 certificates
                           needed to established SSL connection with the
@@ -73,8 +73,8 @@ class Client(httpclient.HTTPClient):
 
     .. warning::
 
-    If debug is enabled, it may show passwords in plain text as a part of its
-    output.
+        If debug is enabled, it may show passwords in plain text as a part of
+        its output.
 
 
     The client can be created and used like a user or in a strictly

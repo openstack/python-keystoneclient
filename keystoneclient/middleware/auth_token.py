@@ -1180,9 +1180,9 @@ class AuthProtocol(object):
         :param retry: flag that forces the middleware to retry
                       user authentication when an indeterminate
                       response is received. Optional.
-        :return token object received from keystone on success
-        :raise InvalidUserToken if token is rejected
-        :raise ServiceError if unable to authenticate token
+        :return: token object received from keystone on success
+        :raise InvalidUserToken: if token is rejected
+        :raise ServiceError: if unable to authenticate token
 
         """
         # Determine the highest api version we can use.

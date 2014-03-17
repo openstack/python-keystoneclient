@@ -154,8 +154,8 @@ class ServiceCatalog(object):
         :param string service_type: Service type of the endpoint.
         :param string endpoint_type: Type of endpoint.
                                      Possible values: public or publicURL,
-                                         internal or internalURL,
-                                         admin or adminURL
+                                     internal or internalURL, admin or
+                                     adminURL
         :param string region_name: Region of the endpoint.
 
         :returns: tuple of urls or None (if no match found)
