@@ -423,7 +423,8 @@ class NoMemcacheAuthToken(BaseAuthTokenMiddlewareTest):
         }
         self.set_middleware(conf=conf)
         self.middleware._init_cache(env)
-        self.assertNotEqual(self.middleware._cache, 'CACHE_TEST')
+        with self.middleware._cache_pool.reserve() as cache:
+            self.assertNotEqual(cache, 'CACHE_TEST')
 
 
 class CommonAuthTokenMiddlewareTest(object):
@@ -737,7 +738,8 @@ class CommonAuthTokenMiddlewareTest(object):
         }
         self.set_middleware(conf=conf)
         self.middleware._init_cache(env)
-        self.assertEqual(self.middleware._cache, 'CACHE_TEST')
+        with self.middleware._cache_pool.reserve() as cache:
+            self.assertEqual(cache, 'CACHE_TEST')
 
     def test_will_expire_soon(self):
         tenseconds = datetime.datetime.utcnow() + datetime.timedelta(
