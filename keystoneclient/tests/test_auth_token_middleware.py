@@ -426,6 +426,40 @@ class NoMemcacheAuthToken(BaseAuthTokenMiddlewareTest):
         with self.middleware._cache_pool.reserve() as cache:
             self.assertNotEqual(cache, 'CACHE_TEST')
 
+    def test_multiple_context_managers_share_single_client(self):
+        env = {}
+        conf = {
+            'memcached_servers': 'localhost:11211'
+        }
+        self.set_middleware(conf=conf)
+        self.middleware._init_cache(env)
+
+        caches = []
+
+        with self.middleware._cache_pool.reserve() as cache:
+            caches.append(cache)
+
+        with self.middleware._cache_pool.reserve() as cache:
+            caches.append(cache)
+
+        self.assertIs(caches[0], caches[1])
+        self.assertEqual(set(caches), set(self.middleware._cache_pool))
+
+    def test_nested_context_managers_create_multiple_clients(self):
+        env = {}
+        conf = {
+            'memcached_servers': 'localhost:11211'
+        }
+        self.set_middleware(conf=conf)
+        self.middleware._init_cache(env)
+
+        with self.middleware._cache_pool.reserve() as outer_cache:
+            with self.middleware._cache_pool.reserve() as inner_cache:
+                self.assertNotEqual(outer_cache, inner_cache)
+
+        self.assertEqual(
+            set([inner_cache, outer_cache]), set(self.middleware._cache_pool))
+
 
 class CommonAuthTokenMiddlewareTest(object):
 
