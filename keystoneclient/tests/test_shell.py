@@ -441,7 +441,7 @@ class ShellTest(utils.TestCase):
             'endpoints': [],
         })
         request_mock = mock.MagicMock(return_value=response_mock)
-        with mock.patch.object(session.requests.Session, 'request',
+        with mock.patch.object(session.requests, 'request',
                                request_mock):
             shell(('--timeout 2 --os-token=blah  --os-endpoint=blah'
                    ' --os-auth-url=blah.com endpoint-list'))
