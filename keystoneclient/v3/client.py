@@ -151,6 +151,9 @@ class Client(httpclient.HTTPClient):
                                             **kwargs):
         """Authenticate against the v3 Identity API.
 
+        If password and token methods are both provided then both methods will
+        be used in the request.
+
         :returns: access.AccessInfo if authentication was successful.
         :raises: AuthorizationFailure if unable to authenticate or validate
                  the existing authorization token
@@ -161,22 +164,33 @@ class Client(httpclient.HTTPClient):
             if auth_url is None:
                 raise ValueError("Cannot authenticate without an auth_url")
 
-            a = v3_auth.Auth._factory(auth_url,
-                                      username=username,
-                                      password=password,
-                                      token=token,
-                                      trust_id=trust_id,
-                                      user_id=user_id,
-                                      domain_id=domain_id,
-                                      domain_name=domain_name,
-                                      user_domain_id=user_domain_id,
-                                      user_domain_name=user_domain_name,
-                                      project_id=project_id,
-                                      project_name=project_name,
-                                      project_domain_id=project_domain_id,
-                                      project_domain_name=project_domain_name)
+            auth_methods = []
 
-            return a.get_auth_ref(self.session)
+            if token:
+                auth_methods.append(v3_auth.TokenMethod(token=token))
+
+            if password:
+                m = v3_auth.PasswordMethod(user_id=user_id,
+                                           username=username,
+                                           user_domain_id=user_domain_id,
+                                           user_domain_name=user_domain_name,
+                                           password=password)
+                auth_methods.append(m)
+
+            if not auth_methods:
+                msg = 'A user and password or token is required.'
+                raise exceptions.AuthorizationFailure(msg)
+
+            plugin = v3_auth.Auth(auth_url, auth_methods,
+                                  trust_id=trust_id,
+                                  domain_id=domain_id,
+                                  domain_name=domain_name,
+                                  project_id=project_id,
+                                  project_name=project_name,
+                                  project_domain_id=project_domain_id,
+                                  project_domain_name=project_domain_name)
+
+            return plugin.get_auth_ref(self.session)
         except (exceptions.AuthorizationFailure, exceptions.Unauthorized):
             _logger.debug('Authorization failed.')
             raise

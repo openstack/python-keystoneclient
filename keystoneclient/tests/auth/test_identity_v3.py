@@ -219,10 +219,6 @@ class V3IdentityPlugin(utils.TestCase):
         self.assertRequestHeaderEqual('Accept', 'application/json')
         self.assertEqual(s.auth.auth_ref.auth_token, self.TEST_TOKEN)
 
-    def test_missing_auth_params(self):
-        self.assertRaises(exceptions.AuthorizationFailure, v3.Auth._factory,
-                          self.TEST_URL)
-
     @httpretty.activate
     def test_with_expired(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)

@@ -115,33 +115,6 @@ class Auth(base.BaseIdentityPlugin):
         return access.AccessInfoV3(resp.headers['X-Subject-Token'],
                                    **resp_data)
 
-    @staticmethod
-    def _factory(auth_url, **kwargs):
-        """Construct a plugin appropriate to your available arguments.
-
-        This function is intended as a convenience and backwards compatibility.
-        If you know the style of authorization you require then you should
-        construct that plugin directly.
-        """
-
-        methods = []
-
-        # NOTE(jamielennox): kwargs extraction is outside the if statement to
-        # clear up additional args that might be passed but not valid for type.
-        method_kwargs = PasswordMethod._extract_kwargs(kwargs)
-        if method_kwargs.get('password'):
-            methods.append(PasswordMethod(**method_kwargs))
-
-        method_kwargs = TokenMethod._extract_kwargs(kwargs)
-        if method_kwargs.get('token'):
-            methods.append(TokenMethod(**method_kwargs))
-
-        if not methods:
-            msg = 'A username and password or token is required.'
-            raise exceptions.AuthorizationFailure(msg)
-
-        return Auth(auth_url, methods, **kwargs)
-
 
 @six.add_metaclass(abc.ABCMeta)
 class AuthMethod(object):

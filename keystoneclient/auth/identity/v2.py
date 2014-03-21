@@ -23,33 +23,6 @@ from keystoneclient import utils
 @six.add_metaclass(abc.ABCMeta)
 class Auth(base.BaseIdentityPlugin):
 
-    @staticmethod
-    def _factory(auth_url, **kwargs):
-        """Construct a plugin appropriate to your available arguments.
-
-        This function should only be used for loading authentication from a
-        config file or other source where you do not know the type of plugin
-        that is required.
-
-        If you know the style of authorization you require then you should
-        construct that plugin directly.
-
-        :raises NoMatchingPlugin: if a plugin cannot be constructed.
-
-        return Auth: a plugin that can be passed to a session.
-        """
-        username = kwargs.pop('username', None)
-        password = kwargs.pop('password', None)
-        token = kwargs.pop('token', None)
-
-        if token:
-            return Token(auth_url, token, **kwargs)
-        elif username and password:
-            return Password(auth_url, username, password, **kwargs)
-
-        msg = 'A username and password or token is required.'
-        raise exceptions.NoMatchingPlugin(msg)
-
     @utils.positional()
     def __init__(self, auth_url,
                  trust_id=None,
