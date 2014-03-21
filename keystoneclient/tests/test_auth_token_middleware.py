@@ -1060,22 +1060,33 @@ class CommonAuthTokenMiddlewareTest(object):
                                       success=False)
 
 
-class CertDownloadMiddlewareTest(BaseAuthTokenMiddlewareTest,
-                                 testresources.ResourcedTestCase):
+class V2CertDownloadMiddlewareTest(BaseAuthTokenMiddlewareTest,
+                                   testresources.ResourcedTestCase):
 
     resources = [('examples', client_fixtures.EXAMPLES_RESOURCE)]
 
+    def __init__(self, *args, **kwargs):
+        super(V2CertDownloadMiddlewareTest, self).__init__(*args, **kwargs)
+        self.auth_version = 'v2.0'
+        self.fake_app = None
+        self.ca_path = '/v2.0/certificates/ca'
+        self.signing_path = '/v2.0/certificates/signing'
+
     def setUp(self):
-        super(CertDownloadMiddlewareTest, self).setUp()
+        super(V2CertDownloadMiddlewareTest, self).setUp(
+            auth_version=self.auth_version,
+            fake_app=self.fake_app)
         self.base_dir = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, self.base_dir)
         self.cert_dir = os.path.join(self.base_dir, 'certs')
         os.makedirs(self.cert_dir, stat.S_IRWXU)
         conf = {
             'signing_dir': self.cert_dir,
+            'auth_version': self.auth_version,
         }
         self.set_middleware(conf=conf)
 
+        httpretty.reset()
         httpretty.enable()
         self.addCleanup(httpretty.disable)
 
@@ -1086,10 +1097,10 @@ class CertDownloadMiddlewareTest(BaseAuthTokenMiddlewareTest,
         cms._ensure_subprocess()
 
         httpretty.register_uri(httpretty.GET,
-                               "%s/v2.0/certificates/ca" % BASE_URI,
+                               "%s%s" % (BASE_URI, self.ca_path),
                                status=404)
         httpretty.register_uri(httpretty.GET,
-                               "%s/v2.0/certificates/signing" % BASE_URI,
+                               "%s%s" % (BASE_URI, self.signing_path),
                                status=404)
         self.assertRaises(exceptions.CertificateConfigError,
                           self.middleware.verify_signed_token,
@@ -1098,72 +1109,82 @@ class CertDownloadMiddlewareTest(BaseAuthTokenMiddlewareTest,
     def test_fetch_signing_cert(self):
         data = 'FAKE CERT'
         httpretty.register_uri(httpretty.GET,
-                               "%s/v2.0/certificates/signing" % BASE_URI,
+                               "%s%s" % (BASE_URI, self.signing_path),
                                body=data)
         self.middleware.fetch_signing_cert()
 
         with open(self.middleware.signing_cert_file_name, 'r') as f:
             self.assertEqual(f.read(), data)
 
-        self.assertEqual("/testadmin/v2.0/certificates/signing",
+        self.assertEqual("/testadmin%s" % self.signing_path,
                          httpretty.last_request().path)
 
     def test_fetch_signing_ca(self):
         data = 'FAKE CA'
         httpretty.register_uri(httpretty.GET,
-                               "%s/v2.0/certificates/ca" % BASE_URI,
+                               "%s%s" % (BASE_URI, self.ca_path),
                                body=data)
         self.middleware.fetch_ca_cert()
 
         with open(self.middleware.signing_ca_file_name, 'r') as f:
             self.assertEqual(f.read(), data)
 
-        self.assertEqual("/testadmin/v2.0/certificates/ca",
+        self.assertEqual("/testadmin%s" % self.ca_path,
                          httpretty.last_request().path)
 
     def test_prefix_trailing_slash(self):
         self.conf['auth_admin_prefix'] = '/newadmin/'
 
         httpretty.register_uri(httpretty.GET,
-                               "%s/newadmin/v2.0/certificates/ca" % BASE_HOST,
+                               "%s/newadmin%s" % (BASE_HOST, self.ca_path),
                                body='FAKECA')
         httpretty.register_uri(httpretty.GET,
-                               "%s/newadmin/v2.0/certificates/signing" %
-                               BASE_HOST, body='FAKECERT')
+                               "%s/newadmin%s" %
+                               (BASE_HOST, self.signing_path), body='FAKECERT')
 
         self.set_middleware(conf=self.conf)
 
         self.middleware.fetch_ca_cert()
 
-        self.assertEqual('/newadmin/v2.0/certificates/ca',
+        self.assertEqual('/newadmin%s' % self.ca_path,
                          httpretty.last_request().path)
 
         self.middleware.fetch_signing_cert()
 
-        self.assertEqual('/newadmin/v2.0/certificates/signing',
+        self.assertEqual('/newadmin%s' % self.signing_path,
                          httpretty.last_request().path)
 
     def test_without_prefix(self):
         self.conf['auth_admin_prefix'] = ''
 
         httpretty.register_uri(httpretty.GET,
-                               "%s/v2.0/certificates/ca" % BASE_HOST,
+                               "%s%s" % (BASE_HOST, self.ca_path),
                                body='FAKECA')
         httpretty.register_uri(httpretty.GET,
-                               "%s/v2.0/certificates/signing" % BASE_HOST,
+                               "%s%s" % (BASE_HOST, self.signing_path),
                                body='FAKECERT')
 
         self.set_middleware(conf=self.conf)
 
         self.middleware.fetch_ca_cert()
 
-        self.assertEqual('/v2.0/certificates/ca',
+        self.assertEqual(self.ca_path,
                          httpretty.last_request().path)
 
         self.middleware.fetch_signing_cert()
 
-        self.assertEqual('/v2.0/certificates/signing',
+        self.assertEqual(self.signing_path,
                          httpretty.last_request().path)
+
+
+class V3CertDownloadMiddlewareTest(V2CertDownloadMiddlewareTest):
+
+    def __init__(self, *args, **kwargs):
+        super(V3CertDownloadMiddlewareTest, self).__init__(*args, **kwargs)
+        self.auth_version = 'v3.0'
+        self.fake_app = v3FakeApp
+        self.ca_path = '/v3/OS-SIMPLE-CERT/ca'
+        self.signing_path = '/v3/OS-SIMPLE-CERT/certificates'
 
 
 def network_error_response(method, uri, headers):
