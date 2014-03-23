@@ -14,7 +14,6 @@ import mock
 import requests
 
 from keystoneclient import httpclient
-from keystoneclient import session
 from keystoneclient.tests import utils
 
 
@@ -50,7 +49,7 @@ class ClientTest(utils.TestCase):
         self.request_patcher.start()
         self.addCleanup(self.request_patcher.stop)
 
-    @mock.patch.object(session.requests.Session, 'request')
+    @mock.patch.object(requests, 'request')
     def test_get(self, MOCK_REQUEST):
         MOCK_REQUEST.return_value = FAKE_RESPONSE
         cl = get_authed_client()
@@ -69,7 +68,7 @@ class ClientTest(utils.TestCase):
         # Automatic JSON parsing
         self.assertEqual(body, {"hi": "there"})
 
-    @mock.patch.object(session.requests.Session, 'request')
+    @mock.patch.object(requests, 'request')
     def test_post(self, MOCK_REQUEST):
         MOCK_REQUEST.return_value = FAKE_RESPONSE
         cl = get_authed_client()
@@ -86,7 +85,7 @@ class ClientTest(utils.TestCase):
         self.assertEqual(mock_kwargs['cert'], ('cert.pem', 'key.pem'))
         self.assertEqual(mock_kwargs['verify'], 'ca.pem')
 
-    @mock.patch.object(session.requests.Session, 'request')
+    @mock.patch.object(requests, 'request')
     def test_post_auth(self, MOCK_REQUEST):
         MOCK_REQUEST.return_value = FAKE_RESPONSE
         cl = httpclient.HTTPClient(

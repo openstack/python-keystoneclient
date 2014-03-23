@@ -28,6 +28,22 @@ def request(url, method='GET', **kwargs):
     return Session().request(url, method=method, **kwargs)
 
 
+class _FakeRequestSession(object):
+    """This object is a temporary hack that should be removed later.
+
+    Keystoneclient has a cyclical dependency with its managers which is
+    preventing it from being cleaned up correctly. This is always bad but when
+    we switched to doing connection pooling this object wasn't getting cleaned
+    either and so we had left over TCP connections hanging around.
+
+    Until we can fix the client cleanup we rollback the use of a requests
+    session and do individual connections like we used to.
+    """
+
+    def request(self, *args, **kwargs):
+        return requests.request(*args, **kwargs)
+
+
 class Session(object):
 
     user_agent = None
@@ -75,7 +91,7 @@ class Session(object):
                                   for forever/never. (optional, default to 30)
         """
         if not session:
-            session = requests.Session()
+            session = _FakeRequestSession()
 
         self.auth = auth
         self.session = session
