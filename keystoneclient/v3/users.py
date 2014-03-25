@@ -140,7 +140,7 @@ class UserManager(base.CrudManager):
             raise exceptions.ValidationError(msg)
 
         if old_password == new_password:
-            msg = 'Old password and new password appear to be identical.'
+            msg = 'Old password and new password must be different.'
             raise exceptions.ValidationError(msg)
 
         params = {'user': {'password': new_password,
