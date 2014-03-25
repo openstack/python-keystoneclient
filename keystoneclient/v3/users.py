@@ -136,6 +136,23 @@ class UserManager(base.CrudManager):
             enabled=enabled,
             **kwargs)
 
+    def update_password(self, old_password, new_password):
+        """Update the password for the user the token belongs to."""
+        if not (old_password and new_password):
+            msg = 'Specify both the current password and a new password'
+            raise exceptions.ValidationError(msg)
+
+        if old_password == new_password:
+            msg = 'Old password and new password appear to be identical.'
+            raise exceptions.ValidationError(msg)
+
+        params = {'user': {'password': new_password,
+                           'original_password': old_password}}
+
+        base_url = '/users/%s/password' % self.api.user_id
+
+        return self._update(base_url, params, method='POST', management=False)
+
     def add_to_group(self, user, group):
         self._require_user_and_group(user, group)
 

@@ -197,3 +197,55 @@ class UserTests(utils.TestCase, utils.CrudTests):
                 ref[attr],
                 'Expected different %s' % attr)
         self.assertEntityRequestBodyIs(req_ref)
+
+    @httpretty.activate
+    def test_update_password(self):
+        old_password = uuid.uuid4().hex
+        new_password = uuid.uuid4().hex
+
+        self.stub_url(httpretty.POST,
+                      [self.collection_key, self.TEST_USER, 'password'])
+        self.client.user_id = self.TEST_USER
+        self.manager.update_password(old_password, new_password)
+
+        exp_req_body = {
+            'user': {
+                'password': new_password, 'original_password': old_password
+            }
+        }
+
+        self.assertEqual('/v3/users/test/password',
+                         httpretty.last_request().path)
+        self.assertRequestBodyIs(json=exp_req_body)
+
+    def test_update_password_with_bad_inputs(self):
+        old_password = uuid.uuid4().hex
+        new_password = uuid.uuid4().hex
+
+        # users can't unset their password
+        self.assertRaises(exceptions.ValidationError,
+                          self.manager.update_password,
+                          old_password, None)
+        self.assertRaises(exceptions.ValidationError,
+                          self.manager.update_password,
+                          old_password, '')
+
+        # users can't start with empty passwords
+        self.assertRaises(exceptions.ValidationError,
+                          self.manager.update_password,
+                          None, new_password)
+        self.assertRaises(exceptions.ValidationError,
+                          self.manager.update_password,
+                          '', new_password)
+
+        # this wouldn't result in any change anyway
+        self.assertRaises(exceptions.ValidationError,
+                          self.manager.update_password,
+                          None, None)
+        self.assertRaises(exceptions.ValidationError,
+                          self.manager.update_password,
+                          '', '')
+        password = uuid.uuid4().hex
+        self.assertRaises(exceptions.ValidationError,
+                          self.manager.update_password,
+                          password, password)
