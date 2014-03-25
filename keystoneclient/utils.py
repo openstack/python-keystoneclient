@@ -10,8 +10,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import functools
 import getpass
 import hashlib
+import inspect
+import logging
 import sys
 
 import prettytable
@@ -19,6 +22,9 @@ import six
 
 from keystoneclient import exceptions
 from keystoneclient.openstack.common import strutils
+
+
+logger = logging.getLogger(__name__)
 
 
 # Decorator for cli-args
@@ -157,3 +163,158 @@ def prompt_for_password():
                 return new_passwd
         except EOFError:
             return
+
+
+class positional(object):
+    """A decorator which enforces only some args may be passed positionally.
+
+    This idea and some of the code was taken from the oauth2 client of the
+    google-api client.
+
+    This decorator makes it easy to support Python 3 style key-word only
+    parameters. For example, in Python 3 it is possible to write::
+
+      def fn(pos1, *, kwonly1, kwonly2=None):
+          ...
+
+    All named parameters after * must be a keyword::
+
+      fn(10, 'kw1', 'kw2')  # Raises exception.
+      fn(10, kwonly1='kw1', kwonly2='kw2')  # Ok.
+
+    To replicate this behaviour with the positional decorator you simply
+    specify how many arguments may be passed positionally. To replicate the
+    example above::
+
+        @positional(1)
+        def fn(pos1, kwonly1=None, kwonly2=None):
+            ...
+
+    If no default value is provided to a keyword argument, it becomes a
+    required keyword argument::
+
+        @positional(0)
+        def fn(required_kw):
+            ...
+
+    This must be called with the keyword parameter::
+
+        fn()  # Raises exception.
+        fn(10)  # Raises exception.
+        fn(required_kw=10)  # Ok.
+
+    When defining instance or class methods always remember that in python the
+    first positional argument passed is always the instance so you will need to
+    account for `self` and `cls`::
+
+        class MyClass(object):
+
+            @positional(2)
+            def my_method(self, pos1, kwonly1=None):
+                ...
+
+            @classmethod
+            @positional(2)
+            def my_method(cls, pos1, kwonly1=None):
+                ...
+
+    If you would prefer not to account for `self` and `cls` you can use the
+    `method` and `classmethod` helpers which do not consider the initial
+    positional argument. So the following class is exactly the same as the one
+    above::
+
+        class MyClass(object):
+
+            @positional.method(1)
+            def my_method(self, pos1, kwonly1=None):
+                ...
+
+            @positional.classmethod(1)
+            def my_method(cls, pos1, kwonly1=None):
+                ...
+
+    If a value isn't provided to the decorator then it will enforce that
+    every variable without a default value will be required to be a kwarg::
+
+        @positional()
+        def fn(pos1, kwonly1=None):
+            ...
+
+        fn(10)  # Ok.
+        fn(10, 20)  # Raises exception.
+        fn(10, kwonly1=20)  # Ok.
+
+    This behaviour will work with the `positional.method` and
+    `positional.classmethod` helper functions as well::
+
+        class MyClass(object):
+
+            @positional.classmethod()
+            def my_method(cls, pos1, kwonly1=None):
+                ...
+
+        MyClass.my_method(10)  # Ok.
+        MyClass.my_method(10, 20)  # Raises exception.
+        MyClass.my_method(10, kwonly1=20)  # Ok.
+
+    For compatibility reasons you may wish to not always raise an exception so
+    a WARN mode is available. Rather than raise an exception a warning message
+    will be logged::
+
+        @positional(1, enforcement=positional.WARN):
+        def fn(pos1, kwonly=1):
+           ...
+
+    Available modes are:
+
+    - positional.EXCEPT - the default, raise an exception.
+    - positional.WARN - log a warning on mistake.
+    """
+
+    EXCEPT = 'except'
+    WARN = 'warn'
+
+    def __init__(self, max_positional_args=None, enforcement=EXCEPT):
+        self._max_positional_args = max_positional_args
+        self._enforcement = enforcement
+
+    @classmethod
+    def method(cls, max_positional_args=None, enforcement=EXCEPT):
+        if max_positional_args is not None:
+            max_positional_args += 1
+
+        def f(func):
+            return cls(max_positional_args, enforcement)(func)
+        return f
+
+    @classmethod
+    def classmethod(cls, *args, **kwargs):
+        def f(func):
+            return classmethod(cls.method(*args, **kwargs)(func))
+        return f
+
+    def __call__(self, func):
+        if self._max_positional_args is None:
+            spec = inspect.getargspec(func)
+            self._max_positional_args = len(spec.args) - len(spec.defaults)
+
+        plural = '' if self._max_positional_args == 1 else 's'
+
+        @functools.wraps(func)
+        def inner(*args, **kwargs):
+            if len(args) > self._max_positional_args:
+                message = ('%(name)s takes at most %(max)d positional '
+                           'argument%(plural)s (%(given)d given)' %
+                           {'name': func.__name__,
+                            'max': self._max_positional_args,
+                            'given': len(args),
+                            'plural': plural})
+
+                if self._enforcement == self.EXCEPT:
+                    raise TypeError(message)
+                elif self._enforcement == self.WARN:
+                    logger.warn(message)
+
+            return func(*args, **kwargs)
+
+        return inner
