@@ -89,3 +89,37 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
             self.auth_ref = self.get_auth_ref(session)
 
         return self.auth_ref
+
+    def get_endpoint(self, session, service_type=None, interface=None,
+                     region_name=None, **kwargs):
+        """Return a valid endpoint for a service.
+
+        If a valid token is not present then a new one will be fetched using
+        the session and kwargs.
+
+        :param string service_type: The type of service to lookup the endpoint
+                                    for. This plugin will return None (failure)
+                                    if service_type is not provided.
+        :param string interface: The exposure of the endpoint. Should be
+                                 `public`, `internal` or `admin`.
+                                 Defaults to `public`.
+        :param string region_name: The region the endpoint should exist in.
+                                   (optional)
+
+        :raises HTTPError: An error from an invalid HTTP response.
+
+        :return string or None: A valid endpoint URL or None if not available.
+        """
+        if not service_type:
+            LOG.warn('Plugin cannot return an endpoint without knowing the '
+                     'service type that is required. Add service_type to '
+                     'endpoint filtering data.')
+            return None
+
+        if not interface:
+            interface = 'public'
+
+        service_catalog = self.get_access(session).service_catalog
+        return service_catalog.url_for(service_type=service_type,
+                                       endpoint_type=interface,
+                                       region_name=region_name)

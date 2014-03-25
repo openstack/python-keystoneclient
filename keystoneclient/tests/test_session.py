@@ -281,17 +281,40 @@ class AuthPlugin(base.BaseAuthPlugin):
 
     TEST_TOKEN = 'aToken'
 
+    SERVICE_URLS = {
+        'identity': {'public': 'http://identity-public:1111/v2.0',
+                     'admin': 'http://identity-admin:1111/v2.0'},
+        'compute': {'public': 'http://compute-public:2222/v1.0',
+                    'admin': 'http://compute-admin:2222/v1.0'},
+        'image': {'public': 'http://image-public:3333/v2.0',
+                  'admin': 'http://image-admin:3333/v2.0'}
+    }
+
     def __init__(self, token=TEST_TOKEN):
         self.token = token
 
     def get_token(self, session):
         return self.token
 
+    def get_endpoint(self, session, service_type=None, interface=None,
+                     **kwargs):
+        try:
+            return self.SERVICE_URLS[service_type][interface]
+        except (KeyError, AttributeError):
+            return None
+
 
 class SessionAuthTests(utils.TestCase):
 
     TEST_URL = 'http://127.0.0.1:5000/'
     TEST_JSON = {'hello': 'world'}
+
+    def stub_service_url(self, service_type, interface, path,
+                         method=httpretty.GET, **kwargs):
+        base_url = AuthPlugin.SERVICE_URLS[service_type][interface]
+        uri = "%s/%s" % (base_url.rstrip('/'), path.lstrip('/'))
+
+        httpretty.register_uri(method, uri, **kwargs)
 
     @httpretty.activate
     def test_auth_plugin_default_with_plugin(self):
@@ -315,3 +338,40 @@ class SessionAuthTests(utils.TestCase):
         self.assertDictEqual(resp.json(), self.TEST_JSON)
 
         self.assertRequestHeaderEqual('X-Auth-Token', None)
+
+    @httpretty.activate
+    def test_service_type_urls(self):
+        service_type = 'compute'
+        interface = 'public'
+        path = '/instances'
+        status = 200
+        body = 'SUCCESS'
+
+        self.stub_service_url(service_type=service_type,
+                              interface=interface,
+                              path=path,
+                              status=status,
+                              body=body)
+
+        sess = client_session.Session(auth=AuthPlugin())
+        resp = sess.get(path,
+                        endpoint_filter={'service_type': service_type,
+                                         'interface': interface})
+
+        self.assertEqual(httpretty.last_request().path, '/v1.0/instances')
+        self.assertEqual(resp.text, body)
+        self.assertEqual(resp.status_code, status)
+
+    def test_service_url_raises_if_no_auth_plugin(self):
+        sess = client_session.Session()
+        self.assertRaises(exceptions.MissingAuthPlugin,
+                          sess.get, '/path',
+                          endpoint_filter={'service_type': 'compute',
+                                           'interface': 'public'})
+
+    def test_service_url_raises_if_no_url_returned(self):
+        sess = client_session.Session(auth=AuthPlugin())
+        self.assertRaises(exceptions.EndpointNotFound,
+                          sess.get, '/path',
+                          endpoint_filter={'service_type': 'unknown',
+                                           'interface': 'public'})

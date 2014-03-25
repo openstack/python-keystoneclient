@@ -168,6 +168,9 @@ class Client(httpclient.HTTPClient):
         except (exceptions.AuthorizationFailure, exceptions.Unauthorized):
             _logger.debug('Authorization failed.')
             raise
+        except exceptions.EndpointNotFound:
+            msg = 'There was no suitable authentication url for this request'
+            raise exceptions.AuthorizationFailure(msg)
         except Exception as e:
             raise exceptions.AuthorizationFailure('Authorization failed: '
                                                   '%s' % e)
