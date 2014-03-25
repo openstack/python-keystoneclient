@@ -219,3 +219,16 @@ class V3IdentityPlugin(utils.TestCase):
                'scope': {'OS-TRUST:trust': {'id': 'trust'}}}}
         self.assertRequestBodyIs(json=req)
         self.assertEqual(s.auth.auth_ref.auth_token, self.TEST_TOKEN)
+
+    def test_with_multiple_scopes(self):
+        s = session.Session()
+
+        a = v3.Password(self.TEST_URL,
+                        username=self.TEST_USER, password=self.TEST_PASS,
+                        domain_id='x', project_id='x')
+        self.assertRaises(exceptions.AuthorizationFailure, a.get_auth_ref, s)
+
+        a = v3.Password(self.TEST_URL,
+                        username=self.TEST_USER, password=self.TEST_PASS,
+                        domain_id='x', trust_id='x')
+        self.assertRaises(exceptions.AuthorizationFailure, a.get_auth_ref, s)
