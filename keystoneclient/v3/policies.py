@@ -15,6 +15,7 @@
 #    under the License.
 
 from keystoneclient import base
+from keystoneclient import utils
 
 
 class Policy(base.Resource):
@@ -26,6 +27,7 @@ class Policy(base.Resource):
         * type: the mime type of the policy blob
 
     """
+    @utils.positional(enforcement=utils.positional.WARN)
     def update(self, blob=None, type=None):
         kwargs = {
             'blob': blob if blob is not None else self.blob,
@@ -47,6 +49,7 @@ class PolicyManager(base.CrudManager):
     collection_key = 'policies'
     key = 'policy'
 
+    @utils.positional(1, enforcement=utils.positional.WARN)
     def create(self, blob, type='application/json', **kwargs):
         return super(PolicyManager, self).create(
             blob=blob,
@@ -65,6 +68,7 @@ class PolicyManager(base.CrudManager):
         """
         return super(PolicyManager, self).list(**kwargs)
 
+    @utils.positional(enforcement=utils.positional.WARN)
     def update(self, entity, blob=None, type=None, **kwargs):
         return super(PolicyManager, self).update(
             policy_id=base.getid(entity),

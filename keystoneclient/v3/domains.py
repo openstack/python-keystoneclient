@@ -15,6 +15,7 @@
 #    under the License.
 
 from keystoneclient import base
+from keystoneclient import utils
 
 
 class Domain(base.Resource):
@@ -33,6 +34,7 @@ class DomainManager(base.CrudManager):
     collection_key = 'domains'
     key = 'domain'
 
+    @utils.positional(1, enforcement=utils.positional.WARN)
     def create(self, name, description=None, enabled=True, **kwargs):
         return super(DomainManager, self).create(
             name=name,
@@ -56,6 +58,7 @@ class DomainManager(base.CrudManager):
             kwargs['enabled'] = 0
         return super(DomainManager, self).list(**kwargs)
 
+    @utils.positional(enforcement=utils.positional.WARN)
     def update(self, domain, name=None,
                description=None, enabled=True, **kwargs):
         return super(DomainManager, self).update(

@@ -18,7 +18,7 @@ import logging
 
 from keystoneclient import base
 from keystoneclient import exceptions
-
+from keystoneclient import utils
 
 LOG = logging.getLogger(__name__)
 
@@ -44,6 +44,7 @@ class UserManager(base.CrudManager):
             msg = 'Specify both a user and a group'
             raise exceptions.ValidationError(msg)
 
+    @utils.positional(1, enforcement=utils.positional.WARN)
     def create(self, name, domain=None, project=None, password=None,
                email=None, description=None, enabled=True,
                default_project=None, **kwargs):
@@ -70,6 +71,7 @@ class UserManager(base.CrudManager):
             enabled=enabled,
             **kwargs)
 
+    @utils.positional(enforcement=utils.positional.WARN)
     def list(self, project=None, domain=None, group=None, default_project=None,
              **kwargs):
         """List users.
@@ -106,6 +108,7 @@ class UserManager(base.CrudManager):
         return super(UserManager, self).get(
             user_id=base.getid(user))
 
+    @utils.positional(enforcement=utils.positional.WARN)
     def update(self, user, name=None, domain=None, project=None, password=None,
                email=None, description=None, enabled=None,
                default_project=None, **kwargs):

@@ -11,6 +11,7 @@
 #    under the License.
 
 from keystoneclient import base
+from keystoneclient import utils
 
 
 class Token(base.Resource):
@@ -33,6 +34,7 @@ class Token(base.Resource):
 class TokenManager(base.Manager):
     resource_class = Token
 
+    @utils.positional(enforcement=utils.positional.WARN)
     def authenticate(self, username=None, tenant_id=None, tenant_name=None,
                      password=None, token=None, return_raw=False):
         if token:

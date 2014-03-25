@@ -16,6 +16,7 @@
 
 from keystoneclient import base
 from keystoneclient import exceptions
+from keystoneclient import utils
 
 
 class Role(base.Resource):
@@ -72,6 +73,7 @@ class RoleManager(base.CrudManager):
             msg = 'Must specify either a user or group'
             raise exceptions.ValidationError(msg)
 
+    @utils.positional(1, enforcement=utils.positional.WARN)
     def create(self, name, **kwargs):
         return super(RoleManager, self).create(
             name=name,
@@ -81,6 +83,7 @@ class RoleManager(base.CrudManager):
         return super(RoleManager, self).get(
             role_id=base.getid(role))
 
+    @utils.positional(enforcement=utils.positional.WARN)
     def list(self, user=None, group=None, domain=None, project=None, **kwargs):
         """Lists roles and role grants.
 
@@ -104,6 +107,7 @@ class RoleManager(base.CrudManager):
 
         return super(RoleManager, self).list(**kwargs)
 
+    @utils.positional(enforcement=utils.positional.WARN)
     def update(self, role, name=None, **kwargs):
         return super(RoleManager, self).update(
             role_id=base.getid(role),
@@ -114,6 +118,7 @@ class RoleManager(base.CrudManager):
         return super(RoleManager, self).delete(
             role_id=base.getid(role))
 
+    @utils.positional(enforcement=utils.positional.WARN)
     def grant(self, role, user=None, group=None, domain=None, project=None):
         """Grants a role to a user or group on a domain or project."""
         self._require_domain_xor_project(domain, project)
@@ -123,6 +128,7 @@ class RoleManager(base.CrudManager):
             base_url=self._role_grants_base_url(user, group, domain, project),
             role_id=base.getid(role))
 
+    @utils.positional(enforcement=utils.positional.WARN)
     def check(self, role, user=None, group=None, domain=None, project=None):
         """Checks if a user or group has a role on a domain or project."""
         self._require_domain_xor_project(domain, project)
@@ -132,6 +138,7 @@ class RoleManager(base.CrudManager):
             base_url=self._role_grants_base_url(user, group, domain, project),
             role_id=base.getid(role))
 
+    @utils.positional(enforcement=utils.positional.WARN)
     def revoke(self, role, user=None, group=None, domain=None, project=None):
         """Revokes a role from a user or group on a domain or project."""
         self._require_domain_xor_project(domain, project)
