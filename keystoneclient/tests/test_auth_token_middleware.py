@@ -93,6 +93,33 @@ VERSION_LIST_v2 = jsonutils.dumps({
 })
 
 ERROR_TOKEN = '7ae290c2a06244c4b41692eb4e9225f2'
+MEMCACHED_SERVERS = ['localhost:11211']
+MEMCACHED_AVAILABLE = None
+
+
+def memcached_available():
+    """Do a sanity check against memcached.
+
+    Returns ``True`` if the following conditions are met (otherwise, returns
+    ``False``):
+
+    - ``python-memcached`` is installed
+    - a usable ``memcached`` instance is available via ``MEMCACHED_SERVERS``
+    - the client is able to set and get a key/value pair
+
+    """
+    global MEMCACHED_AVAILABLE
+
+    if MEMCACHED_AVAILABLE is None:
+        try:
+            import memcache
+            c = memcache.Client(MEMCACHED_SERVERS)
+            c.set('ping', 'pong', time=1)
+            MEMCACHED_AVAILABLE = c.get('ping') == 'pong'
+        except ImportError:
+            MEMCACHED_AVAILABLE = False
+
+    return MEMCACHED_AVAILABLE
 
 
 class NoModuleFinder(object):
@@ -410,7 +437,7 @@ class NoMemcacheAuthToken(BaseAuthTokenMiddlewareTest):
             'admin_token': 'admin_token1',
             'auth_host': 'keystone.example.com',
             'auth_port': 1234,
-            'memcached_servers': 'localhost:11211',
+            'memcached_servers': MEMCACHED_SERVERS,
             'auth_uri': 'https://keystone.example.com:1234',
         }
 
@@ -419,7 +446,7 @@ class NoMemcacheAuthToken(BaseAuthTokenMiddlewareTest):
     def test_not_use_cache_from_env(self):
         env = {'swift.cache': 'CACHE_TEST'}
         conf = {
-            'memcached_servers': 'localhost:11211'
+            'memcached_servers': MEMCACHED_SERVERS
         }
         self.set_middleware(conf=conf)
         self.middleware._init_cache(env)
@@ -429,7 +456,7 @@ class NoMemcacheAuthToken(BaseAuthTokenMiddlewareTest):
     def test_multiple_context_managers_share_single_client(self):
         env = {}
         conf = {
-            'memcached_servers': 'localhost:11211'
+            'memcached_servers': MEMCACHED_SERVERS
         }
         self.set_middleware(conf=conf)
         self.middleware._init_cache(env)
@@ -448,7 +475,7 @@ class NoMemcacheAuthToken(BaseAuthTokenMiddlewareTest):
     def test_nested_context_managers_create_multiple_clients(self):
         env = {}
         conf = {
-            'memcached_servers': 'localhost:11211'
+            'memcached_servers': MEMCACHED_SERVERS
         }
         self.set_middleware(conf=conf)
         self.middleware._init_cache(env)
@@ -768,7 +795,7 @@ class CommonAuthTokenMiddlewareTest(object):
         env = {'swift.cache': 'CACHE_TEST'}
         conf = {
             'cache': 'swift.cache',
-            'memcached_servers': ['localhost:11211']
+            'memcached_servers': MEMCACHED_SERVERS
         }
         self.set_middleware(conf=conf)
         self.middleware._init_cache(env)
@@ -803,10 +830,11 @@ class CommonAuthTokenMiddlewareTest(object):
         token_response = self.examples.TOKEN_RESPONSES[token]
         self.assertTrue(auth_token._token_is_v3(token_response))
 
+    @testtools.skipUnless(memcached_available(), 'memcached not available')
     def test_encrypt_cache_data(self):
         httpretty.disable()
         conf = {
-            'memcached_servers': ['localhost:11211'],
+            'memcached_servers': MEMCACHED_SERVERS,
             'memcache_security_strategy': 'encrypt',
             'memcache_secret_key': 'mysecret'
         }
@@ -819,10 +847,11 @@ class CommonAuthTokenMiddlewareTest(object):
         self.middleware._cache_store(token, data)
         self.assertEqual(self.middleware._cache_get(token), data[0])
 
+    @testtools.skipUnless(memcached_available(), 'memcached not available')
     def test_sign_cache_data(self):
         httpretty.disable()
         conf = {
-            'memcached_servers': ['localhost:11211'],
+            'memcached_servers': MEMCACHED_SERVERS,
             'memcache_security_strategy': 'mac',
             'memcache_secret_key': 'mysecret'
         }
@@ -835,10 +864,11 @@ class CommonAuthTokenMiddlewareTest(object):
         self.middleware._cache_store(token, data)
         self.assertEqual(self.middleware._cache_get(token), data[0])
 
+    @testtools.skipUnless(memcached_available(), 'memcached not available')
     def test_no_memcache_protection(self):
         httpretty.disable()
         conf = {
-            'memcached_servers': ['localhost:11211'],
+            'memcached_servers': MEMCACHED_SERVERS,
             'memcache_secret_key': 'mysecret'
         }
         self.set_middleware(conf=conf)
@@ -853,34 +883,34 @@ class CommonAuthTokenMiddlewareTest(object):
     def test_assert_valid_memcache_protection_config(self):
         # test missing memcache_secret_key
         conf = {
-            'memcached_servers': ['localhost:11211'],
+            'memcached_servers': MEMCACHED_SERVERS,
             'memcache_security_strategy': 'Encrypt'
         }
         self.assertRaises(auth_token.ConfigurationError, self.set_middleware,
                           conf=conf)
         # test invalue memcache_security_strategy
         conf = {
-            'memcached_servers': ['localhost:11211'],
+            'memcached_servers': MEMCACHED_SERVERS,
             'memcache_security_strategy': 'whatever'
         }
         self.assertRaises(auth_token.ConfigurationError, self.set_middleware,
                           conf=conf)
         # test missing memcache_secret_key
         conf = {
-            'memcached_servers': ['localhost:11211'],
+            'memcached_servers': MEMCACHED_SERVERS,
             'memcache_security_strategy': 'mac'
         }
         self.assertRaises(auth_token.ConfigurationError, self.set_middleware,
                           conf=conf)
         conf = {
-            'memcached_servers': ['localhost:11211'],
+            'memcached_servers': MEMCACHED_SERVERS,
             'memcache_security_strategy': 'Encrypt',
             'memcache_secret_key': ''
         }
         self.assertRaises(auth_token.ConfigurationError, self.set_middleware,
                           conf=conf)
         conf = {
-            'memcached_servers': ['localhost:11211'],
+            'memcached_servers': MEMCACHED_SERVERS,
             'memcache_security_strategy': 'mAc',
             'memcache_secret_key': ''
         }
