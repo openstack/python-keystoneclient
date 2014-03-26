@@ -11,7 +11,6 @@ Contents:
 .. toctree::
    :maxdepth: 1
 
-   releases
    man/keystone
    using-api-v2
    using-api-v3
