@@ -153,6 +153,13 @@ def available_versions(url, session=None, **kwargs):
         except (KeyError, TypeError):
             pass
 
+        # Most servers don't have a 'values' element so accept a simple
+        # versions dict if available.
+        try:
+            return body_resp['versions']
+        except KeyError:
+            pass
+
         # Otherwise if we query an endpoint like /v2.0 then we will get back
         # just the one available version.
         try:

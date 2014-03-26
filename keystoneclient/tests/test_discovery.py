@@ -11,6 +11,7 @@
 # under the License.
 
 import httpretty
+import six
 from testtools import matchers
 
 from keystoneclient import client
@@ -146,6 +147,88 @@ V3_AUTH_RESPONSE = jsonutils.dumps({
     },
 })
 
+CINDER_EXAMPLES = {
+    "versions": [
+        {
+            "status": "CURRENT",
+            "updated": "2012-01-04T11:33:21Z",
+            "id": "v1.0",
+            "links": [
+                {
+                    "href": "%sv1/" % BASE_URL,
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "status": "CURRENT",
+            "updated": "2012-11-21T11:33:21Z",
+            "id": "v2.0",
+            "links": [
+                {
+                    "href": "%sv2/" % BASE_URL,
+                    "rel": "self"
+                }
+            ]
+        }
+    ]
+}
+
+GLANCE_EXAMPLES = {
+    "versions": [
+        {
+            "status": "CURRENT",
+            "id": "v2.2",
+            "links": [
+                {
+                    "href": "%sv2/" % BASE_URL,
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "status": "SUPPORTED",
+            "id": "v2.1",
+            "links": [
+                {
+                    "href": "%sv2/" % BASE_URL,
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "status": "SUPPORTED",
+            "id": "v2.0",
+            "links": [
+                {
+                    "href": "%sv2/" % BASE_URL,
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "status": "CURRENT",
+            "id": "v1.1",
+            "links": [
+                {
+                    "href": "%sv1/" % BASE_URL,
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "status": "SUPPORTED",
+            "id": "v1.0",
+            "links": [
+                {
+                    "href": "%sv1/" % BASE_URL,
+                    "rel": "self"
+                }
+            ]
+        }
+    ]
+}
+
 
 def _create_version_list(versions):
     return jsonutils.dumps({'versions': {'values': versions}})
@@ -165,16 +248,22 @@ V2_VERSION_ENTRY = _create_single_version(V2_VERSION)
 @httpretty.activate
 class AvailableVersionsTests(utils.TestCase):
 
-    def test_available_versions(self):
-        httpretty.register_uri(httpretty.GET, BASE_URL, status=300,
-                               body=V3_VERSION_LIST)
+    def test_available_versions_basics(self):
+        examples = {'keystone': V3_VERSION_LIST,
+                    'cinder': jsonutils.dumps(CINDER_EXAMPLES),
+                    'glance': jsonutils.dumps(GLANCE_EXAMPLES)}
 
-        versions = discover.available_versions(BASE_URL)
+        for path, ex in six.iteritems(examples):
+            url = "%s%s" % (BASE_URL, path)
 
-        for v in versions:
-            self.assertIn('id', v)
-            self.assertIn('status', v)
-            self.assertIn('links', v)
+            httpretty.register_uri(httpretty.GET, url, status=300, body=ex)
+            versions = discover.available_versions(url)
+
+            for v in versions:
+                for n in ('id', 'status', 'links'):
+                    msg = '%s missing from %s version data' % (n, path)
+                    self.assertThat(v, matchers.Annotate(msg,
+                                                         matchers.Contains(n)))
 
     def test_available_versions_individual(self):
         httpretty.register_uri(httpretty.GET, V3_URL, status=200,
@@ -187,6 +276,52 @@ class AvailableVersionsTests(utils.TestCase):
             self.assertEqual(v['status'], 'stable')
             self.assertIn('media-types', v)
             self.assertIn('links', v)
+
+    def test_available_keystone_data(self):
+        httpretty.register_uri(httpretty.GET, BASE_URL, status=300,
+                               body=V3_VERSION_LIST)
+
+        versions = discover.available_versions(BASE_URL)
+        self.assertEqual(2, len(versions))
+
+        for v in versions:
+            self.assertIn(v['id'], ('v2.0', 'v3.0'))
+            self.assertEqual(v['updated'], UPDATED)
+            self.assertEqual(v['status'], 'stable')
+
+            if v['id'] == 'v3.0':
+                self.assertEqual(v['media-types'], V3_MEDIA_TYPES)
+
+    def test_available_cinder_data(self):
+        body = jsonutils.dumps(CINDER_EXAMPLES)
+        httpretty.register_uri(httpretty.GET, BASE_URL, status=300, body=body)
+
+        versions = discover.available_versions(BASE_URL)
+        self.assertEqual(2, len(versions))
+
+        for v in versions:
+            self.assertEqual(v['status'], 'CURRENT')
+            if v['id'] == 'v1.0':
+                self.assertEqual(v['updated'], '2012-01-04T11:33:21Z')
+            elif v['id'] == 'v2.0':
+                self.assertEqual(v['updated'], '2012-11-21T11:33:21Z')
+            else:
+                self.fail("Invalid version found")
+
+    def test_available_glance_data(self):
+        body = jsonutils.dumps(GLANCE_EXAMPLES)
+        httpretty.register_uri(httpretty.GET, BASE_URL, status=200, body=body)
+
+        versions = discover.available_versions(BASE_URL)
+        self.assertEqual(5, len(versions))
+
+        for v in versions:
+            if v['id'] in ('v2.2', 'v1.1'):
+                self.assertEqual(v['status'], 'CURRENT')
+            elif v['id'] in ('v2.1', 'v2.0', 'v1.0'):
+                self.assertEqual(v['status'], 'SUPPORTED')
+            else:
+                self.fail("Invalid version found")
 
 
 @httpretty.activate
