@@ -265,6 +265,7 @@ class Examples(fixtures.Fixture):
             self.v3_UUID_TOKEN_DEFAULT: {
                 'token': {
                     'expires_at': '2020-01-01T00:00:10.000123Z',
+                    'methods': ['password'],
                     'user': {
                         'id': 'user_id1',
                         'name': 'user_name1',
@@ -291,6 +292,7 @@ class Examples(fixtures.Fixture):
             self.v3_UUID_TOKEN_UNSCOPED: {
                 'token': {
                     'expires_at': '2020-01-01T00:00:10.000123Z',
+                    'methods': ['password'],
                     'user': {
                         'id': 'user_id1',
                         'name': 'user_name1',
@@ -304,6 +306,7 @@ class Examples(fixtures.Fixture):
             self.v3_UUID_TOKEN_DOMAIN_SCOPED: {
                 'token': {
                     'expires_at': '2020-01-01T00:00:10.000123Z',
+                    'methods': ['password'],
                     'user': {
                         'id': 'user_id1',
                         'name': 'user_name1',
@@ -358,6 +361,7 @@ class Examples(fixtures.Fixture):
             self.SIGNED_v3_TOKEN_SCOPED_KEY: {
                 'token': {
                     'expires': '2020-01-01T00:00:10.000123Z',
+                    'methods': ['password'],
                     'user': {
                         'id': 'user_id1',
                         'name': 'user_name1',
@@ -384,6 +388,7 @@ class Examples(fixtures.Fixture):
             self.v3_UUID_TOKEN_BIND: {
                 'token': {
                     'bind': {'kerberos': self.KERBEROS_BIND},
+                    'methods': ['password'],
                     'expires_at': '2020-01-01T00:00:10.000123Z',
                     'user': {
                         'id': 'user_id1',
@@ -412,6 +417,7 @@ class Examples(fixtures.Fixture):
                 'token': {
                     'bind': {'FOO': 'BAR'},
                     'expires_at': '2020-01-01T00:00:10.000123Z',
+                    'methods': ['password'],
                     'user': {
                         'id': 'user_id1',
                         'name': 'user_name1',

@@ -6,6 +6,7 @@
      "expires_at": "2038-01-18T21:14:07Z",
      "project": {"enabled": true, "description": null, "name": "tenant_name1", "id": "tenant_id1", "domain": {"id": "domain_id1", "name": "domain_name1"}},
      "user": {"name": "revoked_username1", "id": "revoked_user_id1", "domain": {"id": "domain_id1", "name": "domain_name1"}},
-     "roles": [{"name": "role1"}, {"name": "role2"}]
+     "roles": [{"name": "role1"}, {"name": "role2"}],
+     "methods": ["password"],
     }
 }
