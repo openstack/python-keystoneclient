@@ -12,6 +12,7 @@
 
 from keystoneclient.v3.contrib.federation import identity_providers
 from keystoneclient.v3.contrib.federation import mappings
+from keystoneclient.v3.contrib.federation import protocols
 
 
 class FederationManager(object):
@@ -19,3 +20,4 @@ class FederationManager(object):
         self.identity_providers = identity_providers.IdentityProviderManager(
             api)
         self.mappings = mappings.MappingManager(api)
+        self.protocols = protocols.ProtocolManager(api)
