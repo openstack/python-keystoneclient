@@ -11,9 +11,11 @@
 #    under the License.
 
 from keystoneclient.v3.contrib.federation import identity_providers
+from keystoneclient.v3.contrib.federation import mappings
 
 
 class FederationManager(object):
     def __init__(self, api):
         self.identity_providers = identity_providers.IdentityProviderManager(
             api)
+        self.mappings = mappings.MappingManager(api)
