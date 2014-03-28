@@ -304,6 +304,23 @@ class AuthPlugin(base.BaseAuthPlugin):
             return None
 
 
+class CalledAuthPlugin(base.BaseAuthPlugin):
+
+    ENDPOINT = 'http://fakeendpoint/'
+
+    def __init__(self):
+        self.get_token_called = False
+        self.get_endpoint_called = False
+
+    def get_token(self, session):
+        self.get_token_called = True
+        return 'aToken'
+
+    def get_endpoint(self, session, **kwargs):
+        self.get_endpoint_called = True
+        return self.ENDPOINT
+
+
 class SessionAuthTests(utils.TestCase):
 
     TEST_URL = 'http://127.0.0.1:5000/'
@@ -375,3 +392,64 @@ class SessionAuthTests(utils.TestCase):
                           sess.get, '/path',
                           endpoint_filter={'service_type': 'unknown',
                                            'interface': 'public'})
+
+    @httpretty.activate
+    def test_passed_auth_plugin(self):
+        passed = CalledAuthPlugin()
+        sess = client_session.Session()
+
+        httpretty.register_uri(httpretty.GET,
+                               CalledAuthPlugin.ENDPOINT + 'path',
+                               status=200)
+        endpoint_filter = {'service_type': 'identity'}
+
+        # no plugin with authenticated won't work
+        self.assertRaises(exceptions.MissingAuthPlugin, sess.get, 'path',
+                          authenticated=True)
+
+        # no plugin with an endpoint filter won't work
+        self.assertRaises(exceptions.MissingAuthPlugin, sess.get, 'path',
+                          authenticated=False, endpoint_filter=endpoint_filter)
+
+        resp = sess.get('path', auth=passed, endpoint_filter=endpoint_filter)
+
+        self.assertEqual(200, resp.status_code)
+        self.assertTrue(passed.get_endpoint_called)
+        self.assertTrue(passed.get_token_called)
+
+    @httpretty.activate
+    def test_passed_auth_plugin_overrides(self):
+        fixed = CalledAuthPlugin()
+        passed = CalledAuthPlugin()
+
+        sess = client_session.Session(fixed)
+
+        httpretty.register_uri(httpretty.GET,
+                               CalledAuthPlugin.ENDPOINT + 'path',
+                               status=200)
+
+        resp = sess.get('path', auth=passed,
+                        endpoint_filter={'service_type': 'identity'})
+
+        self.assertEqual(200, resp.status_code)
+        self.assertTrue(passed.get_endpoint_called)
+        self.assertTrue(passed.get_token_called)
+        self.assertFalse(fixed.get_endpoint_called)
+        self.assertFalse(fixed.get_token_called)
+
+    def test_requests_auth_plugin(self):
+        sess = client_session.Session()
+
+        requests_auth = object()
+
+        FAKE_RESP = utils.TestResponse({'status_code': 200, 'text': 'resp'})
+        RESP = mock.Mock(return_value=FAKE_RESP)
+
+        with mock.patch.object(sess.session, 'request', RESP) as mocked:
+            sess.get(self.TEST_URL, requests_auth=requests_auth)
+
+            mocked.assert_called_once_with('GET', self.TEST_URL,
+                                           headers=mock.ANY,
+                                           allow_redirects=mock.ANY,
+                                           auth=requests_auth,
+                                           verify=mock.ANY)

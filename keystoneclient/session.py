@@ -114,7 +114,7 @@ class Session(object):
     @utils.positional(enforcement=utils.positional.WARN)
     def request(self, url, method, json=None, original_ip=None,
                 user_agent=None, redirect=None, authenticated=None,
-                endpoint_filter=None, **kwargs):
+                endpoint_filter=None, auth=None, requests_auth=None, **kwargs):
         """Send an HTTP request with the specified characteristics.
 
         Wrapper around `requests.Session.request` to handle tasks such as
@@ -149,6 +149,14 @@ class Session(object):
                                      endpoint to use for this request. If not
                                      provided then URL is expected to be a
                                      fully qualified URL. (optional)
+        :param auth: The auth plugin to use when authenticating this request.
+                     This will override the plugin that is attached to the
+                     session (if any). (optional)
+        :type auth: :class:`keystoneclient.auth.base.BaseAuthPlugin`
+        :param requests_auth: A requests library auth plugin that cannot be
+                              passed via kwarg because the `auth` kwarg
+                              collides with our own auth plugins. (optional)
+        :type requests_auth: :class:`requests.auth.AuthBase`
         :param kwargs: any other parameter that can be passed to
                        requests.Session.request (such as `headers`). Except:
                        'data' will be overwritten by the data in 'json' param.
@@ -164,10 +172,10 @@ class Session(object):
         headers = kwargs.setdefault('headers', dict())
 
         if authenticated is None:
-            authenticated = self.auth is not None
+            authenticated = bool(auth or self.auth)
 
         if authenticated:
-            token = self.get_token()
+            token = self.get_token(auth)
 
             if not token:
                 raise exceptions.AuthorizationFailure("No token Available")
@@ -180,7 +188,7 @@ class Session(object):
         # requests. We check fully qualified here by the presence of a host.
         url_data = urllib.parse.urlparse(url)
         if endpoint_filter and not url_data.netloc:
-            base_url = self.get_endpoint(**endpoint_filter)
+            base_url = self.get_endpoint(auth, **endpoint_filter)
 
             if not base_url:
                 raise exceptions.EndpointNotFound()
@@ -209,6 +217,9 @@ class Session(object):
             kwargs['data'] = jsonutils.dumps(json)
 
         kwargs.setdefault('verify', self.verify)
+
+        if requests_auth:
+            kwargs['auth'] = requests_auth
 
         string_parts = ['curl -i']
 
@@ -355,26 +366,45 @@ class Session(object):
                    original_ip=kwargs.pop('original_ip', None),
                    user_agent=kwargs.pop('user_agent', None))
 
-    def get_token(self):
+    def get_token(self, auth=None):
         """Return a token as provided by the auth plugin.
+
+        :param auth: The auth plugin to use for token. Overrides the plugin
+                     on the session. (optional)
+        :type auth: :class:`keystoneclient.auth.base.BaseAuthPlugin`
 
         :raises AuthorizationFailure: if a new token fetch fails.
 
         :returns string: A valid token.
         """
-        if not self.auth:
+        if not auth:
+            auth = self.auth
+
+        if not auth:
             raise exceptions.MissingAuthPlugin("Token Required")
 
         try:
-            return self.auth.get_token(self)
+            return auth.get_token(self)
         except exceptions.HTTPError as exc:
             raise exceptions.AuthorizationFailure("Authentication failure: "
                                                   "%s" % exc)
 
-    def get_endpoint(self, **kwargs):
-        """Get an endpoint as provided by the auth plugin."""
-        if not self.auth:
+    def get_endpoint(self, auth=None, **kwargs):
+        """Get an endpoint as provided by the auth plugin.
+
+        :param auth: The auth plugin to use for token. Overrides the plugin on
+                     the session. (optional)
+        :type auth: :class:`keystoneclient.auth.base.BaseAuthPlugin`
+
+        :raises MissingAuthPlugin: if a plugin is not available.
+
+        :returns string: An endpoint if available or None.
+        """
+        if not auth:
+            auth = self.auth
+
+        if not auth:
             raise exceptions.MissingAuthPlugin('An auth plugin is required to '
                                                'determine the endpoint URL.')
 
-        return self.auth.get_endpoint(self, **kwargs)
+        return auth.get_endpoint(self, **kwargs)
