@@ -114,7 +114,8 @@ class Session(object):
     @utils.positional(enforcement=utils.positional.WARN)
     def request(self, url, method, json=None, original_ip=None,
                 user_agent=None, redirect=None, authenticated=None,
-                endpoint_filter=None, auth=None, requests_auth=None, **kwargs):
+                endpoint_filter=None, auth=None, requests_auth=None,
+                raise_exc=True, **kwargs):
         """Send an HTTP request with the specified characteristics.
 
         Wrapper around `requests.Session.request` to handle tasks such as
@@ -157,6 +158,9 @@ class Session(object):
                               passed via kwarg because the `auth` kwarg
                               collides with our own auth plugins. (optional)
         :type requests_auth: :class:`requests.auth.AuthBase`
+        :param bool raise_exc: If True then raise an appropriate exception for
+                               failed HTTP requests. If False then return the
+                               request object. (optional, default True)
         :param kwargs: any other parameter that can be passed to
                        requests.Session.request (such as `headers`). Except:
                        'data' will be overwritten by the data in 'json' param.
@@ -256,7 +260,7 @@ class Session(object):
         # returned by the requests library.
         resp.history = tuple(resp.history)
 
-        if resp.status_code >= 400:
+        if raise_exc and resp.status_code >= 400:
             _logger.debug('Request returned failure status: %s',
                           resp.status_code)
             raise exceptions.from_response(resp, method, url)
