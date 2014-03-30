@@ -581,8 +581,8 @@ class CommonAuthTokenMiddlewareTest(object):
         tmp_name = uuid.uuid4().hex
         test_parent_signing_dir = "/tmp/%s" % tmp_name
         self.middleware.signing_dirname = "/tmp/%s/%s" % ((tmp_name,) * 2)
-        self.middleware.signing_cert_file_name = "%s/test.pem" % \
-            self.middleware.signing_dirname
+        self.middleware.signing_cert_file_name = (
+            "%s/test.pem" % self.middleware.signing_dirname)
         self.middleware.verify_signing_dir()
         # NOTE(wu_wenxiang): Verify if the signing dir was created as expected.
         self.assertTrue(os.path.isdir(self.middleware.signing_dirname))
@@ -1385,8 +1385,8 @@ class v2AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
     def test_request_prevent_service_catalog_injection(self):
         req = webob.Request.blank('/')
         req.headers['X-Service-Catalog'] = '[]'
-        req.headers['X-Auth-Token'] = \
-            self.examples.UUID_TOKEN_NO_SERVICE_CATALOG
+        req.headers['X-Auth-Token'] = (
+            self.examples.UUID_TOKEN_NO_SERVICE_CATALOG)
         body = self.middleware(req.environ, self.start_fake_response)
         self.assertEqual(self.response_status, 200)
         self.assertFalse(req.headers.get('X-Service-Catalog'))

@@ -97,8 +97,8 @@ class Client(httpclient.HTTPClient):
                         results['message'] = "Keystone found at %s" % url
                         version = body['version']
                         # Stable/diablo incorrect format
-                        id, status, version_url = \
-                            self._get_version_info(version, url)
+                        id, status, version_url = (
+                            self._get_version_info(version, url))
                         results[str(id)] = {"id": id,
                                             "status": status,
                                             "url": version_url}
@@ -107,8 +107,8 @@ class Client(httpclient.HTTPClient):
                         # Correct format
                         results['message'] = "Keystone found at %s" % url
                         for version in body['versions']['values']:
-                            id, status, version_url = \
-                                self._get_version_info(version, url)
+                            id, status, version_url = (
+                                self._get_version_info(version, url))
                             results[str(id)] = {"id": id,
                                                 "status": status,
                                                 "url": version_url}
