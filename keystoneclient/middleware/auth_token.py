@@ -1297,7 +1297,15 @@ class AuthProtocol(object):
         return self.cms_verify(data['signed'])
 
     def _fetch_cert_file(self, cert_file_name, cert_type):
-        path = '/v2.0/certificates/' + cert_type
+        if not self.auth_version:
+            self.auth_version = self._choose_api_version()
+
+        if self.auth_version == 'v3.0':
+            if cert_type == 'signing':
+                cert_type = 'certificates'
+            path = '/v3/OS-SIMPLE-CERT/' + cert_type
+        else:
+            path = '/v2.0/certificates/' + cert_type
         response = self._http_request('GET', path)
         if response.status_code != 200:
             raise exceptions.CertificateConfigError(response.text)
