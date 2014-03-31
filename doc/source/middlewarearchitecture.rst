@@ -315,40 +315,11 @@ Extended the request with additional User Information
 -----------------------------------------------------
 
 :py:class:`keystoneclient.middleware.auth_token.AuthProtocol` extends the
-request with additional information if the user has been authenticated.
+request with additional information if the user has been authenticated. See the
+"What we add to the request for use by the OpenStack service" section in
+:py:mod:`keystoneclient.middleware.auth_token` for the list of fields set by
+the auth_token middleware.
 
-
-X-Identity-Status
-    Provides information on whether the request was authenticated or not.
-
-X-Tenant-Id
-    The unique, immutable tenant Id
-
-X-Tenant-Name
-    The unique, but mutable (it can change) tenant name.
-
-X-User-Id
-    The user id of the user used to log in
-
-X-User-Name
-    The username used to log in
-
-X-Roles
-    The roles associated with that user
-
-Deprecated additions
---------------------
-
-X-Tenant
-    Provides the tenant name. This is to support any legacy implementations
-    before Keystone switched to an ID/Name schema for tenants.
-
-X-User
-    The username used to log in. This is to support any legacy implementations
-    before Keystone switched to an ID/Name schema for tenants.
-
-X-Role
-    The roles associated with that user
 
 References
 ==========
