@@ -184,26 +184,44 @@ from keystoneclient import utils
 # To use Swift memcache, you must set the 'cache' option to the environment
 # key where the Swift cache object is stored.
 
+
+# NOTE(jamielennox): A number of options below are deprecated however are left
+# in the list and only mentioned as deprecated in the help string. This is
+# because we have to provide the same deprecation functionality for arguments
+# passed in via the conf in __init__ (from paste) and there is no way to test
+# that the default value was set or not in CONF.
+# Also if we were to remove the options from the CONF list (as typical CONF
+# deprecation works) then other projects will not be able to override the
+# options via CONF.
+
 opts = [
     cfg.StrOpt('auth_admin_prefix',
                default='',
-               help='Prefix to prepend at the beginning of the path'),
+               help='Prefix to prepend at the beginning of the path. '
+                    'Deprecated, use identity_uri.'),
     cfg.StrOpt('auth_host',
                default='127.0.0.1',
-               help='Host providing the admin Identity API endpoint'),
+               help='Host providing the admin Identity API endpoint. '
+                    'Deprecated, use identity_uri.'),
     cfg.IntOpt('auth_port',
                default=35357,
-               help='Port of the admin Identity API endpoint'),
+               help='Port of the admin Identity API endpoint. '
+                    'Deprecated, use identity_uri.'),
     cfg.StrOpt('auth_protocol',
                default='https',
-               help='Protocol of the admin Identity API endpoint'
-               '(http or https)'),
+               help='Protocol of the admin Identity API endpoint '
+                    '(http or https). Deprecated, use identity_uri.'),
     cfg.StrOpt('auth_uri',
                default=None,
                # FIXME(dolph): should be default='http://127.0.0.1:5000/v2.0/',
                # or (depending on client support) an unversioned, publicly
                # accessible identity endpoint (see bug 1207517)
                help='Complete public Identity API endpoint'),
+    cfg.StrOpt('identity_uri',
+               default=None,
+               help='Complete admin Identity API endpoint. This should '
+                    'specify the unversioned root endpoint '
+                    'eg. https://localhost:35357/'),
     cfg.StrOpt('auth_version',
                default=None,
                help='API version of the admin Identity API endpoint'),
@@ -395,19 +413,34 @@ class AuthProtocol(object):
                                     (True, 'true', 't', '1', 'on', 'yes', 'y'))
 
         # where to find the auth service (we use this to validate tokens)
-        auth_host = self._conf_get('auth_host')
-        auth_port = int(self._conf_get('auth_port'))
-        auth_protocol = self._conf_get('auth_protocol')
-        auth_admin_prefix = self._conf_get('auth_admin_prefix')
+        self.request_uri = self._conf_get('identity_uri')
         self.auth_uri = self._conf_get('auth_uri')
 
-        if netaddr.valid_ipv6(auth_host):
-            # Note(dzyu) it is an IPv6 address, so it needs to be wrapped
-            # with '[]' to generate a valid IPv6 URL, based on
-            # http://www.ietf.org/rfc/rfc2732.txt
-            auth_host = '[%s]' % auth_host
+        # NOTE(jamielennox): it does appear here that our defaults arguments
+        # are backwards. We need to do it this way so that we can handle the
+        # same deprecation strategy for CONF and the conf variable.
+        if not self.request_uri:
+            self.LOG.warning("Configuring admin URI using auth fragments. "
+                             "This is deprecated, use 'identity_uri' instead.")
 
-        self.request_uri = '%s://%s:%s' % (auth_protocol, auth_host, auth_port)
+            auth_host = self._conf_get('auth_host')
+            auth_port = int(self._conf_get('auth_port'))
+            auth_protocol = self._conf_get('auth_protocol')
+            auth_admin_prefix = self._conf_get('auth_admin_prefix')
+
+            if netaddr.valid_ipv6(auth_host):
+                # Note(dzyu) it is an IPv6 address, so it needs to be wrapped
+                # with '[]' to generate a valid IPv6 URL, based on
+                # http://www.ietf.org/rfc/rfc2732.txt
+                auth_host = '[%s]' % auth_host
+
+            self.request_uri = '%s://%s:%s' % (auth_protocol, auth_host,
+                                               auth_port)
+            if auth_admin_prefix:
+                self.request_uri = '%s/%s' % (self.request_uri,
+                                              auth_admin_prefix.strip('/'))
+        else:
+            self.request_uri = self.request_uri.rstrip('/')
 
         if self.auth_uri is None:
             self.LOG.warning(
@@ -416,12 +449,11 @@ class AuthProtocol(object):
                 'authenticate against an admin endpoint')
 
             # FIXME(dolph): drop support for this fallback behavior as
-            # documented in bug 1207517
-            self.auth_uri = self.request_uri
-
-        if auth_admin_prefix:
-            self.request_uri = "%s/%s" % (self.request_uri,
-                                          auth_admin_prefix.strip('/'))
+            # documented in bug 1207517.
+            # NOTE(jamielennox): we urljoin '/' to get just the base URI as
+            # this is the original behaviour.
+            self.auth_uri = urllib.parse.urljoin(self.request_uri, '/')
+            self.auth_uri = self.auth_uri.rstrip('/')
 
         # SSL
         self.cert_file = self._conf_get('certfile')
