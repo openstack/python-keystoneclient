@@ -413,13 +413,13 @@ class AuthProtocol(object):
                                     (True, 'true', 't', '1', 'on', 'yes', 'y'))
 
         # where to find the auth service (we use this to validate tokens)
-        self.request_uri = self._conf_get('identity_uri')
+        self.identity_uri = self._conf_get('identity_uri')
         self.auth_uri = self._conf_get('auth_uri')
 
         # NOTE(jamielennox): it does appear here that our defaults arguments
         # are backwards. We need to do it this way so that we can handle the
         # same deprecation strategy for CONF and the conf variable.
-        if not self.request_uri:
+        if not self.identity_uri:
             self.LOG.warning("Configuring admin URI using auth fragments. "
                              "This is deprecated, use 'identity_uri' instead.")
 
@@ -434,13 +434,13 @@ class AuthProtocol(object):
                 # http://www.ietf.org/rfc/rfc2732.txt
                 auth_host = '[%s]' % auth_host
 
-            self.request_uri = '%s://%s:%s' % (auth_protocol, auth_host,
-                                               auth_port)
+            self.identity_uri = '%s://%s:%s' % (auth_protocol, auth_host,
+                                                auth_port)
             if auth_admin_prefix:
-                self.request_uri = '%s/%s' % (self.request_uri,
-                                              auth_admin_prefix.strip('/'))
+                self.identity_uri = '%s/%s' % (self.identity_uri,
+                                               auth_admin_prefix.strip('/'))
         else:
-            self.request_uri = self.request_uri.rstrip('/')
+            self.identity_uri = self.identity_uri.rstrip('/')
 
         if self.auth_uri is None:
             self.LOG.warning(
@@ -452,7 +452,7 @@ class AuthProtocol(object):
             # documented in bug 1207517.
             # NOTE(jamielennox): we urljoin '/' to get just the base URI as
             # this is the original behaviour.
-            self.auth_uri = urllib.parse.urljoin(self.request_uri, '/')
+            self.auth_uri = urllib.parse.urljoin(self.identity_uri, '/')
             self.auth_uri = self.auth_uri.rstrip('/')
 
         # SSL
@@ -723,7 +723,7 @@ class AuthProtocol(object):
         :raise ServerError when unable to communicate with keystone
 
         """
-        url = "%s/%s" % (self.request_uri, path.lstrip('/'))
+        url = "%s/%s" % (self.identity_uri, path.lstrip('/'))
 
         kwargs.setdefault('timeout', self.http_connect_timeout)
         if self.cert_file and self.key_file:
