@@ -265,10 +265,7 @@ class BaseAuthTokenMiddlewareTest(testtools.TestCase):
         self.middleware = None
 
         self.conf = {
-            'auth_host': 'keystone.example.com',
-            'auth_port': 1234,
-            'auth_protocol': 'https',
-            'auth_admin_prefix': '/testadmin',
+            'identity_uri': 'https://keystone.example.com:1234/testadmin/',
             'signing_dir': client_fixtures.CERTDIR,
             'auth_version': auth_version,
             'auth_uri': 'https://keystone.example.com:1234',
@@ -498,6 +495,7 @@ class CommonAuthTokenMiddlewareTest(object):
         self.assertLastPath(None)
 
     def test_init_by_ipv6Addr_auth_host(self):
+        del self.conf['identity_uri']
         conf = {
             'auth_host': '2001:2013:1:f101::1',
             'auth_port': 1234,
@@ -524,12 +522,12 @@ class CommonAuthTokenMiddlewareTest(object):
         self.assert_valid_request_200(self.token_dict['uuid_token_default'])
         self.assert_valid_last_url(self.token_dict['uuid_token_default'])
 
-    def test_valid_uuid_request_with_identity_uri(self):
-        for opt in ['auth_host', 'auth_port', 'auth_protocol',
-                    'auth_admin_prefix']:
-            del self.conf[opt]
-        self.conf['identity_uri'] = \
-            'https://keystone.example.com:1234/testadmin/'
+    def test_valid_uuid_request_with_auth_fragments(self):
+        del self.conf['identity_uri']
+        self.conf['auth_protocol'] = 'https'
+        self.conf['auth_host'] = 'keystone.example.com'
+        self.conf['auth_port'] = 1234
+        self.conf['auth_admin_prefix'] = '/testadmin'
         self.set_middleware()
         self.assert_valid_request_200(self.token_dict['uuid_token_default'])
         self.assert_valid_last_url(self.token_dict['uuid_token_default'])
@@ -537,8 +535,6 @@ class CommonAuthTokenMiddlewareTest(object):
     def test_valid_signed_request(self):
         self.assert_valid_request_200(
             self.token_dict['signed_token_scoped'])
-        self.assertEqual(self.middleware.conf['auth_admin_prefix'],
-                         "/testadmin")
         #ensure that signed requests do not generate HTTP traffic
         self.assertLastPath(None)
 
@@ -1209,6 +1205,10 @@ class V2CertDownloadMiddlewareTest(BaseAuthTokenMiddlewareTest,
                          httpretty.last_request().path)
 
     def test_prefix_trailing_slash(self):
+        del self.conf['identity_uri']
+        self.conf['auth_protocol'] = 'https'
+        self.conf['auth_host'] = 'keystone.example.com'
+        self.conf['auth_port'] = 1234
         self.conf['auth_admin_prefix'] = '/newadmin/'
 
         httpretty.register_uri(httpretty.GET,
@@ -1231,6 +1231,10 @@ class V2CertDownloadMiddlewareTest(BaseAuthTokenMiddlewareTest,
                          httpretty.last_request().path)
 
     def test_without_prefix(self):
+        del self.conf['identity_uri']
+        self.conf['auth_protocol'] = 'https'
+        self.conf['auth_host'] = 'keystone.example.com'
+        self.conf['auth_port'] = 1234
         self.conf['auth_admin_prefix'] = ''
 
         httpretty.register_uri(httpretty.GET,
