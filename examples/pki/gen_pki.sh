@@ -14,7 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-# This script generates the crypto necessary for the SSL tests.
+# These functions generate the certificates and signed tokens for the tests.
 
 DIR=`dirname "$0"`
 CURRENT_DIR=`cd "$DIR" && pwd`
@@ -202,21 +202,12 @@ function check_openssl {
   check_error $?
 }
 
+JSON_FILES="${CMS_DIR}/auth_token_revoked.json ${CMS_DIR}/auth_token_unscoped.json ${CMS_DIR}/auth_token_scoped.json ${CMS_DIR}/auth_token_scoped_expired.json ${CMS_DIR}/revocation_list.json ${CMS_DIR}/auth_v3_token_scoped.json ${CMS_DIR}/auth_v3_token_revoked.json"
+
 function gen_sample_cms {
-  for json_file in "${CMS_DIR}/auth_token_revoked.json" "${CMS_DIR}/auth_token_unscoped.json" "${CMS_DIR}/auth_token_scoped.json" "${CMS_DIR}/auth_token_scoped_expired.json" "${CMS_DIR}/revocation_list.json" "${CMS_DIR}/auth_v3_token_scoped.json" "${CMS_DIR}/auth_v3_token_revoked.json"
+  for json_file in $JSON_FILES
   do
     openssl cms -sign -in $json_file -nosmimecap -signer $CERTS_DIR/signing_cert.pem -inkey $PRIVATE_DIR/signing_key.pem -outform PEM -nodetach -nocerts -noattr -out ${json_file/.json/.pem}
   done
 }
 
-check_openssl
-rm_old
-cleanup
-setup
-generate_ca
-ssl_cert_req
-cms_signing_cert_req
-issue_certs
-create_middleware_cert
-gen_sample_cms
-cleanup
