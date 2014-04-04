@@ -108,8 +108,14 @@ class Auth(base.BaseIdentityPlugin):
 
         resp = session.post(self.token_url, json=body, headers=headers,
                             authenticated=False)
+
+        try:
+            resp_data = resp.json()['token']
+        except (KeyError, ValueError):
+            raise exceptions.InvalidResponse(response=resp)
+
         return access.AccessInfoV3(resp.headers['X-Subject-Token'],
-                                   **resp.json()['token'])
+                                   **resp_data)
 
     @staticmethod
     def _factory(auth_url, **kwargs):

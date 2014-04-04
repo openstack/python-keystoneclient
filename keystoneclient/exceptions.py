@@ -61,3 +61,11 @@ class MissingAuthPlugin(ClientException):
 class NoMatchingPlugin(ClientException):
     """There were no auth plugins that could be created from the parameters
     provided."""
+
+
+class InvalidResponse(ClientException):
+    """The response from the server is not valid for this request."""
+
+    def __init__(self, response):
+        super(InvalidResponse, self).__init__()
+        self.response = response

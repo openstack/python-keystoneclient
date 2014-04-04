@@ -84,7 +84,13 @@ class Auth(base.BaseIdentityPlugin):
 
         resp = session.post(url, json=params, headers=headers,
                             authenticated=False)
-        return access.AccessInfoV2(**resp.json()['access'])
+
+        try:
+            resp_data = resp.json()['access']
+        except (KeyError, ValueError):
+            raise exceptions.InvalidResponse(response=resp)
+
+        return access.AccessInfoV2(**resp_data)
 
     @abc.abstractmethod
     def get_auth_data(self, headers=None):
