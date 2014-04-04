@@ -165,6 +165,8 @@ class V3IdentityPlugin(utils.TestCase):
                                       'password': self.TEST_PASS}}}}}
 
         self.assertRequestBodyIs(json=req)
+        self.assertRequestHeaderEqual('Content-Type', 'application/json')
+        self.assertRequestHeaderEqual('Accept', 'application/json')
         self.assertEqual(s.auth.auth_ref.auth_token, self.TEST_TOKEN)
 
     @httpretty.activate
@@ -213,6 +215,9 @@ class V3IdentityPlugin(utils.TestCase):
                 'token': {'id': self.TEST_TOKEN}}}}
 
         self.assertRequestBodyIs(json=req)
+
+        self.assertRequestHeaderEqual('Content-Type', 'application/json')
+        self.assertRequestHeaderEqual('Accept', 'application/json')
         self.assertEqual(s.auth.auth_ref.auth_token, self.TEST_TOKEN)
 
     def test_missing_auth_params(self):
