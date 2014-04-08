@@ -265,10 +265,10 @@ class Session(object):
             raise exceptions.SSLError(msg)
         except requests.exceptions.Timeout:
             msg = 'Request to %s timed out' % url
-            raise exceptions.Timeout(msg)
+            raise exceptions.RequestTimeout(msg)
         except requests.exceptions.ConnectionError:
             msg = 'Unable to establish connection to %s' % url
-            raise exceptions.ConnectionError(msg)
+            raise exceptions.ConnectionRefused(msg)
 
         _logger.debug('RESP: [%s] %s\nRESP BODY: %s\n',
                       resp.status_code, resp.headers, resp.text)
