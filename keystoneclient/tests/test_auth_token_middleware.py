@@ -594,14 +594,6 @@ class CommonAuthTokenMiddlewareTest(object):
             stat.S_IRWXU)
         shutil.rmtree(test_parent_signing_dir)
 
-    def test_cert_file_missing(self):
-        self.assertFalse(self.middleware.cert_file_missing(
-                         "openstack: /tmp/haystack: No such file or directory",
-                         "/tmp/needle"))
-        self.assertTrue(self.middleware.cert_file_missing(
-                        "openstack: /not/exist: No such file or directory",
-                        "/not/exist"))
-
     def test_get_token_revocation_list_fetched_time_returns_min(self):
         self.middleware.token_revocation_list_fetched_time = None
         self.middleware.revoked_file_name = ''

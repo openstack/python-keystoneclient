@@ -1125,9 +1125,6 @@ class AuthProtocol(object):
         self.LOG.debug('Marking token as unauthorized in cache')
         self._cache_store(token_id, 'invalid')
 
-    def cert_file_missing(self, proc_output, file_name):
-        return (file_name in proc_output and not os.path.exists(file_name))
-
     def verify_uuid_token(self, user_token, retry=True):
         """Authenticate user token with keystone.
 
@@ -1201,28 +1198,32 @@ class AuthProtocol(object):
     def cms_verify(self, data):
         """Verifies the signature of the provided data's IAW CMS syntax.
 
-        If either of the certificate files are missing, fetch them and
+        If either of the certificate files might be missing, fetch them and
         retry.
         """
-        while True:
+        def verify():
             try:
-                output = cms.cms_verify(data, self.signing_cert_file_name,
-                                        self.signing_ca_file_name)
-            except exceptions.CertificateConfigError as err:
-                if self.cert_file_missing(err.output,
-                                          self.signing_cert_file_name):
-                    self.fetch_signing_cert()
-                    continue
-                if self.cert_file_missing(err.output,
-                                          self.signing_ca_file_name):
-                    self.fetch_ca_cert()
-                    continue
-                self.LOG.error('CMS Verify output: %s', err.output)
-                raise
+                return cms.cms_verify(data, self.signing_cert_file_name,
+                                      self.signing_ca_file_name)
             except cms.subprocess.CalledProcessError as err:
                 self.LOG.warning('Verify error: %s', err)
                 raise
-            return output
+
+        try:
+            return verify()
+        except exceptions.CertificateConfigError:
+            # the certs might be missing; unconditionally fetch to avoid racing
+            self.fetch_signing_cert()
+            self.fetch_ca_cert()
+
+            try:
+                # retry with certs in place
+                return verify()
+            except exceptions.CertificateConfigError as err:
+                # if this is still occurring, something else is wrong and we
+                # need err.output to identify the problem
+                self.LOG.error('CMS Verify output: %s', err.output)
+                raise
 
     def verify_signed_token(self, signed_text):
         """Check that the token is unrevoked and has a valid signature."""
