@@ -15,6 +15,7 @@ import subprocess
 
 import mock
 import testresources
+from testtools import matchers
 
 from keystoneclient.common import cms
 from keystoneclient import exceptions
@@ -110,6 +111,32 @@ class CMSTest(utils.TestCase, testresources.ResourcedTestCase):
         self.assertTrue(cms.cms_verify(cms_content,
                                        self.examples.SIGNING_CERT_FILE,
                                        self.examples.SIGNING_CA_FILE))
+
+    def test_cms_hash_token_no_token_id(self):
+        token_id = None
+        self.assertThat(cms.cms_hash_token(token_id), matchers.Is(None))
+
+    def test_cms_hash_token_not_pki(self):
+        """If the token_id is not a PKI token then it returns the token_id."""
+        token = 'something'
+        self.assertFalse(cms.is_ans1_token(token))
+        self.assertThat(cms.cms_hash_token(token), matchers.Is(token))
+
+    def test_cms_hash_token_default_md5(self):
+        """The default hash method is md5."""
+        token = self.examples.SIGNED_TOKEN_SCOPED
+        token_id_default = cms.cms_hash_token(token)
+        token_id_md5 = cms.cms_hash_token(token, mode='md5')
+        self.assertThat(token_id_default, matchers.Equals(token_id_md5))
+        # md5 hash is 32 chars.
+        self.assertThat(token_id_default, matchers.HasLength(32))
+
+    def test_cms_hash_token_sha256(self):
+        """Can also hash with sha256."""
+        token = self.examples.SIGNED_TOKEN_SCOPED
+        token_id = cms.cms_hash_token(token, mode='sha256')
+        # sha256 hash is 64 chars.
+        self.assertThat(token_id, matchers.HasLength(64))
 
 
 def load_tests(loader, tests, pattern):

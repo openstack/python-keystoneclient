@@ -141,8 +141,8 @@ def isunauthenticated(f):
     return getattr(f, 'unauthenticated', False)
 
 
-def hash_signed_token(signed_text):
-    hash_ = hashlib.md5()
+def hash_signed_token(signed_text, mode='md5'):
+    hash_ = hashlib.new(mode)
     hash_.update(signed_text)
     return hash_.hexdigest()
 

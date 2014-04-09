@@ -14,8 +14,11 @@ import logging
 import sys
 
 import six
+import testresources
+from testtools import matchers
 
 from keystoneclient import exceptions
+from keystoneclient.tests import client_fixtures
 from keystoneclient.tests import utils as test_utils
 from keystoneclient import utils
 
@@ -204,3 +207,34 @@ class TestPositional(test_utils.TestCase):
     def test_normal_method(self):
         self.assertEqual((self, 1, 2), self.normal_method(1, b=2))
         self.assertRaises(TypeError, self.normal_method, 1, 2)
+
+
+class HashSignedTokenTestCase(test_utils.TestCase,
+                              testresources.ResourcedTestCase):
+    """Unit tests for utils.hash_signed_token()."""
+
+    resources = [('examples', client_fixtures.EXAMPLES_RESOURCE)]
+
+    def test_default_md5(self):
+        """The default hash method is md5."""
+        token = self.examples.SIGNED_TOKEN_SCOPED
+        if six.PY3:
+            token = token.encode('utf-8')
+        token_id_default = utils.hash_signed_token(token)
+        token_id_md5 = utils.hash_signed_token(token, mode='md5')
+        self.assertThat(token_id_default, matchers.Equals(token_id_md5))
+        # md5 hash is 32 chars.
+        self.assertThat(token_id_default, matchers.HasLength(32))
+
+    def test_sha256(self):
+        """Can also hash with sha256."""
+        token = self.examples.SIGNED_TOKEN_SCOPED
+        if six.PY3:
+            token = token.encode('utf-8')
+        token_id = utils.hash_signed_token(token, mode='sha256')
+        # sha256 hash is 64 chars.
+        self.assertThat(token_id, matchers.HasLength(64))
+
+
+def load_tests(loader, tests, pattern):
+    return testresources.OptimisingTestSuite(tests)
