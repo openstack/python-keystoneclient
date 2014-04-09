@@ -261,7 +261,7 @@ def cms_to_token(cms_text):
     return signed_text
 
 
-def cms_hash_token(token_id):
+def cms_hash_token(token_id, mode='md5'):
     """Hash PKI tokens.
 
     return: for ans1_token, returns the hash of the passed in token
@@ -270,7 +270,7 @@ def cms_hash_token(token_id):
     if token_id is None:
         return None
     if is_ans1_token(token_id):
-        hasher = hashlib.md5()
+        hasher = hashlib.new(mode)
         if isinstance(token_id, six.text_type):
             token_id = token_id.encode('utf-8')
         hasher.update(token_id)
