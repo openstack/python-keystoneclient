@@ -28,6 +28,7 @@ from keystoneclient.v3 import endpoints
 from keystoneclient.v3 import groups
 from keystoneclient.v3 import policies
 from keystoneclient.v3 import projects
+from keystoneclient.v3 import regions
 from keystoneclient.v3 import roles
 from keystoneclient.v3 import services
 from keystoneclient.v3 import users
@@ -101,6 +102,7 @@ class Client(httpclient.HTTPClient):
         self.groups = groups.GroupManager(self)
         self.policies = policies.PolicyManager(self)
         self.projects = projects.ProjectManager(self)
+        self.regions = regions.RegionManager(self)
         self.roles = roles.RoleManager(self)
         self.services = services.ServiceManager(self)
         self.users = users.UserManager(self)
