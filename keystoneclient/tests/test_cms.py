@@ -48,9 +48,9 @@ class CMSTest(utils.TestCase, testresources.ResourcedTestCase):
             self.examples.SIGNED_TOKEN_SCOPED))
         self.assertEqual(tok, self.examples.SIGNED_TOKEN_SCOPED)
 
-    def test_ans1_token(self):
-        self.assertTrue(cms.is_ans1_token(self.examples.SIGNED_TOKEN_SCOPED))
-        self.assertFalse(cms.is_ans1_token('FOOBAR'))
+    def test_asn1_token(self):
+        self.assertTrue(cms.is_asn1_token(self.examples.SIGNED_TOKEN_SCOPED))
+        self.assertFalse(cms.is_asn1_token('FOOBAR'))
 
     def test_cms_sign_token_no_files(self):
         self.assertRaises(subprocess.CalledProcessError,
@@ -119,7 +119,7 @@ class CMSTest(utils.TestCase, testresources.ResourcedTestCase):
     def test_cms_hash_token_not_pki(self):
         """If the token_id is not a PKI token then it returns the token_id."""
         token = 'something'
-        self.assertFalse(cms.is_ans1_token(token))
+        self.assertFalse(cms.is_asn1_token(token))
         self.assertThat(cms.cms_hash_token(token), matchers.Is(token))
 
     def test_cms_hash_token_default_md5(self):

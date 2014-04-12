@@ -29,7 +29,7 @@ from keystoneclient import exceptions
 
 subprocess = None
 LOG = logging.getLogger(__name__)
-PKI_ANS1_PREFIX = 'MII'
+PKI_ASN1_PREFIX = 'MII'
 
 
 def _ensure_subprocess():
@@ -166,7 +166,7 @@ def verify_token(token, signing_cert_file_name, ca_file_name):
                       ca_file_name)
 
 
-def is_ans1_token(token):
+def is_asn1_token(token):
     """Determine if a token appears to be PKI-based.
 
     thx to ayoung for sorting this out.
@@ -213,7 +213,14 @@ def is_ans1_token(token):
     It's not practical to support a token of this length or greater in http
     therefore, we will check for MII only and ignore the case of larger tokens
     """
-    return token[:3] == PKI_ANS1_PREFIX
+    return token[:3] == PKI_ASN1_PREFIX
+
+
+def is_ans1_token(token):
+    """Deprecated. Use is_asn1_token() instead."""
+    LOG.warning("The function is_ans1_token() is deprecated, "
+                "use is_asn1_token() instead.")
+    return is_asn1_token(token)
 
 
 def cms_sign_text(text, signing_cert_file_name, signing_key_file_name):
@@ -264,12 +271,12 @@ def cms_to_token(cms_text):
 def cms_hash_token(token_id, mode='md5'):
     """Hash PKI tokens.
 
-    return: for ans1_token, returns the hash of the passed in token
+    return: for asn1_token, returns the hash of the passed in token
             otherwise, returns what it was passed in.
     """
     if token_id is None:
         return None
-    if is_ans1_token(token_id):
+    if is_asn1_token(token_id):
         hasher = hashlib.new(mode)
         if isinstance(token_id, six.text_type):
             token_id = token_id.encode('utf-8')
