@@ -66,7 +66,7 @@ class Auth(base.BaseIdentityPlugin):
         return '%s/auth/tokens' % self.auth_url.rstrip('/')
 
     def get_auth_ref(self, session, **kwargs):
-        headers = {}
+        headers = {'Accept': 'application/json'}
         body = {'auth': {'identity': {}}}
         ident = body['auth']['identity']
 

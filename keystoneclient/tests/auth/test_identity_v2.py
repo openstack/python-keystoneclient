@@ -109,6 +109,8 @@ class V2IdentityPlugin(utils.TestCase):
         req = {'auth': {'passwordCredentials': {'username': self.TEST_USER,
                                                 'password': self.TEST_PASS}}}
         self.assertRequestBodyIs(json=req)
+        self.assertRequestHeaderEqual('Content-Type', 'application/json')
+        self.assertRequestHeaderEqual('Accept', 'application/json')
         self.assertEqual(s.auth.auth_ref.auth_token, self.TEST_TOKEN)
 
     @httpretty.activate
@@ -135,6 +137,8 @@ class V2IdentityPlugin(utils.TestCase):
         req = {'auth': {'token': {'id': 'foo'}}}
         self.assertRequestBodyIs(json=req)
         self.assertRequestHeaderEqual('x-Auth-Token', 'foo')
+        self.assertRequestHeaderEqual('Content-Type', 'application/json')
+        self.assertRequestHeaderEqual('Accept', 'application/json')
         self.assertEqual(s.auth.auth_ref.auth_token, self.TEST_TOKEN)
 
     def test_missing_auth_params(self):

@@ -71,7 +71,7 @@ class Auth(base.BaseIdentityPlugin):
         self.tenant_name = tenant_name
 
     def get_auth_ref(self, session, **kwargs):
-        headers = {}
+        headers = {'Accept': 'application/json'}
         url = self.auth_url + '/tokens'
         params = {'auth': self.get_auth_data(headers)}
 
