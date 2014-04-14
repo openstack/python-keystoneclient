@@ -77,39 +77,42 @@ def auth_response_body():
                         user_name='jqsmith')
 
     f.add_role(id='234', name='compute:admin')
-    f.add_role(id='235', name='object-store:admin', tenantId='1')
+    role = f.add_role(id='235', name='object-store:admin')
+    role['tenantId'] = '1'
 
     s = f.add_service('compute', 'Cloud Servers')
-    s.add_endpoint(public='https://compute.north.host/v1/1234',
-                   internal='https://compute.north.host/v1/1234',
-                   region='North',
-                   tenant_id='1',
-                   versionId='1.0',
-                   versionInfo='https://compute.north.host/v1.0/',
-                   versionList='https://compute.north.host/')
-    s.add_endpoint(public='https://compute.north.host/v1.1/3456',
-                   internal='https://compute.north.host/v1.1/3456',
-                   region='North',
-                   tenant_id='2',
-                   versionId='1.1',
-                   versionInfo='https://compute.north.host/v1.1/',
-                   versionList='https://compute.north.host/')
+    endpoint = s.add_endpoint(public='https://compute.north.host/v1/1234',
+                              internal='https://compute.north.host/v1/1234',
+                              region='North')
+    endpoint['tenantId'] = '1'
+    endpoint['versionId'] = '1.0'
+    endpoint['versionInfo'] = 'https://compute.north.host/v1.0/'
+    endpoint['versionList'] = 'https://compute.north.host/'
+
+    endpoint = s.add_endpoint(public='https://compute.north.host/v1.1/3456',
+                              internal='https://compute.north.host/v1.1/3456',
+                              region='North')
+    endpoint['tenantId'] = '2'
+    endpoint['versionId'] = '1.1'
+    endpoint['versionInfo'] = 'https://compute.north.host/v1.1/'
+    endpoint['versionList'] = 'https://compute.north.host/'
 
     s = f.add_service('object-store', 'Cloud Files')
-    s.add_endpoint(public='https://swift.north.host/v1/blah',
-                   internal='https://swift.north.host/v1/blah',
-                   region='South',
-                   tenant_id='11',
-                   versionId='1.0',
-                   versionInfo='uri',
-                   versionList='uri')
-    s.add_endpoint(public='https://swift.north.host/v1.1/blah',
-                   internal='https://compute.north.host/v1.1/blah',
-                   region='South',
-                   tenant_id='2',
-                   versionId='1.1',
-                   versionInfo='https://swift.north.host/v1.1/',
-                   versionList='https://swift.north.host/')
+    endpoint = s.add_endpoint(public='https://swift.north.host/v1/blah',
+                              internal='https://swift.north.host/v1/blah',
+                              region='South')
+    endpoint['tenantId'] = '11'
+    endpoint['versionId'] = '1.0'
+    endpoint['versionInfo'] = 'uri'
+    endpoint['versionList'] = 'uri'
+
+    endpoint = s.add_endpoint(public='https://swift.north.host/v1.1/blah',
+                              internal='https://compute.north.host/v1.1/blah',
+                              region='South')
+    endpoint['tenantId'] = '2'
+    endpoint['versionId'] = '1.1'
+    endpoint['versionInfo'] = 'https://swift.north.host/v1.1/'
+    endpoint['versionList'] = 'https://swift.north.host/'
 
     s = f.add_service('image', 'Image Servers')
     s.add_endpoint(public='https://image.north.host/v1/',

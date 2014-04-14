@@ -20,14 +20,15 @@ from keystoneclient.openstack.common import timeutils
 class _Service(dict):
 
     def add_endpoint(self, public, admin=None, internal=None,
-                     tenant_id=None, **kwargs):
-        kwargs['tenantId'] = tenant_id or uuid.uuid4().hex
-        kwargs['publicURL'] = public
-        kwargs['adminURL'] = admin or public
-        kwargs['internalURL'] = internal or public
+                     tenant_id=None, region=None):
+        data = {'tenantId': tenant_id or uuid.uuid4().hex,
+                'publicURL': public,
+                'adminURL': admin or public,
+                'internalURL': internal or public,
+                'region': region}
 
-        self['endpoints'].append(kwargs)
-        return kwargs
+        self.setdefault('endpoints', []).append(data)
+        return data
 
 
 class Token(dict):
@@ -41,15 +42,15 @@ class Token(dict):
 
     def __init__(self, token_id=None,
                  expires=None, tenant_id=None, tenant_name=None, user_id=None,
-                 user_name=None, **kwargs):
-        super(Token, self).__init__(access=kwargs)
+                 user_name=None):
+        super(Token, self).__init__()
 
         self.token_id = token_id or uuid.uuid4().hex
         self.user_id = user_id or uuid.uuid4().hex
         self.user_name = user_name or uuid.uuid4().hex
 
         if not expires:
-            expires = timeutils.utcnow() + datetime.timedelta(days=1)
+            expires = timeutils.utcnow() + datetime.timedelta(hours=1)
 
         try:
             self.expires = expires
@@ -62,7 +63,7 @@ class Token(dict):
 
     @property
     def root(self):
-        return self['access']
+        return self.setdefault('access', {})
 
     @property
     def _token(self):
@@ -140,21 +141,19 @@ class Token(dict):
             msg = 'You must have roles on a token to scope it'
             raise exception.FixtureValidationError(msg)
 
-    def add_role(self, name=None, id=None, **kwargs):
+    def add_role(self, name=None, id=None):
         roles = self._user.setdefault('roles', [])
-        kwargs['id'] = id or uuid.uuid4().hex
-        kwargs['name'] = name or uuid.uuid4().hex
-        roles.append(kwargs)
-        return kwargs
+        data = {'id': id or uuid.uuid4().hex,
+                'name': name or uuid.uuid4().hex}
+        roles.append(data)
+        return data
 
-    def add_service(self, type, name=None, **kwargs):
-        kwargs.setdefault('endpoints', [])
-        kwargs['name'] = name or uuid.uuid4().hex
-        service = _Service(type=type, **kwargs)
+    def add_service(self, type, name=None):
+        name = name or uuid.uuid4().hex
+        service = _Service(name=name, type=type)
         self.root.setdefault('serviceCatalog', []).append(service)
         return service
 
-    def set_scope(self, id=None, name=None, **kwargs):
-        self._token['tenant'] = kwargs
+    def set_scope(self, id=None, name=None):
         self.tenant_id = id or uuid.uuid4().hex
         self.tenant_name = name or uuid.uuid4().hex
