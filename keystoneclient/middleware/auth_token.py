@@ -488,13 +488,13 @@ class AuthProtocol(object):
         self._cache_pool = None
         self._cache_initialized = False
         # memcache value treatment, ENCRYPT or MAC
-        self._memcache_security_strategy = \
-            self._conf_get('memcache_security_strategy')
+        self._memcache_security_strategy = (
+            self._conf_get('memcache_security_strategy'))
         if self._memcache_security_strategy is not None:
-            self._memcache_security_strategy = \
-                self._memcache_security_strategy.upper()
-        self._memcache_secret_key = \
-            self._conf_get('memcache_secret_key')
+            self._memcache_security_strategy = (
+                self._memcache_security_strategy.upper())
+        self._memcache_secret_key = (
+            self._conf_get('memcache_secret_key'))
         self._assert_valid_memcache_protection_config()
         # By default the token will be cached for 5 minutes
         self.token_cache_time = int(self._conf_get('token_cache_time'))
@@ -506,8 +506,8 @@ class AuthProtocol(object):
         self.http_connect_timeout = (http_connect_timeout_cfg and
                                      int(http_connect_timeout_cfg))
         self.auth_version = None
-        self.http_request_max_retries = \
-            self._conf_get('http_request_max_retries')
+        self.http_request_max_retries = (
+            self._conf_get('http_request_max_retries'))
 
         self.include_service_catalog = self._conf_get(
             'include_service_catalog')
