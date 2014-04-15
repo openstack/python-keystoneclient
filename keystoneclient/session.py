@@ -385,7 +385,7 @@ class Session(object):
 
         try:
             return auth.get_token(self)
-        except exceptions.HTTPError as exc:
+        except exceptions.HttpError as exc:
             raise exceptions.AuthorizationFailure("Authentication failure: "
                                                   "%s" % exc)
 

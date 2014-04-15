@@ -25,6 +25,7 @@ from keystoneclient.openstack.common.apiclient.exceptions import *
 ConnectionError = ConnectionRefused
 HTTPNotImplemented = HttpNotImplemented
 Timeout = RequestTimeout
+HTTPError = HttpError
 
 
 class CertificateConfigError(Exception):
