@@ -332,7 +332,8 @@ AUTH_RESPONSE_BODY = {
                 'region': 'North',
                 'interface': 'admin'
             }],
-            'type': 'compute'
+            'type': 'compute',
+            'name': 'nova',
         }, {
             'endpoints': [{
                 'url': 'http://swift.north.host/swiftapi/public',
@@ -347,7 +348,8 @@ AUTH_RESPONSE_BODY = {
                 'region': 'South',
                 'interface': 'admin'
             }],
-            'type': 'object-store'
+            'type': 'object-store',
+            'name': 'swift',
         }, {
             'endpoints': [{
                 'url': 'http://glance.north.host/glanceapi/public',
@@ -374,7 +376,8 @@ AUTH_RESPONSE_BODY = {
                 'region': 'South',
                 'interface': 'admin'
             }],
-            'type': 'image'
+            'type': 'image',
+            'name': 'glance',
         }]
     }
 }
