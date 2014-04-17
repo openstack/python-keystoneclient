@@ -10,8 +10,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import copy
-
 from keystoneclient import access
 from keystoneclient import exceptions
 from keystoneclient.tests.v3 import client_fixtures
@@ -21,8 +19,7 @@ from keystoneclient.tests.v3 import utils
 class ServiceCatalogTest(utils.TestCase):
     def setUp(self):
         super(ServiceCatalogTest, self).setUp()
-        self.AUTH_RESPONSE_BODY = copy.deepcopy(
-            client_fixtures.AUTH_RESPONSE_BODY)
+        self.AUTH_RESPONSE_BODY = client_fixtures.auth_response_body()
         self.RESPONSE = utils.TestResponse({
             "headers": client_fixtures.AUTH_RESPONSE_HEADERS
         })
@@ -202,7 +199,7 @@ class ServiceCatalogTest(utils.TestCase):
     def test_service_catalog_without_name(self):
         pr_auth_ref = access.AccessInfo.factory(
             resp=None,
-            body=client_fixtures.PROJECT_SCOPED_TOKEN)
+            body=client_fixtures.project_scoped_token())
         pr_sc = pr_auth_ref.service_catalog
 
         # this will work because there are no service names on that token
