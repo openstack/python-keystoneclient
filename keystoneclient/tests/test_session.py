@@ -394,6 +394,19 @@ class SessionAuthTests(utils.TestCase):
                                            'interface': 'public'})
 
     @httpretty.activate
+    def test_raises_exc_only_when_asked(self):
+        # A request that returns a HTTP error should by default raise an
+        # exception by default, if you specify raise_exc=False then it will not
+
+        self.stub_url(httpretty.GET, status=401)
+
+        sess = client_session.Session()
+        self.assertRaises(exceptions.Unauthorized, sess.get, self.TEST_URL)
+
+        resp = sess.get(self.TEST_URL, raise_exc=False)
+        self.assertEqual(401, resp.status_code)
+
+    @httpretty.activate
     def test_passed_auth_plugin(self):
         passed = CalledAuthPlugin()
         sess = client_session.Session()
