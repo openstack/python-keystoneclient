@@ -420,8 +420,9 @@ class AuthProtocol(object):
         # are backwards. We need to do it this way so that we can handle the
         # same deprecation strategy for CONF and the conf variable.
         if not self.identity_uri:
-            self.LOG.warning("Configuring admin URI using auth fragments. "
-                             "This is deprecated, use 'identity_uri' instead.")
+            self.LOG.warning('Configuring admin URI using auth fragments. '
+                             'This is deprecated, use \'identity_uri\''
+                             ' instead.')
 
             auth_host = self._conf_get('auth_host')
             auth_port = int(self._conf_get('auth_port'))
@@ -572,8 +573,8 @@ class AuthProtocol(object):
         versions = []
         response, data = self._json_request('GET', '/')
         if response.status_code == 501:
-            self.LOG.warning("Old keystone installation found...assuming v2.0")
-            versions.append("v2.0")
+            self.LOG.warning('Old keystone installation found...assuming v2.0')
+            versions.append('v2.0')
         elif response.status_code != 300:
             self.LOG.error('Unable to get version info from keystone: %s',
                            response.status_code)
@@ -675,9 +676,9 @@ class AuthProtocol(object):
             return token
         else:
             if not self.delay_auth_decision:
-                self.LOG.warn("Unable to find authentication token"
-                              " in headers")
-                self.LOG.debug("Headers: %s", env)
+                self.LOG.warn('Unable to find authentication token'
+                              ' in headers')
+                self.LOG.debug('Headers: %s', env)
             raise InvalidUserToken('Unable to find token in headers')
 
     def _reject_request(self, env, start_response):
@@ -723,7 +724,7 @@ class AuthProtocol(object):
         :raise ServerError when unable to communicate with keystone
 
         """
-        url = "%s/%s" % (self.identity_uri, path.lstrip('/'))
+        url = '%s/%s' % (self.identity_uri, path.lstrip('/'))
 
         kwargs.setdefault('timeout', self.http_connect_timeout)
         if self.cert_file and self.key_file:
@@ -822,12 +823,12 @@ class AuthProtocol(object):
             return (token, timeutils.normalize_time(datetime_expiry))
         except (AssertionError, KeyError):
             self.LOG.warn(
-                "Unexpected response from keystone service: %s", data)
+                'Unexpected response from keystone service: %s', data)
             raise ServiceError('invalid json response')
         except (ValueError):
             data['access']['token']['id'] = '<SANITIZED>'
             self.LOG.warn(
-                "Unable to parse expiration time from token: %s", data)
+                'Unable to parse expiration time from token: %s', data)
             raise ServiceError('invalid json response')
 
     def _validate_user_token(self, user_token, env, retry=True):
@@ -858,13 +859,13 @@ class AuthProtocol(object):
             return data
         except NetworkError:
             self.LOG.debug('Token validation failure.', exc_info=True)
-            self.LOG.warn("Authorization failed for token")
+            self.LOG.warn('Authorization failed for token')
             raise InvalidUserToken('Token authorization failed')
         except Exception:
             self.LOG.debug('Token validation failure.', exc_info=True)
             if token_id:
                 self._cache_store_invalid(token_id)
-            self.LOG.warn("Authorization failed for token")
+            self.LOG.warn('Authorization failed for token')
             raise InvalidUserToken('Token authorization failed')
 
     def _build_user_headers(self, token_info):
@@ -878,7 +879,7 @@ class AuthProtocol(object):
 
         """
         auth_ref = access.AccessInfo.factory(body=token_info)
-        roles = ",".join(auth_ref.role_names)
+        roles = ','.join(auth_ref.role_names)
 
         if _token_is_v2(token_info) and not auth_ref.project_id:
             raise InvalidUserToken('Unable to determine tenancy.')
@@ -904,8 +905,8 @@ class AuthProtocol(object):
             'X-Role': roles,
         }
 
-        self.LOG.debug("Received request from user: %s with project_id : %s"
-                       " and roles: %s ",
+        self.LOG.debug('Received request from user: %s with project_id : %s'
+                       ' and roles: %s ',
                        auth_ref.user_id, auth_ref.project_id, roles)
 
         if self.include_service_catalog and auth_ref.has_service_catalog():
@@ -1070,7 +1071,7 @@ class AuthProtocol(object):
                 # no bind provided and none required
                 return
             else:
-                self.LOG.info("No bind information present in token.")
+                self.LOG.info('No bind information present in token.')
                 self._invalid_user_token()
 
         # get the named mode if bind_mode is not one of the predefined
@@ -1080,32 +1081,32 @@ class AuthProtocol(object):
             name = bind_mode
 
         if name and name not in bind:
-            self.LOG.info("Named bind mode %s not in bind information", name)
+            self.LOG.info('Named bind mode %s not in bind information', name)
             self._invalid_user_token()
 
         for bind_type, identifier in six.iteritems(bind):
             if bind_type == BIND_MODE.KERBEROS:
                 if not env.get('AUTH_TYPE', '').lower() == 'negotiate':
-                    self.LOG.info("Kerberos credentials required and "
-                                  "not present.")
+                    self.LOG.info('Kerberos credentials required and '
+                                  'not present.')
                     self._invalid_user_token()
 
                 if not env.get('REMOTE_USER') == identifier:
-                    self.LOG.info("Kerberos credentials do not match "
-                                  "those in bind.")
+                    self.LOG.info('Kerberos credentials do not match '
+                                  'those in bind.')
                     self._invalid_user_token()
 
-                self.LOG.debug("Kerberos bind authentication successful.")
+                self.LOG.debug('Kerberos bind authentication successful.')
 
             elif bind_mode == BIND_MODE.PERMISSIVE:
-                self.LOG.debug("Ignoring Unknown bind for permissive mode: "
-                               "%(bind_type)s: %(identifier)s.",
+                self.LOG.debug('Ignoring Unknown bind for permissive mode: '
+                               '%(bind_type)s: %(identifier)s.',
                                {'bind_type': bind_type,
                                 'identifier': identifier})
 
             else:
-                self.LOG.info("Couldn't verify unknown bind: %(bind_type)s: "
-                              "%(identifier)s.",
+                self.LOG.info('Couldn`t verify unknown bind: %(bind_type)s: '
+                              '%(identifier)s.',
                               {'bind_type': bind_type,
                                'identifier': identifier})
                 self._invalid_user_token()
@@ -1162,7 +1163,7 @@ class AuthProtocol(object):
         if response.status_code == 200:
             return data
         if response.status_code == 404:
-            self.LOG.warn("Authorization failed for token")
+            self.LOG.warn('Authorization failed for token')
             raise InvalidUserToken('Token authorization failed')
         if response.status_code == 401:
             self.LOG.info(
@@ -1175,7 +1176,7 @@ class AuthProtocol(object):
             self.LOG.info('Retrying validation')
             return self.verify_uuid_token(user_token, False)
         else:
-            self.LOG.warn("Invalid user token. Keystone response: %s", data)
+            self.LOG.warn('Invalid user token. Keystone response: %s', data)
 
             raise InvalidUserToken()
 

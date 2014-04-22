@@ -89,7 +89,7 @@ def _process_communicate_handle_oserror(process, text, files):
         if process.stderr:
             err += process.stderr.read()
 
-        output = ""
+        output = ''
         retcode = -1
     else:
         retcode = process.poll()
@@ -104,12 +104,12 @@ def cms_verify(formatted, signing_cert_file_name, ca_file_name):
     :raises: CertificateConfigError if certificate is not configured properly.
     """
     _ensure_subprocess()
-    process = subprocess.Popen(["openssl", "cms", "-verify",
-                                "-certfile", signing_cert_file_name,
-                                "-CAfile", ca_file_name,
-                                "-inform", "PEM",
-                                "-nosmimecap", "-nodetach",
-                                "-nocerts", "-noattr"],
+    process = subprocess.Popen(['openssl', 'cms', '-verify',
+                                '-certfile', signing_cert_file_name,
+                                '-CAfile', ca_file_name,
+                                '-inform', 'PEM',
+                                '-nosmimecap', '-nodetach',
+                                '-nocerts', '-noattr'],
                                stdin=subprocess.PIPE,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE,
@@ -135,7 +135,7 @@ def cms_verify(formatted, signing_cert_file_name, ca_file_name):
     elif retcode:
         # NOTE(dmllr): Python 2.6 compatibility:
         # CalledProcessError did not have output keyword argument
-        e = subprocess.CalledProcessError(retcode, "openssl")
+        e = subprocess.CalledProcessError(retcode, 'openssl')
         e.output = err
         raise e
     return output
@@ -144,7 +144,7 @@ def cms_verify(formatted, signing_cert_file_name, ca_file_name):
 def token_to_cms(signed_text):
     copy_of_text = signed_text.replace('-', '/')
 
-    formatted = "-----BEGIN CMS-----\n"
+    formatted = '-----BEGIN CMS-----\n'
     line_length = 64
     while len(copy_of_text) > 0:
         if (len(copy_of_text) > line_length):
@@ -152,10 +152,10 @@ def token_to_cms(signed_text):
             copy_of_text = copy_of_text[line_length:]
         else:
             formatted += copy_of_text
-            copy_of_text = ""
-        formatted += "\n"
+            copy_of_text = ''
+        formatted += '\n'
 
-    formatted += "-----END CMS-----\n"
+    formatted += '-----END CMS-----\n'
 
     return formatted
 
@@ -218,8 +218,8 @@ def is_asn1_token(token):
 
 def is_ans1_token(token):
     """Deprecated. Use is_asn1_token() instead."""
-    LOG.warning("The function is_ans1_token() is deprecated, "
-                "use is_asn1_token() instead.")
+    LOG.warning('The function is_ans1_token() is deprecated, '
+                'use is_asn1_token() instead.')
     return is_asn1_token(token)
 
 
@@ -230,12 +230,12 @@ def cms_sign_text(text, signing_cert_file_name, signing_key_file_name):
     http://en.wikipedia.org/wiki/Cryptographic_Message_Syntax
     """
     _ensure_subprocess()
-    process = subprocess.Popen(["openssl", "cms", "-sign",
-                                "-signer", signing_cert_file_name,
-                                "-inkey", signing_key_file_name,
-                                "-outform", "PEM",
-                                "-nosmimecap", "-nodetach",
-                                "-nocerts", "-noattr"],
+    process = subprocess.Popen(['openssl', 'cms', '-sign',
+                                '-signer', signing_cert_file_name,
+                                '-inkey', signing_key_file_name,
+                                '-outform', 'PEM',
+                                '-nosmimecap', '-nodetach',
+                                '-nocerts', '-noattr'],
                                stdin=subprocess.PIPE,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE,
@@ -244,9 +244,9 @@ def cms_sign_text(text, signing_cert_file_name, signing_key_file_name):
     output, err, retcode = _process_communicate_handle_oserror(
         process, text, (signing_cert_file_name, signing_key_file_name))
 
-    if retcode or "Error" in err:
+    if retcode or 'Error' in err:
         LOG.error('Signing error: %s' % err)
-        raise subprocess.CalledProcessError(retcode, "openssl")
+        raise subprocess.CalledProcessError(retcode, 'openssl')
     return output
 
 
@@ -257,8 +257,8 @@ def cms_sign_token(text, signing_cert_file_name, signing_key_file_name):
 
 def cms_to_token(cms_text):
 
-    start_delim = "-----BEGIN CMS-----"
-    end_delim = "-----END CMS-----"
+    start_delim = '-----BEGIN CMS-----'
+    end_delim = '-----END CMS-----'
     signed_text = cms_text
     signed_text = signed_text.replace('/', '-')
     signed_text = signed_text.replace(start_delim, '')
