@@ -1,12 +1,120 @@
-{"token":
-	{"catalog": [{"endpoints": [{"adminURL": "http://127.0.0.1:8776/v1/64b6f3fbcc53435e8a60fcf89bb6617a", "region": "regionOne", "internalURL": "http://127.0.0.1:8776/v1/64b6f3fbcc53435e8a60fcf89bb6617a", "publicURL": "http://127.0.0.1:8776/v1/64b6f3fbcc53435e8a60fcf89bb6617a"}], "endpoints_links": [], "type": "volume", "name": "volume"},
-			     {"endpoints": [{"adminURL": "http://127.0.0.1:9292/v1", "region": "regionOne", "internalURL": "http://127.0.0.1:9292/v1", "publicURL": "http://127.0.0.1:9292/v1"}], "endpoints_links": [], "type": "image", "name": "glance"},
-			     {"endpoints": [{"adminURL": "http://127.0.0.1:8774/v1.1/64b6f3fbcc53435e8a60fcf89bb6617a", "region": "regionOne", "internalURL": "http://127.0.0.1:8774/v1.1/64b6f3fbcc53435e8a60fcf89bb6617a", "publicURL": "http://127.0.0.1:8774/v1.1/64b6f3fbcc53435e8a60fcf89bb6617a"}], "endpoints_links": [], "type": "compute", "name": "nova"},
-			     {"endpoints": [{"adminURL": "http://127.0.0.1:35357/v3", "region": "RegionOne", "internalURL": "http://127.0.0.1:35357/v3", "publicURL": "http://127.0.0.1:5000/v3"}], "endpoints_links": [], "type": "identity", "name": "keystone"}],
-	 "expires_at": "2038-01-18T21:14:07Z",
-	 "project": {"enabled": true, "description": null, "name": "tenant_name1", "id": "tenant_id1", "domain": {"id": "domain_id1", "name": "domain_name1"}},
-	 "user": {"name": "user_name1", "id": "user_id1", "domain": {"id": "domain_id1", "name": "domain_name1"}},
-	 "roles": [{"name": "role1"}, {"name": "role2"}],
-         "methods": ["password"]
-	 }
+{
+    "token": {
+        "methods": [
+            "password"
+        ],
+        "roles": [
+            {
+                "name": "role1"
+            },
+            {
+                "name": "role2"
+            }
+        ],
+        "expires_at": "2038-01-18T21:14:07Z",
+        "project": {
+            "id": "tenant_id1",
+            "domain": {
+                "id": "domain_id1",
+                "name": "domain_name1"
+            },
+            "enabled": true,
+            "description": null,
+            "name": "tenant_name1"
+        },
+        "catalog": [
+            {
+                "endpoints": [
+                    {
+                        "interface": "admin",
+                        "url": "http://127.0.0.1:8776/v1/64b6f3fbcc53435e8a60fcf89bb6617a",
+                        "region": "regionOne"
+                    },
+                    {
+                        "interface": "internal",
+                        "url": "http://127.0.0.1:8776/v1/64b6f3fbcc53435e8a60fcf89bb6617a",
+                        "region": "regionOne"
+                    },
+                    {
+                        "interface": "public",
+                        "url": "http://127.0.0.1:8776/v1/64b6f3fbcc53435e8a60fcf89bb6617a",
+                        "region": "regionOne"
+                    }
+                ],
+                "type": "volume",
+                "name": "volume"
+            },
+            {
+                "endpoints": [
+                    {
+                        "interface": "admin",
+                        "url": "http://127.0.0.1:9292/v1",
+                        "region": "regionOne"
+                    },
+                    {
+                        "interface": "internal",
+                        "url": "http://127.0.0.1:9292/v1",
+                        "region": "regionOne"
+                    },
+                    {
+                        "interface": "public",
+                        "url": "http://127.0.0.1:9292/v1",
+                        "region": "regionOne"
+                    }
+                ],
+                "type": "image",
+                "name": "glance"
+            },
+            {
+                "endpoints": [
+                    {
+                        "interface": "admin",
+                        "url": "http://127.0.0.1:8774/v1.1/64b6f3fbcc53435e8a60fcf89bb6617a",
+                        "region": "regionOne"
+                    },
+                    {
+                        "interface": "internal",
+                        "url": "http://127.0.0.1:8774/v1.1/64b6f3fbcc53435e8a60fcf89bb6617a",
+                        "region": "regionOne"
+                    },
+                    {
+                        "interface": "public",
+                        "url": "http://127.0.0.1:8774/v1.1/64b6f3fbcc53435e8a60fcf89bb6617a",
+                        "region": "regionOne"
+                    }
+                ],
+                "type": "compute",
+                "name": "nova"
+            },
+            {
+                "endpoints": [
+                    {
+                        "interface": "admin",
+                        "url": "http://127.0.0.1:35357/v3",
+                        "region": "RegionOne"
+                    },
+                    {
+                        "interface": "internal",
+                        "url": "http://127.0.0.1:35357/v3",
+                        "region": "RegionOne"
+                    },
+                    {
+                        "interface": "public",
+                        "url": "http://127.0.0.1:5000/v3",
+                        "region": "RegionOne"
+                    }
+                ],
+                "type": "identity",
+                "name": "keystone"
+            }
+        ],
+        "user": {
+            "domain": {
+                "id": "domain_id1",
+                "name": "domain_name1"
+            },
+            "name": "user_name1",
+            "id": "user_id1"
+        }
+    }
 }
