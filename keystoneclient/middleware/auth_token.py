@@ -108,6 +108,8 @@ HTTP_X_ROLES
 
 HTTP_X_SERVICE_CATALOG
     json encoded keystone service catalog (optional).
+    For compatibility reasons this catalog will always be in the V2 catalog
+    format even if it is a v3 token.
 
 HTTP_X_TENANT_ID
     *Deprecated* in favor of HTTP_X_PROJECT_ID
@@ -369,6 +371,42 @@ def confirm_token_not_expired(data):
     if utcnow >= expires:
         raise InvalidUserToken('Token authorization failed')
     return timeutils.isotime(at=expires, subsecond=True)
+
+
+def _v3_to_v2_catalog(catalog):
+    """Convert a catalog to v2 format.
+
+    X_SERVICE_CATALOG must be specified in v2 format. If you get a token
+    that is in v3 convert it.
+    """
+    v2_services = []
+    for v3_service in catalog:
+        # first copy over the entries we allow for the service
+        v2_service = {'type': v3_service['type']}
+        try:
+            v2_service['name'] = v3_service['name']
+        except KeyError:
+            pass
+
+        # now convert the endpoints. Because in v3 we specify region per
+        # URL not per group we have to collect all the entries of the same
+        # region together before adding it to the new service.
+        regions = {}
+        for v3_endpoint in v3_service.get('endpoints', []):
+            region_name = v3_endpoint.get('region')
+            try:
+                region = regions[region_name]
+            except KeyError:
+                region = {'region': region_name} if region_name else {}
+                regions[region_name] = region
+
+            interface_name = v3_endpoint['interface'].lower() + 'URL'
+            region[interface_name] = v3_endpoint['url']
+
+        v2_service['endpoints'] = list(regions.values())
+        v2_services.append(v2_service)
+
+    return v2_services
 
 
 def safe_quote(s):
@@ -939,6 +977,8 @@ class AuthProtocol(object):
 
         if self.include_service_catalog and auth_ref.has_service_catalog():
             catalog = auth_ref.service_catalog.get_data()
+            if _token_is_v3(token_info):
+                catalog = _v3_to_v2_catalog(catalog)
             rval['X-Service-Catalog'] = jsonutils.dumps(catalog)
 
         return rval

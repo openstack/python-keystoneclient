@@ -30,8 +30,10 @@ import testresources
 import testtools
 import webob
 
+from keystoneclient import access
 from keystoneclient.common import cms
 from keystoneclient import exceptions
+from keystoneclient import fixture
 from keystoneclient.middleware import auth_token
 from keystoneclient.openstack.common import jsonutils
 from keystoneclient.openstack.common import memorycache
@@ -487,6 +489,7 @@ class CommonAuthTokenMiddlewareTest(object):
             self.assertNotIn('X-Service-Catalog', req.headers)
         self.assertEqual(body, [FakeApp.SUCCESS])
         self.assertIn('keystone.token_info', req.environ)
+        return req
 
     def test_valid_uuid_request(self):
         for _ in range(2):  # Do it twice because first result was cached.
@@ -1566,6 +1569,20 @@ class v3AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
             self.examples.v3_UUID_TOKEN_DOMAIN_SCOPED)
         self.assertLastPath('/testadmin/v3/auth/tokens')
 
+    def test_gives_v2_catalog(self):
+        self.set_middleware()
+        req = self.assert_valid_request_200(
+            self.examples.SIGNED_v3_TOKEN_SCOPED)
+
+        catalog = jsonutils.loads(req.headers['X-Service-Catalog'])
+
+        for service in catalog:
+            for endpoint in service['endpoints']:
+                # no point checking everything, just that it's in v2 format
+                self.assertIn('adminURL', endpoint)
+                self.assertIn('publicURL', endpoint)
+                self.assertIn('adminURL', endpoint)
+
 
 class TokenEncodingTest(testtools.TestCase):
     def test_unquoted_token(self):
@@ -1781,6 +1798,69 @@ class TokenExpirationTest(BaseAuthTokenMiddlewareTest):
         expires = timeutils.strtime(some_time_earlier) + '-02:00'
         self.middleware._cache_put(token, data, expires)
         self.assertIsNone(self.middleware._cache_get(token))
+
+
+class CatalogConversionTests(BaseAuthTokenMiddlewareTest):
+
+    PUBLIC_URL = 'http://server:5000/v2.0'
+    ADMIN_URL = 'http://admin:35357/v2.0'
+    INTERNAL_URL = 'http://internal:5000/v2.0'
+
+    REGION_ONE = 'RegionOne'
+    REGION_TWO = 'RegionTwo'
+    REGION_THREE = 'RegionThree'
+
+    def test_basic_convert(self):
+        token = fixture.V3Token()
+        s = token.add_service(type='identity')
+        s.add_standard_endpoints(public=self.PUBLIC_URL,
+                                 admin=self.ADMIN_URL,
+                                 internal=self.INTERNAL_URL,
+                                 region=self.REGION_ONE)
+
+        auth_ref = access.AccessInfo.factory(body=token)
+        catalog_data = auth_ref.service_catalog.get_data()
+        catalog = auth_token._v3_to_v2_catalog(catalog_data)
+
+        self.assertEqual(1, len(catalog))
+        service = catalog[0]
+        self.assertEqual(1, len(service['endpoints']))
+        endpoints = service['endpoints'][0]
+
+        self.assertEqual('identity', service['type'])
+        self.assertEqual(4, len(endpoints))
+        self.assertEqual(self.PUBLIC_URL, endpoints['publicURL'])
+        self.assertEqual(self.ADMIN_URL, endpoints['adminURL'])
+        self.assertEqual(self.INTERNAL_URL, endpoints['internalURL'])
+        self.assertEqual(self.REGION_ONE, endpoints['region'])
+
+    def test_multi_region(self):
+        token = fixture.V3Token()
+        s = token.add_service(type='identity')
+
+        s.add_endpoint('internal', self.INTERNAL_URL, region=self.REGION_ONE)
+        s.add_endpoint('public', self.PUBLIC_URL, region=self.REGION_TWO)
+        s.add_endpoint('admin', self.ADMIN_URL, region=self.REGION_THREE)
+
+        auth_ref = access.AccessInfo.factory(body=token)
+        catalog_data = auth_ref.service_catalog.get_data()
+        catalog = auth_token._v3_to_v2_catalog(catalog_data)
+
+        self.assertEqual(1, len(catalog))
+        service = catalog[0]
+
+        # the 3 regions will come through as 3 separate endpoints
+        expected = [{'internalURL': self.INTERNAL_URL,
+                    'region': self.REGION_ONE},
+                    {'publicURL': self.PUBLIC_URL,
+                     'region': self.REGION_TWO},
+                    {'adminURL': self.ADMIN_URL,
+                     'region': self.REGION_THREE}]
+
+        self.assertEqual('identity', service['type'])
+        self.assertEqual(3, len(service['endpoints']))
+        for e in expected:
+            self.assertIn(e, expected)
 
 
 def load_tests(loader, tests, pattern):
