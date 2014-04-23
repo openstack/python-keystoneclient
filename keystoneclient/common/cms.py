@@ -72,11 +72,11 @@ def _check_files_accessible(files):
     return err
 
 
-def _process_communicate_handle_oserror(process, text, files):
+def _process_communicate_handle_oserror(process, data, files):
     """Wrapper around process.communicate that checks for OSError."""
 
     try:
-        output, err = process.communicate(text)
+        output, err = process.communicate(data)
     except OSError as e:
         if e.errno != errno.EPIPE:
             raise
@@ -87,12 +87,14 @@ def _process_communicate_handle_oserror(process, text, files):
         # able to read an input file, so check ourselves if can't read a file.
         err = _check_files_accessible(files)
         if process.stderr:
-            err += process.stderr.read()
-
+            msg = process.stderr.read()
+            err = err + msg.decode('utf-8')
         output = ''
         retcode = -1
     else:
         retcode = process.poll()
+        if err is not None:
+            err = err.decode('utf-8')
 
     return output, err, retcode
 
@@ -104,6 +106,7 @@ def cms_verify(formatted, signing_cert_file_name, ca_file_name):
     :raises: CertificateConfigError if certificate is not configured properly.
     """
     _ensure_subprocess()
+    data = bytearray(formatted, encoding='utf-8')
     process = subprocess.Popen(['openssl', 'cms', '-verify',
                                 '-certfile', signing_cert_file_name,
                                 '-CAfile', ca_file_name,
@@ -112,10 +115,9 @@ def cms_verify(formatted, signing_cert_file_name, ca_file_name):
                                 '-nocerts', '-noattr'],
                                stdin=subprocess.PIPE,
                                stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE,
-                               universal_newlines=True)
+                               stderr=subprocess.PIPE)
     output, err, retcode = _process_communicate_handle_oserror(
-        process, formatted, (signing_cert_file_name, ca_file_name))
+        process, data, (signing_cert_file_name, ca_file_name))
 
     # Do not log errors, as some happen in the positive thread
     # instead, catch them in the calling code and log them there.
@@ -230,6 +232,7 @@ def cms_sign_text(text, signing_cert_file_name, signing_key_file_name):
     http://en.wikipedia.org/wiki/Cryptographic_Message_Syntax
     """
     _ensure_subprocess()
+    data = bytearray(text, encoding='utf-8')
     process = subprocess.Popen(['openssl', 'cms', '-sign',
                                 '-signer', signing_cert_file_name,
                                 '-inkey', signing_key_file_name,
@@ -238,16 +241,15 @@ def cms_sign_text(text, signing_cert_file_name, signing_key_file_name):
                                 '-nocerts', '-noattr'],
                                stdin=subprocess.PIPE,
                                stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE,
-                               universal_newlines=True)
+                               stderr=subprocess.PIPE)
 
     output, err, retcode = _process_communicate_handle_oserror(
-        process, text, (signing_cert_file_name, signing_key_file_name))
+        process, data, (signing_cert_file_name, signing_key_file_name))
 
-    if retcode or 'Error' in err:
+    if retcode or ('Error' in err):
         LOG.error('Signing error: %s' % err)
         raise subprocess.CalledProcessError(retcode, 'openssl')
-    return output
+    return output.decode('utf-8')
 
 
 def cms_sign_token(text, signing_cert_file_name, signing_key_file_name):
