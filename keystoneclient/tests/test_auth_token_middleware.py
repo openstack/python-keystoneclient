@@ -519,8 +519,10 @@ class CommonAuthTokenMiddlewareTest(object):
         self.assertIn('keystone.token_info', req.environ)
 
     def test_valid_uuid_request(self):
-        self.assert_valid_request_200(self.token_dict['uuid_token_default'])
-        self.assert_valid_last_url(self.token_dict['uuid_token_default'])
+        for _ in range(2):  # Do it twice because first result was cached.
+            token = self.token_dict['uuid_token_default']
+            self.assert_valid_request_200(token)
+            self.assert_valid_last_url(token)
 
     def test_valid_uuid_request_with_auth_fragments(self):
         del self.conf['identity_uri']
@@ -532,11 +534,32 @@ class CommonAuthTokenMiddlewareTest(object):
         self.assert_valid_request_200(self.token_dict['uuid_token_default'])
         self.assert_valid_last_url(self.token_dict['uuid_token_default'])
 
+    def _test_cache_revoked(self, token, revoked_form=None):
+        # When the token is cached and revoked, 401 is returned.
+
+        req = webob.Request.blank('/')
+        req.headers['X-Auth-Token'] = token
+
+        # Token should be cached as ok after this.
+        self.middleware(req.environ, self.start_fake_response)
+        self.assertEqual(200, self.response_status)
+
+        # Put it in revocation list.
+        self.middleware.token_revocation_list = self.get_revocation_list_json(
+            token_ids=[revoked_form or token])
+        self.middleware(req.environ, self.start_fake_response)
+        self.assertEqual(401, self.response_status)
+
+    def test_cached_revoked_uuid(self):
+        # When the UUID token is cached and revoked, 401 is returned.
+        self._test_cache_revoked(self.token_dict['uuid_token_default'])
+
     def test_valid_signed_request(self):
-        self.assert_valid_request_200(
-            self.token_dict['signed_token_scoped'])
-        #ensure that signed requests do not generate HTTP traffic
-        self.assertLastPath(None)
+        for _ in range(2):  # Do it twice because first result was cached.
+            self.assert_valid_request_200(
+                self.token_dict['signed_token_scoped'])
+            #ensure that signed requests do not generate HTTP traffic
+            self.assertLastPath(None)
 
     def test_revoked_token_receives_401(self):
         self.middleware.token_revocation_list = self.get_revocation_list_json()
@@ -544,6 +567,12 @@ class CommonAuthTokenMiddlewareTest(object):
         req.headers['X-Auth-Token'] = self.token_dict['revoked_token']
         self.middleware(req.environ, self.start_fake_response)
         self.assertEqual(self.response_status, 401)
+
+    def test_cached_revoked_pki(self):
+        # When the PKI token is cached and revoked, 401 is returned.
+        token = self.token_dict['signed_token_scoped']
+        revoked_form = cms.cms_hash_token(token)
+        self._test_cache_revoked(token, revoked_form)
 
     def get_revocation_list_json(self, token_ids=None):
         if token_ids is None:
