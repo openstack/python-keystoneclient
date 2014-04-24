@@ -58,6 +58,7 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
         when invoked. If you are looking to just retrieve the current auth
         data then you should use get_access.
 
+        :raises InvalidResponse: The response returned wasn't appropriate.
         :raises HttpError: An error from an invalid HTTP response.
 
         :returns AccessInfo: Token access information.

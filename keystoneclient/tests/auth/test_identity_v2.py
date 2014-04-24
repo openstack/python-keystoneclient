@@ -211,3 +211,25 @@ class V2IdentityPlugin(utils.TestCase):
                      endpoint_filter={'service_type': 'compute'})
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.text, 'SUCCESS')
+
+    @httpretty.activate
+    def test_invalid_auth_response_dict(self):
+        self.stub_auth(json={'hello': 'world'})
+
+        a = v2.Password(self.TEST_URL, username=self.TEST_USER,
+                        password=self.TEST_PASS)
+        s = session.Session(auth=a)
+
+        self.assertRaises(exceptions.InvalidResponse, s.get, 'http://any',
+                          authenticated=True)
+
+    @httpretty.activate
+    def test_invalid_auth_response_type(self):
+        self.stub_url(httpretty.POST, ['tokens'], body='testdata')
+
+        a = v2.Password(self.TEST_URL, username=self.TEST_USER,
+                        password=self.TEST_PASS)
+        s = session.Session(auth=a)
+
+        self.assertRaises(exceptions.InvalidResponse, s.get, 'http://any',
+                          authenticated=True)
