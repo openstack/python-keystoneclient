@@ -857,6 +857,7 @@ class AuthProtocol(object):
             # regardless of initial mechanism used to validate it,
             # and needs to be checked.
             if self._is_token_id_in_revoked_list(token_id):
+                self.LOG.debug('Token is marked as having been revoked')
                 raise InvalidUserToken('Token authorization failed')
             expires = confirm_token_not_expired(data)
             self._confirm_token_bind(data, env)
@@ -1190,7 +1191,10 @@ class AuthProtocol(object):
         if isinstance(signed_text, six.text_type):
             signed_text = signed_text.encode('utf-8')
         token_id = utils.hash_signed_token(signed_text)
-        return self._is_token_id_in_revoked_list(token_id)
+        is_revoked = self._is_token_id_in_revoked_list(token_id)
+        if is_revoked:
+            self.LOG.debug('Token is marked as having been revoked')
+        return is_revoked
 
     def _is_token_id_in_revoked_list(self, token_id):
         """Indicate whether the token_id appears in the revocation list."""
