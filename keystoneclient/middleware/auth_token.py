@@ -240,9 +240,12 @@ opts = [
                ' communicating with Identity API Server.'),
     cfg.StrOpt('admin_token',
                secret=True,
-               help='Single shared secret with the Keystone configuration'
+               help='This option is deprecated and may be removed in a future'
+               ' release. Single shared secret with the Keystone configuration'
                ' used for bootstrapping a Keystone installation, or otherwise'
-               ' bypassing the normal authentication process.'),
+               ' bypassing the normal authentication process. This option'
+               ' should not be used, use `admin_user` and `admin_password`'
+               ' instead.'),
     cfg.StrOpt('admin_user',
                help='Keystone account username'),
     cfg.StrOpt('admin_password',
@@ -480,6 +483,12 @@ class AuthProtocol(object):
         # Credentials used to verify this component with the Auth service since
         # validating tokens is a privileged call
         self.admin_token = self._conf_get('admin_token')
+        if self.admin_token:
+            self.LOG.warning(
+                "The admin_token option in the auth_token middleware is "
+                "deprecated and should not be used. The admin_user and "
+                "admin_password options should be used instead. The "
+                "admin_token option may be removed in a future release.")
         self.admin_token_expiry = None
         self.admin_user = self._conf_get('admin_user')
         self.admin_password = self._conf_get('admin_password')
