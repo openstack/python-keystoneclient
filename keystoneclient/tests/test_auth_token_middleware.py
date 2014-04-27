@@ -275,7 +275,7 @@ class BaseAuthTokenMiddlewareTest(testtools.TestCase):
         self.response_status = None
         self.response_headers = None
 
-    def set_middleware(self, fake_app=None, expected_env=None, conf=None):
+    def set_middleware(self, expected_env=None, conf=None):
         """Configure the class ready to call the auth_token middleware.
 
         Set up the various fake items needed to run the middleware.
@@ -286,14 +286,11 @@ class BaseAuthTokenMiddlewareTest(testtools.TestCase):
         if conf:
             self.conf.update(conf)
 
-        if not fake_app:
-            fake_app = self.fake_app
-
         if expected_env:
             self.expected_env.update(expected_env)
 
-        self.middleware = auth_token.AuthProtocol(fake_app(self.expected_env),
-                                                  self.conf)
+        self.middleware = auth_token.AuthProtocol(
+            self.fake_app(self.expected_env), self.conf)
         self.middleware._iso8601 = iso8601
 
         with tempfile.NamedTemporaryFile(dir=self.middleware.signing_dirname,
