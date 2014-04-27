@@ -250,7 +250,7 @@ class BaseAuthTokenMiddlewareTest(testtools.TestCase):
     All the tests allow for running with auth_token
     configured for receiving v2 or v3 tokens, with the
     choice being made by passing configuration data into
-    Setup().
+    setUp().
 
     The base class will, by default, run all the tests
     expecting v2 token formats.  Child classes can override
