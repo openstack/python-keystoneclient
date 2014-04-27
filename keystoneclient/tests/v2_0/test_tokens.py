@@ -10,6 +10,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import uuid
+
 import httpretty
 
 from keystoneclient.tests.v2_0 import utils
@@ -18,5 +20,6 @@ from keystoneclient.tests.v2_0 import utils
 class TokenTests(utils.TestCase):
     @httpretty.activate
     def test_delete(self):
-        self.stub_url(httpretty.DELETE, ['tokens', '1'], status=204)
-        self.client.tokens.delete(1)
+        id_ = uuid.uuid4().hex
+        self.stub_url(httpretty.DELETE, ['tokens', id_], status=204)
+        self.client.tokens.delete(id_)

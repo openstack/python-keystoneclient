@@ -10,6 +10,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import uuid
+
 import httpretty
 
 from keystoneclient.tests.v2_0 import utils
@@ -19,6 +21,10 @@ from keystoneclient.v2_0 import services
 class ServiceTests(utils.TestCase):
     def setUp(self):
         super(ServiceTests, self).setUp()
+
+        self.NOVA_SERVICE_ID = uuid.uuid4().hex
+        self.KEYSTONE_SERVICE_ID = uuid.uuid4().hex
+
         self.TEST_SERVICES = {
             "OS-KSADM:services": {
                 "values": [
@@ -26,13 +32,13 @@ class ServiceTests(utils.TestCase):
                         "name": "nova",
                         "type": "compute",
                         "description": "Nova-compatible service.",
-                        "id": 1
+                        "id": self.NOVA_SERVICE_ID
                     },
                     {
                         "name": "keystone",
                         "type": "identity",
                         "description": "Keystone-compatible service.",
-                        "id": 2
+                        "id": self.KEYSTONE_SERVICE_ID
                     },
                 ],
             },
@@ -47,12 +53,13 @@ class ServiceTests(utils.TestCase):
                 "description": "Swift-compatible service.",
             }
         }
+        service_id = uuid.uuid4().hex
         resp_body = {
             "OS-KSADM:service": {
                 "name": "swift",
                 "type": "object-store",
                 "description": "Swift-compatible service.",
-                "id": 3,
+                "id": service_id,
             }
         }
         self.stub_url(httpretty.POST, ['OS-KSADM', 'services'], json=resp_body)
@@ -62,27 +69,29 @@ class ServiceTests(utils.TestCase):
             req_body['OS-KSADM:service']['type'],
             req_body['OS-KSADM:service']['description'])
         self.assertIsInstance(service, services.Service)
-        self.assertEqual(service.id, 3)
+        self.assertEqual(service.id, service_id)
         self.assertEqual(service.name, req_body['OS-KSADM:service']['name'])
         self.assertRequestBodyIs(json=req_body)
 
     @httpretty.activate
     def test_delete(self):
-        self.stub_url(httpretty.DELETE, ['OS-KSADM', 'services', '1'],
+        self.stub_url(httpretty.DELETE,
+                      ['OS-KSADM', 'services', self.NOVA_SERVICE_ID],
                       status=204)
 
-        self.client.services.delete(1)
+        self.client.services.delete(self.NOVA_SERVICE_ID)
 
     @httpretty.activate
     def test_get(self):
         test_services = self.TEST_SERVICES['OS-KSADM:services']['values'][0]
 
-        self.stub_url(httpretty.GET, ['OS-KSADM', 'services', '1'],
+        self.stub_url(httpretty.GET,
+                      ['OS-KSADM', 'services', self.NOVA_SERVICE_ID],
                       json={'OS-KSADM:service': test_services})
 
-        service = self.client.services.get(1)
+        service = self.client.services.get(self.NOVA_SERVICE_ID)
         self.assertIsInstance(service, services.Service)
-        self.assertEqual(service.id, 1)
+        self.assertEqual(service.id, self.NOVA_SERVICE_ID)
         self.assertEqual(service.name, 'nova')
         self.assertEqual(service.type, 'compute')
 

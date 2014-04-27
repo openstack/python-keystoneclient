@@ -96,14 +96,8 @@ def print_dict(d, wrap=0):
 
 def find_resource(manager, name_or_id):
     """Helper for the _find_* methods."""
-    # first try to get entity as integer id
-    try:
-        if isinstance(name_or_id, int) or name_or_id.isdigit():
-            return manager.get(int(name_or_id))
-    except exceptions.NotFound:
-        pass
 
-    # now try the entity as a string
+    # first try the entity as a string
     try:
         return manager.get(name_or_id)
     except (exceptions.NotFound):
