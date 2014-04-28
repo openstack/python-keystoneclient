@@ -286,3 +286,71 @@ class V2(CommonIdentityTests, utils.TestCase):
 
     def stub_auth(self, **kwargs):
         self.stub_url('POST', ['tokens'], **kwargs)
+
+
+class CatalogHackTests(utils.TestCase):
+
+    TEST_URL = 'http://keystone.server:5000/v2.0'
+    OTHER_URL = 'http://other.server:5000/path'
+
+    IDENTITY = 'identity'
+
+    BASE_URL = 'http://keystone.server:5000/'
+    V2_URL = BASE_URL + 'v2.0'
+    V3_URL = BASE_URL + 'v3'
+
+    def test_getting_endpoints(self):
+        disc = fixture.DiscoveryList(href=self.BASE_URL)
+        self.stub_url('GET',
+                      ['/'],
+                      base_url=self.BASE_URL,
+                      json=disc)
+
+        token = fixture.V2Token()
+        service = token.add_service(self.IDENTITY)
+        service.add_endpoint(public=self.V2_URL,
+                             admin=self.V2_URL,
+                             internal=self.V2_URL)
+
+        self.stub_url('POST',
+                      ['tokens'],
+                      base_url=self.V2_URL,
+                      json=token)
+
+        v2_auth = v2.Password(self.V2_URL,
+                              username=uuid.uuid4().hex,
+                              password=uuid.uuid4().hex)
+
+        sess = session.Session(auth=v2_auth)
+
+        endpoint = sess.get_endpoint(service_type=self.IDENTITY,
+                                     interface='public',
+                                     version=(3, 0))
+
+        self.assertEqual(self.V3_URL, endpoint)
+
+    def test_returns_original_when_discover_fails(self):
+        token = fixture.V2Token()
+        service = token.add_service(self.IDENTITY)
+        service.add_endpoint(public=self.V2_URL,
+                             admin=self.V2_URL,
+                             internal=self.V2_URL)
+
+        self.stub_url('POST',
+                      ['tokens'],
+                      base_url=self.V2_URL,
+                      json=token)
+
+        self.stub_url('GET', [], base_url=self.BASE_URL, status_code=404)
+
+        v2_auth = v2.Password(self.V2_URL,
+                              username=uuid.uuid4().hex,
+                              password=uuid.uuid4().hex)
+
+        sess = session.Session(auth=v2_auth)
+
+        endpoint = sess.get_endpoint(service_type=self.IDENTITY,
+                                     interface='public',
+                                     version=(3, 0))
+
+        self.assertEqual(self.V2_URL, endpoint)

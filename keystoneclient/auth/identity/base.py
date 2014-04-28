@@ -201,8 +201,15 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
             # defaulting to the most recent version.
             return url
 
+        # NOTE(jamielennox): For backwards compatibility people might have a
+        # versioned endpoint in their catalog even though they want to use
+        # other endpoint versions. So we support a list of client defined
+        # situations where we can strip the version component from a URL before
+        # doing discovery.
+        hacked_url = _discover.get_catalog_discover_hack(service_type, url)
+
         try:
-            disc = self.get_discovery(session, url, authenticated=False)
+            disc = self.get_discovery(session, hacked_url, authenticated=False)
         except (exceptions.DiscoveryFailure,
                 exceptions.HTTPError,
                 exceptions.ConnectionError):

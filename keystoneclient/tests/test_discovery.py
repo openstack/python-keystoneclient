@@ -10,6 +10,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import re
 import uuid
 
 import six
@@ -770,6 +771,42 @@ class DiscoverQueryTests(utils.TestCase):
         # only the version with both id and links will be actually returned
         versions = disc.version_data()
         self.assertEqual(1, len(versions))
+
+
+class CatalogHackTests(utils.TestCase):
+
+    TEST_URL = 'http://keystone.server:5000/v2.0'
+    OTHER_URL = 'http://other.server:5000/path'
+
+    IDENTITY = 'identity'
+
+    BASE_URL = 'http://keystone.server:5000/'
+    V2_URL = BASE_URL + 'v2.0'
+    V3_URL = BASE_URL + 'v3'
+
+    def setUp(self):
+        super(CatalogHackTests, self).setUp()
+        self.hacks = _discover._VersionHacks()
+        self.hacks.add_discover_hack(self.IDENTITY,
+                                     re.compile('/v2.0/?$'),
+                                     '/')
+
+    def test_version_hacks(self):
+        self.assertEqual(self.BASE_URL,
+                         self.hacks.get_discover_hack(self.IDENTITY,
+                                                      self.V2_URL))
+
+        self.assertEqual(self.BASE_URL,
+                         self.hacks.get_discover_hack(self.IDENTITY,
+                                                      self.V2_URL + '/'))
+
+        self.assertEqual(self.OTHER_URL,
+                         self.hacks.get_discover_hack(self.IDENTITY,
+                                                      self.OTHER_URL))
+
+    def test_ignored_non_service_type(self):
+        self.assertEqual(self.V2_URL,
+                         self.hacks.get_discover_hack('other', self.V2_URL))
 
 
 class DiscoverUtils(utils.TestCase):
