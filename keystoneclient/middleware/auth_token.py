@@ -315,6 +315,10 @@ opts = [
                ' unknown the token will be rejected. "required" any form of'
                ' token binding is needed to be allowed. Finally the name of a'
                ' binding method that must be present in tokens.'),
+    cfg.BoolOpt('check_revocations_for_cached', default=False,
+                help='If true, the revocation list will be checked for cached'
+                ' tokens. This requires that PKI tokens are configured on the'
+                ' Keystone server.'),
 ]
 
 CONF = cfg.CONF
@@ -521,6 +525,9 @@ class AuthProtocol(object):
 
         self.include_service_catalog = self._conf_get(
             'include_service_catalog')
+
+        self.check_revocations_for_cached = self._conf_get(
+            'check_revocations_for_cached')
 
     def _assert_valid_memcache_protection_config(self):
         if self._memcache_security_strategy:
@@ -857,17 +864,23 @@ class AuthProtocol(object):
             cached = self._cache_get(token_id)
             if cached:
                 data = cached
+
+                if self.check_revocations_for_cached:
+                    # A token stored in Memcached might have been revoked
+                    # regardless of initial mechanism used to validate it,
+                    # and needs to be checked.
+                    is_revoked = self._is_token_id_in_revoked_list(token_id)
+                    if is_revoked:
+                        self.LOG.debug(
+                            'Token is marked as having been revoked')
+                        raise InvalidUserToken(
+                            'Token authorization failed')
+
             elif cms.is_asn1_token(user_token):
                 verified = self.verify_signed_token(user_token)
                 data = jsonutils.loads(verified)
             else:
                 data = self.verify_uuid_token(user_token, retry)
-            # A token stored in Memcached might have been revoked
-            # regardless of initial mechanism used to validate it,
-            # and needs to be checked.
-            if self._is_token_id_in_revoked_list(token_id):
-                self.LOG.debug('Token is marked as having been revoked')
-                raise InvalidUserToken('Token authorization failed')
             expires = confirm_token_not_expired(data)
             self._confirm_token_bind(data, env)
             self._cache_put(token_id, data, expires)

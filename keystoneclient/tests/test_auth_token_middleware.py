@@ -506,6 +506,7 @@ class CommonAuthTokenMiddlewareTest(object):
 
     def _test_cache_revoked(self, token, revoked_form=None):
         # When the token is cached and revoked, 401 is returned.
+        self.middleware.check_revocations_for_cached = True
 
         req = webob.Request.blank('/')
         req.headers['X-Auth-Token'] = token
