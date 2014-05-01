@@ -62,6 +62,10 @@ class VersionNotAvailable(DiscoveryFailure):
     """Discovery failed as the version you requested is not available."""
 
 
+class MethodNotImplemented(ClientException):
+    """Method not implemented by the keystoneclient API."""
+
+
 class MissingAuthPlugin(ClientException):
     """An authenticated request is required but no plugin available."""
 

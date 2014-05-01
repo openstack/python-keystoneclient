@@ -22,6 +22,7 @@ import requests
 import six
 from six.moves.urllib import parse as urlparse
 import testtools
+import uuid
 
 from keystoneclient.openstack.common import jsonutils
 
@@ -29,11 +30,14 @@ from keystoneclient.openstack.common import jsonutils
 class TestCase(testtools.TestCase):
     TEST_DOMAIN_ID = '1'
     TEST_DOMAIN_NAME = 'aDomain'
+    TEST_GROUP_ID = uuid.uuid4().hex
+    TEST_ROLE_ID = uuid.uuid4().hex
     TEST_TENANT_ID = '1'
     TEST_TENANT_NAME = 'aTenant'
     TEST_TOKEN = 'aToken'
     TEST_TRUST_ID = 'aTrust'
     TEST_USER = 'test'
+    TEST_USER_ID = uuid.uuid4().hex
 
     TEST_ROOT_URL = 'http://127.0.0.1:5000/'
 
@@ -63,6 +67,8 @@ class TestCase(testtools.TestCase):
         else:
             url = base_url
 
+        # For urls containing queries
+        url = url.replace("/?", "?")
         httpretty.register_uri(method, url, **kwargs)
 
     def assertRequestBodyIs(self, body=None, json=None):

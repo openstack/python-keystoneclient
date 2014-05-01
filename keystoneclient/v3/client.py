@@ -30,6 +30,7 @@ from keystoneclient.v3 import groups
 from keystoneclient.v3 import policies
 from keystoneclient.v3 import projects
 from keystoneclient.v3 import regions
+from keystoneclient.v3 import role_assignments
 from keystoneclient.v3 import roles
 from keystoneclient.v3 import services
 from keystoneclient.v3 import users
@@ -96,6 +97,7 @@ class Client(httpclient.HTTPClient):
         """Initialize a new client for the Keystone v3 API."""
         super(Client, self).__init__(**kwargs)
 
+        self.role_assignments = role_assignments.RoleAssignmentManager(self)
         self.credentials = credentials.CredentialManager(self)
         self.endpoints = endpoints.EndpointManager(self)
         self.domains = domains.DomainManager(self)
