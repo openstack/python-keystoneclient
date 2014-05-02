@@ -385,7 +385,7 @@ def do_user_role_list(kc, args):
            'the authenticated user will be used.')
 @utils.arg('--user_id', help=argparse.SUPPRESS)
 @utils.arg('--tenant-id', metavar='<tenant-id>',
-           help='Tenant ID for which to to create credentials. If not '
+           help='Tenant ID for which to create credentials. If not '
            'specified, the authenticated tenant ID will be used.')
 @utils.arg('--tenant_id', help=argparse.SUPPRESS)
 def do_ec2_credentials_create(kc, args):

@@ -570,7 +570,7 @@ class DiscoverUtils(utils.TestCase):
 
         versionRaises('hello')
         versionRaises('1.a')
-        versionRaises('vaccuum')
+        versionRaises('vacuum')
 
     def test_keystone_version_objects(self):
         v31s = discover._KeystoneVersion((3, 1), 'stable')

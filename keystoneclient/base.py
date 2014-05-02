@@ -57,7 +57,7 @@ def filter_kwargs(f):
 
             id_value = getid(ref)
             if id_value != ref:
-                # If an object with an id was passed, then use the id, e.g:
+                # If an object with an id was passed, then use the id, e.g.:
                 #     user: user(id=1) becomes user_id: 1
                 key = '%s_id' % key
 

@@ -264,7 +264,7 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         self.assertEqual(httpretty.last_request().headers.get('X-Auth-Token'),
                          fake_token)
 
-        # if we clear that overriden token then we fall back to the original
+        # if we clear that overridden token then we fall back to the original
         del cl.auth_token
 
         resp, body = cl.get(fake_url)
