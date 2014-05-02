@@ -205,7 +205,7 @@ class ServiceCatalog(object):
         :param string endpoint_type: Type of endpoint.
         :param string region_name: Region of the endpoint.
         :param string service_name: The assigned name of the service.
-        :
+
         """
         if not self.get_data():
             raise exceptions.EmptyCatalog('The service catalog is empty.')

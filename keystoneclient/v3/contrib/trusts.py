@@ -39,6 +39,7 @@ class TrustManager(base.CrudManager):
                project=None, impersonation=False, expires_at=None,
                remaining_uses=None, **kwargs):
         """Create a Trust.
+
         :param string trustee_user: user who is capable of consuming the trust
         :param string trustor_user: user who's authorization is being delegated
         :param string role_names: subset of trustor's roles to be granted
@@ -48,6 +49,7 @@ class TrustManager(base.CrudManager):
         :param integer remaining_uses: how many times this trust can be used
                                        to generate a token. None means
                                        unlimited tokens.
+
         """
         # Convert role_names list into list-of-dict API format
         if role_names:
