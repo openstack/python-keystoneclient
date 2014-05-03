@@ -1278,7 +1278,7 @@ class v2AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
       tenant
 
     The tests below were originally part of the generic AuthTokenMiddlewareTest
-    class, but now, since they really are v2 specifc, they are included here.
+    class, but now, since they really are v2 specific, they are included here.
 
     """
 
@@ -1440,7 +1440,7 @@ class v3AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
     """Test auth_token middleware with v3 tokens.
 
     Re-execute the AuthTokenMiddlewareTest class tests, but with the
-    the auth_token middleware configured to expect v3 tokens back from
+    auth_token middleware configured to expect v3 tokens back from
     a keystone server.
 
     This is done by configuring the AuthTokenMiddlewareTest class via

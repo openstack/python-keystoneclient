@@ -129,7 +129,7 @@ class Session(object):
                            provided such that the base URL can be determined.
                            If a fully qualified URL is provided then
                            endpoint_filter will be ignored.
-        :param string method: The http method to use. (eg. 'GET', 'POST')
+        :param string method: The http method to use. (e.g. 'GET', 'POST')
         :param string original_ip: Mark this request as forwarded for this ip.
                                    (optional)
         :param dict headers: Headers to be included in the request. (optional)
@@ -186,7 +186,7 @@ class Session(object):
 
             headers['X-Auth-Token'] = token
 
-        # if we are passed a fully qualified URL and a endpoint_filter we
+        # if we are passed a fully qualified URL and an endpoint_filter we
         # should ignore the filter. This will make it easier for clients who
         # want to overrule the default endpoint_filter data added to all client
         # requests. We check fully qualified here by the presence of a host.

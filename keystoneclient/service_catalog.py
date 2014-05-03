@@ -30,7 +30,7 @@ class ServiceCatalog(object):
 
     @classmethod
     def factory(cls, resource_dict, token=None, region_name=None):
-        """Create ServiceCatalog object given a auth token."""
+        """Create ServiceCatalog object given an auth token."""
         if ServiceCatalogV3.is_valid(resource_dict):
             return ServiceCatalogV3(token, resource_dict, region_name)
         elif ServiceCatalogV2.is_valid(resource_dict):

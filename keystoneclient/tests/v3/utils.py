@@ -194,7 +194,7 @@ class CrudTests(object):
 
         # req_ref argument allows you to specify a different
         # signature for the request when the manager does some
-        # conversion before doing the request (e.g converting
+        # conversion before doing the request (e.g. converting
         # from datetime object to timestamp string)
         req_ref = (req_ref or ref).copy()
         req_ref.pop('id')
@@ -305,7 +305,7 @@ class CrudTests(object):
 
         # req_ref argument allows you to specify a different
         # signature for the request when the manager does some
-        # conversion before doing the request (e.g converting
+        # conversion before doing the request (e.g. converting
         # from datetime object to timestamp string)
         req_ref = (req_ref or ref).copy()
         req_ref.pop('id')

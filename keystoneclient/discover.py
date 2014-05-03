@@ -425,8 +425,9 @@ class Discover(object):
             version = _normalize_version_number(version)
 
             for keystone_version in six.itervalues(versions):
-                # major versions must be the same (eg even though v2 is a lower
-                # version than v3 we can't use it if v2 was requested)
+                # major versions must be the same (e.g. even though v2
+                # is a lower version than v3 we can't use it if v2 was
+                # requested)
                 if version[0] != keystone_version.version[0]:
                     continue
 

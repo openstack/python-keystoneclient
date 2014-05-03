@@ -221,7 +221,7 @@ opts = [
                default=None,
                help='Complete admin Identity API endpoint. This should '
                     'specify the unversioned root endpoint '
-                    'eg. https://localhost:35357/'),
+                    'e.g. https://localhost:35357/'),
     cfg.StrOpt('auth_version',
                default=None,
                help='API version of the admin Identity API endpoint'),
