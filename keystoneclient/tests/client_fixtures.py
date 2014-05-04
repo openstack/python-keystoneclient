@@ -330,6 +330,7 @@ class Examples(fixtures.Fixture):
                 'access': {
                     'token': {
                         'id': self.SIGNED_TOKEN_SCOPED_KEY,
+                        'expires': '2020-01-01T00:00:10.000123Z',
                     },
                     'user': {
                         'id': 'user_id1',
@@ -347,6 +348,7 @@ class Examples(fixtures.Fixture):
                 'access': {
                     'token': {
                         'id': self.SIGNED_TOKEN_UNSCOPED_KEY,
+                        'expires': '2020-01-01T00:00:10.000123Z',
                     },
                     'user': {
                         'id': 'user_id1',
@@ -360,7 +362,7 @@ class Examples(fixtures.Fixture):
             },
             self.SIGNED_v3_TOKEN_SCOPED_KEY: {
                 'token': {
-                    'expires': '2020-01-01T00:00:10.000123Z',
+                    'expires_at': '2020-01-01T00:00:10.000123Z',
                     'methods': ['password'],
                     'user': {
                         'id': 'user_id1',
