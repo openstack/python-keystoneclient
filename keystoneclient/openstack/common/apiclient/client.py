@@ -36,6 +36,7 @@ except ImportError:
 import requests
 
 from keystoneclient.openstack.common.apiclient import exceptions
+from keystoneclient.openstack.common.gettextutils import _
 from keystoneclient.openstack.common import importutils
 
 
@@ -228,7 +229,7 @@ class HTTPClient(object):
                     **filter_args)
                 if not (token and endpoint):
                     raise exceptions.AuthorizationFailure(
-                        "Cannot find endpoint or token for request")
+                        _("Cannot find endpoint or token for request"))
 
         old_token_endpoint = (token, endpoint)
         kwargs.setdefault("headers", {})["X-Auth-Token"] = token
@@ -351,8 +352,12 @@ class BaseClient(object):
         try:
             client_path = version_map[str(version)]
         except (KeyError, ValueError):
-            msg = "Invalid %s client version '%s'. must be one of: %s" % (
-                  (api_name, version, ', '.join(version_map.keys())))
+            msg = _("Invalid %(api_name)s client version '%(version)s'. "
+                    "Must be one of: %(version_map)s") % {
+                        'api_name': api_name,
+                        'version': version,
+                        'version_map': ', '.join(version_map.keys())
+                    }
             raise exceptions.UnsupportedVersion(msg)
 
         return importutils.import_class(client_path)
