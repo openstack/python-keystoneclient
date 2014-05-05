@@ -394,6 +394,7 @@ class DiabloAuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
 
 
 class NoMemcacheAuthToken(BaseAuthTokenMiddlewareTest):
+    """These tests will not have the memcache module available."""
 
     def setUp(self):
         super(NoMemcacheAuthToken, self).setUp()
@@ -410,22 +411,34 @@ class NoMemcacheAuthToken(BaseAuthTokenMiddlewareTest):
 
         auth_token.AuthProtocol(FakeApp(), conf)
 
-    def test_not_use_cache_from_env(self):
+
+class CachePoolTest(BaseAuthTokenMiddlewareTest):
+    def test_use_cache_from_env(self):
+        """If `swift.cache` is set in the environment and `cache` is set in the
+        config then the env cache is used.
+        """
         env = {'swift.cache': 'CACHE_TEST'}
         conf = {
-            'memcached_servers': MEMCACHED_SERVERS
+            'cache': 'swift.cache'
         }
         self.set_middleware(conf=conf)
+        self.middleware._init_cache(env)
+        with self.middleware._cache_pool.reserve() as cache:
+            self.assertEqual(cache, 'CACHE_TEST')
+
+    def test_not_use_cache_from_env(self):
+        """If `swift.cache` is set in the environment but `cache` isn't set in
+        the config then the env cache isn't used.
+        """
+        self.set_middleware()
+        env = {'swift.cache': 'CACHE_TEST'}
         self.middleware._init_cache(env)
         with self.middleware._cache_pool.reserve() as cache:
             self.assertNotEqual(cache, 'CACHE_TEST')
 
     def test_multiple_context_managers_share_single_client(self):
+        self.set_middleware()
         env = {}
-        conf = {
-            'memcached_servers': MEMCACHED_SERVERS
-        }
-        self.set_middleware(conf=conf)
         self.middleware._init_cache(env)
 
         caches = []
@@ -440,11 +453,8 @@ class NoMemcacheAuthToken(BaseAuthTokenMiddlewareTest):
         self.assertEqual(set(caches), set(self.middleware._cache_pool))
 
     def test_nested_context_managers_create_multiple_clients(self):
+        self.set_middleware()
         env = {}
-        conf = {
-            'memcached_servers': MEMCACHED_SERVERS
-        }
-        self.set_middleware(conf=conf)
         self.middleware._init_cache(env)
 
         with self.middleware._cache_pool.reserve() as outer_cache:
@@ -788,17 +798,6 @@ class CommonAuthTokenMiddlewareTest(object):
         extra_conf = {'cache': 'swift.cache'}
         extra_environ = {'swift.cache': memorycache.Client()}
         self.test_memcache_set_expired(extra_conf, extra_environ)
-
-    def test_use_cache_from_env(self):
-        env = {'swift.cache': 'CACHE_TEST'}
-        conf = {
-            'cache': 'swift.cache',
-            'memcached_servers': MEMCACHED_SERVERS
-        }
-        self.set_middleware(conf=conf)
-        self.middleware._init_cache(env)
-        with self.middleware._cache_pool.reserve() as cache:
-            self.assertEqual(cache, 'CACHE_TEST')
 
     def test_will_expire_soon(self):
         tenseconds = datetime.datetime.utcnow() + datetime.timedelta(
