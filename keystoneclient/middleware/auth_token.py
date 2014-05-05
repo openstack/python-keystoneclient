@@ -972,7 +972,7 @@ class AuthProtocol(object):
         env_key = self._header_to_env_var(key)
         return env.get(env_key, default)
 
-    def _cache_get(self, token_id, ignore_expires=False):
+    def _cache_get(self, token_id):
         """Return token information from cache.
 
         If token is invalid raise InvalidUserToken
@@ -1035,7 +1035,7 @@ class AuthProtocol(object):
 
             expires = timeutils.normalize_time(expires)
             utcnow = timeutils.utcnow()
-            if ignore_expires or utcnow < expires:
+            if utcnow < expires:
                 self.LOG.debug('Returning cached token')
                 return data
             else:
