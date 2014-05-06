@@ -14,6 +14,7 @@ import httpretty
 import six
 from testtools import matchers
 
+from keystoneclient import _discover
 from keystoneclient import client
 from keystoneclient import discover
 from keystoneclient import exceptions
@@ -464,12 +465,7 @@ class ClientDiscoveryTests(utils.TestCase):
         self.assertDiscoveryFailure(auth_url=BASE_URL)
 
     def test_discovery_ignore_invalid(self):
-        resp = [{'id': '3.99',  # without a leading v
-                 'links': [{'href': V3_URL, 'rel': 'self'}],
-                 'media-types': V3_MEDIA_TYPES,
-                 'status': 'stable',
-                 'updated': UPDATED},
-                {'id': 'v3.0',
+        resp = [{'id': 'v3.0',
                  'links': [1, 2, 3, 4],  # invalid links
                  'media-types': V3_MEDIA_TYPES,
                  'status': 'stable',
@@ -546,16 +542,237 @@ class ClientDiscoveryTests(utils.TestCase):
         self.assertEqual(client.username, 'foo')
         self.assertEqual(client.password, 'bar')
 
+    def test_available_versions(self):
+        httpretty.register_uri(httpretty.GET, BASE_URL, status=300,
+                               body=V3_VERSION_ENTRY)
+        disc = discover.Discover(auth_url=BASE_URL)
+
+        versions = disc.available_versions()
+        self.assertEqual(1, len(versions))
+        self.assertEqual(V3_VERSION, versions[0])
+
+    def test_unknown_client_version(self):
+        V4_VERSION = {'id': 'v4.0',
+                      'links': [{'href': 'http://url', 'rel': 'self'}],
+                      'media-types': V3_MEDIA_TYPES,
+                      'status': 'stable',
+                      'updated': UPDATED}
+        body = _create_version_list([V4_VERSION, V3_VERSION, V2_VERSION])
+        httpretty.register_uri(httpretty.GET, BASE_URL, status=300, body=body)
+
+        disc = discover.Discover(auth_url=BASE_URL)
+        self.assertRaises(exceptions.DiscoveryFailure,
+                          disc.create_client, version=4)
+
+
+@httpretty.activate
+class DiscoverQueryTests(utils.TestCase):
+
+    def test_available_keystone_data(self):
+        httpretty.register_uri(httpretty.GET, BASE_URL, status=300,
+                               body=V3_VERSION_LIST)
+
+        disc = discover.Discover(auth_url=BASE_URL)
+        versions = disc.version_data()
+
+        self.assertEqual((2, 0), versions[0]['version'])
+        self.assertEqual('stable', versions[0]['raw_status'])
+        self.assertEqual(V2_URL, versions[0]['url'])
+        self.assertEqual((3, 0), versions[1]['version'])
+        self.assertEqual('stable', versions[1]['raw_status'])
+        self.assertEqual(V3_URL, versions[1]['url'])
+
+        version = disc.data_for('v3.0')
+        self.assertEqual((3, 0), version['version'])
+        self.assertEqual('stable', version['raw_status'])
+        self.assertEqual(V3_URL, version['url'])
+
+        version = disc.data_for(2)
+        self.assertEqual((2, 0), version['version'])
+        self.assertEqual('stable', version['raw_status'])
+        self.assertEqual(V2_URL, version['url'])
+
+        self.assertIsNone(disc.url_for('v4'))
+        self.assertEqual(V3_URL, disc.url_for('v3'))
+        self.assertEqual(V2_URL, disc.url_for('v2'))
+
+    def test_available_cinder_data(self):
+        body = jsonutils.dumps(CINDER_EXAMPLES)
+        httpretty.register_uri(httpretty.GET, BASE_URL, status=300, body=body)
+
+        v1_url = "%sv1/" % BASE_URL
+        v2_url = "%sv2/" % BASE_URL
+
+        disc = discover.Discover(auth_url=BASE_URL)
+        versions = disc.version_data()
+
+        self.assertEqual((1, 0), versions[0]['version'])
+        self.assertEqual('CURRENT', versions[0]['raw_status'])
+        self.assertEqual(v1_url, versions[0]['url'])
+        self.assertEqual((2, 0), versions[1]['version'])
+        self.assertEqual('CURRENT', versions[1]['raw_status'])
+        self.assertEqual(v2_url, versions[1]['url'])
+
+        version = disc.data_for('v2.0')
+        self.assertEqual((2, 0), version['version'])
+        self.assertEqual('CURRENT', version['raw_status'])
+        self.assertEqual(v2_url, version['url'])
+
+        version = disc.data_for(1)
+        self.assertEqual((1, 0), version['version'])
+        self.assertEqual('CURRENT', version['raw_status'])
+        self.assertEqual(v1_url, version['url'])
+
+        self.assertIsNone(disc.url_for('v3'))
+        self.assertEqual(v2_url, disc.url_for('v2'))
+        self.assertEqual(v1_url, disc.url_for('v1'))
+
+    def test_available_glance_data(self):
+        body = jsonutils.dumps(GLANCE_EXAMPLES)
+        httpretty.register_uri(httpretty.GET, BASE_URL, status=200, body=body)
+
+        v1_url = "%sv1/" % BASE_URL
+        v2_url = "%sv2/" % BASE_URL
+
+        disc = discover.Discover(auth_url=BASE_URL)
+        versions = disc.version_data()
+
+        self.assertEqual((1, 0), versions[0]['version'])
+        self.assertEqual('SUPPORTED', versions[0]['raw_status'])
+        self.assertEqual(v1_url, versions[0]['url'])
+        self.assertEqual((1, 1), versions[1]['version'])
+        self.assertEqual('CURRENT', versions[1]['raw_status'])
+        self.assertEqual(v1_url, versions[1]['url'])
+        self.assertEqual((2, 0), versions[2]['version'])
+        self.assertEqual('SUPPORTED', versions[2]['raw_status'])
+        self.assertEqual(v2_url, versions[2]['url'])
+        self.assertEqual((2, 1), versions[3]['version'])
+        self.assertEqual('SUPPORTED', versions[3]['raw_status'])
+        self.assertEqual(v2_url, versions[3]['url'])
+        self.assertEqual((2, 2), versions[4]['version'])
+        self.assertEqual('CURRENT', versions[4]['raw_status'])
+        self.assertEqual(v2_url, versions[4]['url'])
+
+        for ver in (2, 2.1, 2.2):
+            version = disc.data_for(ver)
+            self.assertEqual((2, 2), version['version'])
+            self.assertEqual('CURRENT', version['raw_status'])
+            self.assertEqual(v2_url, version['url'])
+            self.assertEqual(v2_url, disc.url_for(ver))
+
+        for ver in (1, 1.1):
+            version = disc.data_for(ver)
+            self.assertEqual((1, 1), version['version'])
+            self.assertEqual('CURRENT', version['raw_status'])
+            self.assertEqual(v1_url, version['url'])
+            self.assertEqual(v1_url, disc.url_for(ver))
+
+        self.assertIsNone(disc.url_for('v3'))
+        self.assertIsNone(disc.url_for('v2.3'))
+
+    def test_allow_deprecated(self):
+        status = 'deprecated'
+        version_list = [{'id': 'v3.0',
+                         'links': [{'href': V3_URL, 'rel': 'self'}],
+                         'media-types': V3_MEDIA_TYPES,
+                         'status': status,
+                         'updated': UPDATED}]
+        body = jsonutils.dumps({'versions': version_list})
+        httpretty.register_uri(httpretty.GET, BASE_URL, status=200, body=body)
+
+        disc = discover.Discover(auth_url=BASE_URL)
+
+        # deprecated is allowed by default
+        versions = disc.version_data(allow_deprecated=False)
+        self.assertEqual(0, len(versions))
+
+        versions = disc.version_data(allow_deprecated=True)
+        self.assertEqual(1, len(versions))
+        self.assertEqual(status, versions[0]['raw_status'])
+        self.assertEqual(V3_URL, versions[0]['url'])
+        self.assertEqual((3, 0), versions[0]['version'])
+
+    def test_allow_experimental(self):
+        status = 'experimental'
+        version_list = [{'id': 'v3.0',
+                         'links': [{'href': V3_URL, 'rel': 'self'}],
+                         'media-types': V3_MEDIA_TYPES,
+                         'status': status,
+                         'updated': UPDATED}]
+        body = jsonutils.dumps({'versions': version_list})
+        httpretty.register_uri(httpretty.GET, BASE_URL, status=200, body=body)
+
+        disc = discover.Discover(auth_url=BASE_URL)
+
+        versions = disc.version_data()
+        self.assertEqual(0, len(versions))
+
+        versions = disc.version_data(allow_experimental=True)
+        self.assertEqual(1, len(versions))
+        self.assertEqual(status, versions[0]['raw_status'])
+        self.assertEqual(V3_URL, versions[0]['url'])
+        self.assertEqual((3, 0), versions[0]['version'])
+
+    def test_allow_unknown(self):
+        status = 'abcdef'
+        version_list = [{'id': 'v3.0',
+                         'links': [{'href': V3_URL, 'rel': 'self'}],
+                         'media-types': V3_MEDIA_TYPES,
+                         'status': status,
+                         'updated': UPDATED}]
+        body = jsonutils.dumps({'versions': version_list})
+        httpretty.register_uri(httpretty.GET, BASE_URL, status=200, body=body)
+
+        disc = discover.Discover(auth_url=BASE_URL)
+
+        versions = disc.version_data()
+        self.assertEqual(0, len(versions))
+
+        versions = disc.version_data(allow_unknown=True)
+        self.assertEqual(1, len(versions))
+        self.assertEqual(status, versions[0]['raw_status'])
+        self.assertEqual(V3_URL, versions[0]['url'])
+        self.assertEqual((3, 0), versions[0]['version'])
+
+    def test_ignoring_invalid_lnks(self):
+        version_list = [{'id': 'v3.0',
+                         'links': [{'href': V3_URL, 'rel': 'self'}],
+                         'media-types': V3_MEDIA_TYPES,
+                         'status': 'stable',
+                         'updated': UPDATED},
+                        {'id': 'v3.1',
+                         'media-types': V3_MEDIA_TYPES,
+                         'status': 'stable',
+                         'updated': UPDATED},
+                        {'media-types': V3_MEDIA_TYPES,
+                         'status': 'stable',
+                         'updated': UPDATED,
+                         'links': [{'href': V3_URL, 'rel': 'self'}],
+                         }]
+
+        body = jsonutils.dumps({'versions': version_list})
+        httpretty.register_uri(httpretty.GET, BASE_URL, status=200, body=body)
+
+        disc = discover.Discover(auth_url=BASE_URL)
+
+        # raw_version_data will return all choices, even invalid ones
+        versions = disc.raw_version_data()
+        self.assertEqual(3, len(versions))
+
+        # only the version with both id and links will be actually returned
+        versions = disc.version_data()
+        self.assertEqual(1, len(versions))
+
 
 class DiscoverUtils(utils.TestCase):
 
     def test_version_number(self):
         def assertVersion(inp, out):
-            self.assertEqual(discover._normalize_version_number(inp), out)
+            self.assertEqual(out, _discover.normalize_version_number(inp))
 
         def versionRaises(inp):
             self.assertRaises(TypeError,
-                              discover._normalize_version_number,
+                              _discover.normalize_version_number,
                               inp)
 
         assertVersion('v1.2', (1, 2))
@@ -571,23 +788,3 @@ class DiscoverUtils(utils.TestCase):
         versionRaises('hello')
         versionRaises('1.a')
         versionRaises('vacuum')
-
-    def test_keystone_version_objects(self):
-        v31s = discover._KeystoneVersion((3, 1), 'stable')
-        v20s = discover._KeystoneVersion((2, 0), 'stable')
-        v30s = discover._KeystoneVersion((3, 0), 'stable')
-
-        v31a = discover._KeystoneVersion((3, 1), 'alpha')
-        v31b = discover._KeystoneVersion((3, 1), 'beta')
-
-        self.assertTrue(v31s > v30s)
-        self.assertTrue(v30s > v20s)
-
-        self.assertTrue(v31s > v31a)
-        self.assertFalse(v31s < v31a)
-        self.assertTrue(v31b > v31a)
-        self.assertTrue(v31a < v31b)
-        self.assertTrue(v31b > v30s)
-
-        self.assertNotEqual(v31s, v31b)
-        self.assertEqual(v31s, discover._KeystoneVersion((3, 1), 'stable'))
