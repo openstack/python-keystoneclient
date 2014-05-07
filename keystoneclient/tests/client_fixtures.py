@@ -31,6 +31,12 @@ CMSDIR = os.path.join(ROOTDIR, 'examples', 'pki', 'cms')
 KEYDIR = os.path.join(ROOTDIR, 'examples', 'pki', 'private')
 
 
+def _hash_signed_token_safe(signed_text, **kwargs):
+    if isinstance(signed_text, six.text_type):
+        signed_text = signed_text.encode('utf-8')
+    return utils.hash_signed_token(signed_text, **kwargs)
+
+
 class Examples(fixtures.Fixture):
     """Example tokens and certs loaded from the examples directory.
 
@@ -58,10 +64,14 @@ class Examples(fixtures.Fixture):
 
         with open(os.path.join(CMSDIR, 'auth_token_scoped.pem')) as f:
             self.SIGNED_TOKEN_SCOPED = cms.cms_to_token(f.read())
+        self.SIGNED_TOKEN_SCOPED_HASH = _hash_signed_token_safe(
+            self.SIGNED_TOKEN_SCOPED)
         with open(os.path.join(CMSDIR, 'auth_token_unscoped.pem')) as f:
             self.SIGNED_TOKEN_UNSCOPED = cms.cms_to_token(f.read())
         with open(os.path.join(CMSDIR, 'auth_v3_token_scoped.pem')) as f:
             self.SIGNED_v3_TOKEN_SCOPED = cms.cms_to_token(f.read())
+        self.SIGNED_v3_TOKEN_SCOPED_HASH = _hash_signed_token_safe(
+            self.SIGNED_v3_TOKEN_SCOPED)
         with open(os.path.join(CMSDIR, 'auth_token_revoked.pem')) as f:
             self.REVOKED_TOKEN = cms.cms_to_token(f.read())
         with open(os.path.join(CMSDIR, 'auth_token_scoped_expired.pem')) as f:
