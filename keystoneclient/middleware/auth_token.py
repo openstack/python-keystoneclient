@@ -320,6 +320,16 @@ opts = [
                 help='If true, the revocation list will be checked for cached'
                 ' tokens. This requires that PKI tokens are configured on the'
                 ' Keystone server.'),
+    cfg.ListOpt('hash_algorithms', default=['md5'],
+                help='Hash algorithms to use for hashing PKI tokens. This may'
+                ' be a single algorithm or multiple. The algorithms are those'
+                ' supported by Python standard hashlib.new(). The hashes will'
+                ' be tried in the order given, so put the preferred one first'
+                ' for performance. The result of the first hash will be stored'
+                ' in the cache. This will typically be set to multiple values'
+                ' only while migrating from a less secure algorithm to a more'
+                ' secure one. Once all the old tokens are expired this option'
+                ' should be set to a single value for better performance.'),
 ]
 
 CONF = cfg.CONF
@@ -897,8 +907,8 @@ class AuthProtocol(object):
         token_id = None
 
         try:
-            token_id = cms.cms_hash_token(user_token)
-            cached = self._cache_get(token_id)
+            token_ids, cached = self._check_user_token_cached(user_token)
+            token_id = token_ids[0]
             if cached:
                 data = cached
 
@@ -906,17 +916,18 @@ class AuthProtocol(object):
                     # A token stored in Memcached might have been revoked
                     # regardless of initial mechanism used to validate it,
                     # and needs to be checked.
-                    is_revoked = self._is_token_id_in_revoked_list(token_id)
-                    if is_revoked:
-                        self.LOG.debug(
-                            'Token is marked as having been revoked')
-                        raise InvalidUserToken(
-                            'Token authorization failed')
+                    for tid in token_ids:
+                        is_revoked = self._is_token_id_in_revoked_list(tid)
+                        if is_revoked:
+                            self.LOG.debug(
+                                'Token is marked as having been revoked')
+                            raise InvalidUserToken(
+                                'Token authorization failed')
             elif cms.is_pkiz(user_token):
-                verified = self.verify_pkiz_token(user_token, token_id)
+                verified = self.verify_pkiz_token(user_token, token_ids)
                 data = jsonutils.loads(verified)
             elif cms.is_asn1_token(user_token):
-                verified = self.verify_signed_token(user_token, token_id)
+                verified = self.verify_signed_token(user_token, token_ids)
                 data = jsonutils.loads(verified)
             else:
                 data = self.verify_uuid_token(user_token, retry)
@@ -934,6 +945,39 @@ class AuthProtocol(object):
                 self._cache_store_invalid(token_id)
             self.LOG.warn('Authorization failed for token')
             raise InvalidUserToken('Token authorization failed')
+
+    def _check_user_token_cached(self, user_token):
+        """Check if the token is cached already.
+
+        Returns a tuple. The first element is a list of token IDs, where the
+        first one is the preferred hash.
+
+        The second element is the token data from the cache if the token was
+        cached, otherwise ``None``.
+
+        :raises InvalidUserToken: if the token is invalid
+
+        """
+
+        if cms.is_asn1_token(user_token):
+            # user_token is a PKI token that's not hashed.
+
+            algos = self._conf_get('hash_algorithms')
+            token_hashes = list(cms.cms_hash_token(user_token, mode=algo)
+                                for algo in algos)
+
+            for token_hash in token_hashes:
+                cached = self._cache_get(token_hash)
+                if cached:
+                    return (token_hashes, cached)
+
+            # The token wasn't found using any hash algorithm.
+            return (token_hashes, None)
+
+        # user_token is either a UUID token or a hashed PKI token.
+        token_id = user_token
+        cached = self._cache_get(token_id)
+        return ([token_id], cached)
 
     def _build_user_headers(self, token_info):
         """Convert token object into headers.
@@ -1249,12 +1293,13 @@ class AuthProtocol(object):
 
             raise InvalidUserToken()
 
-    def is_signed_token_revoked(self, token_id):
+    def is_signed_token_revoked(self, token_ids):
         """Indicate whether the token appears in the revocation list."""
-        is_revoked = self._is_token_id_in_revoked_list(token_id)
-        if is_revoked:
-            self.LOG.debug('Token is marked as having been revoked')
-        return is_revoked
+        for token_id in token_ids:
+            if self._is_token_id_in_revoked_list(token_id):
+                self.LOG.debug('Token is marked as having been revoked')
+                return True
+        return False
 
     def _is_token_id_in_revoked_list(self, token_id):
         """Indicate whether the token_id appears in the revocation list."""
@@ -1297,17 +1342,17 @@ class AuthProtocol(object):
                 self.LOG.error('CMS Verify output: %s', err.output)
                 raise
 
-    def verify_signed_token(self, signed_text, token_id):
+    def verify_signed_token(self, signed_text, token_ids):
         """Check that the token is unrevoked and has a valid signature."""
-        if self.is_signed_token_revoked(token_id):
+        if self.is_signed_token_revoked(token_ids):
             raise InvalidUserToken('Token has been revoked')
 
         formatted = cms.token_to_cms(signed_text)
         verified = self.cms_verify(formatted)
         return verified
 
-    def verify_pkiz_token(self, signed_text, token_id):
-        if self.is_signed_token_revoked(token_id):
+    def verify_pkiz_token(self, signed_text, token_ids):
+        if self.is_signed_token_revoked(token_ids):
             raise InvalidUserToken('Token has been revoked')
         try:
             uncompressed = cms.pkiz_uncompress(signed_text)
