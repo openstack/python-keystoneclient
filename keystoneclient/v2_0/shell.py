@@ -14,6 +14,13 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+"""
+This module is pending deprecation in favor of python-openstackclient.
+
+Bug fixes are welcome, but new features should be exposed to the CLI by
+python-openstackclient after being added to the python-keystoneclient library.
+
+"""
 
 import argparse
 import getpass
