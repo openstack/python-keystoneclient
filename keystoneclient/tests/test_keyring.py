@@ -96,7 +96,7 @@ class KeyringTest(utils.TestCase):
 
             self.assertTrue(cl.authenticate())
 
-            meth.assert_called_once()
+            self.assertEqual(1, meth.call_count)
 
         # make sure that we never touched the keyring
         self.assertFalse(self.memory_keyring.get_password_called)
@@ -134,7 +134,7 @@ class KeyringTest(utils.TestCase):
 
             self.assertTrue(cl.authenticate())
 
-            meth.assert_called_once()
+            self.assertEqual(1, meth.call_count)
 
         # check that a value was returned from the keyring
         self.assertTrue(self.memory_keyring.fetched)
@@ -172,7 +172,7 @@ class KeyringTest(utils.TestCase):
 
             self.assertTrue(cl.authenticate())
 
-            meth.assert_called_once()
+            self.assertEqual(1, meth.call_count)
 
         # we checked the keyring, but we didn't find anything
         self.assertTrue(self.memory_keyring.get_password_called)
