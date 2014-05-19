@@ -235,7 +235,6 @@ class RedirectTests(utils.TestCase):
 
         ses_resp = session.get(self.REDIRECT_CHAIN[0])
 
-        self.assertEqual(type(req_resp.history), type(ses_resp.history))
         self.assertEqual(len(req_resp.history), len(ses_resp.history))
 
         for r, s in zip(req_resp.history, ses_resp.history):

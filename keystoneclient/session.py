@@ -256,10 +256,6 @@ class Session(object):
 
         resp = self._send_request(url, method, redirect, **kwargs)
 
-        # NOTE(jamielennox): we create a tuple here to be the same as what is
-        # returned by the requests library.
-        resp.history = tuple(resp.history)
-
         if raise_exc and resp.status_code >= 400:
             _logger.debug('Request returned failure status: %s',
                           resp.status_code)
