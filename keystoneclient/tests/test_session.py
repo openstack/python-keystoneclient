@@ -14,12 +14,15 @@ import uuid
 
 import httpretty
 import mock
+from oslo.config import cfg
 import requests
 import six
+from testtools import matchers
 
 from keystoneclient import adapter
 from keystoneclient.auth import base
 from keystoneclient import exceptions
+from keystoneclient.openstack.common.fixture import config
 from keystoneclient.openstack.common import jsonutils
 from keystoneclient import session as client_session
 from keystoneclient.tests import utils
@@ -599,3 +602,62 @@ class AdapterTest(utils.TestCase):
             with mock.patch.object(adpt, 'request') as m:
                 getattr(adpt, method)(url)
                 m.assert_called_once_with(url, method.upper())
+
+
+class ConfLoadingTests(utils.TestCase):
+
+    GROUP = 'sessiongroup'
+
+    def setUp(self):
+        super(ConfLoadingTests, self).setUp()
+
+        self.conf_fixture = self.useFixture(config.Config())
+        client_session.Session.register_conf_options(self.conf_fixture.conf,
+                                                     self.GROUP)
+
+    def config(self, **kwargs):
+        kwargs['group'] = self.GROUP
+        self.conf_fixture.config(**kwargs)
+
+    def get_session(self, **kwargs):
+        return client_session.Session.load_from_conf_options(
+            self.conf_fixture.conf,
+            self.GROUP,
+            **kwargs)
+
+    def test_insecure_timeout(self):
+        self.config(insecure=True, timeout=5)
+        s = self.get_session()
+
+        self.assertFalse(s.verify)
+        self.assertEqual(5, s.timeout)
+
+    def test_client_certs(self):
+        cert = '/path/to/certfile'
+        key = '/path/to/keyfile'
+
+        self.config(certfile=cert, keyfile=key)
+        s = self.get_session()
+
+        self.assertTrue(s.verify)
+        self.assertEqual((cert, key), s.cert)
+
+    def test_cacert(self):
+        cafile = '/path/to/cacert'
+
+        self.config(cafile=cafile)
+        s = self.get_session()
+
+        self.assertEqual(cafile, s.verify)
+
+    def test_deprecated(self):
+        def new_deprecated():
+            return cfg.DeprecatedOpt(uuid.uuid4().hex, group=uuid.uuid4().hex)
+
+        opt_names = ['cafile', 'certfile', 'keyfile', 'insecure', 'timeout']
+        depr = dict([(n, [new_deprecated()]) for n in opt_names])
+        opts = client_session.Session.get_conf_options(deprecated_opts=depr)
+
+        self.assertThat(opt_names, matchers.HasLength(len(opts)))
+        for opt in opts:
+            self.assertIn(depr[opt.name][0], opt.deprecated_opts)

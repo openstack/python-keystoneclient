@@ -12,6 +12,7 @@
 
 import logging
 
+from oslo.config import cfg
 import requests
 import six
 from six.moves import urllib
@@ -355,12 +356,26 @@ class Session(object):
         functionswithout session arguments.
 
         """
-        verify = kwargs.pop('verify', None)
-        cacert = kwargs.pop('cacert', None)
-        cert = kwargs.pop('cert', None)
-        key = kwargs.pop('key', None)
-        insecure = kwargs.pop('insecure', False)
+        params = {}
 
+        for attr in ('verify', 'cacert', 'cert', 'key', 'insecure',
+                     'timeout', 'session', 'original_ip', 'user_agent'):
+            try:
+                params[attr] = kwargs.pop(attr)
+            except KeyError:
+                pass
+
+        return cls._make(**params)
+
+    @classmethod
+    def _make(cls, insecure=False, verify=None, cacert=None, cert=None,
+              key=None, **kwargs):
+        """Create a session with individual certificate parameters.
+
+        Some parameters used to create a session don't lend themselves to be
+        loaded from config/CLI etc. Create a session by converting those
+        parameters into session __init__ parameters.
+        """
         if verify is None:
             if insecure:
                 verify = False
@@ -372,11 +387,7 @@ class Session(object):
             # requests lib form of having the cert and key as a tuple
             cert = (cert, key)
 
-        return cls(verify=verify, cert=cert,
-                   timeout=kwargs.pop('timeout', None),
-                   session=kwargs.pop('session', None),
-                   original_ip=kwargs.pop('original_ip', None),
-                   user_agent=kwargs.pop('user_agent', None))
+        return cls(verify=verify, cert=cert, **kwargs)
 
     def get_token(self, auth=None):
         """Return a token as provided by the auth plugin.
@@ -432,3 +443,106 @@ class Session(object):
             raise exceptions.MissingAuthPlugin(msg)
 
         return auth.invalidate()
+
+    @utils.positional.classmethod()
+    def get_conf_options(cls, deprecated_opts=None):
+        """Get the oslo.config options that are needed for a session.
+
+        These may be useful without being registered for config file generation
+        or to manipulate the options before registering them yourself.
+
+        The options that are set are:
+            :cafile: The certificate authority filename.
+            :certfile: The client certificate file to present.
+            :keyfile: The key for the client certificate.
+            :insecure: Whether to ignore SSL verification.
+            :timeout: The max time to wait for HTTP connections.
+
+        :param dict deprecated_opts: Deprecated options that should be included
+             in the definition of new options. This should be a dictionary from
+             the name of the new option to a list of oslo.DeprecatedOpts that
+             correspond to the new option. (optional)
+
+             Example to support the 'ca_file' option pointing to the new
+             'cafile' option name::
+
+                 old_opt = oslo.cfg.DeprecatedOpt('ca_file', 'old_group')
+                 deprecated_opts={'cafile': [old_opt]}
+
+        :returns: A list of oslo.config options.
+        """
+        if deprecated_opts is None:
+            deprecated_opts = {}
+
+        return [cfg.StrOpt('cafile',
+                           deprecated_opts=deprecated_opts.get('cafile'),
+                           help='PEM encoded Certificate Authority to use '
+                                'when verifying HTTPs connections.'),
+                cfg.StrOpt('certfile',
+                           deprecated_opts=deprecated_opts.get('certfile'),
+                           help='PEM encoded client certificate cert file'),
+                cfg.StrOpt('keyfile',
+                           deprecated_opts=deprecated_opts.get('keyfile'),
+                           help='PEM encoded client certificate key file'),
+                cfg.BoolOpt('insecure',
+                            default=False,
+                            deprecated_opts=deprecated_opts.get('insecure'),
+                            help='Verify HTTPS connections.'),
+                cfg.IntOpt('timeout',
+                           deprecated_opts=deprecated_opts.get('timeout'),
+                           help='Timeout value for http requests'),
+                ]
+
+    @utils.positional.classmethod()
+    def register_conf_options(cls, conf, group, deprecated_opts=None):
+        """Register the oslo.config options that are needed for a session.
+
+        The options that are set are:
+            :cafile: The certificate authority filename.
+            :certfile: The client certificate file to present.
+            :keyfile: The key for the client certificate.
+            :insecure: Whether to ignore SSL verification.
+            :timeout: The max time to wait for HTTP connections.
+
+        :param oslo.config.Cfg conf: config object to register with.
+        :param string group: The ini group to register options in.
+        :param dict deprecated_opts: Deprecated options that should be included
+             in the definition of new options. This should be a dictionary from
+             the name of the new option to a list of oslo.DeprecatedOpts that
+             correspond to the new option. (optional)
+
+             Example to support the 'ca_file' option pointing to the new
+             'cafile' option name::
+
+                 old_opt = oslo.cfg.DeprecatedOpt('ca_file', 'old_group')
+                 deprecated_opts={'cafile': [old_opt]}
+
+        :returns: The list of options that was registered.
+        """
+        opts = cls.get_conf_options(deprecated_opts=deprecated_opts)
+        conf.register_group(cfg.OptGroup(group))
+        conf.register_opts(opts, group=group)
+        return opts
+
+    @classmethod
+    def load_from_conf_options(cls, conf, group, **kwargs):
+        """Create a session object from an oslo.config object.
+
+        The options must have been previously registered with
+        register_conf_options.
+
+        :param oslo.config.Cfg conf: config object to register with.
+        :param string group: The ini group to register options in.
+        :param dict kwargs: Additional parameters to pass to session
+                            construction.
+        :returns: A new session object.
+        """
+        c = conf[group]
+
+        kwargs['insecure'] = c.insecure
+        kwargs['cacert'] = c.cafile
+        kwargs['cert'] = c.certfile
+        kwargs['key'] = c.keyfile
+        kwargs['timeout'] = c.timeout
+
+        return cls._make(**kwargs)
