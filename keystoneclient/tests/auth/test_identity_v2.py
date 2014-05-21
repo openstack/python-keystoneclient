@@ -12,11 +12,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import copy
+
 import httpretty
 from six.moves import urllib
 
 from keystoneclient.auth.identity import v2
 from keystoneclient import exceptions
+from keystoneclient.openstack.common import jsonutils
 from keystoneclient import session
 from keystoneclient.tests import utils
 
@@ -233,3 +236,26 @@ class V2IdentityPlugin(utils.TestCase):
 
         self.assertRaises(exceptions.InvalidResponse, s.get, 'http://any',
                           authenticated=True)
+
+    @httpretty.activate
+    def test_invalidate_response(self):
+        resp_data1 = copy.deepcopy(self.TEST_RESPONSE_DICT)
+        resp_data2 = copy.deepcopy(self.TEST_RESPONSE_DICT)
+
+        resp_data1['access']['token']['id'] = 'token1'
+        resp_data2['access']['token']['id'] = 'token2'
+
+        auth_responses = [httpretty.Response(body=jsonutils.dumps(resp_data1),
+                                             status=200),
+                          httpretty.Response(body=jsonutils.dumps(resp_data2),
+                                             status=200)]
+
+        self.stub_auth(responses=auth_responses)
+
+        a = v2.Password(self.TEST_URL, username=self.TEST_USER,
+                        password=self.TEST_PASS)
+        s = session.Session(auth=a)
+
+        self.assertEqual('token1', s.get_token())
+        a.invalidate()
+        self.assertEqual('token2', s.get_token())
