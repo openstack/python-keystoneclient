@@ -57,7 +57,7 @@ class OAuthManagerOptionalImportProxy(object):
     """
 
     def __getattribute__(self, name):
-        if name in ('access_tokens', 'comsumers', 'request_tokens'):
+        if name in ('access_tokens', 'consumers', 'request_tokens'):
             raise NotImplementedError(
                 'To use %r oauthlib must be installed' % name)
         return super(OAuthManagerOptionalImportProxy,
