@@ -20,6 +20,7 @@ from six.moves import urllib
 from keystoneclient import access
 from keystoneclient.auth.identity import v3
 from keystoneclient import exceptions
+from keystoneclient.openstack.common import jsonutils
 from keystoneclient import session
 from keystoneclient.tests import utils
 
@@ -388,3 +389,25 @@ class V3IdentityPlugin(utils.TestCase):
 
         self.assertRaises(exceptions.InvalidResponse, s.get, 'http://any',
                           authenticated=True)
+
+    @httpretty.activate
+    def test_invalidate_response(self):
+        body = jsonutils.dumps(self.TEST_RESPONSE_DICT)
+        auth_responses = [httpretty.Response(body=body,
+                                             X_Subject_Token='token1',
+                                             status=200),
+                          httpretty.Response(body=body,
+                                             X_Subject_Token='token2',
+                                             status=200)]
+
+        httpretty.register_uri(httpretty.POST,
+                               '%s/auth/tokens' % self.TEST_URL,
+                               responses=auth_responses)
+
+        a = v3.Password(self.TEST_URL, username=self.TEST_USER,
+                        password=self.TEST_PASS)
+        s = session.Session(auth=a)
+
+        self.assertEqual('token1', s.get_token())
+        a.invalidate()
+        self.assertEqual('token2', s.get_token())

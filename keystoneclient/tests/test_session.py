@@ -289,8 +289,9 @@ class AuthPlugin(base.BaseAuthPlugin):
                   'admin': 'http://image-admin:3333/v2.0'}
     }
 
-    def __init__(self, token=TEST_TOKEN):
+    def __init__(self, token=TEST_TOKEN, invalidate=True):
         self.token = token
+        self._invalidate = invalidate
 
     def get_token(self, session):
         return self.token
@@ -302,14 +303,19 @@ class AuthPlugin(base.BaseAuthPlugin):
         except (KeyError, AttributeError):
             return None
 
+    def invalidate(self):
+        return self._invalidate
+
 
 class CalledAuthPlugin(base.BaseAuthPlugin):
 
     ENDPOINT = 'http://fakeendpoint/'
 
-    def __init__(self):
+    def __init__(self, invalidate=True):
         self.get_token_called = False
         self.get_endpoint_called = False
+        self.invalidate_called = False
+        self._invalidate = invalidate
 
     def get_token(self, session):
         self.get_token_called = True
@@ -318,6 +324,10 @@ class CalledAuthPlugin(base.BaseAuthPlugin):
     def get_endpoint(self, session, **kwargs):
         self.get_endpoint_called = True
         return self.ENDPOINT
+
+    def invalidate(self):
+        self.invalidate_called = True
+        return self._invalidate
 
 
 class SessionAuthTests(utils.TestCase):
@@ -465,3 +475,34 @@ class SessionAuthTests(utils.TestCase):
                                            allow_redirects=mock.ANY,
                                            auth=requests_auth,
                                            verify=mock.ANY)
+
+    @httpretty.activate
+    def test_reauth_called(self):
+        auth = CalledAuthPlugin(invalidate=True)
+        sess = client_session.Session(auth=auth)
+
+        responses = [httpretty.Response(body='Failed', status=401),
+                     httpretty.Response(body='Hello', status=200)]
+        httpretty.register_uri(httpretty.GET, self.TEST_URL,
+                               responses=responses)
+
+        # allow_reauth=True is the default
+        resp = sess.get(self.TEST_URL, authenticated=True)
+
+        self.assertEqual(200, resp.status_code)
+        self.assertEqual('Hello', resp.text)
+        self.assertTrue(auth.invalidate_called)
+
+    @httpretty.activate
+    def test_reauth_not_called(self):
+        auth = CalledAuthPlugin(invalidate=True)
+        sess = client_session.Session(auth=auth)
+
+        responses = [httpretty.Response(body='Failed', status=401),
+                     httpretty.Response(body='Hello', status=200)]
+        httpretty.register_uri(httpretty.GET, self.TEST_URL,
+                               responses=responses)
+
+        self.assertRaises(exceptions.Unauthorized, sess.get, self.TEST_URL,
+                          authenticated=True, allow_reauth=False)
+        self.assertFalse(auth.invalidate_called)

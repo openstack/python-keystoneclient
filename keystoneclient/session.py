@@ -115,7 +115,7 @@ class Session(object):
     def request(self, url, method, json=None, original_ip=None,
                 user_agent=None, redirect=None, authenticated=None,
                 endpoint_filter=None, auth=None, requests_auth=None,
-                raise_exc=True, **kwargs):
+                raise_exc=True, allow_reauth=True, **kwargs):
         """Send an HTTP request with the specified characteristics.
 
         Wrapper around `requests.Session.request` to handle tasks such as
@@ -161,6 +161,9 @@ class Session(object):
         :param bool raise_exc: If True then raise an appropriate exception for
                                failed HTTP requests. If False then return the
                                request object. (optional, default True)
+        :param bool allow_reauth: Allow fetching a new token and retrying the
+                                  request on receiving a 401 Unauthorized
+                                  response. (optional, default True)
         :param kwargs: any other parameter that can be passed to
                        requests.Session.request (such as `headers`). Except:
                        'data' will be overwritten by the data in 'json' param.
@@ -255,6 +258,15 @@ class Session(object):
             redirect = self.redirect
 
         resp = self._send_request(url, method, redirect, **kwargs)
+
+        # handle getting a 401 Unauthorized response by invalidating the plugin
+        # and then retrying the request. This is only tried once.
+        if resp.status_code == 401 and authenticated and allow_reauth:
+            if self.invalidate(auth):
+                token = self.get_token(auth)
+                if token:
+                    headers['X-Auth-Token'] = token
+                    resp = self._send_request(url, method, redirect, **kwargs)
 
         if raise_exc and resp.status_code >= 400:
             _logger.debug('Request returned failure status: %s',
@@ -408,3 +420,15 @@ class Session(object):
                                                'determine the endpoint URL.')
 
         return auth.get_endpoint(self, **kwargs)
+
+    def invalidate(self, auth=None):
+        """Invalidate an authentication plugin.
+        """
+        if not auth:
+            auth = self.auth
+
+        if not auth:
+            msg = 'Auth plugin not available to invalidate'
+            raise exceptions.MissingAuthPlugin(msg)
+
+        return auth.invalidate()

@@ -124,3 +124,7 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
         return service_catalog.url_for(service_type=service_type,
                                        endpoint_type=interface,
                                        region_name=region_name)
+
+    def invalidate(self):
+        self.auth_ref = None
+        return True
