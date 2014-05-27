@@ -718,8 +718,7 @@ class CommonAuthTokenMiddlewareTest(object):
 
     def _get_cached_token(self, token):
         token_id = cms.cms_hash_token(token)
-        # NOTE(vish): example tokens are expired so skip the expiration check.
-        return self.middleware._cache_get(token_id, ignore_expires=True)
+        return self.middleware._cache_get(token_id)
 
     def test_memcache(self):
         # NOTE(jamielennox): it appears that httpretty can mess with the
