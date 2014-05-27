@@ -102,7 +102,7 @@ class S3Token(object):
         """Common initialization code."""
         self.app = app
         self.logger = logging.getLogger(conf.get('log_name', __name__))
-        self.logger.debug('Starting the %s component' % PROTOCOL_NAME)
+        self.logger.debug('Starting the %s component', PROTOCOL_NAME)
         self.reseller_prefix = conf.get('reseller_prefix', 'AUTH_')
         # where to find the auth service (we use this to validate tokens)
 
@@ -149,13 +149,13 @@ class S3Token(object):
                                      headers=headers, data=creds_json,
                                      verify=self.verify)
         except requests.exceptions.RequestException as e:
-            self.logger.info('HTTP connection exception: %s' % e)
+            self.logger.info('HTTP connection exception: %s', e)
             resp = self.deny_request('InvalidURI')
             raise ServiceError(resp)
 
         if response.status_code < 200 or response.status_code >= 300:
-            self.logger.debug('Keystone reply error: status=%s reason=%s' %
-                              (response.status_code, response.reason))
+            self.logger.debug('Keystone reply error: status=%s reason=%s',
+                              response.status_code, response.reason)
             resp = self.deny_request('AccessDenied')
             raise ServiceError(resp)
 
@@ -192,7 +192,7 @@ class S3Token(object):
             access, signature = auth_header.split(' ')[-1].rsplit(':', 1)
         except ValueError:
             msg = 'You have an invalid Authorization header: %s'
-            self.logger.debug(msg % (auth_header))
+            self.logger.debug(msg, auth_header)
             return self.deny_request('InvalidURI')(environ, start_response)
 
         # NOTE(chmou): This is to handle the special case with nova
@@ -215,7 +215,7 @@ class S3Token(object):
                                  'token': token,
                                  'signature': signature}}
         creds_json = jsonutils.dumps(creds)
-        self.logger.debug('Connecting to Keystone sending this JSON: %s' %
+        self.logger.debug('Connecting to Keystone sending this JSON: %s',
                           creds_json)
         # NOTE(vish): We could save a call to keystone by having
         #             keystone return token, tenant, user, and roles
@@ -230,11 +230,11 @@ class S3Token(object):
         except ServiceError as e:
             resp = e.args[0]
             msg = 'Received error, exiting middleware with error: %s'
-            self.logger.debug(msg % (resp.status_code))
+            self.logger.debug(msg, resp.status_code)
             return resp(environ, start_response)
 
-        self.logger.debug('Keystone Reply: Status: %d, Output: %s' % (
-                          resp.status_code, resp.content))
+        self.logger.debug('Keystone Reply: Status: %d, Output: %s',
+                          resp.status_code, resp.content)
 
         try:
             identity_info = resp.json()
@@ -242,12 +242,12 @@ class S3Token(object):
             tenant = identity_info['access']['token']['tenant']
         except (ValueError, KeyError):
             error = 'Error on keystone reply: %d %s'
-            self.logger.debug(error % (resp.status_code, str(resp.content)))
+            self.logger.debug(error, resp.status_code, resp.content)
             return self.deny_request('InvalidURI')(environ, start_response)
 
         req.headers['X-Auth-Token'] = token_id
         tenant_to_connect = force_tenant or tenant['id']
-        self.logger.debug('Connecting with tenant: %s' % (tenant_to_connect))
+        self.logger.debug('Connecting with tenant: %s', tenant_to_connect)
         new_tenant_name = '%s%s' % (self.reseller_prefix, tenant_to_connect)
         environ['PATH_INFO'] = environ['PATH_INFO'].replace(account,
                                                             new_tenant_name)

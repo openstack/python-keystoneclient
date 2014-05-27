@@ -443,8 +443,7 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
                         auth_ref = None
             except Exception as e:
                 auth_ref = None
-                _logger.warning('Unable to retrieve token from keyring %s' % (
-                    e))
+                _logger.warning('Unable to retrieve token from keyring %s', e)
         return (keyring_key, auth_ref)
 
     def store_auth_ref_into_keyring(self, keyring_key):
@@ -457,7 +456,7 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
                                      keyring_key,
                                      pickle.dumps(self.auth_ref))
             except Exception as e:
-                _logger.warning("Failed to store token into keyring %s" % (e))
+                _logger.warning("Failed to store token into keyring %s", e)
 
     def _process_management_url(self, region_name):
         try:
@@ -540,8 +539,8 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
                 body_resp = jsonutils.loads(resp.text)
             except (ValueError, TypeError):
                 body_resp = None
-                _logger.debug("Could not decode JSON from body: %s"
-                              % resp.text)
+                _logger.debug("Could not decode JSON from body: %s",
+                              resp.text)
         else:
             _logger.debug("No body was returned.")
             body_resp = None
