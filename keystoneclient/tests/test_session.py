@@ -10,6 +10,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import argparse
 import uuid
 
 import httpretty
@@ -661,3 +662,38 @@ class ConfLoadingTests(utils.TestCase):
         self.assertThat(opt_names, matchers.HasLength(len(opts)))
         for opt in opts:
             self.assertIn(depr[opt.name][0], opt.deprecated_opts)
+
+
+class CliLoadingTests(utils.TestCase):
+
+    def setUp(self):
+        super(CliLoadingTests, self).setUp()
+
+        self.parser = argparse.ArgumentParser()
+        client_session.Session.register_cli_options(self.parser)
+
+    def get_session(self, val, **kwargs):
+        args = self.parser.parse_args(val.split())
+        return client_session.Session.load_from_cli_options(args, **kwargs)
+
+    def test_insecure_timeout(self):
+        s = self.get_session('--insecure --timeout 5.5')
+
+        self.assertFalse(s.verify)
+        self.assertEqual(5.5, s.timeout)
+
+    def test_client_certs(self):
+        cert = '/path/to/certfile'
+        key = '/path/to/keyfile'
+
+        s = self.get_session('--os-cert %s --os-key %s' % (cert, key))
+
+        self.assertTrue(s.verify)
+        self.assertEqual((cert, key), s.cert)
+
+    def test_cacert(self):
+        cacert = '/path/to/cacert'
+
+        s = self.get_session('--os-cacert %s' % cacert)
+
+        self.assertEqual(cacert, s.verify)

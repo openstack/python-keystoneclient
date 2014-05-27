@@ -38,22 +38,9 @@ from keystoneclient.contrib.bootstrap import shell as shell_bootstrap
 from keystoneclient import exceptions as exc
 from keystoneclient.generic import shell as shell_generic
 from keystoneclient.openstack.common import strutils
+from keystoneclient import session
 from keystoneclient import utils
 from keystoneclient.v2_0 import shell as shell_v2_0
-
-
-def positive_non_zero_float(argument_value):
-    if argument_value is None:
-        return None
-    try:
-        value = float(argument_value)
-    except ValueError:
-        msg = "%s must be a float" % argument_value
-        raise argparse.ArgumentTypeError(msg)
-    if value <= 0:
-        msg = "%s must be greater than 0" % argument_value
-        raise argparse.ArgumentTypeError(msg)
-    return value
 
 
 def env(*vars, **kwargs):
@@ -103,12 +90,6 @@ class OpenStackIdentityShell(object):
                                  "this includes the curl request and response "
                                  "calls. Helpful for debugging and "
                                  "understanding the API calls.")
-
-        parser.add_argument('--timeout',
-                            default=600,
-                            type=positive_non_zero_float,
-                            metavar='<seconds>',
-                            help="Set request timeout (in seconds).")
 
         parser.add_argument('--os-username',
                             metavar='<auth-user-name>',
@@ -187,38 +168,6 @@ class OpenStackIdentityShell(object):
                                  '(via authentication). '
                                  'Defaults to env[OS_SERVICE_ENDPOINT].')
 
-        parser.add_argument('--os-cacert',
-                            metavar='<ca-certificate>',
-                            default=env('OS_CACERT', default=None),
-                            help='Specify a CA bundle file to use in '
-                                 'verifying a TLS (https) server certificate. '
-                                 'Defaults to env[OS_CACERT].')
-        parser.add_argument('--os_cacert',
-                            help=argparse.SUPPRESS)
-
-        parser.add_argument('--insecure',
-                            default=False,
-                            action="store_true",
-                            help='Explicitly allow keystoneclient to perform '
-                                 '"insecure" TLS (https) requests. The '
-                                 'server\'s certificate will not be verified '
-                                 'against any certificate authorities. This '
-                                 'option should be used with caution.')
-
-        parser.add_argument('--os-cert',
-                            metavar='<certificate>',
-                            default=env('OS_CERT'),
-                            help='Defaults to env[OS_CERT].')
-        parser.add_argument('--os_cert',
-                            help=argparse.SUPPRESS)
-
-        parser.add_argument('--os-key',
-                            metavar='<key>',
-                            default=env('OS_KEY'),
-                            help='Defaults to env[OS_KEY].')
-        parser.add_argument('--os_key',
-                            help=argparse.SUPPRESS)
-
         parser.add_argument('--os-cache',
                             default=env('OS_CACHE', default=False),
                             action='store_true',
@@ -226,6 +175,10 @@ class OpenStackIdentityShell(object):
                                  'Defaults to env[OS_CACHE].')
         parser.add_argument('--os_cache',
                             help=argparse.SUPPRESS)
+
+        parser.add_argument('--os_cacert', help=argparse.SUPPRESS)
+        parser.add_argument('--os_key', help=argparse.SUPPRESS)
+        parser.add_argument('--os_cert', help=argparse.SUPPRESS)
 
         parser.add_argument('--force-new-token',
                             default=False,
@@ -249,6 +202,7 @@ class OpenStackIdentityShell(object):
                                  "network delays. Default is %s seconds." %
                                  access.STALE_TOKEN_DURATION)
 
+        session.Session.register_cli_options(parser)
         return parser
 
     def get_subcommand_parser(self, version):

@@ -10,7 +10,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import argparse
 import logging
+import os
 
 from oslo.config import cfg
 import requests
@@ -25,6 +27,20 @@ from keystoneclient import utils
 USER_AGENT = 'python-keystoneclient'
 
 _logger = logging.getLogger(__name__)
+
+
+def _positive_non_zero_float(argument_value):
+    if argument_value is None:
+        return None
+    try:
+        value = float(argument_value)
+    except ValueError:
+        msg = "%s must be a float" % argument_value
+        raise argparse.ArgumentTypeError(msg)
+    if value <= 0:
+        msg = "%s must be greater than 0" % argument_value
+        raise argparse.ArgumentTypeError(msg)
+    return value
 
 
 def request(url, method='GET', **kwargs):
@@ -544,5 +560,61 @@ class Session(object):
         kwargs['cert'] = c.certfile
         kwargs['key'] = c.keyfile
         kwargs['timeout'] = c.timeout
+
+        return cls._make(**kwargs)
+
+    @staticmethod
+    def register_cli_options(parser):
+        """Register the argparse arguments that are needed for a session.
+
+        :param argparse.ArgumentParser parser: parser to add to.
+        """
+        parser.add_argument('--insecure',
+                            default=False,
+                            action='store_true',
+                            help='Explicitly allow client to perform '
+                                 '"insecure" TLS (https) requests. The '
+                                 'server\'s certificate will not be verified '
+                                 'against any certificate authorities. This '
+                                 'option should be used with caution.')
+
+        parser.add_argument('--os-cacert',
+                            metavar='<ca-certificate>',
+                            default=os.environ.get('OS_CACERT'),
+                            help='Specify a CA bundle file to use in '
+                                 'verifying a TLS (https) server certificate. '
+                                 'Defaults to env[OS_CACERT].')
+
+        parser.add_argument('--os-cert',
+                            metavar='<certificate>',
+                            default=os.environ.get('OS_CERT'),
+                            help='Defaults to env[OS_CERT].')
+
+        parser.add_argument('--os-key',
+                            metavar='<key>',
+                            default=os.environ.get('OS_KEY'),
+                            help='Defaults to env[OS_KEY].')
+
+        parser.add_argument('--timeout',
+                            default=600,
+                            type=_positive_non_zero_float,
+                            metavar='<seconds>',
+                            help='Set request timeout (in seconds).')
+
+    @classmethod
+    def load_from_cli_options(cls, args, **kwargs):
+        """Create a session object from CLI arguments.
+
+        The CLI arguments must have been registered with register_cli_options.
+
+        :param Namespace args: result of parsed arguments.
+
+        :returns: A new session object.
+        """
+        kwargs['insecure'] = args.insecure
+        kwargs['cacert'] = args.os_cacert
+        kwargs['cert'] = args.os_cert
+        kwargs['key'] = args.os_key
+        kwargs['timeout'] = args.timeout
 
         return cls._make(**kwargs)
