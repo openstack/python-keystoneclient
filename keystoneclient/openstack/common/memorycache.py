@@ -22,7 +22,6 @@ from keystoneclient.openstack.common import timeutils
 
 memcache_opts = [
     cfg.ListOpt('memcached_servers',
-                default=None,
                 help='Memcached servers or None for in process cache.'),
 ]
 

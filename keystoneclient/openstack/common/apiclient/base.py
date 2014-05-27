@@ -75,8 +75,8 @@ class HookableMixin(object):
 
         :param cls: class that registers hooks
         :param hook_type: hook type, e.g., '__pre_parse_args__'
-        :param **args: args to be passed to every hook function
-        :param **kwargs: kwargs to be passed to every hook function
+        :param args: args to be passed to every hook function
+        :param kwargs: kwargs to be passed to every hook function
         """
         hook_funcs = cls._hooks_map.get(hook_type) or []
         for hook_func in hook_funcs:
