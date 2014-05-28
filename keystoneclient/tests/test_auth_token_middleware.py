@@ -646,15 +646,70 @@ class CommonAuthTokenMiddlewareTest(object):
         self.middleware(req.environ, self.start_fake_response)
         self.assertEqual(self.response_status, 401)
 
+    def test_revoked_token_receives_401_sha256(self):
+        self.conf['hash_algorithms'] = ['sha256', 'md5']
+        self.set_middleware()
+        self.middleware.token_revocation_list = (
+            self.get_revocation_list_json(mode='sha256'))
+        req = webob.Request.blank('/')
+        req.headers['X-Auth-Token'] = self.token_dict['revoked_token']
+        self.middleware(req.environ, self.start_fake_response)
+        self.assertEqual(self.response_status, 401)
+
     def test_cached_revoked_pki(self):
         # When the PKI token is cached and revoked, 401 is returned.
         token = self.token_dict['signed_token_scoped']
         revoked_form = cms.cms_hash_token(token)
         self._test_cache_revoked(token, revoked_form)
 
-    def get_revocation_list_json(self, token_ids=None):
+    def test_revoked_token_receives_401_md5_secondary(self):
+        # When hash_algorithms has 'md5' as the secondary hash and the
+        # revocation list contains the md5 hash for a token, that token is
+        # considered revoked so returns 401.
+        self.conf['hash_algorithms'] = ['sha256', 'md5']
+        self.set_middleware()
+        self.middleware.token_revocation_list = self.get_revocation_list_json()
+        req = webob.Request.blank('/')
+        req.headers['X-Auth-Token'] = self.token_dict['revoked_token']
+        self.middleware(req.environ, self.start_fake_response)
+        self.assertEqual(self.response_status, 401)
+
+    def test_revoked_hashed_pki_token(self):
+        # If hash_algorithms is set as ['sha256', 'md5'],
+        # and check_revocations_for_cached is True,
+        # and a token is in the cache because it was successfully validated
+        # using the md5 hash, then
+        # if the token is in the revocation list by md5 hash, it'll be
+        # rejected and auth_token returns 401.
+        self.conf['hash_algorithms'] = ['sha256', 'md5']
+        self.conf['check_revocations_for_cached'] = True
+        self.set_middleware()
+
+        token = self.token_dict['signed_token_scoped']
+
+        # Put the token in the revocation list.
+        token_hashed = cms.cms_hash_token(token)
+        self.middleware.token_revocation_list = self.get_revocation_list_json(
+            token_ids=[token_hashed])
+
+        # First, request is using the hashed token, is valid so goes in
+        # cache using the given hash.
+        req = webob.Request.blank('/')
+        req.headers['X-Auth-Token'] = token_hashed
+        self.middleware(req.environ, self.start_fake_response)
+        self.assertEqual(200, self.response_status)
+
+        # This time use the PKI token
+        req.headers['X-Auth-Token'] = token
+        self.middleware(req.environ, self.start_fake_response)
+
+        # Should find the token in the cache and revocation list.
+        self.assertEqual(401, self.response_status)
+
+    def get_revocation_list_json(self, token_ids=None, mode=None):
         if token_ids is None:
-            token_ids = [self.token_dict['revoked_token_hash']]
+            key = 'revoked_token_hash' + (('_' + mode) if mode else '')
+            token_ids = [self.token_dict[key]]
         revocation_list = {'revoked': [{'id': x, 'expires': timeutils.utcnow()}
                                        for x in token_ids]}
         return jsonutils.dumps(revocation_list)
@@ -664,13 +719,22 @@ class CommonAuthTokenMiddlewareTest(object):
         self.middleware.token_revocation_list = jsonutils.dumps(
             {"revoked": [], "extra": "success"})
         result = self.middleware.is_signed_token_revoked(
-            self.token_dict['revoked_token_hash'])
+            [self.token_dict['revoked_token_hash']])
         self.assertFalse(result)
 
     def test_is_signed_token_revoked_returns_true(self):
         self.middleware.token_revocation_list = self.get_revocation_list_json()
         result = self.middleware.is_signed_token_revoked(
-            self.token_dict['revoked_token_hash'])
+            [self.token_dict['revoked_token_hash']])
+        self.assertTrue(result)
+
+    def test_is_signed_token_revoked_returns_true_sha256(self):
+        self.conf['hash_algorithms'] = ['sha256', 'md5']
+        self.set_middleware()
+        self.middleware.token_revocation_list = (
+            self.get_revocation_list_json(mode='sha256'))
+        result = self.middleware.is_signed_token_revoked(
+            [self.token_dict['revoked_token_hash_sha256']])
         self.assertTrue(result)
 
     def test_verify_signed_token_raises_exception_for_revoked_token(self):
@@ -678,7 +742,18 @@ class CommonAuthTokenMiddlewareTest(object):
         self.assertRaises(auth_token.InvalidUserToken,
                           self.middleware.verify_signed_token,
                           self.token_dict['revoked_token'],
-                          self.token_dict['revoked_token_hash'])
+                          [self.token_dict['revoked_token_hash']])
+
+    def test_verify_signed_token_raises_exception_for_revoked_token_s256(self):
+        self.conf['hash_algorithms'] = ['sha256', 'md5']
+        self.set_middleware()
+        self.middleware.token_revocation_list = (
+            self.get_revocation_list_json(mode='sha256'))
+        self.assertRaises(auth_token.InvalidUserToken,
+                          self.middleware.verify_signed_token,
+                          self.token_dict['revoked_token'],
+                          [self.token_dict['revoked_token_hash_sha256'],
+                           self.token_dict['revoked_token_hash']])
 
     def test_verify_signed_token_raises_exception_for_revoked_pkiz_token(self):
         self.middleware.token_revocation_list = (
@@ -686,7 +761,7 @@ class CommonAuthTokenMiddlewareTest(object):
         self.assertRaises(auth_token.InvalidUserToken,
                           self.middleware.verify_pkiz_token,
                           self.token_dict['revoked_token_pkiz'],
-                          self.token_dict['revoked_token_pkiz_hash'])
+                          [self.token_dict['revoked_token_pkiz_hash']])
 
     def assertIsValidJSON(self, text):
         json.loads(text)
@@ -695,14 +770,25 @@ class CommonAuthTokenMiddlewareTest(object):
         self.middleware.token_revocation_list = self.get_revocation_list_json()
         text = self.middleware.verify_signed_token(
             self.token_dict['signed_token_scoped'],
-            self.token_dict['signed_token_scoped_hash'])
+            [self.token_dict['signed_token_scoped_hash']])
         self.assertIsValidJSON(text)
 
     def test_verify_signed_compressed_token_succeeds_for_unrevoked_token(self):
         self.middleware.token_revocation_list = self.get_revocation_list_json()
         text = self.middleware.verify_pkiz_token(
             self.token_dict['signed_token_scoped_pkiz'],
-            self.token_dict['signed_token_scoped_hash'])
+            [self.token_dict['signed_token_scoped_hash']])
+        self.assertIsValidJSON(text)
+
+    def test_verify_signed_token_succeeds_for_unrevoked_token_sha256(self):
+        self.conf['hash_algorithms'] = ['sha256', 'md5']
+        self.set_middleware()
+        self.middleware.token_revocation_list = (
+            self.get_revocation_list_json(mode='sha256'))
+        text = self.middleware.verify_signed_token(
+            self.token_dict['signed_token_scoped'],
+            [self.token_dict['signed_token_scoped_hash_sha256'],
+             self.token_dict['signed_token_scoped_hash']])
         self.assertIsValidJSON(text)
 
     def test_verify_signing_dir_create_while_missing(self):
@@ -854,8 +940,8 @@ class CommonAuthTokenMiddlewareTest(object):
         self.assertEqual(self.response_headers['WWW-Authenticate'],
                          "Keystone uri='https://keystone.example.com:1234'")
 
-    def _get_cached_token(self, token):
-        token_id = cms.cms_hash_token(token)
+    def _get_cached_token(self, token, mode='md5'):
+        token_id = cms.cms_hash_token(token, mode=mode)
         return self.middleware._cache_get(token_id)
 
     def test_memcache(self):
@@ -887,13 +973,30 @@ class CommonAuthTokenMiddlewareTest(object):
         self.assertRaises(auth_token.InvalidUserToken,
                           self._get_cached_token, token)
 
-    def test_memcache_set_invalid_signed(self):
+    def _test_memcache_set_invalid_signed(self, hash_algorithms=None,
+                                          exp_mode='md5'):
         req = webob.Request.blank('/')
         token = self.token_dict['signed_token_scoped_expired']
         req.headers['X-Auth-Token'] = token
+        if hash_algorithms:
+            self.conf['hash_algorithms'] = hash_algorithms
+            self.set_middleware()
         self.middleware(req.environ, self.start_fake_response)
         self.assertRaises(auth_token.InvalidUserToken,
-                          self._get_cached_token, token)
+                          self._get_cached_token, token, mode=exp_mode)
+
+    def test_memcache_set_invalid_signed(self):
+        self._test_memcache_set_invalid_signed()
+
+    def test_memcache_set_invalid_signed_sha256_md5(self):
+        hash_algorithms = ['sha256', 'md5']
+        self._test_memcache_set_invalid_signed(hash_algorithms=hash_algorithms,
+                                               exp_mode='sha256')
+
+    def test_memcache_set_invalid_signed_sha256(self):
+        hash_algorithms = ['sha256']
+        self._test_memcache_set_invalid_signed(hash_algorithms=hash_algorithms,
+                                               exp_mode='sha256')
 
     def test_memcache_set_expired(self, extra_conf={}, extra_environ={}):
         httpretty.disable()
@@ -1169,7 +1272,7 @@ class V2CertDownloadMiddlewareTest(BaseAuthTokenMiddlewareTest,
         self.assertRaises(exceptions.CertificateConfigError,
                           self.middleware.verify_signed_token,
                           self.examples.SIGNED_TOKEN_SCOPED,
-                          self.examples.SIGNED_TOKEN_SCOPED_HASH)
+                          [self.examples.SIGNED_TOKEN_SCOPED_HASH])
 
     def test_fetch_signing_cert(self):
         data = 'FAKE CERT'
@@ -1296,6 +1399,8 @@ class v2AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
             'signed_token_scoped': self.examples.SIGNED_TOKEN_SCOPED,
             'signed_token_scoped_pkiz': self.examples.SIGNED_TOKEN_SCOPED_PKIZ,
             'signed_token_scoped_hash': self.examples.SIGNED_TOKEN_SCOPED_HASH,
+            'signed_token_scoped_hash_sha256':
+            self.examples.SIGNED_TOKEN_SCOPED_HASH_SHA256,
             'signed_token_scoped_expired':
             self.examples.SIGNED_TOKEN_SCOPED_EXPIRED,
             'revoked_token': self.examples.REVOKED_TOKEN,
@@ -1303,6 +1408,8 @@ class v2AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
             'revoked_token_pkiz_hash':
             self.examples.REVOKED_TOKEN_PKIZ_HASH,
             'revoked_token_hash': self.examples.REVOKED_TOKEN_HASH,
+            'revoked_token_hash_sha256':
+            self.examples.REVOKED_TOKEN_HASH_SHA256,
         }
 
         httpretty.reset()
@@ -1327,7 +1434,8 @@ class v2AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
                       self.examples.UUID_TOKEN_UNSCOPED,
                       self.examples.UUID_TOKEN_BIND,
                       self.examples.UUID_TOKEN_UNKNOWN_BIND,
-                      self.examples.UUID_TOKEN_NO_SERVICE_CATALOG):
+                      self.examples.UUID_TOKEN_NO_SERVICE_CATALOG,
+                      self.examples.SIGNED_TOKEN_SCOPED_KEY,):
             httpretty.register_uri(httpretty.GET,
                                    "%s/v2.0/tokens/%s" % (BASE_URI, token),
                                    body=
@@ -1485,11 +1593,15 @@ class v3AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
             self.examples.SIGNED_v3_TOKEN_SCOPED_PKIZ,
             'signed_token_scoped_hash':
             self.examples.SIGNED_v3_TOKEN_SCOPED_HASH,
+            'signed_token_scoped_hash_sha256':
+            self.examples.SIGNED_v3_TOKEN_SCOPED_HASH_SHA256,
             'signed_token_scoped_expired':
             self.examples.SIGNED_TOKEN_SCOPED_EXPIRED,
             'revoked_token': self.examples.REVOKED_v3_TOKEN,
             'revoked_token_pkiz': self.examples.REVOKED_v3_TOKEN_PKIZ,
             'revoked_token_hash': self.examples.REVOKED_v3_TOKEN_HASH,
+            'revoked_token_hash_sha256':
+            self.examples.REVOKED_v3_TOKEN_HASH_SHA256,
             'revoked_token_pkiz_hash':
             self.examples.REVOKED_v3_PKIZ_TOKEN_HASH,
         }

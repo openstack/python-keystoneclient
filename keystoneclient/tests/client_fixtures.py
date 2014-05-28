@@ -66,12 +66,16 @@ class Examples(fixtures.Fixture):
             self.SIGNED_TOKEN_SCOPED = cms.cms_to_token(f.read())
         self.SIGNED_TOKEN_SCOPED_HASH = _hash_signed_token_safe(
             self.SIGNED_TOKEN_SCOPED)
+        self.SIGNED_TOKEN_SCOPED_HASH_SHA256 = _hash_signed_token_safe(
+            self.SIGNED_TOKEN_SCOPED, mode='sha256')
         with open(os.path.join(CMSDIR, 'auth_token_unscoped.pem')) as f:
             self.SIGNED_TOKEN_UNSCOPED = cms.cms_to_token(f.read())
         with open(os.path.join(CMSDIR, 'auth_v3_token_scoped.pem')) as f:
             self.SIGNED_v3_TOKEN_SCOPED = cms.cms_to_token(f.read())
         self.SIGNED_v3_TOKEN_SCOPED_HASH = _hash_signed_token_safe(
             self.SIGNED_v3_TOKEN_SCOPED)
+        self.SIGNED_v3_TOKEN_SCOPED_HASH_SHA256 = _hash_signed_token_safe(
+            self.SIGNED_v3_TOKEN_SCOPED, mode='sha256')
         with open(os.path.join(CMSDIR, 'auth_token_revoked.pem')) as f:
             self.REVOKED_TOKEN = cms.cms_to_token(f.read())
         with open(os.path.join(CMSDIR, 'auth_token_scoped_expired.pem')) as f:
@@ -126,6 +130,8 @@ class Examples(fixtures.Fixture):
         if isinstance(revoked_token, six.text_type):
             revoked_token = revoked_token.encode('utf-8')
         self.REVOKED_TOKEN_HASH = utils.hash_signed_token(revoked_token)
+        self.REVOKED_TOKEN_HASH_SHA256 = utils.hash_signed_token(revoked_token,
+                                                                 mode='sha256')
         self.REVOKED_TOKEN_LIST = (
             {'revoked': [{'id': self.REVOKED_TOKEN_HASH,
                           'expires': timeutils.utcnow()}]})
@@ -135,6 +141,8 @@ class Examples(fixtures.Fixture):
         if isinstance(revoked_v3_token, six.text_type):
             revoked_v3_token = revoked_v3_token.encode('utf-8')
         self.REVOKED_v3_TOKEN_HASH = utils.hash_signed_token(revoked_v3_token)
+        hash = utils.hash_signed_token(revoked_v3_token, mode='sha256')
+        self.REVOKED_v3_TOKEN_HASH_SHA256 = hash
         self.REVOKED_v3_TOKEN_LIST = (
             {'revoked': [{'id': self.REVOKED_v3_TOKEN_HASH,
                           'expires': timeutils.utcnow()}]})
