@@ -166,7 +166,6 @@ from keystoneclient.middleware import memcache_crypt
 from keystoneclient.openstack.common import jsonutils
 from keystoneclient.openstack.common import memorycache
 from keystoneclient.openstack.common import timeutils
-from keystoneclient import utils
 
 
 # alternative middleware configuration in the main application's
@@ -914,10 +913,10 @@ class AuthProtocol(object):
                         raise InvalidUserToken(
                             'Token authorization failed')
             elif cms.is_pkiz(user_token):
-                verified = self.verify_pkiz_token(user_token)
+                verified = self.verify_pkiz_token(user_token, token_id)
                 data = jsonutils.loads(verified)
             elif cms.is_asn1_token(user_token):
-                verified = self.verify_signed_token(user_token)
+                verified = self.verify_signed_token(user_token, token_id)
                 data = jsonutils.loads(verified)
             else:
                 data = self.verify_uuid_token(user_token, retry)
@@ -1250,11 +1249,8 @@ class AuthProtocol(object):
 
             raise InvalidUserToken()
 
-    def is_signed_token_revoked(self, signed_text):
+    def is_signed_token_revoked(self, token_id):
         """Indicate whether the token appears in the revocation list."""
-        if isinstance(signed_text, six.text_type):
-            signed_text = signed_text.encode('utf-8')
-        token_id = utils.hash_signed_token(signed_text)
         is_revoked = self._is_token_id_in_revoked_list(token_id)
         if is_revoked:
             self.LOG.debug('Token is marked as having been revoked')
@@ -1301,17 +1297,17 @@ class AuthProtocol(object):
                 self.LOG.error('CMS Verify output: %s', err.output)
                 raise
 
-    def verify_signed_token(self, signed_text):
+    def verify_signed_token(self, signed_text, token_id):
         """Check that the token is unrevoked and has a valid signature."""
-        if self.is_signed_token_revoked(signed_text):
+        if self.is_signed_token_revoked(token_id):
             raise InvalidUserToken('Token has been revoked')
 
         formatted = cms.token_to_cms(signed_text)
         verified = self.cms_verify(formatted)
         return verified
 
-    def verify_pkiz_token(self, signed_text):
-        if self.is_signed_token_revoked(signed_text):
+    def verify_pkiz_token(self, signed_text, token_id):
+        if self.is_signed_token_revoked(token_id):
             raise InvalidUserToken('Token has been revoked')
         try:
             uncompressed = cms.pkiz_uncompress(signed_text)

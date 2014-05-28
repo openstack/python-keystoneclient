@@ -664,27 +664,29 @@ class CommonAuthTokenMiddlewareTest(object):
         self.middleware.token_revocation_list = jsonutils.dumps(
             {"revoked": [], "extra": "success"})
         result = self.middleware.is_signed_token_revoked(
-            self.token_dict['revoked_token'])
+            self.token_dict['revoked_token_hash'])
         self.assertFalse(result)
 
     def test_is_signed_token_revoked_returns_true(self):
         self.middleware.token_revocation_list = self.get_revocation_list_json()
         result = self.middleware.is_signed_token_revoked(
-            self.token_dict['revoked_token'])
+            self.token_dict['revoked_token_hash'])
         self.assertTrue(result)
 
     def test_verify_signed_token_raises_exception_for_revoked_token(self):
         self.middleware.token_revocation_list = self.get_revocation_list_json()
         self.assertRaises(auth_token.InvalidUserToken,
                           self.middleware.verify_signed_token,
-                          self.token_dict['revoked_token'])
+                          self.token_dict['revoked_token'],
+                          self.token_dict['revoked_token_hash'])
 
     def test_verify_signed_token_raises_exception_for_revoked_pkiz_token(self):
         self.middleware.token_revocation_list = (
             self.examples.REVOKED_TOKEN_PKIZ_LIST_JSON)
         self.assertRaises(auth_token.InvalidUserToken,
                           self.middleware.verify_pkiz_token,
-                          self.token_dict['revoked_token_pkiz'])
+                          self.token_dict['revoked_token_pkiz'],
+                          self.token_dict['revoked_token_pkiz_hash'])
 
     def assertIsValidJSON(self, text):
         json.loads(text)
@@ -692,13 +694,15 @@ class CommonAuthTokenMiddlewareTest(object):
     def test_verify_signed_token_succeeds_for_unrevoked_token(self):
         self.middleware.token_revocation_list = self.get_revocation_list_json()
         text = self.middleware.verify_signed_token(
-            self.token_dict['signed_token_scoped'])
+            self.token_dict['signed_token_scoped'],
+            self.token_dict['signed_token_scoped_hash'])
         self.assertIsValidJSON(text)
 
     def test_verify_signed_compressed_token_succeeds_for_unrevoked_token(self):
         self.middleware.token_revocation_list = self.get_revocation_list_json()
         text = self.middleware.verify_pkiz_token(
-            self.token_dict['signed_token_scoped_pkiz'])
+            self.token_dict['signed_token_scoped_pkiz'],
+            self.token_dict['signed_token_scoped_hash'])
         self.assertIsValidJSON(text)
 
     def test_verify_signing_dir_create_while_missing(self):
@@ -1164,7 +1168,8 @@ class V2CertDownloadMiddlewareTest(BaseAuthTokenMiddlewareTest,
                                status=404)
         self.assertRaises(exceptions.CertificateConfigError,
                           self.middleware.verify_signed_token,
-                          self.examples.SIGNED_TOKEN_SCOPED)
+                          self.examples.SIGNED_TOKEN_SCOPED,
+                          self.examples.SIGNED_TOKEN_SCOPED_HASH)
 
     def test_fetch_signing_cert(self):
         data = 'FAKE CERT'
@@ -1290,11 +1295,14 @@ class v2AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
             'uuid_token_unknown_bind': self.examples.UUID_TOKEN_UNKNOWN_BIND,
             'signed_token_scoped': self.examples.SIGNED_TOKEN_SCOPED,
             'signed_token_scoped_pkiz': self.examples.SIGNED_TOKEN_SCOPED_PKIZ,
+            'signed_token_scoped_hash': self.examples.SIGNED_TOKEN_SCOPED_HASH,
             'signed_token_scoped_expired':
             self.examples.SIGNED_TOKEN_SCOPED_EXPIRED,
             'revoked_token': self.examples.REVOKED_TOKEN,
             'revoked_token_pkiz': self.examples.REVOKED_TOKEN_PKIZ,
-            'revoked_token_hash': self.examples.REVOKED_TOKEN_HASH
+            'revoked_token_pkiz_hash':
+            self.examples.REVOKED_TOKEN_PKIZ_HASH,
+            'revoked_token_hash': self.examples.REVOKED_TOKEN_HASH,
         }
 
         httpretty.reset()
@@ -1475,11 +1483,15 @@ class v3AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
             'signed_token_scoped': self.examples.SIGNED_v3_TOKEN_SCOPED,
             'signed_token_scoped_pkiz':
             self.examples.SIGNED_v3_TOKEN_SCOPED_PKIZ,
+            'signed_token_scoped_hash':
+            self.examples.SIGNED_v3_TOKEN_SCOPED_HASH,
             'signed_token_scoped_expired':
             self.examples.SIGNED_TOKEN_SCOPED_EXPIRED,
             'revoked_token': self.examples.REVOKED_v3_TOKEN,
             'revoked_token_pkiz': self.examples.REVOKED_v3_TOKEN_PKIZ,
-            'revoked_token_hash': self.examples.REVOKED_v3_TOKEN_HASH
+            'revoked_token_hash': self.examples.REVOKED_v3_TOKEN_HASH,
+            'revoked_token_pkiz_hash':
+            self.examples.REVOKED_v3_PKIZ_TOKEN_HASH,
         }
 
         httpretty.reset()
