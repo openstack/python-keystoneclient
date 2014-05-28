@@ -97,8 +97,8 @@ class Client(httpclient.HTTPClient):
         """Initialize a new client for the Keystone v3 API."""
         super(Client, self).__init__(**kwargs)
 
-        self.role_assignments = role_assignments.RoleAssignmentManager(self)
         self.credentials = credentials.CredentialManager(self)
+        self.endpoint_filter = endpoint_filter.EndpointFilterManager(self)
         self.endpoints = endpoints.EndpointManager(self)
         self.domains = domains.DomainManager(self)
         self.federation = federation.FederationManager(self)
@@ -107,11 +107,11 @@ class Client(httpclient.HTTPClient):
         self.policies = policies.PolicyManager(self)
         self.projects = projects.ProjectManager(self)
         self.regions = regions.RegionManager(self)
+        self.role_assignments = role_assignments.RoleAssignmentManager(self)
         self.roles = roles.RoleManager(self)
         self.services = services.ServiceManager(self)
         self.users = users.UserManager(self)
         self.trusts = trusts.TrustManager(self)
-        self.endpoint_filter = endpoint_filter.EndpointFilterManager(self)
 
         # DEPRECATED: if session is passed then we go to the new behaviour of
         # authenticating on the first required call.
