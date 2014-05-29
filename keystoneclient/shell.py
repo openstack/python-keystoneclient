@@ -384,6 +384,8 @@ class OpenStackIdentityShell(object):
 
         if args.debug:
             logging_level = logging.DEBUG
+            iso_logger = logging.getLogger('iso8601')
+            iso_logger.setLevel('WARN')
         else:
             logging_level = logging.WARNING
 
