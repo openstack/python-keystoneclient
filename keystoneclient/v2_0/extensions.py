@@ -25,5 +25,5 @@ class ExtensionManager(base.ManagerWithFind):
     resource_class = Extension
 
     def list(self):
-        """List all available extentions."""
+        """List all available extensions."""
         return self._list('/extensions', 'extensions')
