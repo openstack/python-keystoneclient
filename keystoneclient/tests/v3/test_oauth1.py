@@ -260,7 +260,7 @@ class AuthenticateWithOAuthTests(TokenTests):
                        access_secret=access_secret)
         s = session.Session(auth=a)
         t = s.get_token()
-        self.assertEqual(t, self.TEST_TOKEN)
+        self.assertEqual(self.TEST_TOKEN, t)
 
         OAUTH_REQUEST_BODY = {
             "auth": {
@@ -285,9 +285,6 @@ class AuthenticateWithOAuthTests(TokenTests):
 
 
 class TestOAuthLibModule(utils.TestCase):
-
-    def setUp(self):
-        super(TestOAuthLibModule, self).setUp()
 
     def test_no_oauthlib_installed(self):
         with mock.patch.object(auth, 'oauth1', None):
