@@ -10,6 +10,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import errno
 import os
 import subprocess
 
@@ -77,8 +78,6 @@ class CMSTest(utils.TestCase, testresources.ResourcedTestCase):
                           '/no/such/file', '/no/such/key')
 
     def test_cms_verify_token_no_oserror(self):
-        import errno
-
         def raise_OSError(*args):
             e = OSError()
             e.errno = errno.EPIPE
@@ -87,11 +86,11 @@ class CMSTest(utils.TestCase, testresources.ResourcedTestCase):
         with mock.patch('subprocess.Popen.communicate', new=raise_OSError):
             try:
                 cms.cms_verify("x", '/no/such/file', '/no/such/key')
-            except subprocess.CalledProcessError as e:
+            except exceptions.CertificateConfigError as e:
                 self.assertIn('/no/such/file', e.output)
                 self.assertIn('Hit OSError ', e.output)
             else:
-                self.fail('Expected subprocess.CalledProcessError')
+                self.fail('Expected exceptions.CertificateConfigError')
 
     def test_cms_verify_token_scoped(self):
         cms_content = cms.token_to_cms(self.examples.SIGNED_TOKEN_SCOPED)

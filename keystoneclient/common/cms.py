@@ -65,6 +65,7 @@ def set_subprocess(_subprocess=None):
 
 def _check_files_accessible(files):
     err = None
+    retcode = -1
     try:
         for try_file in files:
             with open(try_file, 'r'):
@@ -74,8 +75,19 @@ def _check_files_accessible(files):
         # the given file.
         err = ('Hit OSError in _process_communicate_handle_oserror()\n'
                'Likely due to %s: %s') % (try_file, e.strerror)
+        # Emulate openssl behavior, which returns with code 2 when
+        # access to a file failed:
 
-    return err
+        # You can get more from
+        # http://www.openssl.org/docs/apps/cms.html#EXIT_CODES
+        #
+        # $ openssl cms -verify -certfile not_exist_file -CAfile \
+        #       not_exist_file -inform PEM -nosmimecap -nodetach \
+        #       -nocerts -noattr
+        # Error opening certificate file not_exist_file
+        retcode = 2
+
+    return retcode, err
 
 
 def _process_communicate_handle_oserror(process, data, files):
@@ -91,12 +103,11 @@ def _process_communicate_handle_oserror(process, data, files):
 
         # The quick exit is typically caused by the openssl command not being
         # able to read an input file, so check ourselves if can't read a file.
-        err = _check_files_accessible(files)
+        retcode, err = _check_files_accessible(files)
         if process.stderr:
             msg = process.stderr.read()
             err = err + msg.decode('utf-8')
         output = ''
-        retcode = -1
     else:
         retcode = process.poll()
         if err is not None:
