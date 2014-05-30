@@ -28,6 +28,7 @@ import iso8601
 import mock
 import testresources
 import testtools
+from testtools import matchers
 import webob
 
 from keystoneclient import access
@@ -1904,7 +1905,8 @@ class TokenExpirationTest(BaseAuthTokenMiddlewareTest):
         some_time_earlier = timeutils.strtime(at=(self.now - self.delta))
         expires = some_time_earlier
         self.middleware._token_cache.store(token, data, expires)
-        self.assertIsNone(self.middleware._token_cache._cache_get(token))
+        self.assertThat(lambda: self.middleware._token_cache._cache_get(token),
+                        matchers.raises(auth_token.InvalidUserToken))
 
     def test_cached_token_with_timezone_offset_not_expired(self):
         token = 'mytoken'
@@ -1926,7 +1928,8 @@ class TokenExpirationTest(BaseAuthTokenMiddlewareTest):
         some_time_earlier = self.now - timezone_offset - self.delta
         expires = timeutils.strtime(some_time_earlier) + '-02:00'
         self.middleware._token_cache.store(token, data, expires)
-        self.assertIsNone(self.middleware._token_cache._cache_get(token))
+        self.assertThat(lambda: self.middleware._token_cache._cache_get(token),
+                        matchers.raises(auth_token.InvalidUserToken))
 
 
 class CatalogConversionTests(BaseAuthTokenMiddlewareTest):
