@@ -13,6 +13,7 @@ The main concepts in the Identity v3 API are:
  * groups
  * policies
  * projects
+ * role assignments
  * roles
  * services
  * trusts
