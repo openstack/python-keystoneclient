@@ -74,7 +74,8 @@ class TrustManager(base.CrudManager):
             **kwargs)
 
     def update(self):
-        raise exceptions.HttpNotImplemented("Update not supported for trusts")
+        raise exceptions.MethodNotImplemented('Update not supported'
+                                              ' for trusts')
 
     def list(self, trustee_user=None, trustor_user=None, **kwargs):
         """List Trusts."""

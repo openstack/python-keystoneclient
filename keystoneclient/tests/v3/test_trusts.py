@@ -105,4 +105,4 @@ class TrustTests(utils.TestCase, utils.CrudTests):
 
     def test_update(self):
         # Update not supported for the OS-TRUST API
-        self.assertRaises(exceptions.HttpNotImplemented, self.manager.update)
+        self.assertRaises(exceptions.MethodNotImplemented, self.manager.update)
