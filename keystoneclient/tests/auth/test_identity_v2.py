@@ -175,7 +175,9 @@ class V2IdentityPlugin(utils.TestCase):
         self.assertEqual(httpretty.last_request().path, path)
 
     def test_service_url(self):
-        endpoint_filter = {'service_type': 'compute', 'interface': 'admin'}
+        endpoint_filter = {'service_type': 'compute',
+                           'interface': 'admin',
+                           'service_name': 'nova'}
         self._do_service_url_test('http://nova/novapi/admin', endpoint_filter)
 
     def test_service_url_defaults_to_public(self):

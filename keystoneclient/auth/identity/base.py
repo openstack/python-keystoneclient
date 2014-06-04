@@ -92,7 +92,7 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
         return self.auth_ref
 
     def get_endpoint(self, session, service_type=None, interface=None,
-                     region_name=None, **kwargs):
+                     region_name=None, service_name=None, **kwargs):
         """Return a valid endpoint for a service.
 
         If a valid token is not present then a new one will be fetched using
@@ -105,6 +105,8 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
                                  `public`, `internal` or `admin`.
                                  Defaults to `public`.
         :param string region_name: The region the endpoint should exist in.
+                                   (optional)
+        :param string service_name: The name of the service in the catalog.
                                    (optional)
 
         :raises HttpError: An error from an invalid HTTP response.
@@ -123,7 +125,8 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
         service_catalog = self.get_access(session).service_catalog
         return service_catalog.url_for(service_type=service_type,
                                        endpoint_type=interface,
-                                       region_name=region_name)
+                                       region_name=region_name,
+                                       service_name=service_name)
 
     def invalidate(self):
         self.auth_ref = None
