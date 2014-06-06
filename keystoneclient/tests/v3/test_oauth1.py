@@ -29,6 +29,7 @@ from keystoneclient.v3.contrib.oauth1 import consumers
 from keystoneclient.v3.contrib.oauth1 import request_tokens
 
 try:
+    import oauthlib
     from oauthlib import oauth1
 except ImportError:
     oauth1 = None
@@ -102,7 +103,14 @@ class TokenTests(BaseTest):
 
         self.assertThat(auth_header, matchers.StartsWith('OAuth '))
         auth_header = auth_header[len('OAuth '):]
-        header_params = oauth_client.get_oauth_params()
+        # NOTE(stevemar): In newer versions of oauthlib there is
+        # an additional argument for getting oauth parameters.
+        # Adding a conditional here to revert back to no arguments
+        # if an earlier version is detected.
+        if tuple(oauthlib.__version__.split('.')) > ('0', '6', '1'):
+            header_params = oauth_client.get_oauth_params(None)
+        else:
+            header_params = oauth_client.get_oauth_params()
         parameters = dict(header_params)
 
         self.assertEqual('HMAC-SHA1', parameters['oauth_signature_method'])
