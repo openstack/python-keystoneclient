@@ -10,6 +10,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import uuid
+
 import httpretty
 
 from keystoneclient import exceptions
@@ -20,6 +22,12 @@ from keystoneclient.v2_0 import tenants
 class TenantTests(utils.TestCase):
     def setUp(self):
         super(TenantTests, self).setUp()
+
+        self.INVIS_ID = uuid.uuid4().hex
+        self.DEMO_ID = uuid.uuid4().hex
+        self.ADMIN_ID = uuid.uuid4().hex
+        self.EXTRAS_ID = uuid.uuid4().hex
+
         self.TEST_TENANTS = {
             "tenants": {
                 "values": [
@@ -27,26 +35,26 @@ class TenantTests(utils.TestCase):
                         "enabled": True,
                         "description": "A description change!",
                         "name": "invisible_to_admin",
-                        "id": 3,
+                        "id": self.INVIS_ID,
                     },
                     {
                         "enabled": True,
                         "description": "None",
                         "name": "demo",
-                        "id": 2,
+                        "id": self.DEMO_ID,
                     },
                     {
                         "enabled": True,
                         "description": "None",
                         "name": "admin",
-                        "id": 1,
+                        "id": self.ADMIN_ID,
                     },
                     {
                         "extravalue01": "metadata01",
                         "enabled": True,
                         "description": "For testing extras",
                         "name": "test_extras",
-                        "id": 4,
+                        "id": self.EXTRAS_ID,
                     }
                 ],
                 "links": [],
@@ -63,11 +71,12 @@ class TenantTests(utils.TestCase):
                 "extravalue01": "metadata01",
             },
         }
+        id_ = uuid.uuid4().hex
         resp_body = {
             "tenant": {
                 "name": "tenantX",
                 "enabled": True,
-                "id": 4,
+                "id": id_,
                 "description": "Like tenant 9, but better.",
                 "extravalue01": "metadata01",
             }
@@ -81,7 +90,7 @@ class TenantTests(utils.TestCase):
             extravalue01=req_body['tenant']['extravalue01'],
             name="don't overwrite priors")
         self.assertIsInstance(tenant, tenants.Tenant)
-        self.assertEqual(tenant.id, 4)
+        self.assertEqual(tenant.id, id_)
         self.assertEqual(tenant.name, "tenantX")
         self.assertEqual(tenant.description, "Like tenant 9, but better.")
         self.assertEqual(tenant.extravalue01, "metadata01")
@@ -114,17 +123,17 @@ class TenantTests(utils.TestCase):
 
     @httpretty.activate
     def test_delete(self):
-        self.stub_url(httpretty.DELETE, ['tenants', '1'], status=204)
-        self.client.tenants.delete(1)
+        self.stub_url(httpretty.DELETE, ['tenants', self.ADMIN_ID], status=204)
+        self.client.tenants.delete(self.ADMIN_ID)
 
     @httpretty.activate
     def test_get(self):
         resp = {'tenant': self.TEST_TENANTS['tenants']['values'][2]}
-        self.stub_url(httpretty.GET, ['tenants', '1'], json=resp)
+        self.stub_url(httpretty.GET, ['tenants', self.ADMIN_ID], json=resp)
 
-        t = self.client.tenants.get(1)
+        t = self.client.tenants.get(self.ADMIN_ID)
         self.assertIsInstance(t, tenants.Tenant)
-        self.assertEqual(t.id, 1)
+        self.assertEqual(t.id, self.ADMIN_ID)
         self.assertEqual(t.name, 'admin')
 
     @httpretty.activate
@@ -162,7 +171,7 @@ class TenantTests(utils.TestCase):
     def test_update(self):
         req_body = {
             "tenant": {
-                "id": 4,
+                "id": self.EXTRAS_ID,
                 "name": "tenantX",
                 "description": "I changed you!",
                 "enabled": False,
@@ -174,13 +183,14 @@ class TenantTests(utils.TestCase):
             "tenant": {
                 "name": "tenantX",
                 "enabled": False,
-                "id": 4,
+                "id": self.EXTRAS_ID,
                 "description": "I changed you!",
                 "extravalue01": "metadataChanged",
             },
         }
 
-        self.stub_url(httpretty.POST, ['tenants', '4'], json=resp_body)
+        self.stub_url(httpretty.POST, ['tenants', self.EXTRAS_ID],
+                      json=resp_body)
 
         tenant = self.client.tenants.update(
             req_body['tenant']['id'],
@@ -191,7 +201,7 @@ class TenantTests(utils.TestCase):
             name="don't overwrite priors")
         self.assertIsInstance(tenant, tenants.Tenant)
         self.assertRequestBodyIs(json=req_body)
-        self.assertEqual(tenant.id, 4)
+        self.assertEqual(tenant.id, self.EXTRAS_ID)
         self.assertEqual(tenant.name, "tenantX")
         self.assertEqual(tenant.description, "I changed you!")
         self.assertFalse(tenant.enabled)
@@ -201,7 +211,7 @@ class TenantTests(utils.TestCase):
     def test_update_empty_description(self):
         req_body = {
             "tenant": {
-                "id": 4,
+                "id": self.EXTRAS_ID,
                 "name": "tenantX",
                 "description": "",
                 "enabled": False,
@@ -211,11 +221,12 @@ class TenantTests(utils.TestCase):
             "tenant": {
                 "name": "tenantX",
                 "enabled": False,
-                "id": 4,
+                "id": self.EXTRAS_ID,
                 "description": "",
             },
         }
-        self.stub_url(httpretty.POST, ['tenants', '4'], json=resp_body)
+        self.stub_url(httpretty.POST, ['tenants', self.EXTRAS_ID],
+                      json=resp_body)
 
         tenant = self.client.tenants.update(req_body['tenant']['id'],
                                             req_body['tenant']['name'],
@@ -223,35 +234,37 @@ class TenantTests(utils.TestCase):
                                             req_body['tenant']['enabled'])
         self.assertIsInstance(tenant, tenants.Tenant)
         self.assertRequestBodyIs(json=req_body)
-        self.assertEqual(tenant.id, 4)
+        self.assertEqual(tenant.id, self.EXTRAS_ID)
         self.assertEqual(tenant.name, "tenantX")
         self.assertEqual(tenant.description, "")
         self.assertFalse(tenant.enabled)
 
     @httpretty.activate
     def test_add_user(self):
-        self.stub_url(httpretty.PUT, ['tenants', '4', 'users', 'foo', 'roles',
-                                      'OS-KSADM', 'barrr'], status=204)
+        self.stub_url(httpretty.PUT,
+                      ['tenants', self.EXTRAS_ID, 'users', 'foo', 'roles',
+                       'OS-KSADM', 'barrr'],
+                      status=204)
 
-        self.client.tenants.add_user('4', 'foo', 'barrr')
+        self.client.tenants.add_user(self.EXTRAS_ID, 'foo', 'barrr')
 
     @httpretty.activate
     def test_remove_user(self):
-        self.stub_url(httpretty.DELETE, ['tenants', '4', 'users', 'foo',
-                                         'roles', 'OS-KSADM', 'barrr'],
+        self.stub_url(httpretty.DELETE, ['tenants', self.EXTRAS_ID, 'users',
+                                         'foo', 'roles', 'OS-KSADM', 'barrr'],
                       status=204)
 
-        self.client.tenants.remove_user('4', 'foo', 'barrr')
+        self.client.tenants.remove_user(self.EXTRAS_ID, 'foo', 'barrr')
 
     @httpretty.activate
     def test_tenant_add_user(self):
-        self.stub_url(httpretty.PUT, ['tenants', '4', 'users', 'foo', 'roles',
-                                      'OS-KSADM', 'barrr'],
+        self.stub_url(httpretty.PUT, ['tenants', self.EXTRAS_ID, 'users',
+                                      'foo', 'roles', 'OS-KSADM', 'barrr'],
                       status=204)
 
         req_body = {
             "tenant": {
-                "id": 4,
+                "id": self.EXTRAS_ID,
                 "name": "tenantX",
                 "description": "I changed you!",
                 "enabled": False,
@@ -265,13 +278,13 @@ class TenantTests(utils.TestCase):
 
     @httpretty.activate
     def test_tenant_remove_user(self):
-        self.stub_url(httpretty.DELETE, ['tenants', '4', 'users', 'foo',
-                                         'roles', 'OS-KSADM', 'barrr'],
+        self.stub_url(httpretty.DELETE, ['tenants', self.EXTRAS_ID, 'users',
+                                         'foo', 'roles', 'OS-KSADM', 'barrr'],
                       status=204)
 
         req_body = {
             "tenant": {
-                "id": 4,
+                "id": self.EXTRAS_ID,
                 "name": "tenantX",
                 "description": "I changed you!",
                 "enabled": False,
