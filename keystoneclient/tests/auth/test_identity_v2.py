@@ -142,10 +142,6 @@ class V2IdentityPlugin(utils.TestCase):
         self.assertRequestHeaderEqual('Accept', 'application/json')
         self.assertEqual(s.auth.auth_ref.auth_token, self.TEST_TOKEN)
 
-    def test_missing_auth_params(self):
-        self.assertRaises(exceptions.NoMatchingPlugin, v2.Auth._factory,
-                          self.TEST_URL)
-
     @httpretty.activate
     def test_with_trust_id(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)

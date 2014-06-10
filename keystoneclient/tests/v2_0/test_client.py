@@ -154,3 +154,9 @@ class KeystoneClientTest(utils.TestCase):
                            region_name='South')
         self.assertEqual(cl.service_catalog.url_for(service_type='image'),
                          'https://image.south.host/v1/')
+
+    def test_client_without_auth_params(self):
+        self.assertRaises(exceptions.AuthorizationFailure,
+                          client.Client,
+                          tenant_name='exampleproject',
+                          auth_url=self.TEST_URL)
