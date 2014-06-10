@@ -29,3 +29,11 @@ class Token(base.BaseAuthPlugin):
 
     def get_token(self, session):
         return self.token
+
+    def get_endpoint(self, session, **kwargs):
+        """Return the supplied endpoint.
+
+        Using this plugin the same endpoint is returned regardless of the
+        parameters passed to the plugin.
+        """
+        return self.endpoint
