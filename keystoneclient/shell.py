@@ -99,7 +99,10 @@ class OpenStackIdentityShell(object):
         parser.add_argument('--debug',
                             default=False,
                             action='store_true',
-                            help=argparse.SUPPRESS)
+                            help="Prints debugging output onto the console, "
+                                 "this includes the curl request and response "
+                                 "calls. Helpful for debugging and "
+                                 "understanding the API calls.")
 
         parser.add_argument('--timeout',
                             default=600,
