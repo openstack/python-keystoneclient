@@ -119,3 +119,50 @@ UNSCOPED_TOKEN = {
         }
     }
 }
+
+PROJECTS = {
+    "projects": [
+        {
+            "domain_id": "37ef61",
+            "enabled": 'true',
+            "id": "12d706",
+            "links": {
+                "self": "http://identity:35357/v3/projects/12d706"
+            },
+            "name": "a project name"
+        },
+        {
+            "domain_id": "37ef61",
+            "enabled": 'true',
+            "id": "9ca0eb",
+            "links": {
+                "self": "http://identity:35357/v3/projects/9ca0eb"
+            },
+            "name": "another project"
+        }
+    ],
+    "links": {
+        "self": "http://identity:35357/v3/OS-FEDERATION/projects",
+        "previous": 'null',
+        "next": 'null'
+    }
+}
+
+DOMAINS = {
+    "domains": [
+        {
+            "description": "desc of domain",
+            "enabled": 'true',
+            "id": "37ef61",
+            "links": {
+                "self": "http://identity:35357/v3/domains/37ef61"
+            },
+            "name": "my domain"
+        }
+    ],
+    "links": {
+        "self": "http://identity:35357/v3/OS-FEDERATION/domains",
+        "previous": 'null',
+        "next": 'null'
+    }
+}

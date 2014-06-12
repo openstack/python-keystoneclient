@@ -141,7 +141,7 @@ class Saml2UnscopedToken(v3.AuthConstructor):
 
     def _first(self, _list):
         if len(_list) != 1:
-            raise IndexError("Only single element list can be flatten")
+            raise IndexError("Only single element is acceptable")
         return _list[0]
 
     def _prepare_idp_saml2_request(self, saml2_authn_request):
@@ -409,3 +409,27 @@ class Saml2UnscopedToken(v3.AuthConstructor):
         token, token_json = self._get_unscoped_token(session, **kwargs)
         return access.AccessInfoV3(token,
                                    **token_json)
+
+
+class Saml2ScopedTokenMethod(v3.TokenMethod):
+    _method_name = 'saml2'
+
+    def get_auth_data(self, session, auth, headers, **kwargs):
+        """Build and return request body for token scoping step."""
+
+        t = super(Saml2ScopedTokenMethod, self).get_auth_data(
+            session, auth, headers, **kwargs)
+        _token_method, token = t
+        return self._method_name, token
+
+
+class Saml2ScopedToken(v3.Token):
+    """Class for scoping unscoped saml2 token."""
+
+    _auth_method_class = Saml2ScopedTokenMethod
+
+    def __init__(self, auth_url, token, **kwargs):
+        super(Saml2ScopedToken, self).__init__(auth_url, token, **kwargs)
+        if not (self.project_id or self.domain_id):
+            raise exceptions.ValidationError(
+                'Neither project nor domain specified')
