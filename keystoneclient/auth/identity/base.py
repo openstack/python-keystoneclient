@@ -97,6 +97,18 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
         return self.auth_ref
 
     def invalidate(self):
+        """Invalidate the current authentication data.
+
+        This should result in fetching a new token on next call.
+
+        A plugin may be invalidated if an Unauthorized HTTP response is
+        returned to indicate that the token may have been revoked or is
+        otherwise now invalid.
+
+        :returns bool: True if there was something that the plugin did to
+                       invalidate. This means that it makes sense to try again.
+                       If nothing happens returns False to indicate give up.
+        """
         self.auth_ref = None
         return True
 
