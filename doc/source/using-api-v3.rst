@@ -19,13 +19,13 @@ The main concepts in the Identity v3 API are:
  * trusts
  * users
 
-The ``keystoneclient.v3.client`` API lets you query and make changes
+The :py:mod:`keystoneclient.v3.client` API lets you query and make changes
 through ``managers``. For example, to manipulate a project (formerly
 called tenant), you interact with a
-``keystoneclient.v3.projects.ProjectManager`` object.
+:py:class:`keystoneclient.v3.projects.ProjectManager` object.
 
 You obtain access to managers through attributes of a
-``keystoneclient.v3.client.Client`` object. For example, the
+:py:class:`keystoneclient.v3.client.Client` object. For example, the
 ``projects`` attribute of a ``Client`` object is a projects manager::
 
     >>> from keystoneclient.v3 import client
@@ -33,10 +33,11 @@ You obtain access to managers through attributes of a
     >>> keystone.projects.list() # List projects
 
 While it is possible to instantiate a
-``keystoneclient.v3.client.Client`` object (as done above for
+:py:class:`keystoneclient.v3.client.Client` object (as done above for
 clarity), the recommended approach is to use the discovery mechanism
-provided by the ``keystone.client.Client`` class. The appropriate
-class will be instantiated depending on the API versions available::
+provided by the :py:class:`keystoneclient.client.Client` class. The
+appropriate class will be instantiated depending on the API versions
+available::
 
     >>> from keystoneclient import client
     >>> keystone =
@@ -70,13 +71,14 @@ as the auth_url keyword argument::
     >>> type(keystone)
     <class 'keystoneclient.v3.client.Client'>
 
-Upon successful authentication, a ``keystoneclient.v3.client.Client``
+Upon successful authentication, a :py:class:`keystoneclient.v3.client.Client`
 object is returned (when using the Identity v3 API). Authentication and
 examples of common tasks are provided below.
 
 You can generally expect that when the client needs to propagate an
 exception it will raise an instance of subclass of
-``keystoneclient.exceptions.ClientException``
+``keystoneclient.exceptions.ClientException`` (see
+:py:class:`keystoneclient.openstack.common.apiclient.exceptions.ClientException`)
 
 Authenticating
 ==============
