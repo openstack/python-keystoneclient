@@ -11,8 +11,8 @@
 # under the License.
 
 """
-The generators in this directory produce keystone compliant tokens for use in
-testing.
+The generators in this directory produce keystone compliant structures for use
+in testing.
 
 They should be considered part of the public API because they may be relied
 upon to generate test tokens for other clients. However they should never be
@@ -21,8 +21,15 @@ may be dependencies from this module on libraries that are only available in
 testing.
 """
 
+from keystoneclient.fixture.discovery import *  # noqa
 from keystoneclient.fixture.exception import FixtureValidationError  # noqa
 from keystoneclient.fixture.v2 import Token as V2Token  # noqa
 from keystoneclient.fixture.v3 import Token as V3Token  # noqa
 
-__all__ = ['V2Token', 'V3Token', 'FixtureValidationError']
+__all__ = ['DiscoveryList',
+           'FixtureValidationError',
+           'V2Discovery',
+           'V3Discovery',
+           'V2Token',
+           'V3Token',
+           ]

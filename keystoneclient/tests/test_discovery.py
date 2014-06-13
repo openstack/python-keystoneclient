@@ -18,6 +18,7 @@ from keystoneclient import _discover
 from keystoneclient import client
 from keystoneclient import discover
 from keystoneclient import exceptions
+from keystoneclient import fixture
 from keystoneclient.openstack.common import jsonutils
 from keystoneclient.tests import utils
 from keystoneclient.v2_0 import client as v2_client
@@ -76,20 +77,8 @@ TEST_SERVICE_CATALOG = [{
 }]
 
 V2_URL = "%sv2.0" % BASE_URL
-V2_DESCRIBED_BY_HTML = {'href': 'http://docs.openstack.org/api/'
-                                'openstack-identity-service/2.0/content/',
-                        'rel': 'describedby',
-                        'type': 'text/html'}
-V2_DESCRIBED_BY_PDF = {'href': 'http://docs.openstack.org/api/openstack-ident'
-                               'ity-service/2.0/identity-dev-guide-2.0.pdf',
-                       'rel': 'describedby',
-                       'type': 'application/pdf'}
-
-V2_VERSION = {'id': 'v2.0',
-              'links': [{'href': V2_URL, 'rel': 'self'},
-                        V2_DESCRIBED_BY_HTML, V2_DESCRIBED_BY_PDF],
-              'status': 'stable',
-              'updated': UPDATED}
+V2_VERSION = fixture.V2Discovery(V2_URL)
+V2_VERSION.updated_str = UPDATED
 
 V2_AUTH_RESPONSE = jsonutils.dumps({
     "access": {
@@ -108,16 +97,9 @@ V2_AUTH_RESPONSE = jsonutils.dumps({
 })
 
 V3_URL = "%sv3" % BASE_URL
-V3_MEDIA_TYPES = [{'base': 'application/json',
-                   'type': 'application/vnd.openstack.identity-v3+json'},
-                  {'base': 'application/xml',
-                   'type': 'application/vnd.openstack.identity-v3+xml'}]
-
-V3_VERSION = {'id': 'v3.0',
-              'links': [{'href': V3_URL, 'rel': 'self'}],
-              'media-types': V3_MEDIA_TYPES,
-              'status': 'stable',
-              'updated': UPDATED}
+V3_VERSION = fixture.V3Discovery(V3_URL)
+V3_MEDIA_TYPES = V3_VERSION.media_types
+V3_VERSION.updated_str = UPDATED
 
 V3_TOKEN = six.u('3e2813b7ba0b4006840c3825860b86ed'),
 V3_AUTH_RESPONSE = jsonutils.dumps({
@@ -434,12 +416,9 @@ class ClientDiscoveryTests(utils.TestCase):
         self.assertVersionNotAvailable(auth_url=V3_URL, version=2)
 
     def test_discover_unstable_versions(self):
-        v3_unstable_version = V3_VERSION.copy()
-        v3_unstable_version['status'] = 'beta'
-        version_list = _create_version_list([v3_unstable_version, V2_VERSION])
-
+        version_list = fixture.DiscoveryList(BASE_URL, v3_status='beta')
         httpretty.register_uri(httpretty.GET, BASE_URL, status=300,
-                               body=version_list)
+                               body=jsonutils.dumps(version_list))
 
         self.assertCreatesV2(auth_url=BASE_URL)
         self.assertVersionNotAvailable(auth_url=BASE_URL, version=3)
@@ -489,23 +468,15 @@ class ClientDiscoveryTests(utils.TestCase):
         self.assertCreatesV2(auth_url=BASE_URL)
 
     def test_greater_version_than_required(self):
-        resp = [{'id': 'v3.6',
-                 'links': [{'href': V3_URL, 'rel': 'self'}],
-                 'media-types': V3_MEDIA_TYPES,
-                 'status': 'stable',
-                 'updated': UPDATED}]
+        versions = fixture.DiscoveryList(BASE_URL, v3_id='v3.6')
         httpretty.register_uri(httpretty.GET, BASE_URL, status=200,
-                               body=_create_version_list(resp))
+                               body=jsonutils.dumps(versions))
         self.assertCreatesV3(auth_url=BASE_URL, version=(3, 4))
 
     def test_lesser_version_than_required(self):
-        resp = [{'id': 'v3.4',
-                 'links': [{'href': V3_URL, 'rel': 'self'}],
-                 'media-types': V3_MEDIA_TYPES,
-                 'status': 'stable',
-                 'updated': UPDATED}]
+        versions = fixture.DiscoveryList(BASE_URL, v3_id='v3.4')
         httpretty.register_uri(httpretty.GET, BASE_URL, status=200,
-                               body=_create_version_list(resp))
+                               body=jsonutils.dumps(versions))
         self.assertVersionNotAvailable(auth_url=BASE_URL, version=(3, 6))
 
     def test_bad_response(self):
@@ -557,12 +528,23 @@ class ClientDiscoveryTests(utils.TestCase):
                       'media-types': V3_MEDIA_TYPES,
                       'status': 'stable',
                       'updated': UPDATED}
-        body = _create_version_list([V4_VERSION, V3_VERSION, V2_VERSION])
-        httpretty.register_uri(httpretty.GET, BASE_URL, status=300, body=body)
+        versions = fixture.DiscoveryList()
+        versions.add_version(V4_VERSION)
+        httpretty.register_uri(httpretty.GET, BASE_URL, status=300,
+                               body=jsonutils.dumps(versions))
 
         disc = discover.Discover(auth_url=BASE_URL)
         self.assertRaises(exceptions.DiscoveryFailure,
                           disc.create_client, version=4)
+
+    def test_discovery_fail_for_missing_v3(self):
+        versions = fixture.DiscoveryList(v2=True, v3=False)
+        httpretty.register_uri(httpretty.GET, BASE_URL, status=300,
+                               body=jsonutils.dumps(versions))
+
+        disc = discover.Discover(auth_url=BASE_URL)
+        self.assertRaises(exceptions.DiscoveryFailure,
+                          disc.create_client, version=(3, 0))
 
 
 @httpretty.activate
@@ -715,13 +697,10 @@ class DiscoverQueryTests(utils.TestCase):
 
     def test_allow_unknown(self):
         status = 'abcdef'
-        version_list = [{'id': 'v3.0',
-                         'links': [{'href': V3_URL, 'rel': 'self'}],
-                         'media-types': V3_MEDIA_TYPES,
-                         'status': status,
-                         'updated': UPDATED}]
-        body = jsonutils.dumps({'versions': version_list})
-        httpretty.register_uri(httpretty.GET, BASE_URL, status=200, body=body)
+        version_list = fixture.DiscoveryList(BASE_URL, v2=False,
+                                             v3_status=status)
+        httpretty.register_uri(httpretty.GET, BASE_URL, status=200,
+                               body=jsonutils.dumps(version_list))
 
         disc = discover.Discover(auth_url=BASE_URL)
 

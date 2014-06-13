@@ -64,37 +64,9 @@ FAKE_ADMIN_TOKEN = jsonutils.dumps(
                           'expires': '2022-10-03T16:58:01Z'}}})
 
 
-VERSION_LIST_v3 = jsonutils.dumps({
-    "versions": {
-        "values": [
-            {
-                "id": "v3.0",
-                "status": "stable",
-                "updated": "2013-03-06T00:00:00Z",
-                "links": [{'href': '%s/v3' % BASE_URI, 'rel': 'self'}]
-            },
-            {
-                "id": "v2.0",
-                "status": "stable",
-                "updated": "2011-11-19T00:00:00Z",
-                "links": [{'href': '%s/v2.0' % BASE_URI, 'rel': 'self'}]
-            }
-        ]
-    }
-})
-
-VERSION_LIST_v2 = jsonutils.dumps({
-    "versions": {
-        "values": [
-            {
-                "id": "v2.0",
-                "status": "stable",
-                "updated": "2011-11-19T00:00:00Z",
-                "links": []
-            }
-        ]
-    }
-})
+VERSION_LIST_v2 = jsonutils.dumps(fixture.DiscoveryList(href=BASE_URI,
+                                                        v3=False))
+VERSION_LIST_v3 = jsonutils.dumps(fixture.DiscoveryList(href=BASE_URI))
 
 ERROR_TOKEN = '7ae290c2a06244c4b41692eb4e9225f2'
 MEMCACHED_SERVERS = ['localhost:11211']
