@@ -12,8 +12,6 @@
 
 import uuid
 
-import httpretty
-
 from keystoneclient import exceptions
 from keystoneclient import fixture
 from keystoneclient.tests.v2_0 import utils
@@ -64,7 +62,6 @@ class TenantTests(utils.TestCase):
             },
         }
 
-    @httpretty.activate
     def test_create(self):
         req_body = {
             "tenant": {
@@ -84,7 +81,7 @@ class TenantTests(utils.TestCase):
                 "extravalue01": "metadata01",
             }
         }
-        self.stub_url(httpretty.POST, ['tenants'], json=resp_body)
+        self.stub_url('POST', ['tenants'], json=resp_body)
 
         tenant = self.client.tenants.create(
             req_body['tenant']['name'],
@@ -99,7 +96,6 @@ class TenantTests(utils.TestCase):
         self.assertEqual(tenant.extravalue01, "metadata01")
         self.assertRequestBodyIs(json=req_body)
 
-    @httpretty.activate
     def test_duplicate_create(self):
         req_body = {
             "tenant": {
@@ -115,7 +111,7 @@ class TenantTests(utils.TestCase):
                 "title": "Conflict",
             }
         }
-        self.stub_url(httpretty.POST, ['tenants'], status=409, json=resp_body)
+        self.stub_url('POST', ['tenants'], status_code=409, json=resp_body)
 
         def create_duplicate_tenant():
             self.client.tenants.create(req_body['tenant']['name'],
@@ -124,53 +120,46 @@ class TenantTests(utils.TestCase):
 
         self.assertRaises(exceptions.Conflict, create_duplicate_tenant)
 
-    @httpretty.activate
     def test_delete(self):
-        self.stub_url(httpretty.DELETE, ['tenants', self.ADMIN_ID], status=204)
+        self.stub_url('DELETE', ['tenants', self.ADMIN_ID], status_code=204)
         self.client.tenants.delete(self.ADMIN_ID)
 
-    @httpretty.activate
     def test_get(self):
         resp = {'tenant': self.TEST_TENANTS['tenants']['values'][2]}
-        self.stub_url(httpretty.GET, ['tenants', self.ADMIN_ID], json=resp)
+        self.stub_url('GET', ['tenants', self.ADMIN_ID], json=resp)
 
         t = self.client.tenants.get(self.ADMIN_ID)
         self.assertIsInstance(t, tenants.Tenant)
         self.assertEqual(t.id, self.ADMIN_ID)
         self.assertEqual(t.name, 'admin')
 
-    @httpretty.activate
     def test_list(self):
-        self.stub_url(httpretty.GET, ['tenants'], json=self.TEST_TENANTS)
+        self.stub_url('GET', ['tenants'], json=self.TEST_TENANTS)
 
         tenant_list = self.client.tenants.list()
         [self.assertIsInstance(t, tenants.Tenant) for t in tenant_list]
 
-    @httpretty.activate
     def test_list_limit(self):
-        self.stub_url(httpretty.GET, ['tenants'], json=self.TEST_TENANTS)
+        self.stub_url('GET', ['tenants'], json=self.TEST_TENANTS)
 
         tenant_list = self.client.tenants.list(limit=1)
         self.assertQueryStringIs('limit=1')
         [self.assertIsInstance(t, tenants.Tenant) for t in tenant_list]
 
-    @httpretty.activate
     def test_list_marker(self):
-        self.stub_url(httpretty.GET, ['tenants'], json=self.TEST_TENANTS)
+        self.stub_url('GET', ['tenants'], json=self.TEST_TENANTS)
 
         tenant_list = self.client.tenants.list(marker=1)
         self.assertQueryStringIs('marker=1')
         [self.assertIsInstance(t, tenants.Tenant) for t in tenant_list]
 
-    @httpretty.activate
     def test_list_limit_marker(self):
-        self.stub_url(httpretty.GET, ['tenants'], json=self.TEST_TENANTS)
+        self.stub_url('GET', ['tenants'], json=self.TEST_TENANTS)
 
         tenant_list = self.client.tenants.list(limit=1, marker=1)
         self.assertQueryStringIs('marker=1&limit=1')
         [self.assertIsInstance(t, tenants.Tenant) for t in tenant_list]
 
-    @httpretty.activate
     def test_update(self):
         req_body = {
             "tenant": {
@@ -192,8 +181,7 @@ class TenantTests(utils.TestCase):
             },
         }
 
-        self.stub_url(httpretty.POST, ['tenants', self.EXTRAS_ID],
-                      json=resp_body)
+        self.stub_url('POST', ['tenants', self.EXTRAS_ID], json=resp_body)
 
         tenant = self.client.tenants.update(
             req_body['tenant']['id'],
@@ -210,7 +198,6 @@ class TenantTests(utils.TestCase):
         self.assertFalse(tenant.enabled)
         self.assertEqual(tenant.extravalue01, "metadataChanged")
 
-    @httpretty.activate
     def test_update_empty_description(self):
         req_body = {
             "tenant": {
@@ -228,8 +215,7 @@ class TenantTests(utils.TestCase):
                 "description": "",
             },
         }
-        self.stub_url(httpretty.POST, ['tenants', self.EXTRAS_ID],
-                      json=resp_body)
+        self.stub_url('POST', ['tenants', self.EXTRAS_ID], json=resp_body)
 
         tenant = self.client.tenants.update(req_body['tenant']['id'],
                                             req_body['tenant']['name'],
@@ -242,28 +228,25 @@ class TenantTests(utils.TestCase):
         self.assertEqual(tenant.description, "")
         self.assertFalse(tenant.enabled)
 
-    @httpretty.activate
     def test_add_user(self):
-        self.stub_url(httpretty.PUT,
+        self.stub_url('PUT',
                       ['tenants', self.EXTRAS_ID, 'users', 'foo', 'roles',
                        'OS-KSADM', 'barrr'],
-                      status=204)
+                      status_code=204)
 
         self.client.tenants.add_user(self.EXTRAS_ID, 'foo', 'barrr')
 
-    @httpretty.activate
     def test_remove_user(self):
-        self.stub_url(httpretty.DELETE, ['tenants', self.EXTRAS_ID, 'users',
-                                         'foo', 'roles', 'OS-KSADM', 'barrr'],
-                      status=204)
+        self.stub_url('DELETE', ['tenants', self.EXTRAS_ID, 'users',
+                                 'foo', 'roles', 'OS-KSADM', 'barrr'],
+                      status_code=204)
 
         self.client.tenants.remove_user(self.EXTRAS_ID, 'foo', 'barrr')
 
-    @httpretty.activate
     def test_tenant_add_user(self):
-        self.stub_url(httpretty.PUT, ['tenants', self.EXTRAS_ID, 'users',
-                                      'foo', 'roles', 'OS-KSADM', 'barrr'],
-                      status=204)
+        self.stub_url('PUT', ['tenants', self.EXTRAS_ID, 'users',
+                              'foo', 'roles', 'OS-KSADM', 'barrr'],
+                      status_code=204)
 
         req_body = {
             "tenant": {
@@ -279,11 +262,10 @@ class TenantTests(utils.TestCase):
         tenant.add_user('foo', 'barrr')
         self.assertIsInstance(tenant, tenants.Tenant)
 
-    @httpretty.activate
     def test_tenant_remove_user(self):
-        self.stub_url(httpretty.DELETE, ['tenants', self.EXTRAS_ID, 'users',
-                                         'foo', 'roles', 'OS-KSADM', 'barrr'],
-                      status=204)
+        self.stub_url('DELETE', ['tenants', self.EXTRAS_ID, 'users',
+                                 'foo', 'roles', 'OS-KSADM', 'barrr'],
+                      status_code=204)
 
         req_body = {
             "tenant": {
@@ -300,7 +282,6 @@ class TenantTests(utils.TestCase):
         tenant.remove_user('foo', 'barrr')
         self.assertIsInstance(tenant, tenants.Tenant)
 
-    @httpretty.activate
     def test_tenant_list_users(self):
         tenant_id = uuid.uuid4().hex
         user_id1 = uuid.uuid4().hex
@@ -334,8 +315,8 @@ class TenantTests(utils.TestCase):
             }
         }
 
-        self.stub_url(httpretty.GET, ['tenants', tenant_id], json=tenant_resp)
-        self.stub_url(httpretty.GET,
+        self.stub_url('GET', ['tenants', tenant_id], json=tenant_resp)
+        self.stub_url('GET',
                       ['tenants', tenant_id, 'users'],
                       json=users_resp)
 
@@ -348,9 +329,8 @@ class TenantTests(utils.TestCase):
         self.assertEqual(set([user_id1, user_id2]),
                          set([u.id for u in user_objs]))
 
-    @httpretty.activate
     def test_list_tenants_use_admin_url(self):
-        self.stub_url(httpretty.GET, ['tenants'], json=self.TEST_TENANTS)
+        self.stub_url('GET', ['tenants'], json=self.TEST_TENANTS)
 
         self.assertEqual(self.TEST_URL, self.client.management_url)
 
@@ -360,7 +340,6 @@ class TenantTests(utils.TestCase):
         self.assertEqual(len(self.TEST_TENANTS['tenants']['values']),
                          len(tenant_list))
 
-    @httpretty.activate
     def test_list_tenants_fallback_to_auth_url(self):
         new_auth_url = 'http://keystone.test:5000/v2.0'
 
@@ -369,7 +348,7 @@ class TenantTests(utils.TestCase):
                                 user_id=self.TEST_USER_ID)
 
         self.stub_auth(base_url=new_auth_url, json=token)
-        self.stub_url(httpretty.GET, ['tenants'], base_url=new_auth_url,
+        self.stub_url('GET', ['tenants'], base_url=new_auth_url,
                       json=self.TEST_TENANTS)
 
         c = client.Client(username=self.TEST_USER,

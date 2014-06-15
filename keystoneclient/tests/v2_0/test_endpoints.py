@@ -12,8 +12,6 @@
 
 import uuid
 
-import httpretty
-
 from keystoneclient.tests.v2_0 import utils
 from keystoneclient.v2_0 import endpoints
 
@@ -40,7 +38,6 @@ class EndpointTests(utils.TestCase):
             ]
         }
 
-    @httpretty.activate
     def test_create_with_optional_params(self):
         req_body = {
             "endpoint": {
@@ -62,7 +59,7 @@ class EndpointTests(utils.TestCase):
             }
         }
 
-        self.stub_url(httpretty.POST, ['endpoints'], json=resp_body)
+        self.stub_url('POST', ['endpoints'], json=resp_body)
 
         endpoint = self.client.endpoints.create(
             region=req_body['endpoint']['region'],
@@ -74,7 +71,6 @@ class EndpointTests(utils.TestCase):
         self.assertIsInstance(endpoint, endpoints.Endpoint)
         self.assertRequestBodyIs(json=req_body)
 
-    @httpretty.activate
     def test_create_with_optional_params_as_none(self):
         req_body_without_defaults = {
             "endpoint": {
@@ -96,7 +92,7 @@ class EndpointTests(utils.TestCase):
             }
         }
 
-        self.stub_url(httpretty.POST, ['endpoints'], json=resp_body)
+        self.stub_url('POST', ['endpoints'], json=resp_body)
 
         endpoint_without_defaults = self.client.endpoints.create(
             region=req_body_without_defaults['endpoint']['region'],
@@ -108,7 +104,6 @@ class EndpointTests(utils.TestCase):
         self.assertIsInstance(endpoint_without_defaults, endpoints.Endpoint)
         self.assertRequestBodyIs(json=req_body_without_defaults)
 
-    @httpretty.activate
     def test_create_without_optional_params(self):
         req_body_without_defaults = {
             "endpoint": {
@@ -130,7 +125,7 @@ class EndpointTests(utils.TestCase):
             }
         }
 
-        self.stub_url(httpretty.POST, ['endpoints'], json=resp_body)
+        self.stub_url('POST', ['endpoints'], json=resp_body)
 
         endpoint_without_defaults = self.client.endpoints.create(
             region=req_body_without_defaults['endpoint']['region'],
@@ -140,14 +135,12 @@ class EndpointTests(utils.TestCase):
         self.assertIsInstance(endpoint_without_defaults, endpoints.Endpoint)
         self.assertRequestBodyIs(json=req_body_without_defaults)
 
-    @httpretty.activate
     def test_delete(self):
-        self.stub_url(httpretty.DELETE, ['endpoints', '8f953'], status=204)
+        self.stub_url('DELETE', ['endpoints', '8f953'], status_code=204)
         self.client.endpoints.delete('8f953')
 
-    @httpretty.activate
     def test_list(self):
-        self.stub_url(httpretty.GET, ['endpoints'], json=self.TEST_ENDPOINTS)
+        self.stub_url('GET', ['endpoints'], json=self.TEST_ENDPOINTS)
 
         endpoint_list = self.client.endpoints.list()
         [self.assertIsInstance(r, endpoints.Endpoint)

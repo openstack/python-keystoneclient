@@ -12,8 +12,6 @@
 
 import uuid
 
-import httpretty
-
 from keystoneclient import fixture
 from keystoneclient.tests.v2_0 import utils
 from keystoneclient.v2_0 import client
@@ -21,13 +19,12 @@ from keystoneclient.v2_0 import tokens
 
 
 class TokenTests(utils.TestCase):
-    @httpretty.activate
+
     def test_delete(self):
         id_ = uuid.uuid4().hex
-        self.stub_url(httpretty.DELETE, ['tokens', id_], status=204)
+        self.stub_url('DELETE', ['tokens', id_], status_code=204)
         self.client.tokens.delete(id_)
 
-    @httpretty.activate
     def test_user_password(self):
         token_fixture = fixture.V2Token(user_name=self.TEST_USER)
         self.stub_auth(json=token_fixture)
@@ -51,7 +48,6 @@ class TokenTests(utils.TestCase):
 
         self.assertRequestBodyIs(json=req_body)
 
-    @httpretty.activate
     def test_with_token_id(self):
         token_fixture = fixture.V2Token()
         self.stub_auth(json=token_fixture)
@@ -78,7 +74,6 @@ class TokenTests(utils.TestCase):
         self.assertRaises(ValueError, self.client.tokens.authenticate,
                           tenant_id=uuid.uuid4().hex)
 
-    @httpretty.activate
     def test_with_tenant_id(self):
         token_fixture = fixture.V2Token()
         token_fixture.set_scope()
@@ -108,7 +103,6 @@ class TokenTests(utils.TestCase):
 
         self.assertRequestBodyIs(json=req_body)
 
-    @httpretty.activate
     def test_with_tenant_name(self):
         token_fixture = fixture.V2Token()
         token_fixture.set_scope()
@@ -138,7 +132,6 @@ class TokenTests(utils.TestCase):
 
         self.assertRequestBodyIs(json=req_body)
 
-    @httpretty.activate
     def test_authenticate_use_admin_url(self):
         token_fixture = fixture.V2Token()
         token_fixture.set_scope()
@@ -151,7 +144,6 @@ class TokenTests(utils.TestCase):
         self.assertEqual(token_fixture.token_id, token_ref.id)
         self.assertEqual(token_fixture.expires_str, token_ref.expires)
 
-    @httpretty.activate
     def test_authenticate_fallback_to_auth_url(self):
         new_auth_url = 'http://keystone.test:5000/v2.0'
 

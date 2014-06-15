@@ -13,7 +13,6 @@
 
 import uuid
 
-import httpretty
 import mock
 import six
 from six.moves.urllib import parse as urlparse
@@ -56,28 +55,26 @@ class ConsumerTests(BaseTest, utils.CrudTests):
         kwargs.setdefault('description', uuid.uuid4().hex)
         return kwargs
 
-    @httpretty.activate
     def test_description_is_optional(self):
         consumer_id = uuid.uuid4().hex
         resp_ref = {'consumer': {'description': None,
                                  'id': consumer_id}}
 
-        self.stub_url(httpretty.POST,
+        self.stub_url('POST',
                       [self.path_prefix, self.collection_key],
-                      status=201, json=resp_ref)
+                      status_code=201, json=resp_ref)
 
         consumer = self.manager.create()
         self.assertEqual(consumer_id, consumer.id)
         self.assertIsNone(consumer.description)
 
-    @httpretty.activate
     def test_description_not_included(self):
         consumer_id = uuid.uuid4().hex
         resp_ref = {'consumer': {'id': consumer_id}}
 
-        self.stub_url(httpretty.POST,
+        self.stub_url('POST',
                       [self.path_prefix, self.collection_key],
-                      status=201, json=resp_ref)
+                      status_code=201, json=resp_ref)
 
         consumer = self.manager.create()
         self.assertEqual(consumer_id, consumer.id)
@@ -144,7 +141,6 @@ class RequestTokenTests(TokenTests):
         self.manager = self.client.oauth1.request_tokens
         self.path_prefix = 'OS-OAUTH1'
 
-    @httpretty.activate
     def test_authorize_request_token(self):
         request_key = uuid.uuid4().hex
         info = {'id': request_key,
@@ -154,9 +150,9 @@ class RequestTokenTests(TokenTests):
 
         verifier = uuid.uuid4().hex
         resp_ref = {'token': {'oauth_verifier': verifier}}
-        self.stub_url(httpretty.PUT,
+        self.stub_url('PUT',
                       [self.path_prefix, 'authorize', request_key],
-                      status=200, json=resp_ref)
+                      status_code=200, json=resp_ref)
 
         # Assert the manager is returning the expected data
         role_id = uuid.uuid4().hex
@@ -167,7 +163,6 @@ class RequestTokenTests(TokenTests):
         exp_body = {'roles': [{'id': role_id}]}
         self.assertRequestBodyIs(json=exp_body)
 
-    @httpretty.activate
     def test_create_request_token(self):
         project_id = uuid.uuid4().hex
         consumer_key = uuid.uuid4().hex
@@ -175,9 +170,9 @@ class RequestTokenTests(TokenTests):
 
         request_key, request_secret, resp_ref = self._new_oauth_token()
 
-        self.stub_url(httpretty.POST, [self.path_prefix, 'request_token'],
-                      status=201, body=resp_ref,
-                      content_type='application/x-www-form-urlencoded')
+        headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+        self.stub_url('POST', [self.path_prefix, 'request_token'],
+                      status_code=201, text=resp_ref, headers=headers)
 
         # Assert the manager is returning request token object
         request_token = self.manager.create(consumer_key, consumer_secret,
@@ -188,7 +183,7 @@ class RequestTokenTests(TokenTests):
 
         # Assert that the project id is in the header
         self.assertRequestHeaderEqual('requested_project_id', project_id)
-        req_headers = httpretty.last_request().headers
+        req_headers = self.requests.last_request.headers
 
         oauth_client = oauth1.Client(consumer_key,
                                      client_secret=consumer_secret,
@@ -205,7 +200,6 @@ class AccessTokenTests(TokenTests):
         self.model = access_tokens.AccessToken
         self.path_prefix = 'OS-OAUTH1'
 
-    @httpretty.activate
     def test_create_access_token_expires_at(self):
         verifier = uuid.uuid4().hex
         consumer_key = uuid.uuid4().hex
@@ -216,9 +210,9 @@ class AccessTokenTests(TokenTests):
         t = self._new_oauth_token_with_expires_at()
         access_key, access_secret, expires_at, resp_ref = t
 
-        self.stub_url(httpretty.POST, [self.path_prefix, 'access_token'],
-                      status=201, body=resp_ref,
-                      content_type='application/x-www-form-urlencoded')
+        headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+        self.stub_url('POST', [self.path_prefix, 'access_token'],
+                      status_code=201, text=resp_ref, headers=headers)
 
         # Assert that the manager creates an access token object
         access_token = self.manager.create(consumer_key, consumer_secret,
@@ -229,7 +223,7 @@ class AccessTokenTests(TokenTests):
         self.assertEqual(access_secret, access_token.secret)
         self.assertEqual(expires_at, access_token.expires)
 
-        req_headers = httpretty.last_request().headers
+        req_headers = self.requests.last_request.headers
         oauth_client = oauth1.Client(consumer_key,
                                      client_secret=consumer_secret,
                                      resource_owner_key=request_key,
@@ -247,7 +241,6 @@ class AuthenticateWithOAuthTests(TokenTests):
         if oauth1 is None:
             self.skipTest('optional package oauthlib is not installed')
 
-    @httpretty.activate
     def test_oauth_authenticate_success(self):
         consumer_key = uuid.uuid4().hex
         consumer_secret = uuid.uuid4().hex
@@ -282,7 +275,7 @@ class AuthenticateWithOAuthTests(TokenTests):
         self.assertRequestBodyIs(json=OAUTH_REQUEST_BODY)
 
         # Assert that the headers have the same oauthlib data
-        req_headers = httpretty.last_request().headers
+        req_headers = self.requests.last_request.headers
         oauth_client = oauth1.Client(consumer_key,
                                      client_secret=consumer_secret,
                                      resource_owner_key=access_key,

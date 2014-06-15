@@ -10,8 +10,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import httpretty
-
 from keystoneclient.tests.v2_0 import utils
 from keystoneclient.v2_0 import extensions
 
@@ -51,9 +49,8 @@ class ExtensionTests(utils.TestCase):
             }
         }
 
-    @httpretty.activate
     def test_list(self):
-        self.stub_url(httpretty.GET, ['extensions'], json=self.TEST_EXTENSIONS)
+        self.stub_url('GET', ['extensions'], json=self.TEST_EXTENSIONS)
         extensions_list = self.client.extensions.list()
         self.assertEqual(2, len(extensions_list))
         for extension in extensions_list:

@@ -10,15 +10,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import httpretty
-
 from keystoneclient.tests.v2_0 import utils
 from keystoneclient.v2_0 import ec2
 
 
 class EC2Tests(utils.TestCase):
 
-    @httpretty.activate
     def test_create(self):
         user_id = 'usr'
         tenant_id = 'tnt'
@@ -34,8 +31,8 @@ class EC2Tests(utils.TestCase):
                 "enabled": True,
             }
         }
-        self.stub_url(httpretty.POST, ['users', user_id, 'credentials',
-                                       'OS-EC2'], json=resp_body)
+        self.stub_url('POST', ['users', user_id, 'credentials',
+                      'OS-EC2'], json=resp_body)
 
         cred = self.client.ec2.create(user_id, tenant_id)
         self.assertIsInstance(cred, ec2.EC2)
@@ -45,7 +42,6 @@ class EC2Tests(utils.TestCase):
         self.assertEqual(cred.secret, 'secret')
         self.assertRequestBodyIs(json=req_body)
 
-    @httpretty.activate
     def test_get(self):
         user_id = 'usr'
         tenant_id = 'tnt'
@@ -58,8 +54,8 @@ class EC2Tests(utils.TestCase):
                 "enabled": True,
             }
         }
-        self.stub_url(httpretty.GET, ['users', user_id, 'credentials',
-                                      'OS-EC2', 'access'], json=resp_body)
+        self.stub_url('GET', ['users', user_id, 'credentials',
+                              'OS-EC2', 'access'], json=resp_body)
 
         cred = self.client.ec2.get(user_id, 'access')
         self.assertIsInstance(cred, ec2.EC2)
@@ -68,7 +64,6 @@ class EC2Tests(utils.TestCase):
         self.assertEqual(cred.access, 'access')
         self.assertEqual(cred.secret, 'secret')
 
-    @httpretty.activate
     def test_list(self):
         user_id = 'usr'
         tenant_id = 'tnt'
@@ -92,8 +87,8 @@ class EC2Tests(utils.TestCase):
                 ]
             }
         }
-        self.stub_url(httpretty.GET, ['users', user_id, 'credentials',
-                                      'OS-EC2'], json=resp_body)
+        self.stub_url('GET', ['users', user_id, 'credentials',
+                              'OS-EC2'], json=resp_body)
 
         creds = self.client.ec2.list(user_id)
         self.assertEqual(len(creds), 2)
@@ -104,10 +99,9 @@ class EC2Tests(utils.TestCase):
         self.assertEqual(cred.access, 'access')
         self.assertEqual(cred.secret, 'secret')
 
-    @httpretty.activate
     def test_delete(self):
         user_id = 'usr'
         access = 'access'
-        self.stub_url(httpretty.DELETE, ['users', user_id, 'credentials',
-                                         'OS-EC2', access], status=204)
+        self.stub_url('DELETE', ['users', user_id, 'credentials',
+                                 'OS-EC2', access], status_code=204)
         self.client.ec2.delete(user_id, access)

@@ -10,8 +10,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import httpretty
-
 from keystoneclient import exceptions
 from keystoneclient.tests.v3 import utils
 from keystoneclient.v3 import role_assignments
@@ -73,10 +71,9 @@ class RoleAssignmentsTests(utils.TestCase, utils.CrudTests):
         self.assertEqual(len(ref_list), len(returned_list))
         [self.assertIsInstance(r, self.model) for r in returned_list]
 
-    @httpretty.activate
     def test_list_params(self):
         ref_list = self.TEST_USER_PROJECT_LIST
-        self.stub_entity(httpretty.GET,
+        self.stub_entity('GET',
                          [self.collection_key,
                           '?scope.project.id=%s&user.id=%s' %
                           (self.TEST_TENANT_ID, self.TEST_USER_ID)],
@@ -90,10 +87,9 @@ class RoleAssignmentsTests(utils.TestCase, utils.CrudTests):
                   'user.id': self.TEST_USER_ID}
         self.assertQueryStringContains(**kwargs)
 
-    @httpretty.activate
     def test_all_assignments_list(self):
         ref_list = self.TEST_ALL_RESPONSE_LIST
-        self.stub_entity(httpretty.GET,
+        self.stub_entity('GET',
                          [self.collection_key],
                          entity=ref_list)
 
@@ -103,10 +99,9 @@ class RoleAssignmentsTests(utils.TestCase, utils.CrudTests):
         kwargs = {}
         self.assertQueryStringContains(**kwargs)
 
-    @httpretty.activate
     def test_project_assignments_list(self):
         ref_list = self.TEST_GROUP_PROJECT_LIST + self.TEST_USER_PROJECT_LIST
-        self.stub_entity(httpretty.GET,
+        self.stub_entity('GET',
                          [self.collection_key,
                           '?scope.project.id=%s' % self.TEST_TENANT_ID],
                          entity=ref_list)
@@ -117,10 +112,9 @@ class RoleAssignmentsTests(utils.TestCase, utils.CrudTests):
         kwargs = {'scope.project.id': self.TEST_TENANT_ID}
         self.assertQueryStringContains(**kwargs)
 
-    @httpretty.activate
     def test_domain_assignments_list(self):
         ref_list = self.TEST_USER_DOMAIN_LIST
-        self.stub_entity(httpretty.GET,
+        self.stub_entity('GET',
                          [self.collection_key,
                           '?scope.domain.id=%s' % self.TEST_DOMAIN_ID],
                          entity=ref_list)
@@ -131,10 +125,9 @@ class RoleAssignmentsTests(utils.TestCase, utils.CrudTests):
         kwargs = {'scope.domain.id': self.TEST_DOMAIN_ID}
         self.assertQueryStringContains(**kwargs)
 
-    @httpretty.activate
     def test_group_assignments_list(self):
         ref_list = self.TEST_GROUP_PROJECT_LIST
-        self.stub_entity(httpretty.GET,
+        self.stub_entity('GET',
                          [self.collection_key,
                           '?group.id=%s' % self.TEST_GROUP_ID],
                          entity=ref_list)
@@ -145,10 +138,9 @@ class RoleAssignmentsTests(utils.TestCase, utils.CrudTests):
         kwargs = {'group.id': self.TEST_GROUP_ID}
         self.assertQueryStringContains(**kwargs)
 
-    @httpretty.activate
     def test_user_assignments_list(self):
         ref_list = self.TEST_USER_DOMAIN_LIST + self.TEST_USER_PROJECT_LIST
-        self.stub_entity(httpretty.GET,
+        self.stub_entity('GET',
                          [self.collection_key,
                           '?user.id=%s' % self.TEST_USER_ID],
                          entity=ref_list)
@@ -159,10 +151,9 @@ class RoleAssignmentsTests(utils.TestCase, utils.CrudTests):
         kwargs = {'user.id': self.TEST_USER_ID}
         self.assertQueryStringContains(**kwargs)
 
-    @httpretty.activate
     def test_effective_assignments_list(self):
         ref_list = self.TEST_USER_PROJECT_LIST + self.TEST_USER_DOMAIN_LIST
-        self.stub_entity(httpretty.GET,
+        self.stub_entity('GET',
                          [self.collection_key,
                           '?effective=True'],
                          entity=ref_list)
@@ -173,10 +164,9 @@ class RoleAssignmentsTests(utils.TestCase, utils.CrudTests):
         kwargs = {'effective': 'True'}
         self.assertQueryStringContains(**kwargs)
 
-    @httpretty.activate
     def test_role_assignments_list(self):
         ref_list = self.TEST_ALL_RESPONSE_LIST
-        self.stub_entity(httpretty.GET,
+        self.stub_entity('GET',
                          [self.collection_key,
                           '?role.id=' + self.TEST_ROLE_ID],
                          entity=ref_list)

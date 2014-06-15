@@ -12,8 +12,6 @@
 
 import uuid
 
-import httpretty
-
 from keystoneclient.tests.v2_0 import utils
 from keystoneclient.v2_0 import services
 
@@ -44,7 +42,6 @@ class ServiceTests(utils.TestCase):
             },
         }
 
-    @httpretty.activate
     def test_create(self):
         req_body = {
             "OS-KSADM:service": {
@@ -62,7 +59,7 @@ class ServiceTests(utils.TestCase):
                 "id": service_id,
             }
         }
-        self.stub_url(httpretty.POST, ['OS-KSADM', 'services'], json=resp_body)
+        self.stub_url('POST', ['OS-KSADM', 'services'], json=resp_body)
 
         service = self.client.services.create(
             req_body['OS-KSADM:service']['name'],
@@ -73,20 +70,17 @@ class ServiceTests(utils.TestCase):
         self.assertEqual(service.name, req_body['OS-KSADM:service']['name'])
         self.assertRequestBodyIs(json=req_body)
 
-    @httpretty.activate
     def test_delete(self):
-        self.stub_url(httpretty.DELETE,
+        self.stub_url('DELETE',
                       ['OS-KSADM', 'services', self.NOVA_SERVICE_ID],
-                      status=204)
+                      status_code=204)
 
         self.client.services.delete(self.NOVA_SERVICE_ID)
 
-    @httpretty.activate
     def test_get(self):
         test_services = self.TEST_SERVICES['OS-KSADM:services']['values'][0]
 
-        self.stub_url(httpretty.GET,
-                      ['OS-KSADM', 'services', self.NOVA_SERVICE_ID],
+        self.stub_url('GET', ['OS-KSADM', 'services', self.NOVA_SERVICE_ID],
                       json={'OS-KSADM:service': test_services})
 
         service = self.client.services.get(self.NOVA_SERVICE_ID)
@@ -95,9 +89,8 @@ class ServiceTests(utils.TestCase):
         self.assertEqual(service.name, 'nova')
         self.assertEqual(service.type, 'compute')
 
-    @httpretty.activate
     def test_list(self):
-        self.stub_url(httpretty.GET, ['OS-KSADM', 'services'],
+        self.stub_url('GET', ['OS-KSADM', 'services'],
                       json=self.TEST_SERVICES)
 
         service_list = self.client.services.list()

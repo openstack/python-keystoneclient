@@ -14,8 +14,6 @@
 
 import uuid
 
-import httpretty
-
 from keystoneclient.tests.v3 import utils
 
 
@@ -55,20 +53,18 @@ class EndpointFilterTests(utils.TestCase):
         kwargs.setdefault('name', uuid.uuid4().hex)
         return kwargs
 
-    @httpretty.activate
     def test_add_endpoint_to_project_via_id(self):
         endpoint_id = uuid.uuid4().hex
         project_id = uuid.uuid4().hex
 
-        self.stub_url(httpretty.PUT,
+        self.stub_url('PUT',
                       [self.manager.OS_EP_FILTER_EXT, 'projects', project_id,
                        'endpoints', endpoint_id],
-                      status=201)
+                      status_code=201)
 
         self.manager.add_endpoint_to_project(project=project_id,
                                              endpoint=endpoint_id)
 
-    @httpretty.activate
     def test_add_endpoint_to_project_via_obj(self):
         project_ref = self.new_project_ref()
         endpoint_ref = self.new_endpoint_ref()
@@ -79,51 +75,48 @@ class EndpointFilterTests(utils.TestCase):
                                                         endpoint_ref,
                                                         loaded=True)
 
-        self.stub_url(httpretty.PUT,
+        self.stub_url('PUT',
                       [self.manager.OS_EP_FILTER_EXT,
                        'projects', project_ref['id'],
                        'endpoints', endpoint_ref['id']],
-                      status=201)
+                      status_code=201)
 
         self.manager.add_endpoint_to_project(project=project,
                                              endpoint=endpoint)
 
-    @httpretty.activate
     def test_delete_endpoint_from_project(self):
         endpoint_id = uuid.uuid4().hex
         project_id = uuid.uuid4().hex
 
-        self.stub_url(httpretty.DELETE,
+        self.stub_url('DELETE',
                       [self.manager.OS_EP_FILTER_EXT, 'projects', project_id,
                        'endpoints', endpoint_id],
-                      status=201)
+                      status_code=201)
 
         self.manager.delete_endpoint_from_project(project=project_id,
                                                   endpoint=endpoint_id)
 
-    @httpretty.activate
     def test_check_endpoint_in_project(self):
         endpoint_id = uuid.uuid4().hex
         project_id = uuid.uuid4().hex
 
-        self.stub_url(httpretty.HEAD,
+        self.stub_url('HEAD',
                       [self.manager.OS_EP_FILTER_EXT, 'projects', project_id,
                        'endpoints', endpoint_id],
-                      status=201)
+                      status_code=201)
 
         self.manager.check_endpoint_in_project(project=project_id,
                                                endpoint=endpoint_id)
 
-    @httpretty.activate
     def test_list_endpoints_for_project(self):
         project_id = uuid.uuid4().hex
         endpoints = {'endpoints': [self.new_endpoint_ref(),
                                    self.new_endpoint_ref()]}
-        self.stub_url(httpretty.GET,
+        self.stub_url('GET',
                       [self.manager.OS_EP_FILTER_EXT, 'projects', project_id,
                        'endpoints'],
                       json=endpoints,
-                      status=200)
+                      status_code=200)
 
         endpoints_resp = self.manager.list_endpoints_for_project(
             project=project_id)
@@ -133,16 +126,15 @@ class EndpointFilterTests(utils.TestCase):
         actual_endpoint_ids = [endpoint.id for endpoint in endpoints_resp]
         self.assertEqual(expected_endpoint_ids, actual_endpoint_ids)
 
-    @httpretty.activate
     def test_list_projects_for_endpoint(self):
         endpoint_id = uuid.uuid4().hex
         projects = {'projects': [self.new_project_ref(),
                                  self.new_project_ref()]}
-        self.stub_url(httpretty.GET,
+        self.stub_url('GET',
                       [self.manager.OS_EP_FILTER_EXT, 'endpoints', endpoint_id,
                        'projects'],
                       json=projects,
-                      status=200)
+                      status_code=200)
 
         projects_resp = self.manager.list_projects_for_endpoint(
             endpoint=endpoint_id)

@@ -10,7 +10,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import httpretty
 
 from keystoneclient.generic import client
 from keystoneclient.tests.v2_0 import utils
@@ -52,9 +51,8 @@ class DiscoverKeystoneTests(utils.UnauthenticatedTestCase):
             },
         }
 
-    @httpretty.activate
     def test_get_versions(self):
-        self.stub_url(httpretty.GET, base_url=self.TEST_ROOT_URL,
+        self.stub_url('GET', base_url=self.TEST_ROOT_URL,
                       json=self.TEST_RESPONSE_DICT)
 
         cs = client.Client()
@@ -67,9 +65,8 @@ class DiscoverKeystoneTests(utils.UnauthenticatedTestCase):
             self.TEST_RESPONSE_DICT['versions']['values'][0]['links'][0]
             ['href'])
 
-    @httpretty.activate
     def test_get_version_local(self):
-        self.stub_url(httpretty.GET, base_url="http://localhost:35357/",
+        self.stub_url('GET', base_url="http://localhost:35357/",
                       json=self.TEST_RESPONSE_DICT)
 
         cs = client.Client()

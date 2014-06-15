@@ -13,8 +13,6 @@
 import copy
 import json
 
-import httpretty
-
 from keystoneclient import exceptions
 from keystoneclient.tests.v3 import client_fixtures
 from keystoneclient.tests.v3 import utils
@@ -23,7 +21,6 @@ from keystoneclient.v3 import client
 
 class KeystoneClientTest(utils.TestCase):
 
-    @httpretty.activate
     def test_unscoped_init(self):
         self.stub_auth(json=client_fixtures.unscoped_token())
 
@@ -37,7 +34,6 @@ class KeystoneClientTest(utils.TestCase):
         self.assertEqual(c.auth_user_id,
                          'c4da488862bd435c9e6c0275a0d0e49a')
 
-    @httpretty.activate
     def test_domain_scoped_init(self):
         self.stub_auth(json=client_fixtures.domain_scoped_token())
 
@@ -53,7 +49,6 @@ class KeystoneClientTest(utils.TestCase):
         self.assertEqual(c.auth_domain_id,
                          '8e9283b7ba0b1038840c3842058b86ab')
 
-    @httpretty.activate
     def test_project_scoped_init(self):
         self.stub_auth(json=client_fixtures.project_scoped_token()),
 
@@ -70,7 +65,6 @@ class KeystoneClientTest(utils.TestCase):
         self.assertEqual(c.auth_tenant_id,
                          '225da22d3ce34b15877ea70b2a575f58')
 
-    @httpretty.activate
     def test_auth_ref_load(self):
         self.stub_auth(json=client_fixtures.project_scoped_token())
 
@@ -88,7 +82,6 @@ class KeystoneClientTest(utils.TestCase):
         self.assertEqual(new_client.management_url,
                          'http://admin:35357/v3')
 
-    @httpretty.activate
     def test_auth_ref_load_with_overridden_arguments(self):
         new_auth_url = 'https://newkeystone.com/v3'
 
@@ -112,7 +105,6 @@ class KeystoneClientTest(utils.TestCase):
         self.assertEqual(new_client.management_url,
                          'http://admin:35357/v3')
 
-    @httpretty.activate
     def test_trust_init(self):
         self.stub_auth(json=client_fixtures.trust_token())
 
@@ -157,29 +149,25 @@ class KeystoneClientTest(utils.TestCase):
                     'interface': 'admin'
                 }]
 
-        self.stub_auth(json=fixture)
+        self.stub_auth(response_list=[{'json': fixture}, {'json': second}])
+
         cl = client.Client(username='exampleuser',
                            password='password',
                            auth_url=self.TEST_URL,
                            **kwargs)
-
         self.assertEqual(cl.management_url, first_url)
 
-        self.stub_auth(json=second)
         cl.authenticate()
         self.assertEqual(cl.management_url, second_url % 35357)
 
-    @httpretty.activate
     def test_management_url_is_updated_with_project(self):
         self._management_url_is_updated(client_fixtures.project_scoped_token(),
                                         project_name='exampleproject')
 
-    @httpretty.activate
     def test_management_url_is_updated_with_domain(self):
         self._management_url_is_updated(client_fixtures.domain_scoped_token(),
                                         domain_name='exampledomain')
 
-    @httpretty.activate
     def test_client_with_region_name_passes_to_service_catalog(self):
         # NOTE(jamielennox): this is deprecated behaviour that should be
         # removed ASAP, however must remain compatible.

@@ -12,23 +12,21 @@
 
 import uuid
 
-import httpretty
 from lxml import etree
-import requests
 
 from keystoneclient.auth import conf
 from keystoneclient.contrib.auth.v3 import saml2
 from keystoneclient import exceptions
 from keystoneclient.openstack.common.fixture import config
-from keystoneclient.openstack.common import jsonutils
 from keystoneclient import session
-from keystoneclient.tests.auth import utils as auth_utils
 from keystoneclient.tests.v3 import client_fixtures
 from keystoneclient.tests.v3 import saml2_fixtures
 from keystoneclient.tests.v3 import utils
 
 
-class AuthenticateviaSAML2Tests(auth_utils.TestCase, utils.TestCase):
+class AuthenticateviaSAML2Tests(utils.TestCase):
+
+    GROUP = 'auth'
 
     class _AuthenticatedResponse(object):
         headers = {
@@ -47,15 +45,13 @@ class AuthenticateviaSAML2Tests(auth_utils.TestCase, utils.TestCase):
         headers = {}
 
     def setUp(self):
-        utils.TestCase.setUp(self)
-        auth_utils.TestCase.setUp(self)
+        super(AuthenticateviaSAML2Tests, self).setUp()
 
-        self.conf_fixture = auth_utils.TestCase.useFixture(self,
-                                                           config.Config())
+        self.conf_fixture = self.useFixture(config.Config())
         conf.register_conf_options(self.conf_fixture.conf, group=self.GROUP)
 
-        self.session = session.Session(auth=None, verify=False,
-                                       session=requests.Session())
+        self.session = session.Session()
+
         self.ECP_SP_EMPTY_REQUEST_HEADERS = {
             'Accept': 'text/html; application/vnd.paos+xml',
             'PAOS': ('ver="urn:liberty:paos:2003-08";'
@@ -91,11 +87,6 @@ class AuthenticateviaSAML2Tests(auth_utils.TestCase, utils.TestCase):
             self.IDENTITY_PROVIDER, self.IDENTITY_PROVIDER_URL,
             self.TEST_USER, self.TEST_TOKEN)
 
-    def simple_http(self, method, url, body=b'', content_type=None,
-                    headers=None, status=200, **kwargs):
-        self.stub_url(method, base_url=url, body=body, adding_headers=headers,
-                      content_type=content_type, status=status, **kwargs)
-
     def make_oneline(self, s):
         return etree.tostring(etree.XML(s)).replace(b'\n', b'')
 
@@ -123,12 +114,12 @@ class AuthenticateviaSAML2Tests(auth_utils.TestCase, utils.TestCase):
         self.assertEqual(username, a.username)
         self.assertEqual(password, a.password)
 
-    @httpretty.activate
     def test_initial_sp_call(self):
         """Test initial call, expect SOAP message."""
-        self.simple_http('GET', self.FEDERATION_AUTH_URL,
-                         body=self.make_oneline(
-                         saml2_fixtures.SP_SOAP_RESPONSE))
+        self.requests.register_uri(
+            'GET',
+            self.FEDERATION_AUTH_URL,
+            content=self.make_oneline(saml2_fixtures.SP_SOAP_RESPONSE))
         a = self.saml2plugin._send_service_provider_request(self.session)
 
         self.assertFalse(a)
@@ -150,13 +141,13 @@ class AuthenticateviaSAML2Tests(auth_utils.TestCase, utils.TestCase):
                 self.SHIB_CONSUMER_URL,
                 str(self.saml2plugin.sp_response_consumer_url)))
 
-    @httpretty.activate
     def test_initial_sp_call_when_saml_authenticated(self):
+        self.requests.register_uri(
+            'GET',
+            self.FEDERATION_AUTH_URL,
+            json=saml2_fixtures.UNSCOPED_TOKEN,
+            headers={'X-Subject-Token': saml2_fixtures.UNSCOPED_TOKEN_HEADER})
 
-        headers = {'X-Subject-Token': saml2_fixtures.UNSCOPED_TOKEN_HEADER}
-        self.simple_http('GET', self.FEDERATION_AUTH_URL,
-                         body=jsonutils.dumps(saml2_fixtures.UNSCOPED_TOKEN),
-                         headers=headers)
         a = self.saml2plugin._send_service_provider_request(self.session)
         self.assertTrue(a)
         self.assertEqual(
@@ -166,32 +157,34 @@ class AuthenticateviaSAML2Tests(auth_utils.TestCase, utils.TestCase):
             saml2_fixtures.UNSCOPED_TOKEN_HEADER,
             self.saml2plugin.authenticated_response.headers['X-Subject-Token'])
 
-    @httpretty.activate
     def test_get_unscoped_token_when_authenticated(self):
-        headers = {'X-Subject-Token': saml2_fixtures.UNSCOPED_TOKEN_HEADER}
-        self.simple_http('GET', self.FEDERATION_AUTH_URL,
-                         body=jsonutils.dumps(saml2_fixtures.UNSCOPED_TOKEN),
-                         headers=headers)
+        self.requests.register_uri(
+            'GET',
+            self.FEDERATION_AUTH_URL,
+            json=saml2_fixtures.UNSCOPED_TOKEN,
+            headers={'X-Subject-Token': saml2_fixtures.UNSCOPED_TOKEN_HEADER,
+                     'Content-Type': 'application/json'})
+
         token, token_body = self.saml2plugin._get_unscoped_token(self.session)
         self.assertEqual(saml2_fixtures.UNSCOPED_TOKEN['token'], token_body)
 
         self.assertEqual(saml2_fixtures.UNSCOPED_TOKEN_HEADER, token)
 
-    @httpretty.activate
     def test_initial_sp_call_invalid_response(self):
         """Send initial SP HTTP request and receive wrong server response."""
-        self.simple_http('GET', self.FEDERATION_AUTH_URL,
-                         body="NON XML RESPONSE")
+        self.requests.register_uri('GET',
+                                   self.FEDERATION_AUTH_URL,
+                                   text='NON XML RESPONSE')
 
         self.assertRaises(
             exceptions.AuthorizationFailure,
             self.saml2plugin._send_service_provider_request,
             self.session)
 
-    @httpretty.activate
     def test_send_authn_req_to_idp(self):
-        self.simple_http('POST', self.IDENTITY_PROVIDER_URL,
-                         body=saml2_fixtures.SAML2_ASSERTION)
+        self.requests.register_uri('POST',
+                                   self.IDENTITY_PROVIDER_URL,
+                                   content=saml2_fixtures.SAML2_ASSERTION)
 
         self.saml2plugin.sp_response_consumer_url = self.SHIB_CONSUMER_URL
         self.saml2plugin.saml2_authn_request = etree.XML(
@@ -207,10 +200,10 @@ class AuthenticateviaSAML2Tests(auth_utils.TestCase, utils.TestCase):
                                                idp_response)
         self.assertEqual(idp_response, saml2_assertion_oneline, error)
 
-    @httpretty.activate
     def test_fail_basicauth_idp_authentication(self):
-        self.simple_http('POST', self.IDENTITY_PROVIDER_URL,
-                         status=401)
+        self.requests.register_uri('POST',
+                                   self.IDENTITY_PROVIDER_URL,
+                                   status_code=401)
 
         self.saml2plugin.sp_response_consumer_url = self.SHIB_CONSUMER_URL
         self.saml2plugin.saml2_authn_request = etree.XML(
@@ -226,13 +219,11 @@ class AuthenticateviaSAML2Tests(auth_utils.TestCase, utils.TestCase):
                           self.TEST_URL, self.IDENTITY_PROVIDER,
                           self.IDENTITY_PROVIDER_URL)
 
-    @httpretty.activate
     def test_send_authn_response_to_sp(self):
-        self.simple_http(
-            'POST', self.SHIB_CONSUMER_URL,
-            body=jsonutils.dumps(saml2_fixtures.UNSCOPED_TOKEN),
-            content_type='application/json',
-            status=200,
+        self.requests.register_uri(
+            'POST',
+            self.SHIB_CONSUMER_URL,
+            json=saml2_fixtures.UNSCOPED_TOKEN,
             headers={'X-Subject-Token': saml2_fixtures.UNSCOPED_TOKEN_HEADER})
 
         self.saml2plugin.relay_state = etree.XML(
@@ -259,9 +250,8 @@ class AuthenticateviaSAML2Tests(auth_utils.TestCase, utils.TestCase):
             self.session, self.SHIB_CONSUMER_URL,
             self.SHIB_CONSUMER_URL)
 
-    @httpretty.activate
     def test_consumer_url_mismatch(self):
-        self.simple_http('POST', self.SHIB_CONSUMER_URL)
+        self.requests.register_uri('POST', self.SHIB_CONSUMER_URL)
         invalid_consumer_url = uuid.uuid4().hex
         self.assertRaises(
             exceptions.ValidationError,
@@ -269,16 +259,20 @@ class AuthenticateviaSAML2Tests(auth_utils.TestCase, utils.TestCase):
             self.session, self.SHIB_CONSUMER_URL,
             invalid_consumer_url)
 
-    @httpretty.activate
     def test_custom_302_redirection(self):
-        self.simple_http('POST', self.SHIB_CONSUMER_URL,
-                         body='BODY',
-                         headers={'location': self.FEDERATION_AUTH_URL},
-                         status=302)
-        self.simple_http(
-            'GET', self.FEDERATION_AUTH_URL,
-            body=jsonutils.dumps(saml2_fixtures.UNSCOPED_TOKEN),
+        self.requests.register_uri(
+            'POST',
+            self.SHIB_CONSUMER_URL,
+            text='BODY',
+            headers={'location': self.FEDERATION_AUTH_URL},
+            status_code=302)
+
+        self.requests.register_uri(
+            'GET',
+            self.FEDERATION_AUTH_URL,
+            json=saml2_fixtures.UNSCOPED_TOKEN,
             headers={'X-Subject-Token': saml2_fixtures.UNSCOPED_TOKEN_HEADER})
+
         self.session.redirect = False
         response = self.session.post(
             self.SHIB_CONSUMER_URL, data='CLIENT BODY')
@@ -292,19 +286,22 @@ class AuthenticateviaSAML2Tests(auth_utils.TestCase, utils.TestCase):
         self.assertEqual(self.FEDERATION_AUTH_URL, response.request.url)
         self.assertEqual('GET', response.request.method)
 
-    @httpretty.activate
     def test_end_to_end_workflow(self):
-        self.simple_http('GET', self.FEDERATION_AUTH_URL,
-                         body=self.make_oneline(
-                         saml2_fixtures.SP_SOAP_RESPONSE))
-        self.simple_http('POST', self.IDENTITY_PROVIDER_URL,
-                         body=saml2_fixtures.SAML2_ASSERTION)
-        self.simple_http(
-            'POST', self.SHIB_CONSUMER_URL,
-            body=jsonutils.dumps(saml2_fixtures.UNSCOPED_TOKEN),
-            content_type='application/json',
-            status=200,
-            headers={'X-Subject-Token': saml2_fixtures.UNSCOPED_TOKEN_HEADER})
+        self.requests.register_uri(
+            'GET',
+            self.FEDERATION_AUTH_URL,
+            content=self.make_oneline(saml2_fixtures.SP_SOAP_RESPONSE))
+
+        self.requests.register_uri('POST',
+                                   self.IDENTITY_PROVIDER_URL,
+                                   content=saml2_fixtures.SAML2_ASSERTION)
+
+        self.requests.register_uri(
+            'POST',
+            self.SHIB_CONSUMER_URL,
+            json=saml2_fixtures.UNSCOPED_TOKEN,
+            headers={'X-Subject-Token': saml2_fixtures.UNSCOPED_TOKEN_HEADER,
+                     'Content-Type': 'application/json'})
 
         self.session.redirect = False
         response = self.saml2plugin.get_auth_ref(self.session)
@@ -313,6 +310,9 @@ class AuthenticateviaSAML2Tests(auth_utils.TestCase, utils.TestCase):
 
 
 class ScopeFederationTokenTests(AuthenticateviaSAML2Tests):
+
+    TEST_TOKEN = client_fixtures.AUTH_SUBJECT_TOKEN
+
     def setUp(self):
         super(ScopeFederationTokenTests, self).setUp()
 
@@ -334,12 +334,8 @@ class ScopeFederationTokenTests(AuthenticateviaSAML2Tests):
             self.TEST_URL, saml2_fixtures.UNSCOPED_TOKEN_HEADER,
             project_id=self.TEST_TENANT_ID)
 
-    @httpretty.activate
     def test_scope_saml2_token_to_project(self):
-        self.simple_http('POST', self.TEST_URL + '/auth/tokens',
-                         body=jsonutils.dumps(self.PROJECT_SCOPED_TOKEN_JSON),
-                         content_type='application/json',
-                         headers=client_fixtures.AUTH_RESPONSE_HEADERS)
+        self.stub_auth(json=self.PROJECT_SCOPED_TOKEN_JSON)
 
         token = self.saml2_scope_plugin.get_auth_ref(self.session)
         self.assertTrue(token.project_scoped, "Received token is not scoped")
@@ -347,18 +343,16 @@ class ScopeFederationTokenTests(AuthenticateviaSAML2Tests):
         self.assertEqual(self.TEST_TENANT_ID, token.project_id)
         self.assertEqual(self.TEST_TENANT_NAME, token.project_name)
 
-    @httpretty.activate
     def test_scope_saml2_token_to_invalid_project(self):
-        self.simple_http('POST', self.TEST_URL + '/auth/tokens', status=401)
+        self.stub_auth(status_code=401)
         self.saml2_scope_plugin.project_id = uuid.uuid4().hex
         self.saml2_scope_plugin.project_name = None
         self.assertRaises(exceptions.Unauthorized,
                           self.saml2_scope_plugin.get_auth_ref,
                           self.session)
 
-    @httpretty.activate
     def test_scope_saml2_token_to_invalid_domain(self):
-        self.simple_http('POST', self.TEST_URL + '/auth/tokens', status=401)
+        self.stub_auth(status_code=401)
         self.saml2_scope_plugin.project_id = None
         self.saml2_scope_plugin.project_name = None
         self.saml2_scope_plugin.domain_id = uuid.uuid4().hex
@@ -367,13 +361,8 @@ class ScopeFederationTokenTests(AuthenticateviaSAML2Tests):
                           self.saml2_scope_plugin.get_auth_ref,
                           self.session)
 
-    @httpretty.activate
     def test_scope_saml2_token_to_domain(self):
-        self.simple_http('POST', self.TEST_URL + '/auth/tokens',
-                         body=jsonutils.dumps(self.DOMAIN_SCOPED_TOKEN_JSON),
-                         content_type='application/json',
-                         headers=client_fixtures.AUTH_RESPONSE_HEADERS)
-
+        self.stub_auth(json=self.DOMAIN_SCOPED_TOKEN_JSON)
         token = self.saml2_scope_plugin.get_auth_ref(self.session)
         self.assertTrue(token.domain_scoped, "Received token is not scoped")
         self.assertEqual(client_fixtures.AUTH_SUBJECT_TOKEN, token.auth_token)

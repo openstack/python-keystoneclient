@@ -10,8 +10,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import httpretty
-
 from keystoneclient.auth import token_endpoint
 from keystoneclient import session
 from keystoneclient.tests import utils
@@ -22,9 +20,8 @@ class TokenEndpointTest(utils.TestCase):
     TEST_TOKEN = 'aToken'
     TEST_URL = 'http://server/prefix'
 
-    @httpretty.activate
     def test_basic_case(self):
-        httpretty.register_uri(httpretty.GET, self.TEST_URL, body='body')
+        self.requests.register_uri('GET', self.TEST_URL, text='body')
 
         a = token_endpoint.Token(self.TEST_URL, self.TEST_TOKEN)
         s = session.Session(auth=a)
@@ -34,9 +31,8 @@ class TokenEndpointTest(utils.TestCase):
         self.assertEqual(data.text, 'body')
         self.assertRequestHeaderEqual('X-Auth-Token', self.TEST_TOKEN)
 
-    @httpretty.activate
     def test_basic_endpoint_case(self):
-        self.stub_url(httpretty.GET, ['p'], body='body')
+        self.stub_url('GET', ['p'], text='body')
         a = token_endpoint.Token(self.TEST_URL, self.TEST_TOKEN)
         s = session.Session(auth=a)
 

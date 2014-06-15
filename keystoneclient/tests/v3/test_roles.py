@@ -14,8 +14,6 @@
 
 import uuid
 
-import httpretty
-
 from keystoneclient import exceptions
 from keystoneclient.tests.v3 import utils
 from keystoneclient.v3 import roles
@@ -34,213 +32,196 @@ class RoleTests(utils.TestCase, utils.CrudTests):
         kwargs.setdefault('name', uuid.uuid4().hex)
         return kwargs
 
-    @httpretty.activate
     def test_domain_role_grant(self):
         user_id = uuid.uuid4().hex
         domain_id = uuid.uuid4().hex
         ref = self.new_ref()
 
-        self.stub_url(httpretty.PUT,
+        self.stub_url('PUT',
                       ['domains', domain_id, 'users', user_id,
                        self.collection_key, ref['id']],
-                      status=201)
+                      status_code=201)
 
         self.manager.grant(role=ref['id'], domain=domain_id, user=user_id)
 
-    @httpretty.activate
     def test_domain_group_role_grant(self):
         group_id = uuid.uuid4().hex
         domain_id = uuid.uuid4().hex
         ref = self.new_ref()
 
-        self.stub_url(httpretty.PUT,
+        self.stub_url('PUT',
                       ['domains', domain_id, 'groups', group_id,
                        self.collection_key, ref['id']],
-                      status=201)
+                      status_code=201)
 
         self.manager.grant(role=ref['id'], domain=domain_id, group=group_id)
 
-    @httpretty.activate
     def test_domain_role_list(self):
         user_id = uuid.uuid4().hex
         domain_id = uuid.uuid4().hex
         ref_list = [self.new_ref(), self.new_ref()]
 
-        self.stub_entity(httpretty.GET,
+        self.stub_entity('GET',
                          ['domains', domain_id, 'users', user_id,
                           self.collection_key], entity=ref_list)
 
         self.manager.list(domain=domain_id, user=user_id)
 
-    @httpretty.activate
     def test_domain_group_role_list(self):
         group_id = uuid.uuid4().hex
         domain_id = uuid.uuid4().hex
         ref_list = [self.new_ref(), self.new_ref()]
 
-        self.stub_entity(httpretty.GET,
+        self.stub_entity('GET',
                          ['domains', domain_id, 'groups', group_id,
                           self.collection_key], entity=ref_list)
 
         self.manager.list(domain=domain_id, group=group_id)
 
-    @httpretty.activate
     def test_domain_role_check(self):
         user_id = uuid.uuid4().hex
         domain_id = uuid.uuid4().hex
         ref = self.new_ref()
 
-        self.stub_url(httpretty.HEAD,
+        self.stub_url('HEAD',
                       ['domains', domain_id, 'users', user_id,
                        self.collection_key, ref['id']],
-                      status=204)
+                      status_code=204)
 
         self.manager.check(role=ref['id'], domain=domain_id,
                            user=user_id)
 
-    @httpretty.activate
     def test_domain_group_role_check(self):
         return
         group_id = uuid.uuid4().hex
         domain_id = uuid.uuid4().hex
         ref = self.new_ref()
 
-        self.stub_url(httpretty.HEAD,
+        self.stub_url('HEAD',
                       ['domains', domain_id, 'groups', group_id,
                        self.collection_key, ref['id']],
-                      status=204)
+                      status_code=204)
 
         self.manager.check(role=ref['id'], domain=domain_id, group=group_id)
 
-    @httpretty.activate
     def test_domain_role_revoke(self):
         user_id = uuid.uuid4().hex
         domain_id = uuid.uuid4().hex
         ref = self.new_ref()
 
-        self.stub_url(httpretty.DELETE,
+        self.stub_url('DELETE',
                       ['domains', domain_id, 'users', user_id,
                        self.collection_key, ref['id']],
-                      status=204)
+                      status_code=204)
 
         self.manager.revoke(role=ref['id'], domain=domain_id, user=user_id)
 
-    @httpretty.activate
     def test_domain_group_role_revoke(self):
         group_id = uuid.uuid4().hex
         domain_id = uuid.uuid4().hex
         ref = self.new_ref()
 
-        self.stub_url(httpretty.DELETE,
+        self.stub_url('DELETE',
                       ['domains', domain_id, 'groups', group_id,
                        self.collection_key, ref['id']],
-                      status=204)
+                      status_code=204)
 
         self.manager.revoke(role=ref['id'], domain=domain_id, group=group_id)
 
-    @httpretty.activate
     def test_project_role_grant(self):
         user_id = uuid.uuid4().hex
         project_id = uuid.uuid4().hex
         ref = self.new_ref()
 
-        self.stub_url(httpretty.PUT,
+        self.stub_url('PUT',
                       ['projects', project_id, 'users', user_id,
                        self.collection_key, ref['id']],
-                      status=201)
+                      status_code=201)
 
         self.manager.grant(role=ref['id'], project=project_id, user=user_id)
 
-    @httpretty.activate
     def test_project_group_role_grant(self):
         group_id = uuid.uuid4().hex
         project_id = uuid.uuid4().hex
         ref = self.new_ref()
 
-        self.stub_url(httpretty.PUT,
+        self.stub_url('PUT',
                       ['projects', project_id, 'groups', group_id,
                        self.collection_key, ref['id']],
-                      status=201)
+                      status_code=201)
 
         self.manager.grant(role=ref['id'], project=project_id, group=group_id)
 
-    @httpretty.activate
     def test_project_role_list(self):
         user_id = uuid.uuid4().hex
         project_id = uuid.uuid4().hex
         ref_list = [self.new_ref(), self.new_ref()]
 
-        self.stub_entity(httpretty.GET,
+        self.stub_entity('GET',
                          ['projects', project_id, 'users', user_id,
                           self.collection_key], entity=ref_list)
 
         self.manager.list(project=project_id, user=user_id)
 
-    @httpretty.activate
     def test_project_group_role_list(self):
         group_id = uuid.uuid4().hex
         project_id = uuid.uuid4().hex
         ref_list = [self.new_ref(), self.new_ref()]
 
-        self.stub_entity(httpretty.GET,
+        self.stub_entity('GET',
                          ['projects', project_id, 'groups', group_id,
                           self.collection_key], entity=ref_list)
 
         self.manager.list(project=project_id, group=group_id)
 
-    @httpretty.activate
     def test_project_role_check(self):
         user_id = uuid.uuid4().hex
         project_id = uuid.uuid4().hex
         ref = self.new_ref()
 
-        self.stub_url(httpretty.HEAD,
+        self.stub_url('HEAD',
                       ['projects', project_id, 'users', user_id,
                        self.collection_key, ref['id']],
-                      status=200)
+                      status_code=200)
 
         self.manager.check(role=ref['id'], project=project_id, user=user_id)
 
-    @httpretty.activate
     def test_project_group_role_check(self):
         group_id = uuid.uuid4().hex
         project_id = uuid.uuid4().hex
         ref = self.new_ref()
 
-        self.stub_url(httpretty.HEAD,
+        self.stub_url('HEAD',
                       ['projects', project_id, 'groups', group_id,
                        self.collection_key, ref['id']],
-                      status=200)
+                      status_code=200)
 
         self.manager.check(role=ref['id'], project=project_id, group=group_id)
 
-    @httpretty.activate
     def test_project_role_revoke(self):
         user_id = uuid.uuid4().hex
         project_id = uuid.uuid4().hex
         ref = self.new_ref()
 
-        self.stub_url(httpretty.DELETE,
+        self.stub_url('DELETE',
                       ['projects', project_id, 'users', user_id,
                        self.collection_key, ref['id']],
-                      status=204)
+                      status_code=204)
 
         self.manager.revoke(role=ref['id'], project=project_id, user=user_id)
 
-    @httpretty.activate
     def test_project_group_role_revoke(self):
         group_id = uuid.uuid4().hex
         project_id = uuid.uuid4().hex
         ref = self.new_ref()
 
-        self.stub_url(httpretty.DELETE,
+        self.stub_url('DELETE',
                       ['projects', project_id, 'groups', group_id,
                        self.collection_key, ref['id']],
-                      status=204)
+                      status_code=204)
 
         self.manager.revoke(role=ref['id'], project=project_id, group=group_id)
 
-    @httpretty.activate
     def test_domain_project_role_grant_fails(self):
         user_id = uuid.uuid4().hex
         project_id = uuid.uuid4().hex

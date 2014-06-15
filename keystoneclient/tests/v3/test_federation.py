@@ -13,8 +13,6 @@
 import copy
 import uuid
 
-import httpretty
-
 from keystoneclient import exceptions
 from keystoneclient.tests.v3 import utils
 from keystoneclient.v3.contrib.federation import identity_providers
@@ -67,7 +65,6 @@ class IdentityProviderTests(utils.TestCase, utils.CrudTests):
             self.assertRaises(TypeError, getattr(self.manager, f_name),
                               *args)
 
-    @httpretty.activate
     def test_create(self, ref=None, req_ref=None):
         ref = ref or self.new_ref()
 
@@ -78,7 +75,7 @@ class IdentityProviderTests(utils.TestCase, utils.CrudTests):
         req_ref = (req_ref or ref).copy()
         req_ref.pop('id')
 
-        self.stub_entity(httpretty.PUT, entity=ref, id=ref['id'], status=201)
+        self.stub_entity('PUT', entity=ref, id=ref['id'], status_code=201)
 
         returned = self.manager.create(**ref)
         self.assertIsInstance(returned, self.model)
@@ -105,7 +102,6 @@ class MappingTests(utils.TestCase, utils.CrudTests):
                                     uuid.uuid4().hex])
         return kwargs
 
-    @httpretty.activate
     def test_create(self, ref=None, req_ref=None):
         ref = ref or self.new_ref()
         manager_ref = ref.copy()
@@ -117,8 +113,8 @@ class MappingTests(utils.TestCase, utils.CrudTests):
         # from datetime object to timestamp string)
         req_ref = (req_ref or ref).copy()
 
-        self.stub_entity(httpretty.PUT, entity=req_ref, id=mapping_id,
-                         status=201)
+        self.stub_entity('PUT', entity=req_ref, id=mapping_id,
+                         status_code=201)
 
         returned = self.manager.create(mapping_id=mapping_id, **manager_ref)
         self.assertIsInstance(returned, self.model)
@@ -156,7 +152,7 @@ class ProtocolTests(utils.TestCase, utils.CrudTests):
         return kwargs
 
     def build_parts(self, identity_provider, protocol_id=None):
-        """Build array used to construct httpretty URL/
+        """Build array used to construct mocking URL.
 
         Construct and return array with URL parts later used
         by methods like utils.TestCase.stub_entity().
@@ -204,7 +200,6 @@ class ProtocolTests(utils.TestCase, utils.CrudTests):
             '/'.join([self.manager.base_url, identity_provider_id,
                       self.manager.collection_key]), url)
 
-    @httpretty.activate
     def test_create(self):
         """Test creating federation protocol tied to an Identity Provider.
 
@@ -216,14 +211,13 @@ class ProtocolTests(utils.TestCase, utils.CrudTests):
         expected = self._transform_to_response(request_args)
         parts = self.build_parts(request_args['identity_provider'],
                                  request_args['protocol_id'])
-        self.stub_entity(httpretty.PUT, entity=expected,
-                         parts=parts, status=201)
+        self.stub_entity('PUT', entity=expected,
+                         parts=parts, status_code=201)
         returned = self.manager.create(**request_args)
         self.assertEqual(expected, returned.to_dict())
         request_body = {'mapping_id': request_args['mapping']}
         self.assertEntityRequestBodyIs(request_body)
 
-    @httpretty.activate
     def test_get(self):
         """Fetch federation protocol object.
 
@@ -236,15 +230,14 @@ class ProtocolTests(utils.TestCase, utils.CrudTests):
 
         parts = self.build_parts(request_args['identity_provider'],
                                  request_args['protocol_id'])
-        self.stub_entity(httpretty.GET, entity=expected,
-                         parts=parts, status=201)
+        self.stub_entity('GET', entity=expected,
+                         parts=parts, status_code=201)
 
         returned = self.manager.get(request_args['identity_provider'],
                                     request_args['protocol_id'])
         self.assertIsInstance(returned, self.model)
         self.assertEqual(expected, returned.to_dict())
 
-    @httpretty.activate
     def test_delete(self):
         """Delete federation protocol object.
 
@@ -256,12 +249,11 @@ class ProtocolTests(utils.TestCase, utils.CrudTests):
         parts = self.build_parts(request_args['identity_provider'],
                                  request_args['protocol_id'])
 
-        self.stub_entity(httpretty.DELETE, parts=parts, status=204)
+        self.stub_entity('DELETE', parts=parts, status_code=204)
 
         self.manager.delete(request_args['identity_provider'],
                             request_args['protocol_id'])
 
-    @httpretty.activate
     def test_list(self):
         """Test listing all federation protocols tied to the Identity Provider.
 
@@ -278,28 +270,26 @@ class ProtocolTests(utils.TestCase, utils.CrudTests):
         request_args = self.new_ref()
         expected = [_ref_protocols() for _ in range(3)]
         parts = self.build_parts(request_args['identity_provider'])
-        self.stub_entity(httpretty.GET, parts=parts,
-                         entity=expected, status=200)
+        self.stub_entity('GET', parts=parts,
+                         entity=expected, status_code=200)
 
         returned = self.manager.list(request_args['identity_provider'])
         for obj, ref_obj in zip(returned, expected):
             self.assertEqual(obj.to_dict(), ref_obj)
 
-    @httpretty.activate
     def test_list_params(self):
         request_args = self.new_ref()
         filter_kwargs = {uuid.uuid4().hex: uuid.uuid4().hex}
         parts = self.build_parts(request_args['identity_provider'])
 
         # Return HTTP 401 as we don't accept such requests.
-        self.stub_entity(httpretty.GET, parts=parts, status=401)
+        self.stub_entity('GET', parts=parts, status_code=401)
         self.assertRaises(exceptions.Unauthorized,
                           self.manager.list,
                           request_args['identity_provider'],
                           **filter_kwargs)
         self.assertQueryStringContains(**filter_kwargs)
 
-    @httpretty.activate
     def test_update(self):
         """Test updating federation protocol
 
@@ -313,8 +303,8 @@ class ProtocolTests(utils.TestCase, utils.CrudTests):
         parts = self.build_parts(request_args['identity_provider'],
                                  request_args['protocol_id'])
 
-        self.stub_entity(httpretty.PATCH, parts=parts,
-                         entity=expected, status=200)
+        self.stub_entity('PATCH', parts=parts,
+                         entity=expected, status_code=200)
 
         returned = self.manager.update(request_args['identity_provider'],
                                        request_args['protocol_id'],

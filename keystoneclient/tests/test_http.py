@@ -14,7 +14,6 @@
 
 import logging
 
-import httpretty
 import six
 from testtools import matchers
 
@@ -63,15 +62,14 @@ class ClientTest(utils.TestCase):
         self.assertRaises(exceptions.AuthorizationFailure, cl.put, '/hi')
         self.assertRaises(exceptions.AuthorizationFailure, cl.delete, '/hi')
 
-    @httpretty.activate
     def test_get(self):
         cl = get_authed_client()
 
-        self.stub_url(httpretty.GET, body=RESPONSE_BODY)
+        self.stub_url('GET', text=RESPONSE_BODY)
 
         resp, body = cl.get("/hi")
-        self.assertEqual(httpretty.last_request().method, 'GET')
-        self.assertEqual(httpretty.last_request().path, '/hi')
+        self.assertEqual(self.requests.last_request.method, 'GET')
+        self.assertEqual(self.requests.last_request.url, self.TEST_URL)
 
         self.assertRequestHeaderEqual('X-Auth-Token', 'token')
         self.assertRequestHeaderEqual('User-Agent', httpclient.USER_AGENT)
@@ -79,15 +77,13 @@ class ClientTest(utils.TestCase):
         # Automatic JSON parsing
         self.assertEqual(body, {"hi": "there"})
 
-    @httpretty.activate
     def test_get_error_with_plaintext_resp(self):
         cl = get_authed_client()
-        self.stub_url(httpretty.GET, status=400,
-                      body='Some evil plaintext string')
+        self.stub_url('GET', status_code=400,
+                      text='Some evil plaintext string')
 
         self.assertRaises(exceptions.BadRequest, cl.get, '/hi')
 
-    @httpretty.activate
     def test_get_error_with_json_resp(self):
         cl = get_authed_client()
         err_response = {
@@ -97,7 +93,7 @@ class ClientTest(utils.TestCase):
                 "message": "Error message string"
             }
         }
-        self.stub_url(httpretty.GET, status=400, json=err_response)
+        self.stub_url('GET', status_code=400, json=err_response)
         exc_raised = False
         try:
             cl.get('/hi')
@@ -106,28 +102,26 @@ class ClientTest(utils.TestCase):
             self.assertEqual(exc.message, "Error message string")
         self.assertTrue(exc_raised, 'Exception not raised.')
 
-    @httpretty.activate
     def test_post(self):
         cl = get_authed_client()
 
-        self.stub_url(httpretty.POST)
+        self.stub_url('POST')
         cl.post("/hi", body=[1, 2, 3])
 
-        self.assertEqual(httpretty.last_request().method, 'POST')
-        self.assertEqual(httpretty.last_request().body, b'[1, 2, 3]')
+        self.assertEqual(self.requests.last_request.method, 'POST')
+        self.assertEqual(self.requests.last_request.body, '[1, 2, 3]')
 
         self.assertRequestHeaderEqual('X-Auth-Token', 'token')
         self.assertRequestHeaderEqual('Content-Type', 'application/json')
         self.assertRequestHeaderEqual('User-Agent', httpclient.USER_AGENT)
 
-    @httpretty.activate
     def test_forwarded_for(self):
         ORIGINAL_IP = "10.100.100.1"
         cl = httpclient.HTTPClient(username="username", password="password",
                                    tenant_id="tenant", auth_url="auth_test",
                                    original_ip=ORIGINAL_IP)
 
-        self.stub_url(httpretty.GET)
+        self.stub_url('GET')
 
         cl.request(self.TEST_URL, 'GET')
         forwarded = "for=%s;by=%s" % (ORIGINAL_IP, httpclient.USER_AGENT)
@@ -165,24 +159,24 @@ class BasicRequestTests(utils.TestCase):
         self.addCleanup(self.logger.removeHandler, handler)
         self.addCleanup(self.logger.setLevel, level)
 
-    def request(self, method='GET', response='Test Response', status=200,
+    def request(self, method='GET', response='Test Response', status_code=200,
                 url=None, **kwargs):
         if not url:
             url = self.url
 
-        httpretty.register_uri(method, url, body=response, status=status)
+        self.requests.register_uri(method, url, text=response,
+                                   status_code=status_code)
 
         return httpclient.request(url, method, **kwargs)
 
-    @httpretty.activate
     def test_basic_params(self):
         method = 'GET'
         response = 'Test Response'
         status = 200
 
-        self.request(method=method, status=status, response=response)
+        self.request(method=method, status_code=status, response=response)
 
-        self.assertEqual(httpretty.last_request().method, method)
+        self.assertEqual(self.requests.last_request.method, method)
 
         logger_message = self.logger_message.getvalue()
 
@@ -194,7 +188,6 @@ class BasicRequestTests(utils.TestCase):
         self.assertThat(logger_message, matchers.Contains(str(status)))
         self.assertThat(logger_message, matchers.Contains(response))
 
-    @httpretty.activate
     def test_headers(self):
         headers = {'key': 'val', 'test': 'other'}
 
@@ -207,7 +200,6 @@ class BasicRequestTests(utils.TestCase):
             self.assertThat(self.logger_message.getvalue(),
                             matchers.Contains('-H "%s: %s"' % header))
 
-    @httpretty.activate
     def test_body(self):
         data = "BODY DATA"
         self.request(response=data)

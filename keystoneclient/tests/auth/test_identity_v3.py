@@ -13,13 +13,9 @@
 import copy
 import uuid
 
-import httpretty
-from six.moves import urllib
-
 from keystoneclient import access
 from keystoneclient.auth.identity import v3
 from keystoneclient import exceptions
-from keystoneclient.openstack.common import jsonutils
 from keystoneclient import session
 from keystoneclient.tests import utils
 
@@ -147,10 +143,9 @@ class V3IdentityPlugin(utils.TestCase):
         if not subject_token:
             subject_token = self.TEST_TOKEN
 
-        self.stub_url(httpretty.POST, ['auth', 'tokens'],
-                      X_Subject_Token=subject_token, **kwargs)
+        self.stub_url('POST', ['auth', 'tokens'],
+                      headers={'X-Subject-Token': subject_token}, **kwargs)
 
-    @httpretty.activate
     def test_authenticate_with_username_password(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
         a = v3.Password(self.TEST_URL,
@@ -170,7 +165,6 @@ class V3IdentityPlugin(utils.TestCase):
         self.assertRequestHeaderEqual('Accept', 'application/json')
         self.assertEqual(s.auth.auth_ref.auth_token, self.TEST_TOKEN)
 
-    @httpretty.activate
     def test_authenticate_with_username_password_domain_scoped(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
         a = v3.Password(self.TEST_URL, username=self.TEST_USER,
@@ -186,7 +180,6 @@ class V3IdentityPlugin(utils.TestCase):
         self.assertRequestBodyIs(json=req)
         self.assertEqual(s.auth.auth_ref.auth_token, self.TEST_TOKEN)
 
-    @httpretty.activate
     def test_authenticate_with_username_password_project_scoped(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
         a = v3.Password(self.TEST_URL, username=self.TEST_USER,
@@ -204,7 +197,6 @@ class V3IdentityPlugin(utils.TestCase):
         self.assertEqual(s.auth.auth_ref.auth_token, self.TEST_TOKEN)
         self.assertEqual(s.auth.auth_ref.project_id, self.TEST_DOMAIN_ID)
 
-    @httpretty.activate
     def test_authenticate_with_token(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
         a = v3.Token(self.TEST_URL, self.TEST_TOKEN)
@@ -221,7 +213,6 @@ class V3IdentityPlugin(utils.TestCase):
         self.assertRequestHeaderEqual('Accept', 'application/json')
         self.assertEqual(s.auth.auth_ref.auth_token, self.TEST_TOKEN)
 
-    @httpretty.activate
     def test_with_expired(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
 
@@ -245,7 +236,6 @@ class V3IdentityPlugin(utils.TestCase):
         self.assertRaises(exceptions.AuthorizationFailure,
                           a.get_token, None)
 
-    @httpretty.activate
     def test_with_trust_id(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
         a = v3.Password(self.TEST_URL, username=self.TEST_USER,
@@ -261,7 +251,6 @@ class V3IdentityPlugin(utils.TestCase):
         self.assertRequestBodyIs(json=req)
         self.assertEqual(s.auth.auth_ref.auth_token, self.TEST_TOKEN)
 
-    @httpretty.activate
     def test_with_multiple_mechanisms_factory(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
         p = v3.PasswordMethod(username=self.TEST_USER, password=self.TEST_PASS)
@@ -279,7 +268,6 @@ class V3IdentityPlugin(utils.TestCase):
         self.assertRequestBodyIs(json=req)
         self.assertEqual(s.auth.auth_ref.auth_token, self.TEST_TOKEN)
 
-    @httpretty.activate
     def test_with_multiple_mechanisms(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
         p = v3.PasswordMethod(username=self.TEST_USER,
@@ -312,12 +300,11 @@ class V3IdentityPlugin(utils.TestCase):
                         domain_id='x', trust_id='x')
         self.assertRaises(exceptions.AuthorizationFailure, a.get_auth_ref, s)
 
-    @httpretty.activate
     def _do_service_url_test(self, base_url, endpoint_filter):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
-        self.stub_url(httpretty.GET, ['path'],
+        self.stub_url('GET', ['path'],
                       base_url=base_url,
-                      body='SUCCESS', status=200)
+                      text='SUCCESS', status_code=200)
 
         a = v3.Password(self.TEST_URL, username=self.TEST_USER,
                         password=self.TEST_PASS)
@@ -326,8 +313,7 @@ class V3IdentityPlugin(utils.TestCase):
         resp = s.get('/path', endpoint_filter=endpoint_filter)
 
         self.assertEqual(resp.status_code, 200)
-        path = "%s/%s" % (urllib.parse.urlparse(base_url).path, 'path')
-        self.assertEqual(httpretty.last_request().path, path)
+        self.assertEqual(self.requests.last_request.url, base_url + '/path')
 
     def test_service_url(self):
         endpoint_filter = {'service_type': 'compute',
@@ -339,7 +325,6 @@ class V3IdentityPlugin(utils.TestCase):
         endpoint_filter = {'service_type': 'compute'}
         self._do_service_url_test('http://nova/novapi/public', endpoint_filter)
 
-    @httpretty.activate
     def test_endpoint_filter_without_service_type_fails(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
 
@@ -350,12 +335,11 @@ class V3IdentityPlugin(utils.TestCase):
         self.assertRaises(exceptions.EndpointNotFound, s.get, '/path',
                           endpoint_filter={'interface': 'admin'})
 
-    @httpretty.activate
     def test_full_url_overrides_endpoint_filter(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
-        self.stub_url(httpretty.GET, [],
+        self.stub_url('GET', [],
                       base_url='http://testurl/',
-                      body='SUCCESS', status=200)
+                      text='SUCCESS', status_code=200)
 
         a = v3.Password(self.TEST_URL, username=self.TEST_USER,
                         password=self.TEST_PASS)
@@ -366,7 +350,6 @@ class V3IdentityPlugin(utils.TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.text, 'SUCCESS')
 
-    @httpretty.activate
     def test_invalid_auth_response_dict(self):
         self.stub_auth(json={'hello': 'world'})
 
@@ -377,9 +360,8 @@ class V3IdentityPlugin(utils.TestCase):
         self.assertRaises(exceptions.InvalidResponse, s.get, 'http://any',
                           authenticated=True)
 
-    @httpretty.activate
     def test_invalid_auth_response_type(self):
-        self.stub_url(httpretty.POST, ['auth', 'tokens'], body='testdata')
+        self.stub_url('POST', ['auth', 'tokens'], text='testdata')
 
         a = v3.Password(self.TEST_URL, username=self.TEST_USER,
                         password=self.TEST_PASS)
@@ -388,19 +370,14 @@ class V3IdentityPlugin(utils.TestCase):
         self.assertRaises(exceptions.InvalidResponse, s.get, 'http://any',
                           authenticated=True)
 
-    @httpretty.activate
     def test_invalidate_response(self):
-        body = jsonutils.dumps(self.TEST_RESPONSE_DICT)
-        auth_responses = [httpretty.Response(body=body,
-                                             X_Subject_Token='token1',
-                                             status=200),
-                          httpretty.Response(body=body,
-                                             X_Subject_Token='token2',
-                                             status=200)]
+        auth_responses = [{'status_code': 200, 'json': self.TEST_RESPONSE_DICT,
+                           'headers': {'X-Subject-Token': 'token1'}},
+                          {'status_code': 200, 'json': self.TEST_RESPONSE_DICT,
+                           'headers': {'X-Subject-Token': 'token2'}}]
 
-        httpretty.register_uri(httpretty.POST,
-                               '%s/auth/tokens' % self.TEST_URL,
-                               responses=auth_responses)
+        self.requests.register_uri('POST', '%s/auth/tokens' % self.TEST_URL,
+                                   auth_responses)
 
         a = v3.Password(self.TEST_URL, username=self.TEST_USER,
                         password=self.TEST_PASS)
@@ -410,7 +387,6 @@ class V3IdentityPlugin(utils.TestCase):
         a.invalidate()
         self.assertEqual('token2', s.get_token())
 
-    @httpretty.activate
     def test_doesnt_log_password(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
 

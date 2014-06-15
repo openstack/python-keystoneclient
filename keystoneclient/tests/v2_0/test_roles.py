@@ -12,8 +12,6 @@
 
 import uuid
 
-import httpretty
-
 from keystoneclient.tests.v2_0 import utils
 from keystoneclient.v2_0 import roles
 
@@ -40,7 +38,6 @@ class RoleTests(utils.TestCase):
             },
         }
 
-    @httpretty.activate
     def test_create(self):
         req_body = {
             "role": {
@@ -54,7 +51,7 @@ class RoleTests(utils.TestCase):
                 "id": role_id,
             }
         }
-        self.stub_url(httpretty.POST, ['OS-KSADM', 'roles'], json=resp_body)
+        self.stub_url('POST', ['OS-KSADM', 'roles'], json=resp_body)
 
         role = self.client.roles.create(req_body['role']['name'])
         self.assertRequestBodyIs(json=req_body)
@@ -62,15 +59,14 @@ class RoleTests(utils.TestCase):
         self.assertEqual(role.id, role_id)
         self.assertEqual(role.name, req_body['role']['name'])
 
-    @httpretty.activate
     def test_delete(self):
-        self.stub_url(httpretty.DELETE,
-                      ['OS-KSADM', 'roles', self.ADMIN_ROLE_ID], status=204)
+        self.stub_url('DELETE',
+                      ['OS-KSADM', 'roles', self.ADMIN_ROLE_ID],
+                      status_code=204)
         self.client.roles.delete(self.ADMIN_ROLE_ID)
 
-    @httpretty.activate
     def test_get(self):
-        self.stub_url(httpretty.GET, ['OS-KSADM', 'roles', self.ADMIN_ROLE_ID],
+        self.stub_url('GET', ['OS-KSADM', 'roles', self.ADMIN_ROLE_ID],
                       json={'role': self.TEST_ROLES['roles']['values'][0]})
 
         role = self.client.roles.get(self.ADMIN_ROLE_ID)
@@ -78,55 +74,48 @@ class RoleTests(utils.TestCase):
         self.assertEqual(role.id, self.ADMIN_ROLE_ID)
         self.assertEqual(role.name, 'admin')
 
-    @httpretty.activate
     def test_list(self):
-        self.stub_url(httpretty.GET, ['OS-KSADM', 'roles'],
+        self.stub_url('GET', ['OS-KSADM', 'roles'],
                       json=self.TEST_ROLES)
 
         role_list = self.client.roles.list()
         [self.assertIsInstance(r, roles.Role) for r in role_list]
 
-    @httpretty.activate
     def test_roles_for_user(self):
-        self.stub_url(httpretty.GET, ['users', 'foo', 'roles'],
+        self.stub_url('GET', ['users', 'foo', 'roles'],
                       json=self.TEST_ROLES)
 
         role_list = self.client.roles.roles_for_user('foo')
         [self.assertIsInstance(r, roles.Role) for r in role_list]
 
-    @httpretty.activate
     def test_roles_for_user_tenant(self):
-        self.stub_url(httpretty.GET, ['tenants', 'barrr', 'users', 'foo',
-                                      'roles'], json=self.TEST_ROLES)
+        self.stub_url('GET', ['tenants', 'barrr', 'users', 'foo',
+                              'roles'], json=self.TEST_ROLES)
 
         role_list = self.client.roles.roles_for_user('foo', 'barrr')
         [self.assertIsInstance(r, roles.Role) for r in role_list]
 
-    @httpretty.activate
     def test_add_user_role(self):
-        self.stub_url(httpretty.PUT, ['users', 'foo', 'roles', 'OS-KSADM',
-                                      'barrr'], status=204)
+        self.stub_url('PUT', ['users', 'foo', 'roles', 'OS-KSADM',
+                              'barrr'], status_code=204)
 
         self.client.roles.add_user_role('foo', 'barrr')
 
-    @httpretty.activate
     def test_add_user_role_tenant(self):
         id_ = uuid.uuid4().hex
-        self.stub_url(httpretty.PUT, ['tenants', id_, 'users', 'foo', 'roles',
-                                      'OS-KSADM', 'barrr'], status=204)
+        self.stub_url('PUT', ['tenants', id_, 'users', 'foo', 'roles',
+                              'OS-KSADM', 'barrr'], status_code=204)
 
         self.client.roles.add_user_role('foo', 'barrr', id_)
 
-    @httpretty.activate
     def test_remove_user_role(self):
-        self.stub_url(httpretty.DELETE, ['users', 'foo', 'roles', 'OS-KSADM',
-                                         'barrr'], status=204)
+        self.stub_url('DELETE', ['users', 'foo', 'roles', 'OS-KSADM',
+                                 'barrr'], status_code=204)
         self.client.roles.remove_user_role('foo', 'barrr')
 
-    @httpretty.activate
     def test_remove_user_role_tenant(self):
         id_ = uuid.uuid4().hex
-        self.stub_url(httpretty.DELETE, ['tenants', id_, 'users', 'foo',
-                                         'roles', 'OS-KSADM', 'barrr'],
-                      status=204)
+        self.stub_url('DELETE', ['tenants', id_, 'users', 'foo',
+                                 'roles', 'OS-KSADM', 'barrr'],
+                      status_code=204)
         self.client.roles.remove_user_role('foo', 'barrr', id_)
