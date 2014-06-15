@@ -114,7 +114,7 @@ class PrintTestCase(test_utils.TestCase):
         self.addCleanup(setattr, sys, 'stdout', self.old_stdout)
 
     def test_print_list_unicode(self):
-        name = u'\u540d\u5b57'
+        name = six.u('\u540d\u5b57')
         objs = [FakeObject(name)]
         # NOTE(Jeffrey4l) If the text's encode is proper, this method will not
         # raise UnicodeEncodeError exceptions
@@ -127,7 +127,7 @@ class PrintTestCase(test_utils.TestCase):
         self.assertIn(name, output)
 
     def test_print_dict_unicode(self):
-        name = u'\u540d\u5b57'
+        name = six.u('\u540d\u5b57')
         utils.print_dict({'name': name})
         output = self.stdout.getvalue()
         # In Python 2, output will be bytes, while in Python 3, it will not.

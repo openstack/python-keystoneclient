@@ -119,7 +119,7 @@ V3_VERSION = {'id': 'v3.0',
               'status': 'stable',
               'updated': UPDATED}
 
-V3_TOKEN = u'3e2813b7ba0b4006840c3825860b86ed',
+V3_TOKEN = six.u('3e2813b7ba0b4006840c3825860b86ed'),
 V3_AUTH_RESPONSE = jsonutils.dumps({
     "token": {
         "methods": [
