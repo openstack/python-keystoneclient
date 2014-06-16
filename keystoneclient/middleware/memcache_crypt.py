@@ -33,8 +33,9 @@ import hashlib
 import hmac
 import math
 import os
-import six
 import sys
+
+import six
 
 # make sure pycrypto is available
 try:

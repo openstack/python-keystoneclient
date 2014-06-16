@@ -32,11 +32,11 @@ This WSGI component:
 """
 
 import logging
-import webob
 
 import requests
 import six
 from six.moves import urllib
+import webob
 
 from keystoneclient.openstack.common import jsonutils
 

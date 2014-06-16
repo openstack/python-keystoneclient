@@ -13,6 +13,7 @@
 import logging
 import sys
 import time
+import uuid
 
 import fixtures
 import httpretty
@@ -22,7 +23,6 @@ import requests
 import six
 from six.moves.urllib import parse as urlparse
 import testtools
-import uuid
 
 from keystoneclient.openstack.common import jsonutils
 

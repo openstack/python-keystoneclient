@@ -218,18 +218,18 @@ class FakeHTTPClient(fakes.FakeClient):
 
     def post_tenants(self, **kw):
         body = {"tenant":
-               {"enabled": True,
-                "description": None,
-                "name": "new-tenant",
-                "id": "1"}}
+                {"enabled": True,
+                 "description": None,
+                 "name": "new-tenant",
+                 "id": "1"}}
         return (200, body)
 
     def post_tenants_2(self, **kw):
         body = {"tenant":
-               {"enabled": False,
-                "description": "desc",
-                "name": "new-tenant1",
-                "id": "2"}}
+                {"enabled": False,
+                 "description": "desc",
+                 "name": "new-tenant1",
+                 "id": "2"}}
         return (200, body)
 
     def get_tenants(self, **kw):
@@ -253,18 +253,18 @@ class FakeHTTPClient(fakes.FakeClient):
 
     def get_tenants_1(self, **kw):
         body = {"tenant":
-               {"enabled": True,
-                "description": None,
-                "name": "new-tenant",
-                "id": "1"}}
+                {"enabled": True,
+                 "description": None,
+                 "name": "new-tenant",
+                 "id": "1"}}
         return (200, body)
 
     def get_tenants_2(self, **kw):
         body = {"tenant":
-               {"enabled": True,
-                "description": None,
-                "name": "new-tenant",
-                "id": "2"}}
+                {"enabled": True,
+                 "description": None,
+                 "name": "new-tenant",
+                 "id": "2"}}
         return (200, body)
 
     def delete_tenants_2(self, **kw):
@@ -375,8 +375,8 @@ class FakeHTTPClient(fakes.FakeClient):
 
     def post_OS_KSADM_roles(self, **kw):
         body = {"role":
-               {"name": "new-role",
-                "id": "1"}}
+                {"name": "new-role",
+                 "id": "1"}}
         return (200, body)
 
     def get_OS_KSADM_roles(self, **kw):
@@ -389,8 +389,8 @@ class FakeHTTPClient(fakes.FakeClient):
 
     def get_OS_KSADM_roles_1(self, **kw):
         body = {"role":
-               {"name": "new-role",
-                "id": "1"}
+                {"name": "new-role",
+                 "id": "1"}
                 }
         return (200, body)
 
@@ -400,19 +400,19 @@ class FakeHTTPClient(fakes.FakeClient):
 
     def post_OS_KSADM_services(self, **kw):
         body = {"OS-KSADM:service":
-               {"id": "1",
-                "type": "compute",
-                "name": "service1",
-                "description": None}
+                {"id": "1",
+                 "type": "compute",
+                 "name": "service1",
+                 "description": None}
                 }
         return (200, body)
 
     def get_OS_KSADM_services_1(self, **kw):
         body = {"OS-KSADM:service":
-               {"description": None,
-                "type": "compute",
-                "id": "1",
-                "name": "service1"}
+                {"description": None,
+                 "type": "compute",
+                 "id": "1",
+                 "name": "service1"}
                 }
         return (200, body)
 
@@ -436,10 +436,10 @@ class FakeHTTPClient(fakes.FakeClient):
 
     def post_users_1_credentials_OS_EC2(self, **kw):
         body = {"credential":
-               {"access": "1",
-                "tenant_id": "1",
-                "secret": "1",
-                "user_id": "1"}
+                {"access": "1",
+                 "tenant_id": "1",
+                 "secret": "1",
+                 "user_id": "1"}
                 }
         return (200, body)
 

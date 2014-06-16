@@ -90,8 +90,8 @@ class KeyringTest(utils.TestCase):
                                    tenant_id=TENANT_ID, auth_url=AUTH_URL)
 
         # stub and check that a new token is received
-        with mock.patch.object(cl, 'get_raw_token_from_identity_service') \
-                as meth:
+        method = 'get_raw_token_from_identity_service'
+        with mock.patch.object(cl, method) as meth:
             meth.return_value = (True, PROJECT_SCOPED_TOKEN)
 
             self.assertTrue(cl.authenticate())
@@ -128,8 +128,8 @@ class KeyringTest(utils.TestCase):
         self.memory_keyring.password = pickle.dumps(auth_ref)
 
         # stub and check that a new token is received, so not using expired
-        with mock.patch.object(cl, 'get_raw_token_from_identity_service') \
-                as meth:
+        method = 'get_raw_token_from_identity_service'
+        with mock.patch.object(cl, method) as meth:
             meth.return_value = (True, PROJECT_SCOPED_TOKEN)
 
             self.assertTrue(cl.authenticate())
@@ -166,8 +166,8 @@ class KeyringTest(utils.TestCase):
                                    use_keyring=True)
 
         # stub and check that a new token is received
-        with mock.patch.object(cl, 'get_raw_token_from_identity_service') \
-                as meth:
+        method = 'get_raw_token_from_identity_service'
+        with mock.patch.object(cl, method) as meth:
             meth.return_value = (True, PROJECT_SCOPED_TOKEN)
 
             self.assertTrue(cl.authenticate())
