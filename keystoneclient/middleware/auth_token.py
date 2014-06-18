@@ -1518,6 +1518,7 @@ class TokenCache(object):
             return data
         else:
             self.LOG.debug('Cached Token seems expired')
+            raise InvalidUserToken('Token authorization failed')
 
     def _cache_store(self, token_id, data):
         """Store value into memcache.
