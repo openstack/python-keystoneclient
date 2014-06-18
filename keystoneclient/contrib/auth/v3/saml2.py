@@ -246,7 +246,7 @@ class Saml2UnscopedToken(v3.AuthConstructor):
             headers={'Content-type': 'text/xml'},
             data=etree.tostring(idp_saml2_authn_request),
             requests_auth=(self.username, self.password),
-            authenticated=False)
+            authenticated=False, log=False)
 
         try:
             self.saml2_idp_authn_response = etree.XML(idp_response.content)

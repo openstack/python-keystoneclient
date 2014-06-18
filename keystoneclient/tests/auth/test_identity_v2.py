@@ -11,6 +11,7 @@
 # under the License.
 
 import copy
+import uuid
 
 import httpretty
 from six.moves import urllib
@@ -255,3 +256,14 @@ class V2IdentityPlugin(utils.TestCase):
         self.assertEqual('token1', s.get_token())
         a.invalidate()
         self.assertEqual('token2', s.get_token())
+
+    @httpretty.activate
+    def test_doesnt_log_password(self):
+        self.stub_auth(json=self.TEST_RESPONSE_DICT)
+        password = uuid.uuid4().hex
+
+        a = v2.Password(self.TEST_URL, username=self.TEST_USER,
+                        password=password)
+        s = session.Session(auth=a)
+        self.assertEqual(self.TEST_TOKEN, s.get_token())
+        self.assertNotIn(password, self.logger.output)
