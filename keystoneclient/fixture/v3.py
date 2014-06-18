@@ -59,7 +59,8 @@ class Token(dict):
                  project_id=None, project_name=None, project_domain_id=None,
                  project_domain_name=None, domain_id=None, domain_name=None,
                  trust_id=None, trust_impersonation=None, trustee_user_id=None,
-                 trustor_user_id=None):
+                 trustor_user_id=None, oauth_access_token_id=None,
+                 oauth_consumer_id=None):
         super(Token, self).__init__()
 
         self.user_id = user_id or uuid.uuid4().hex
@@ -105,6 +106,10 @@ class Token(dict):
                                  impersonation=trust_impersonation,
                                  trustee_user_id=trustee_user_id,
                                  trustor_user_id=trustor_user_id)
+
+        if oauth_access_token_id or oauth_consumer_id:
+            self.set_oauth(access_token_id=oauth_access_token_id,
+                           consumer_id=oauth_consumer_id)
 
     @property
     def root(self):
@@ -272,6 +277,22 @@ class Token(dict):
         trust = self.root.setdefault('OS-TRUST:trust', {})
         trust.setdefault('trustor_user', {})['id'] = value
 
+    @property
+    def oauth_access_token_id(self):
+        return self.root.get('OS-OAUTH1', {}).get('access_token_id')
+
+    @oauth_access_token_id.setter
+    def oauth_access_token_id(self, value):
+        self.root.setdefault('OS-OAUTH1', {})['access_token_id'] = value
+
+    @property
+    def oauth_consumer_id(self):
+        return self.root.get('OS-OAUTH1', {}).get('consumer_id')
+
+    @oauth_consumer_id.setter
+    def oauth_consumer_id(self, value):
+        self.root.setdefault('OS-OAUTH1', {})['consumer_id'] = value
+
     def validate(self):
         project = self.root.get('project')
         domain = self.root.get('domain')
@@ -327,3 +348,7 @@ class Token(dict):
         self.trust_impersonation = impersonation
         self.trustee_user_id = trustee_user_id or uuid.uuid4().hex
         self.trustor_user_id = trustor_user_id or uuid.uuid4().hex
+
+    def set_oauth(self, access_token_id=None, consumer_id=None):
+        self.oauth_access_token_id = access_token_id or uuid.uuid4().hex
+        self.oauth_consumer_id = consumer_id or uuid.uuid4().hex
