@@ -54,7 +54,7 @@ class Token(dict):
     that matter to them and not copy and paste sample.
     """
 
-    def __init__(self, expires=None, user_id=None, user_name=None,
+    def __init__(self, expires=None, issued=None, user_id=None, user_name=None,
                  user_domain_id=None, user_domain_name=None, methods=None,
                  project_id=None, project_name=None, project_domain_id=None,
                  project_domain_name=None, domain_id=None, domain_name=None,
@@ -71,8 +71,17 @@ class Token(dict):
             methods = ['password']
         self.methods.extend(methods)
 
+        if not issued:
+            issued = timeutils.utcnow() - datetime.timedelta(minutes=2)
+
+        try:
+            self.issued = issued
+        except (TypeError, AttributeError):
+            # issued should be able to be passed as a string so ignore
+            self.issued_str = issued
+
         if not expires:
-            expires = timeutils.utcnow() + datetime.timedelta(hours=1)
+            expires = self.issued + datetime.timedelta(hours=1)
 
         try:
             self.expires = expires
@@ -115,7 +124,23 @@ class Token(dict):
 
     @expires.setter
     def expires(self, value):
-        self.expires_str = timeutils.isotime(value)
+        self.expires_str = timeutils.isotime(value, subsecond=True)
+
+    @property
+    def issued_str(self):
+        return self.root.get('issued_at')
+
+    @issued_str.setter
+    def issued_str(self, value):
+        self.root['issued_at'] = value
+
+    @property
+    def issued(self):
+        return timeutils.parse_isotime(self.issued_str)
+
+    @issued.setter
+    def issued(self, value):
+        self.issued_str = timeutils.isotime(value, subsecond=True)
 
     @property
     def _user(self):
