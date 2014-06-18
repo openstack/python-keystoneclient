@@ -15,6 +15,7 @@ import datetime
 import testresources
 
 from keystoneclient import access
+from keystoneclient import fixture
 from keystoneclient.openstack.common import timeutils
 from keystoneclient.tests import client_fixtures as token_data
 from keystoneclient.tests.v2_0 import client_fixtures
@@ -37,6 +38,7 @@ class AccessInfoTest(utils.TestCase, testresources.ResourcedTestCase):
         self.assertEqual(auth_ref.username, 'exampleuser')
         self.assertEqual(auth_ref.user_id, 'c4da488862bd435c9e6c0275a0d0e49a')
 
+        self.assertEqual(auth_ref.role_ids, [])
         self.assertEqual(auth_ref.role_names, [])
 
         self.assertIsNone(auth_ref.tenant_name)
@@ -67,8 +69,8 @@ class AccessInfoTest(utils.TestCase, testresources.ResourcedTestCase):
         self.assertFalse(auth_ref.will_expire_soon())
 
     def test_building_scoped_accessinfo(self):
-        auth_ref = access.AccessInfo.factory(
-            body=client_fixtures.project_scoped_token())
+        token = client_fixtures.project_scoped_token()
+        auth_ref = access.AccessInfo.factory(body=token)
 
         self.assertTrue(auth_ref)
         self.assertIn('token', auth_ref)
@@ -80,6 +82,7 @@ class AccessInfoTest(utils.TestCase, testresources.ResourcedTestCase):
         self.assertEqual(auth_ref.username, 'exampleuser')
         self.assertEqual(auth_ref.user_id, 'c4da488862bd435c9e6c0275a0d0e49a')
 
+        self.assertEqual(auth_ref.role_ids, ['member_id'])
         self.assertEqual(auth_ref.role_names, ['Member'])
 
         self.assertEqual(auth_ref.tenant_name, 'exampleproject')
@@ -129,6 +132,21 @@ class AccessInfoTest(utils.TestCase, testresources.ResourcedTestCase):
         self.assertEqual(auth_ref.user_domain_id, 'default')
         self.assertEqual(auth_ref.user_domain_name, 'Default')
         self.assertEqual(auth_ref.role_names, ['role1', 'role2'])
+
+    def test_v2_roles(self):
+        role_id = 'a'
+        role_name = 'b'
+
+        token = fixture.V2Token()
+        token.set_scope()
+        token.add_role(id=role_id, name=role_name)
+
+        auth_ref = access.AccessInfo.factory(body=token)
+
+        self.assertEqual([role_id], auth_ref.role_ids)
+        self.assertEqual([role_id], auth_ref['metadata']['roles'])
+        self.assertEqual([role_name], auth_ref.role_names)
+        self.assertEqual([{'name': role_name}], auth_ref['user']['roles'])
 
 
 def load_tests(loader, tests, pattern):

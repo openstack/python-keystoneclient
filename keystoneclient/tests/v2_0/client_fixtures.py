@@ -32,8 +32,7 @@ def project_scoped_token():
                         user_id='c4da488862bd435c9e6c0275a0d0e49a',
                         user_name='exampleuser')
 
-    f.add_role(id='edc12489faa74ee0aca0b8a0b4d74a74',
-               name='Member')
+    f.add_role(id='member_id', name='Member')
 
     s = f.add_service('volume', 'Volume Service')
     s.add_endpoint(public='http://public.com:8776/v1/%s' % _TENANT_ID,

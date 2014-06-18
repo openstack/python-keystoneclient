@@ -40,6 +40,7 @@ class AccessInfoTest(utils.TestCase):
         self.assertEqual(auth_ref.username, 'exampleuser')
         self.assertEqual(auth_ref.user_id, 'c4da488862bd435c9e6c0275a0d0e49a')
 
+        self.assertEqual(auth_ref.role_ids, [])
         self.assertEqual(auth_ref.role_names, [])
 
         self.assertIsNone(auth_ref.project_name)
@@ -84,6 +85,7 @@ class AccessInfoTest(utils.TestCase):
         self.assertEqual(auth_ref.username, 'exampleuser')
         self.assertEqual(auth_ref.user_id, 'c4da488862bd435c9e6c0275a0d0e49a')
 
+        self.assertEqual(auth_ref.role_ids, ['76e72a', 'f4f392'])
         self.assertEqual(auth_ref.role_names, ['admin', 'member'])
 
         self.assertEqual(auth_ref.domain_name, 'anotherdomain')
@@ -117,6 +119,7 @@ class AccessInfoTest(utils.TestCase):
         self.assertEqual(auth_ref.username, 'exampleuser')
         self.assertEqual(auth_ref.user_id, 'c4da488862bd435c9e6c0275a0d0e49a')
 
+        self.assertEqual(auth_ref.role_ids, ['76e72a', 'f4f392'])
         self.assertEqual(auth_ref.role_names, ['admin', 'member'])
 
         self.assertIsNone(auth_ref.domain_name)
