@@ -213,6 +213,7 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
                            auth_url=self.TEST_URL)
         self.assertTrue(cs.auth_ref.trust_scoped)
         self.assertEqual(cs.auth_ref.trust_id, self.TEST_TRUST_ID)
+        self.assertEqual(cs.auth_ref.trustee_user_id, self.TEST_USER)
         self.assertRequestBodyIs(json=self.TEST_REQUEST_BODY)
 
     @httpretty.activate
