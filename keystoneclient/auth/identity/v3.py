@@ -159,7 +159,7 @@ class AuthMethod(object):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class _AuthConstructor(Auth):
+class AuthConstructor(Auth):
     """AuthConstructor is a means of creating an Auth Plugin that contains
     only one authentication method. This is generally the required usage.
 
@@ -173,7 +173,7 @@ class _AuthConstructor(Auth):
     def __init__(self, auth_url, *args, **kwargs):
         method_kwargs = self._auth_method_class._extract_kwargs(kwargs)
         method = self._auth_method_class(*args, **method_kwargs)
-        super(_AuthConstructor, self).__init__(auth_url, [method], **kwargs)
+        super(AuthConstructor, self).__init__(auth_url, [method], **kwargs)
 
 
 class PasswordMethod(AuthMethod):
@@ -211,7 +211,7 @@ class PasswordMethod(AuthMethod):
         return 'password', {'user': user}
 
 
-class Password(_AuthConstructor):
+class Password(AuthConstructor):
     _auth_method_class = PasswordMethod
 
 
@@ -231,7 +231,7 @@ class TokenMethod(AuthMethod):
         return 'token', {'id': self.token}
 
 
-class Token(_AuthConstructor):
+class Token(AuthConstructor):
     _auth_method_class = TokenMethod
 
     def __init__(self, auth_url, token, **kwargs):
