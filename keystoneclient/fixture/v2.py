@@ -129,6 +129,10 @@ class Token(dict):
     def tenant_name(self, value):
         self._token.setdefault('tenant', {})['name'] = value
 
+    @property
+    def _metadata(self):
+        return self.root.setdefault('metadata', {})
+
     def validate(self):
         scoped = 'tenant' in self.token
         catalog = self.root.get('serviceCatalog')
@@ -142,11 +146,12 @@ class Token(dict):
             raise exception.FixtureValidationError(msg)
 
     def add_role(self, name=None, id=None):
+        id = id or uuid.uuid4().hex
+        name = name or uuid.uuid4().hex
         roles = self._user.setdefault('roles', [])
-        data = {'id': id or uuid.uuid4().hex,
-                'name': name or uuid.uuid4().hex}
-        roles.append(data)
-        return data
+        roles.append({'name': name})
+        self._metadata.setdefault('roles', []).append(id)
+        return {'id': id, 'name': name}
 
     def add_service(self, type, name=None):
         name = name or uuid.uuid4().hex

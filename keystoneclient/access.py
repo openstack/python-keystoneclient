@@ -164,6 +164,15 @@ class AccessInfo(dict):
         raise NotImplementedError()
 
     @property
+    def role_ids(self):
+        """Returns a list of role ids of the user associated with the
+        authentication request.
+
+        :returns: a list of strings of role ids
+        """
+        raise NotImplementedError()
+
+    @property
     def role_names(self):
         """Returns a list of role names of the user associated with the
         authentication request.
@@ -371,6 +380,10 @@ class AccessInfoV2(AccessInfo):
         return 'Default'
 
     @property
+    def role_ids(self):
+        return self.get('metadata', {}).get('roles', [])
+
+    @property
     def role_names(self):
         return [r['name'] for r in self['user'].get('roles', [])]
 
@@ -527,6 +540,10 @@ class AccessInfoV3(AccessInfo):
     @property
     def user_domain_name(self):
         return self['user']['domain']['name']
+
+    @property
+    def role_ids(self):
+        return [r['id'] for r in self.get('roles', [])]
 
     @property
     def role_names(self):
