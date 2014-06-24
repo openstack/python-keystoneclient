@@ -15,6 +15,15 @@
 
 import pbr.version
 
+from keystoneclient import access
+from keystoneclient import client
+from keystoneclient import exceptions
+from keystoneclient import generic
+from keystoneclient import httpclient
+from keystoneclient import service_catalog
+from keystoneclient import v2_0
+from keystoneclient import v3
+
 
 __version__ = pbr.version.VersionInfo('python-keystoneclient').version_string()
 

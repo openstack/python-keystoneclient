@@ -15,6 +15,8 @@
 
 import warnings
 
+from keystoneclient import exceptions
+
 # NOTE(akurilin): Module 'keystoneclient.apiclient' contains only exceptions
 # which are deprecated, so this module must also be deprecated which helps
 # to report 'deprecated' status of exceptions for next kind of imports
