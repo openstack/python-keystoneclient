@@ -149,13 +149,13 @@ import contextlib
 import datetime
 import logging
 import os
-import requests
 import stat
 import tempfile
 import time
 
 import netaddr
 from oslo.config import cfg
+import requests
 import six
 from six.moves import urllib
 

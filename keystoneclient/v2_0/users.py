@@ -20,7 +20,7 @@ from keystoneclient import base
 
 
 class User(base.Resource):
-    """Represents a Keystone user"""
+    """Represents a Keystone user."""
     def __repr__(self):
         return "<User %s>" % self._info
 

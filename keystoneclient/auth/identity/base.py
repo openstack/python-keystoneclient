@@ -12,6 +12,7 @@
 
 import abc
 import logging
+
 import six
 
 from keystoneclient.auth import base

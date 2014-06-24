@@ -313,9 +313,9 @@ class ShellTest(utils.TestCase):
             shell('tenant-create')
             assert do_tenant_mock.called
             # FIXME(dtroyer): how do you test the decorators?
-            #shell('tenant-create --tenant-name wilma '
+            # shell('tenant-create --tenant-name wilma '
             #        '--description "fred\'s wife"')
-            #assert do_tenant_mock.called
+            # assert do_tenant_mock.called
 
     def test_do_tenant_list(self):
         do_tenant_mock = mock.MagicMock()

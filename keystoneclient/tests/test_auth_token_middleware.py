@@ -637,7 +637,7 @@ class CommonAuthTokenMiddlewareTest(object):
         for _ in range(2):  # Do it twice because first result was cached.
             self.assert_valid_request_200(
                 self.token_dict['signed_token_scoped'])
-            #ensure that signed requests do not generate HTTP traffic
+            # ensure that signed requests do not generate HTTP traffic
             self.assertLastPath(None)
 
     def test_valid_signed_compressed_request(self):
@@ -722,7 +722,7 @@ class CommonAuthTokenMiddlewareTest(object):
         return jsonutils.dumps(revocation_list)
 
     def test_is_signed_token_revoked_returns_false(self):
-        #explicitly setting an empty revocation list here to document intent
+        # explicitly setting an empty revocation list here to document intent
         self.middleware.token_revocation_list = jsonutils.dumps(
             {"revoked": [], "extra": "success"})
         result = self.middleware.is_signed_token_revoked(
@@ -1443,10 +1443,10 @@ class v2AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
                       self.examples.UUID_TOKEN_UNKNOWN_BIND,
                       self.examples.UUID_TOKEN_NO_SERVICE_CATALOG,
                       self.examples.SIGNED_TOKEN_SCOPED_KEY,):
+            response_body = self.examples.JSON_TOKEN_RESPONSES[token]
             httpretty.register_uri(httpretty.GET,
                                    "%s/v2.0/tokens/%s" % (BASE_URI, token),
-                                   body=
-                                   self.examples.JSON_TOKEN_RESPONSES[token])
+                                   body=response_body)
 
         httpretty.register_uri(httpretty.GET,
                                '%s/v2.0/tokens/%s' % (BASE_URI, ERROR_TOKEN),
@@ -1537,10 +1537,10 @@ class CrossVersionAuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
                                body=FAKE_ADMIN_TOKEN)
 
         token = self.examples.UUID_TOKEN_DEFAULT
+        response_body = self.examples.JSON_TOKEN_RESPONSES[token]
         httpretty.register_uri(httpretty.GET,
                                "%s/v2.0/tokens/%s" % (BASE_URI, token),
-                               body=
-                               self.examples.JSON_TOKEN_RESPONSES[token])
+                               body=response_body)
 
         self.set_middleware(conf=conf)
 

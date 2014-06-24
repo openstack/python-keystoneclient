@@ -87,7 +87,7 @@ def do_user_get(kc, args):
 @utils.arg('--enabled', metavar='<true|false>', default=True,
            help='Initial user enabled status. Default is true.')
 def do_user_create(kc, args):
-    """Create new user"""
+    """Create new user."""
     if args.tenant:
         tenant_id = utils.find_resource(kc.tenants, args.tenant).id
     elif args.tenant_id:

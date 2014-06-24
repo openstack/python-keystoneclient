@@ -176,7 +176,7 @@ class TenantTests(utils.TestCase):
                 "description": "I changed you!",
                 "enabled": False,
                 "extravalue01": "metadataChanged",
-                #"extraname": "dontoverwrite!",
+                # "extraname": "dontoverwrite!",
             },
         }
         resp_body = {

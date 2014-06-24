@@ -81,7 +81,7 @@ class TenantManager(base.ManagerWithFind):
                              "description": description,
                              "enabled": enabled}}
 
-        #Allow Extras Passthru and ensure we don't clobber primary arguments.
+        # Allow Extras Passthru and ensure we don't clobber primary arguments.
         for k, v in six.iteritems(kwargs):
             if k not in params['tenant']:
                 params['tenant'][k] = v
@@ -131,7 +131,7 @@ class TenantManager(base.ManagerWithFind):
         if description is not None:
             body['tenant']['description'] = description
 
-        #Allow Extras Passthru and ensure we don't clobber primary arguments.
+        # Allow Extras Passthru and ensure we don't clobber primary arguments.
         for k, v in six.iteritems(kwargs):
             if k not in body['tenant']:
                 body['tenant'][k] = v

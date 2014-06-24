@@ -24,8 +24,9 @@ import logging
 from six.moves.urllib import parse as urlparse
 
 try:
-    import keyring
     import pickle
+
+    import keyring
 except ImportError:
     keyring = None
     pickle = None
