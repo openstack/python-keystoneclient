@@ -228,7 +228,11 @@ class Discover(object):
         return versions
 
     def data_for(self, version, **kwargs):
-        """Return endpoint data for a specific version.
+        """Return endpoint data for a version.
+
+        :param tuple version: The version is always a minimum version in the
+            same major release as there should be no compatibility issues with
+            using a version newer than the one asked for.
 
         :returns dict: the endpoint data for a URL that matches the required
                        version (the format is described in version_data)
@@ -244,7 +248,11 @@ class Discover(object):
         return None
 
     def url_for(self, version, **kwargs):
-        """Get the endpoint url for a required version.
+        """Get the endpoint url for a version.
+
+        :param tuple version: The version is always a minimum version in the
+            same major release as there should be no compatibility issues with
+            using a version newer than the one asked for.
 
         :returns str: The url for the specified version or None if no match.
         """
