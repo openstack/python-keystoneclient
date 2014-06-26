@@ -33,6 +33,7 @@ from keystoneclient.v3 import regions
 from keystoneclient.v3 import role_assignments
 from keystoneclient.v3 import roles
 from keystoneclient.v3 import services
+from keystoneclient.v3 import tokens
 from keystoneclient.v3 import users
 
 
@@ -144,6 +145,10 @@ EndpointFilterManager`
 
         :py:class:`keystoneclient.v3.users.UserManager`
 
+    .. py:attribute:: tokens
+
+        :py:class:`keystoneclient.v3.tokens.TokenManager`
+
     .. py:attribute:: trusts
 
         :py:class:`keystoneclient.v3.contrib.trusts.TrustManager`
@@ -170,6 +175,7 @@ EndpointFilterManager`
         self.roles = roles.RoleManager(self)
         self.services = services.ServiceManager(self)
         self.users = users.UserManager(self)
+        self.tokens = tokens.TokenManager(self)
         self.trusts = trusts.TrustManager(self)
 
         # DEPRECATED: if session is passed then we go to the new behaviour of
