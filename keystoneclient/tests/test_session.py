@@ -10,14 +10,17 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import uuid
 
 import httpretty
 import mock
 import requests
 import six
 
+from keystoneclient import adapter
 from keystoneclient.auth import base
 from keystoneclient import exceptions
+from keystoneclient.openstack.common import jsonutils
 from keystoneclient import session as client_session
 from keystoneclient.tests import utils
 
@@ -314,6 +317,7 @@ class CalledAuthPlugin(base.BaseAuthPlugin):
     def __init__(self, invalidate=True):
         self.get_token_called = False
         self.get_endpoint_called = False
+        self.endpoint_arguments = {}
         self.invalidate_called = False
         self._invalidate = invalidate
 
@@ -323,6 +327,7 @@ class CalledAuthPlugin(base.BaseAuthPlugin):
 
     def get_endpoint(self, session, **kwargs):
         self.get_endpoint_called = True
+        self.endpoint_arguments = kwargs
         return self.ENDPOINT
 
     def invalidate(self):
@@ -506,3 +511,91 @@ class SessionAuthTests(utils.TestCase):
         self.assertRaises(exceptions.Unauthorized, sess.get, self.TEST_URL,
                           authenticated=True, allow_reauth=False)
         self.assertFalse(auth.invalidate_called)
+
+
+class AdapterTest(utils.TestCase):
+
+    SERVICE_TYPE = uuid.uuid4().hex
+    SERVICE_NAME = uuid.uuid4().hex
+    INTERFACE = uuid.uuid4().hex
+    REGION_NAME = uuid.uuid4().hex
+    USER_AGENT = uuid.uuid4().hex
+
+    TEST_URL = CalledAuthPlugin.ENDPOINT
+
+    @httpretty.activate
+    def test_setting_variables(self):
+        response = uuid.uuid4().hex
+        self.stub_url(httpretty.GET, body=response)
+
+        auth = CalledAuthPlugin()
+        sess = client_session.Session()
+        adpt = adapter.Adapter(sess,
+                               auth=auth,
+                               service_type=self.SERVICE_TYPE,
+                               service_name=self.SERVICE_NAME,
+                               interface=self.INTERFACE,
+                               region_name=self.REGION_NAME,
+                               user_agent=self.USER_AGENT)
+
+        resp = adpt.get('/')
+        self.assertEqual(resp.text, response)
+
+        self.assertEqual(self.SERVICE_TYPE,
+                         auth.endpoint_arguments['service_type'])
+        self.assertEqual(self.SERVICE_NAME,
+                         auth.endpoint_arguments['service_name'])
+        self.assertEqual(self.INTERFACE,
+                         auth.endpoint_arguments['interface'])
+        self.assertEqual(self.REGION_NAME,
+                         auth.endpoint_arguments['region_name'])
+
+        self.assertTrue(auth.get_token_called)
+        self.assertRequestHeaderEqual('User-Agent', self.USER_AGENT)
+
+    @httpretty.activate
+    def test_legacy_binding(self):
+        key = uuid.uuid4().hex
+        val = uuid.uuid4().hex
+        response = jsonutils.dumps({key: val})
+
+        self.stub_url(httpretty.GET, body=response)
+
+        auth = CalledAuthPlugin()
+        sess = client_session.Session(auth=auth)
+        adpt = adapter.LegacyJsonAdapter(sess,
+                                         service_type=self.SERVICE_TYPE,
+                                         user_agent=self.USER_AGENT)
+
+        resp, body = adpt.get('/')
+        self.assertEqual(self.SERVICE_TYPE,
+                         auth.endpoint_arguments['service_type'])
+        self.assertEqual(resp.text, response)
+        self.assertEqual(val, body[key])
+
+    @httpretty.activate
+    def test_legacy_binding_non_json_resp(self):
+        response = uuid.uuid4().hex
+        self.stub_url(httpretty.GET, body=response, content_type='text/html')
+
+        auth = CalledAuthPlugin()
+        sess = client_session.Session(auth=auth)
+        adpt = adapter.LegacyJsonAdapter(sess,
+                                         service_type=self.SERVICE_TYPE,
+                                         user_agent=self.USER_AGENT)
+
+        resp, body = adpt.get('/')
+        self.assertEqual(self.SERVICE_TYPE,
+                         auth.endpoint_arguments['service_type'])
+        self.assertEqual(resp.text, response)
+        self.assertIsNone(body)
+
+    def test_methods(self):
+        sess = client_session.Session()
+        adpt = adapter.Adapter(sess)
+        url = 'http://url'
+
+        for method in ['get', 'head', 'post', 'put', 'patch', 'delete']:
+            with mock.patch.object(adpt, 'request') as m:
+                getattr(adpt, method)(url)
+                m.assert_called_once_with(url, method.upper())
