@@ -31,7 +31,8 @@ class EndpointManager(base.ManagerWithFind):
         """List all available endpoints."""
         return self._list('/endpoints', 'endpoints')
 
-    def create(self, region, service_id, publicurl, adminurl, internalurl):
+    def create(self, region, service_id, publicurl, adminurl=None,
+               internalurl=None):
         """Create a new endpoint."""
         body = {'endpoint': {'region': region,
                              'service_id': service_id,
