@@ -58,6 +58,7 @@ class AccessInfoTest(utils.TestCase, testresources.ResourcedTestCase):
         self.assertEqual(auth_ref.user_domain_name, 'Default')
 
         self.assertEqual(auth_ref.expires, token.expires)
+        self.assertEqual(auth_ref.issued, token.issued)
 
     def test_will_expire_soon(self):
         token = client_fixtures.unscoped_token()

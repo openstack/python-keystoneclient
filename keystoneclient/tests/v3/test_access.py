@@ -61,6 +61,11 @@ class AccessInfoTest(utils.TestCase):
 
         self.assertEqual(auth_ref.expires, timeutils.parse_isotime(
                          UNSCOPED_TOKEN['token']['expires_at']))
+        self.assertEqual(auth_ref.issued, timeutils.parse_isotime(
+                         UNSCOPED_TOKEN['token']['issued_at']))
+
+        self.assertEqual(auth_ref.expires, UNSCOPED_TOKEN.expires)
+        self.assertEqual(auth_ref.issued, UNSCOPED_TOKEN.issued)
 
     def test_will_expire_soon(self):
         expires = timeutils.utcnow() + datetime.timedelta(minutes=5)

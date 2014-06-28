@@ -121,6 +121,14 @@ class AccessInfo(dict):
         raise NotImplementedError()
 
     @property
+    def issued(self):
+        """Returns the token issue time (as datetime object)
+
+        :returns: datetime
+        """
+        raise NotImplementedError()
+
+    @property
     def username(self):
         """Returns the username associated with the authentication request.
         Follows the pattern defined in the V2 API of first looking for 'name',
@@ -364,6 +372,10 @@ class AccessInfoV2(AccessInfo):
         return timeutils.parse_isotime(self['token']['expires'])
 
     @property
+    def issued(self):
+        return timeutils.parse_isotime(self['token']['issued_at'])
+
+    @property
     def username(self):
         return self['user'].get('name', self['user'].get('username'))
 
@@ -528,6 +540,10 @@ class AccessInfoV3(AccessInfo):
     @property
     def expires(self):
         return timeutils.parse_isotime(self['expires_at'])
+
+    @property
+    def issued(self):
+        return timeutils.parse_isotime(self['issued_at'])
 
     @property
     def user_id(self):
