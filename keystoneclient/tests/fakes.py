@@ -21,7 +21,9 @@ places where actual behavior differs from the spec.
 from keystoneclient import access
 
 
-def assert_has_keys(dict, required=[], optional=[]):
+def assert_has_keys(dict, required=None, optional=None):
+    required = required or []
+    optional = optional or []
     keys = dict.keys()
     for k in required:
         try:
