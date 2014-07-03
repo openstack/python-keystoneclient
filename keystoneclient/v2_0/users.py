@@ -35,6 +35,10 @@ class UserManager(base.ManagerWithFind):
     """Manager class for manipulating Keystone users."""
     resource_class = User
 
+    def __init__(self, client, role_manager):
+        super(UserManager, self).__init__(client)
+        self.role_manager = role_manager
+
     def get(self, user):
         return self._get("/users/%s" % base.getid(user), "user")
 
@@ -122,5 +126,5 @@ class UserManager(base.ManagerWithFind):
                               "users")
 
     def list_roles(self, user, tenant=None):
-        return self.api.roles.roles_for_user(base.getid(user),
-                                             base.getid(tenant))
+        return self.role_manager.roles_for_user(base.getid(user),
+                                                base.getid(tenant))
