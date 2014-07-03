@@ -66,5 +66,5 @@ class RequestTokenManager(base.CrudManager):
         url, headers, body = oauth_client.sign(url, http_method='POST',
                                                headers=headers)
         resp, body = self.client.post(endpoint, headers=headers)
-        token = utils.get_oauth_token_from_body(body)
+        token = utils.get_oauth_token_from_body(resp.content)
         return self.resource_class(self, token)

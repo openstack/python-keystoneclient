@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import six
 from six.moves.urllib import parse as urlparse
 
 
@@ -24,6 +25,9 @@ def get_oauth_token_from_body(body):
     'oauth_token=12345&oauth_token_secret=67890' with
     'oauth_expires_at=2013-03-30T05:27:19.463201' possibly there, too.
     """
+
+    if six.PY3:
+        body = body.decode('utf-8')
 
     credentials = urlparse.parse_qs(body)
     key = credentials['oauth_token'][0]
