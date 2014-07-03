@@ -14,6 +14,7 @@
 
 from keystoneclient import base
 from keystoneclient.i18n import _
+from keystoneclient.v3 import endpoints
 from keystoneclient.v3 import policies
 
 
@@ -150,5 +151,5 @@ class EndpointPolicyManager(base.Manager):
             'ext_name': self.OS_EP_POLICY_EXT}
         return self._list(
             url,
-            self.client.endpoints.collection_key,
-            obj_class=self.client.endpoints.resource_class)
+            endpoints.EndpointManager.collection_key,
+            obj_class=endpoints.EndpointManager.resource_class)

@@ -40,8 +40,8 @@ class BaseTest(utils.TestCase):
                                     auth_url='http://127.0.0.1:5000',
                                     endpoint='http://127.0.0.1:5000')
 
-        self.client.get = self.mox.CreateMockAnything()
-        self.client.get('/OS-KSADM/roles/1').AndRaise(AttributeError)
+        self.client._adapter.get = self.mox.CreateMockAnything()
+        self.client._adapter.get('/OS-KSADM/roles/1').AndRaise(AttributeError)
         self.mox.ReplayAll()
 
         f = roles.Role(self.client.roles, {'id': 1, 'name': 'Member'})

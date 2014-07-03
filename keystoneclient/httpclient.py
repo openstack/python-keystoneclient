@@ -52,10 +52,11 @@ if not hasattr(urlparse, 'parse_qsl'):
 
 
 from keystoneclient import access
+from keystoneclient import adapter
 from keystoneclient.auth import base
 from keystoneclient import baseclient
 from keystoneclient import exceptions
-from keystoneclient.i18n import _, _LI, _LW
+from keystoneclient.i18n import _, _LW
 from keystoneclient import session as client_session
 from keystoneclient import utils
 
@@ -82,6 +83,51 @@ class _FakeRequestSession(object):
 
     def request(self, *args, **kwargs):
         return requests.request(*args, **kwargs)
+
+
+class _KeystoneAdapter(adapter.LegacyJsonAdapter):
+    """A wrapper layer to interface keystoneclient with a session.
+
+    An adapter provides a generic interface between a client and the session to
+    provide client specific defaults. This object is passed to the managers.
+    Keystoneclient managers have some additional requirements of variables that
+    they expect to be present on the passed object.
+
+    Subclass the existing adapter to provide those values that keystoneclient
+    managers expect.
+    """
+
+    @property
+    def user_id(self):
+        """Best effort to retrieve the user_id from the plugin.
+
+        Some managers rely on being able to get the currently authenticated
+        user id. This is a problem when we are trying to abstract away the
+        details of an auth plugin.
+
+        For example changing a user's password can require access to the
+        currently authenticated user_id.
+
+        Perform a best attempt to fetch this data. It will work in the legacy
+        case and with identity plugins and be None otherwise which is the same
+        as the historical behavior.
+        """
+        # the identity plugin case
+        try:
+            return self.session.auth.get_access(self.session).user_id
+        except AttributeError:
+            pass
+
+        # there is a case that we explicity allow (tested by our unit tests)
+        # that says you should be able to set the user_id on a legacy client
+        # and it should overwrite the one retrieved via authentication. If it's
+        # a legacy then self.session.auth is a client and we retrieve user_id.
+        try:
+            return self.session.auth.user_id
+        except AttributeError:
+            pass
+
+        return None
 
 
 class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
@@ -169,7 +215,6 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         self.project_domain_id = None
         self.project_domain_name = None
 
-        self.region_name = None
         self.auth_url = None
         self._endpoint = None
         self._management_url = None
@@ -193,8 +238,8 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
             self._management_url = self.auth_ref.management_url[0]
             self.auth_token_from_user = self.auth_ref.auth_token
             self.trust_id = self.auth_ref.trust_id
-            if self.auth_ref.has_service_catalog():
-                self.region_name = self.auth_ref.service_catalog.region_name
+            if self.auth_ref.has_service_catalog() and not region_name:
+                region_name = self.auth_ref.service_catalog.region_name
         else:
             self.auth_ref = None
 
@@ -251,8 +296,6 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
             self.auth_token_from_user = None
         if endpoint:
             self._endpoint = endpoint.rstrip('/')
-        if region_name:
-            self.region_name = region_name
         self._auth_token = None
 
         if not session:
@@ -263,6 +306,12 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         super(HTTPClient, self).__init__(session=session)
         self.domain = ''
         self.debug_log = debug
+
+        self._adapter = _KeystoneAdapter(session,
+                                         service_type='identity',
+                                         interface='admin',
+                                         region_name=region_name,
+                                         version=self.version)
 
         # keyring setup
         if use_keyring and keyring is None:
@@ -396,7 +445,7 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         project_domain_name = project_domain_name or self.project_domain_name
 
         trust_id = trust_id or self.trust_id
-        region_name = region_name or self.region_name
+        region_name = region_name or self._adapter.region_name
 
         if not token:
             token = self.auth_token_from_user
@@ -569,83 +618,110 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
     def serialize(self, entity):
         return jsonutils.dumps(entity)
 
-    @staticmethod
-    def _decode_body(resp):
-        if resp.text:
-            try:
-                body_resp = jsonutils.loads(resp.text)
-            except (ValueError, TypeError):
-                body_resp = None
-                _logger.debug("Could not decode JSON from body: %s",
-                              resp.text)
-        else:
-            _logger.debug("No body was returned.")
-            body_resp = None
-
-        return body_resp
-
-    def request(self, url, method, **kwargs):
+    def request(self, *args, **kwargs):
         """Send an http request with the specified characteristics.
 
         Wrapper around requests.request to handle tasks such as
         setting headers, JSON encoding/decoding, and error handling.
+
+        .. warning::
+            *DEPRECATED*: This function is no longer used. It was designed to
+            be used only by the managers and the managers now receive an
+            adapter so this function is no longer on the standard request path.
         """
-
-        try:
-            kwargs['json'] = kwargs.pop('body')
-        except KeyError:
-            pass
-
         kwargs.setdefault('authenticated', False)
-        resp = super(HTTPClient, self).request(url, method, **kwargs)
-        return resp, self._decode_body(resp)
+        return self._adapter.request(*args, **kwargs)
 
     def _cs_request(self, url, method, management=True, **kwargs):
         """Makes an authenticated request to keystone endpoint by
         concatenating self.management_url and url and passing in method and
         any associated kwargs.
         """
-        # NOTE(jamielennox): remember that if you use the legacy client mode
-        # (you create a client without a session) then this HTTPClient object
-        # is the auth plugin you are using. Values in the endpoint_filter may
-        # be ignored and you should look at get_endpoint to figure out what.
-        interface = 'admin' if management else 'public'
-        endpoint_filter = kwargs.setdefault('endpoint_filter', {})
-        endpoint_filter.setdefault('service_type', 'identity')
-        endpoint_filter.setdefault('interface', interface)
-
-        if self.version:
-            endpoint_filter.setdefault('version', self.version)
-
-        if self.region_name:
-            endpoint_filter.setdefault('region_name', self.region_name)
+        # NOTE(jamielennox): This is deprecated and is no longer a part of the
+        # standard client request path. It now goes via the adapter instead.
+        if not management:
+            endpoint_filter = kwargs.setdefault('endpoint_filter', {})
+            endpoint_filter.setdefault('interface', 'public')
 
         kwargs.setdefault('authenticated', None)
-        try:
-            return self.request(url, method, **kwargs)
-        except exceptions.MissingAuthPlugin:
-            _logger.info(_LI('Cannot get authenticated endpoint without an '
-                             'auth plugin'))
-            raise exceptions.AuthorizationFailure(
-                _('Current authorization does not have a known management '
-                  'url'))
+        return self.request(url, method, **kwargs)
 
     def get(self, url, **kwargs):
+        """Perform an authenticated GET request.
+
+        This calls :py:meth:`.request()` with ``method`` set to ``GET`` and an
+        authentication token if one is available.
+
+        .. warning::
+            *DEPRECATED*: This function is no longer used. It was designed to
+            be used by the managers and the managers now receive an adapter so
+            this function is no longer on the standard request path.
+        """
         return self._cs_request(url, 'GET', **kwargs)
 
     def head(self, url, **kwargs):
+        """Perform an authenticated HEAD request.
+
+        This calls :py:meth:`.request()` with ``method`` set to ``HEAD`` and an
+        authentication token if one is available.
+
+        .. warning::
+            *DEPRECATED*: This function is no longer used. It was designed to
+            be used by the managers and the managers now receive an adapter so
+            this function is no longer on the standard request path.
+        """
         return self._cs_request(url, 'HEAD', **kwargs)
 
     def post(self, url, **kwargs):
+        """Perform an authenticate POST request.
+
+        This calls :py:meth:`.request()` with ``method`` set to ``POST`` and an
+        authentication token if one is available.
+
+        .. warning::
+            *DEPRECATED*: This function is no longer used. It was designed to
+            be used by the managers and the managers now receive an adapter so
+            this function is no longer on the standard request path.
+        """
         return self._cs_request(url, 'POST', **kwargs)
 
     def put(self, url, **kwargs):
+        """Perform an authenticate PUT request.
+
+        This calls :py:meth:`.request()` with ``method`` set to ``PUT`` and an
+        authentication token if one is available.
+
+        .. warning::
+            *DEPRECATED*: This function is no longer used. It was designed to
+            be used by the managers and the managers now receive an adapter so
+            this function is no longer on the standard request path.
+        """
         return self._cs_request(url, 'PUT', **kwargs)
 
     def patch(self, url, **kwargs):
+        """Perform an authenticate PATCH request.
+
+        This calls :py:meth:`.request()` with ``method`` set to ``PATCH`` and
+        an authentication token if one is available.
+
+        .. warning::
+            *DEPRECATED*: This function is no longer used. It was designed to
+            be used by the managers and the managers now receive an adapter so
+            this function is no longer on the standard request path.
+        """
         return self._cs_request(url, 'PATCH', **kwargs)
 
     def delete(self, url, **kwargs):
+        """Perform an authenticate DELETE request.
+
+        This calls :py:meth:`.request()` with ``method`` set to ``DELETE`` and
+        an authentication token if one is available.
+
+        .. warning::
+            *DEPRECATED*: This function is no longer used. It was designed to
+            be used by the managers and the managers now receive an adapter so
+            this function is no longer on the standard request path.
+        """
         return self._cs_request(url, 'DELETE', **kwargs)
 
     # DEPRECATIONS: The following methods are no longer directly supported
@@ -656,20 +732,40 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
                                     'timeout': None,
                                     'verify_cert': 'verify'}
 
+    deprecated_adapter_variables = {'region_name': None}
+
     def __getattr__(self, name):
         # FIXME(jamielennox): provide a proper deprecated warning
         try:
             var_name = self.deprecated_session_variables[name]
         except KeyError:
-            raise AttributeError(_("Unknown Attribute: %s") % name)
+            pass
+        else:
+            return getattr(self.session, var_name or name)
 
-        return getattr(self.session, var_name or name)
+        try:
+            var_name = self.deprecated_adapter_variables[name]
+        except KeyError:
+            pass
+        else:
+            return getattr(self._adapter, var_name or name)
+
+        raise AttributeError(_("Unknown Attribute: %s") % name)
 
     def __setattr__(self, name, val):
         # FIXME(jamielennox): provide a proper deprecated warning
         try:
             var_name = self.deprecated_session_variables[name]
         except KeyError:
-            super(HTTPClient, self).__setattr__(name, val)
+            pass
         else:
-            setattr(self.session, var_name or name)
+            return setattr(self.session, var_name or name)
+
+        try:
+            var_name = self.deprecated_adapter_variables[name]
+        except KeyError:
+            pass
+        else:
+            return setattr(self._adapter, var_name or name)
+
+        super(HTTPClient, self).__setattr__(name, val)

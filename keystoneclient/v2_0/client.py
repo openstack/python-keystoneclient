@@ -130,17 +130,19 @@ class Client(httpclient.HTTPClient):
     def __init__(self, **kwargs):
         """Initialize a new client for the Keystone v2.0 API."""
         super(Client, self).__init__(**kwargs)
-        self.endpoints = endpoints.EndpointManager(self)
-        self.extensions = extensions.ExtensionManager(self)
-        self.roles = roles.RoleManager(self)
-        self.services = services.ServiceManager(self)
-        self.tokens = tokens.TokenManager(self)
-        self.users = users.UserManager(self, self.roles)
 
-        self.tenants = tenants.TenantManager(self, self.roles, self.users)
+        self.endpoints = endpoints.EndpointManager(self._adapter)
+        self.extensions = extensions.ExtensionManager(self._adapter)
+        self.roles = roles.RoleManager(self._adapter)
+        self.services = services.ServiceManager(self._adapter)
+        self.tokens = tokens.TokenManager(self._adapter)
+        self.users = users.UserManager(self._adapter, self.roles)
+
+        self.tenants = tenants.TenantManager(self._adapter,
+                                             self.roles, self.users)
 
         # extensions
-        self.ec2 = ec2.CredentialsManager(self)
+        self.ec2 = ec2.CredentialsManager(self._adapter)
 
         # DEPRECATED: if session is passed then we go to the new behaviour of
         # authenticating on the first required call.

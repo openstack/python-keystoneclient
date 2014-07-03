@@ -15,6 +15,8 @@
 from keystoneclient import base
 from keystoneclient import exceptions
 from keystoneclient.i18n import _
+from keystoneclient.v3 import endpoints
+from keystoneclient.v3 import projects
 
 
 class EndpointFilterManager(base.Manager):
@@ -72,8 +74,8 @@ class EndpointFilterManager(base.Manager):
         base_url = self._build_base_url(project=project)
         return super(EndpointFilterManager, self)._list(
             base_url,
-            self.client.endpoints.collection_key,
-            obj_class=self.client.endpoints.resource_class)
+            endpoints.EndpointManager.collection_key,
+            obj_class=endpoints.EndpointManager.resource_class)
 
     def list_projects_for_endpoint(self, endpoint):
         """List all projects for a given endpoint."""
@@ -83,5 +85,5 @@ class EndpointFilterManager(base.Manager):
         base_url = self._build_base_url(endpoint=endpoint)
         return super(EndpointFilterManager, self)._list(
             base_url,
-            self.client.projects.collection_key,
-            obj_class=self.client.projects.resource_class)
+            projects.ProjectManager.collection_key,
+            obj_class=projects.ProjectManager.resource_class)
