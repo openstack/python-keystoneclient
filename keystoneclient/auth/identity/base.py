@@ -125,8 +125,10 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
                                     for. This plugin will return None (failure)
                                     if service_type is not provided.
         :param string interface: The exposure of the endpoint. Should be
-                                 `public`, `internal` or `admin`.
-                                 Defaults to `public`.
+                                 `public`, `internal`, `admin`, or `auth`.
+                                 `auth` is special here to use the `auth_url`
+                                 rather than a URL extracted from the service
+                                 catalog. Defaults to `public`.
         :param string region_name: The region the endpoint should exist in.
                                    (optional)
         :param string service_name: The name of the service in the catalog.
@@ -138,6 +140,13 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
 
         :return string or None: A valid endpoint URL or None if not available.
         """
+        # NOTE(jamielennox): if you specifically ask for requests to be sent to
+        # the auth url then we can ignore the rest of the checks. Typically if
+        # you are asking for the auth endpoint it means that there is no
+        # catalog to query anyway.
+        if interface is base.AUTH_INTERFACE:
+            return self.auth_url
+
         if not service_type:
             LOG.warn('Plugin cannot return an endpoint without knowing the '
                      'service type that is required. Add service_type to '

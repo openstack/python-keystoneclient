@@ -16,6 +16,7 @@ import uuid
 import httpretty
 import six
 
+from keystoneclient.auth import base
 from keystoneclient.auth.identity import v2
 from keystoneclient.auth.identity import v3
 from keystoneclient.openstack.common import jsonutils
@@ -207,6 +208,15 @@ class CommonIdentityTests(object):
 
         self.assertEqual(200, resp.status_code)
         self.assertEqual(body, resp.text)
+
+    def test_asking_for_auth_endpoint_ignores_checks(self):
+        a = self.create_auth_plugin()
+        s = session.Session(auth=a)
+
+        auth_url = s.get_endpoint(service_type='compute',
+                                  interface=base.AUTH_INTERFACE)
+
+        self.assertEqual(self.TEST_URL, auth_url)
 
 
 class V3(CommonIdentityTests, utils.TestCase):

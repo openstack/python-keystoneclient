@@ -268,7 +268,7 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
             return self.auth_token_from_user
 
     def get_endpoint(self, session, interface=None, **kwargs):
-        if interface == 'public':
+        if interface == 'public' or interface is base.AUTH_INTERFACE:
             return self.auth_url
         else:
             return self.management_url

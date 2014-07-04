@@ -18,6 +18,7 @@ from keystoneclient.auth.conf import *  # noqa
 
 __all__ = [
     # auth.base
+    'AUTH_INTERFACE',
     'BaseAuthPlugin',
     'get_plugin_class',
     'PLUGIN_NAMESPACE',
