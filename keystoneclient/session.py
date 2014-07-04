@@ -20,9 +20,11 @@ import six
 from six.moves import urllib
 
 from keystoneclient import exceptions
+from keystoneclient.openstack.common import importutils
 from keystoneclient.openstack.common import jsonutils
 from keystoneclient import utils
 
+osprofiler_web = importutils.try_import("osprofiler.web")
 
 USER_AGENT = 'python-keystoneclient'
 
@@ -205,6 +207,9 @@ class Session(object):
                 raise exceptions.AuthorizationFailure("No token Available")
 
             headers['X-Auth-Token'] = token
+
+        if osprofiler_web:
+            headers.update(osprofiler_web.get_trace_id_headers())
 
         # if we are passed a fully qualified URL and an endpoint_filter we
         # should ignore the filter. This will make it easier for clients who
