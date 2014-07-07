@@ -86,7 +86,8 @@ class UserManager(base.ManagerWithFind):
         return self._update("/users/%s/OS-KSADM/tenant" % base.getid(user),
                             params, "user")
 
-    def create(self, name, password, email=None, tenant_id=None, enabled=True):
+    def create(self, name, password=None, email=None,
+               tenant_id=None, enabled=True):
         """Create a user."""
         params = {"user": {"name": name,
                            "password": password,

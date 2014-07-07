@@ -117,6 +117,39 @@ class UserTests(utils.TestCase):
         self.assertRequestBodyIs(json=req_body)
 
     @httpretty.activate
+    def test_create_user_without_password(self):
+        user_name = 'test'
+        user_id = uuid.uuid4().hex
+        tenant_id = uuid.uuid4().hex
+        user_enabled = True
+        req_body = {
+            'user': {
+                'name': user_name,
+                'password': None,
+                'tenantId': tenant_id,
+                'enabled': user_enabled,
+                'email': None,
+            }
+        }
+        resp_body = {
+            'user': {
+                'name': user_name,
+                'enabled': user_enabled,
+                'tenantId': tenant_id,
+                'id': user_id,
+            }
+        }
+
+        self.stub_url(httpretty.POST, ['users'], json=resp_body)
+
+        user = self.client.users.create(user_name, tenant_id=tenant_id,
+                                        enabled=user_enabled)
+        self.assertIsInstance(user, users.User)
+        self.assertEqual(user_id, user.id)
+        self.assertEqual(user_name, user.name)
+        self.assertRequestBodyIs(json=req_body)
+
+    @httpretty.activate
     def test_delete(self):
         self.stub_url(httpretty.DELETE, ['users', self.ADMIN_USER_ID],
                       status=204)
