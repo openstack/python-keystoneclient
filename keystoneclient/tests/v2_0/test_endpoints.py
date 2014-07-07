@@ -10,6 +10,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import uuid
+
 import httpretty
 
 from keystoneclient.tests.v2_0 import utils
@@ -46,7 +48,7 @@ class EndpointTests(utils.TestCase):
                 "publicurl": "http://host-3:8774/v1.1/$(tenant_id)s",
                 "internalurl": "http://host-3:8774/v1.1/$(tenant_id)s",
                 "adminurl": "http://host-3:8774/v1.1/$(tenant_id)s",
-                "service_id": "e044e21",
+                "service_id": uuid.uuid4().hex,
             }
         }
 
@@ -54,7 +56,7 @@ class EndpointTests(utils.TestCase):
             "endpoint": {
                 "adminurl": "http://host-3:8774/v1.1/$(tenant_id)s",
                 "region": "RegionOne",
-                "id": "1fd485b2ffd54f409a5ecd42cba11401",
+                "id": uuid.uuid4().hex,
                 "internalurl": "http://host-3:8774/v1.1/$(tenant_id)s",
                 "publicurl": "http://host-3:8774/v1.1/$(tenant_id)s",
             }
