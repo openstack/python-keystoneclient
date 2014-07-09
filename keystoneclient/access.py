@@ -337,6 +337,22 @@ class AccessInfo(dict):
         """
         return self.get('version')
 
+    @property
+    def oauth_access_token_id(self):
+        """Return the access token ID if OAuth authentication used.
+
+        :returns: str or None.
+        """
+        raise NotImplementedError()
+
+    @property
+    def oauth_consumer_id(self):
+        """Return the consumer ID if OAuth authentication used.
+
+        :returns: str or None.
+        """
+        raise NotImplementedError()
+
 
 class AccessInfoV2(AccessInfo):
     """An object for encapsulating a raw v2 auth token from identity
@@ -505,6 +521,14 @@ class AccessInfoV2(AccessInfo):
         else:
             return None
 
+    @property
+    def oauth_access_token_id(self):
+        return None
+
+    @property
+    def oauth_consumer_id(self):
+        return None
+
 
 class AccessInfoV3(AccessInfo):
     """An object for encapsulating a raw v3 auth token from identity
@@ -647,3 +671,11 @@ class AccessInfoV3(AccessInfo):
 
         else:
             return None
+
+    @property
+    def oauth_access_token_id(self):
+        return self.get('OS-OAUTH1', {}).get('access_token_id')
+
+    @property
+    def oauth_consumer_id(self):
+        return self.get('OS-OAUTH1', {}).get('consumer_id')

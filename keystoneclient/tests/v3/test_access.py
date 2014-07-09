@@ -11,8 +11,10 @@
 #    under the License.
 
 import datetime
+import uuid
 
 from keystoneclient import access
+from keystoneclient import fixture
 from keystoneclient.openstack.common import timeutils
 from keystoneclient.tests.v3 import client_fixtures
 from keystoneclient.tests.v3 import utils
@@ -152,3 +154,21 @@ class AccessInfoTest(utils.TestCase):
 
         self.assertFalse(auth_ref.domain_scoped)
         self.assertTrue(auth_ref.project_scoped)
+
+    def test_oauth_access(self):
+        consumer_id = uuid.uuid4().hex
+        access_token_id = uuid.uuid4().hex
+
+        token = fixture.V3Token()
+        token.set_project_scope()
+        token.set_oauth(access_token_id=access_token_id,
+                        consumer_id=consumer_id)
+
+        auth_ref = access.AccessInfo.factory(body=token)
+
+        self.assertEqual(consumer_id, auth_ref.oauth_consumer_id)
+        self.assertEqual(access_token_id, auth_ref.oauth_access_token_id)
+
+        self.assertEqual(consumer_id, auth_ref['OS-OAUTH1']['consumer_id'])
+        self.assertEqual(access_token_id,
+                         auth_ref['OS-OAUTH1']['access_token_id'])
