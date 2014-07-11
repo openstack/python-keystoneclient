@@ -11,6 +11,7 @@
 #    under the License.
 
 import datetime
+import uuid
 
 import testresources
 
@@ -148,6 +149,21 @@ class AccessInfoTest(utils.TestCase, testresources.ResourcedTestCase):
         self.assertEqual([role_id], auth_ref['metadata']['roles'])
         self.assertEqual([role_name], auth_ref.role_names)
         self.assertEqual([{'name': role_name}], auth_ref['user']['roles'])
+
+    def test_trusts(self):
+        user_id = uuid.uuid4().hex
+        trust_id = uuid.uuid4().hex
+
+        token = fixture.V2Token(user_id=user_id, trust_id=trust_id)
+        token.set_scope()
+        token.add_role()
+
+        auth_ref = access.AccessInfo.factory(body=token)
+
+        self.assertEqual(trust_id, auth_ref.trust_id)
+        self.assertEqual(user_id, auth_ref.trustee_user_id)
+
+        self.assertEqual(trust_id, token['access']['trust']['id'])
 
 
 def load_tests(loader, tests, pattern):

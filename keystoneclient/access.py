@@ -264,6 +264,22 @@ class AccessInfo(dict):
         raise NotImplementedError()
 
     @property
+    def trustee_user_id(self):
+        """Returns the trustee user id associated with a trust.
+
+        :returns: str or None (if no trust associated with the token)
+        """
+        raise NotImplementedError()
+
+    @property
+    def trustor_user_id(self):
+        """Returns the trustor user id associated with a trust.
+
+        :returns: str or None (if no trust associated with the token)
+        """
+        raise NotImplementedError()
+
+    @property
     def project_id(self):
         """Returns the project ID associated with the authentication
         request, or None if the authentication request wasn't scoped to a
@@ -469,6 +485,15 @@ class AccessInfoV2(AccessInfo):
         return 'trust' in self
 
     @property
+    def trustee_user_id(self):
+        return self.get('trust', {}).get('trustee_user_id')
+
+    @property
+    def trustor_user_id(self):
+        # this information is not available in the v2 token bug: #1331882
+        return None
+
+    @property
     def project_id(self):
         try:
             tenant_dict = self['token']['tenant']
@@ -648,6 +673,14 @@ class AccessInfoV3(AccessInfo):
     @property
     def trust_scoped(self):
         return 'OS-TRUST:trust' in self
+
+    @property
+    def trustee_user_id(self):
+        return self.get('OS-TRUST:trust', {}).get('trustee_user', {}).get('id')
+
+    @property
+    def trustor_user_id(self):
+        return self.get('OS-TRUST:trust', {}).get('trustor_user', {}).get('id')
 
     @property
     def auth_url(self):
