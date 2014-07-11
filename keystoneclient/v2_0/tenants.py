@@ -55,14 +55,14 @@ class Tenant(base.Resource):
         return retval
 
     def add_user(self, user, role):
-        return self.manager.api.roles.add_user_role(base.getid(user),
-                                                    base.getid(role),
-                                                    self.id)
-
-    def remove_user(self, user, role):
-        return self.manager.api.roles.remove_user_role(base.getid(user),
+        return self.manager.role_manager.add_user_role(base.getid(user),
                                                        base.getid(role),
                                                        self.id)
+
+    def remove_user(self, user, role):
+        return self.manager.role_manager.remove_user_role(base.getid(user),
+                                                          base.getid(role),
+                                                          self.id)
 
     def list_users(self):
         return self.manager.list_users(self.id)
@@ -71,6 +71,11 @@ class Tenant(base.Resource):
 class TenantManager(base.ManagerWithFind):
     """Manager class for manipulating Keystone tenants."""
     resource_class = Tenant
+
+    def __init__(self, client, role_manager, user_manager):
+        super(TenantManager, self).__init__(client)
+        self.role_manager = role_manager
+        self.user_manager = user_manager
 
     def get(self, tenant_id):
         return self._get("/tenants/%s" % tenant_id, "tenant")
@@ -145,16 +150,16 @@ class TenantManager(base.ManagerWithFind):
 
     def list_users(self, tenant):
         """List users for a tenant."""
-        return self.api.users.list(base.getid(tenant))
+        return self.user_manager.list(base.getid(tenant))
 
     def add_user(self, tenant, user, role):
         """Add a user to a tenant with the given role."""
-        return self.api.roles.add_user_role(base.getid(user),
-                                            base.getid(role),
-                                            base.getid(tenant))
+        return self.role_manager.add_user_role(base.getid(user),
+                                               base.getid(role),
+                                               base.getid(tenant))
 
     def remove_user(self, tenant, user, role):
         """Remove the specified role from the user on the tenant."""
-        return self.api.roles.remove_user_role(base.getid(user),
-                                               base.getid(role),
-                                               base.getid(tenant))
+        return self.role_manager.remove_user_role(base.getid(user),
+                                                  base.getid(role),
+                                                  base.getid(tenant))
