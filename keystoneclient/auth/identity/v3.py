@@ -13,6 +13,7 @@
 import abc
 import logging
 
+from oslo.config import cfg
 import six
 
 from keystoneclient import access
@@ -115,6 +116,24 @@ class Auth(base.BaseIdentityPlugin):
         return access.AccessInfoV3(resp.headers['X-Subject-Token'],
                                    **resp_data)
 
+    @classmethod
+    def get_options(cls):
+        options = super(Auth, cls).get_options()
+
+        options.extend([
+            cfg.StrOpt('domain-id', help='Domain ID to scope to'),
+            cfg.StrOpt('domain-name', help='Domain name to scope to'),
+            cfg.StrOpt('project-id', help='Project ID to scope to'),
+            cfg.StrOpt('project-name', help='Project name to scope to'),
+            cfg.StrOpt('project-domain-id',
+                       help='Domain ID containing project'),
+            cfg.StrOpt('project-domain-name',
+                       help='Domain name containing project'),
+            cfg.StrOpt('trust-id', help='Trust ID'),
+        ])
+
+        return options
+
 
 @six.add_metaclass(abc.ABCMeta)
 class AuthMethod(object):
@@ -214,6 +233,21 @@ class PasswordMethod(AuthMethod):
 class Password(AuthConstructor):
     _auth_method_class = PasswordMethod
 
+    @classmethod
+    def get_options(cls):
+        options = super(Password, cls).get_options()
+
+        options.extend([
+            cfg.StrOpt('user-id', help='User ID'),
+            cfg.StrOpt('user-name', dest='username', help='Username',
+                       deprecated_name='username'),
+            cfg.StrOpt('user-domain-id', help="User's domain id"),
+            cfg.StrOpt('user-domain-name', help="User's domain name"),
+            cfg.StrOpt('password', help="User's password"),
+        ])
+
+        return options
+
 
 class TokenMethod(AuthMethod):
 
@@ -236,3 +270,13 @@ class Token(AuthConstructor):
 
     def __init__(self, auth_url, token, **kwargs):
         super(Token, self).__init__(auth_url, token=token, **kwargs)
+
+    @classmethod
+    def get_options(cls):
+        options = super(Token, cls).get_options()
+
+        options.extend([
+            cfg.StrOpt('token', help='Token to authenticate with'),
+        ])
+
+        return options

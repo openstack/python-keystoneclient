@@ -13,6 +13,31 @@
 import abc
 
 import six
+import stevedore
+
+from keystoneclient import exceptions
+
+PLUGIN_NAMESPACE = 'keystoneclient.auth.plugin'
+
+
+def get_plugin_class(name):
+    """Retrieve a plugin class by its entrypoint name.
+
+    :param str name: The name of the object to get.
+
+    :returns: An auth plugin class.
+
+    :raises exceptions.NoMatchingPlugin: if a plugin cannot be created.
+    """
+    try:
+        mgr = stevedore.DriverManager(namespace=PLUGIN_NAMESPACE,
+                                      name=name,
+                                      invoke_on_load=False)
+    except RuntimeError:
+        msg = 'The plugin %s could not be found' % name
+        raise exceptions.NoMatchingPlugin(msg)
+
+    return mgr.driver
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -70,3 +95,24 @@ class BaseAuthPlugin(object):
                        If nothing happens returns False to indicate give up.
         """
         return False
+
+    @classmethod
+    def get_options(cls):
+        """Return the list of parameters associated with the auth plugin.
+
+        This list may be used to generate CLI or config arguments.
+
+        :returns list: A list of Param objects describing available plugin
+                       parameters.
+        """
+        return []
+
+    @classmethod
+    def load_from_options(cls, **kwargs):
+        """Create a plugin from the arguments retrieved from get_options.
+
+        A client can override this function to do argument validation or to
+        handle differences between the registered options and what is required
+        to create the plugin.
+        """
+        return cls(**kwargs)

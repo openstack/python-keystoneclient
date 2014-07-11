@@ -13,6 +13,7 @@
 import abc
 import logging
 
+from oslo.config import cfg
 import six
 
 from keystoneclient import _discover
@@ -178,3 +179,13 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
                 session_endpoint_cache[sc_url] = disc
 
         return disc.url_for(version)
+
+    @classmethod
+    def get_options(cls):
+        options = super(BaseIdentityPlugin, cls).get_options()
+
+        options.extend([
+            cfg.StrOpt('auth-url', help='Authentication URL'),
+        ])
+
+        return options
