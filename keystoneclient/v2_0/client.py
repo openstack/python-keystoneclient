@@ -135,7 +135,7 @@ class Client(httpclient.HTTPClient):
         self.services = services.ServiceManager(self)
         self.tenants = tenants.TenantManager(self)
         self.tokens = tokens.TokenManager(self)
-        self.users = users.UserManager(self)
+        self.users = users.UserManager(self, self.roles)
 
         # extensions
         self.ec2 = ec2.CredentialsManager(self)
