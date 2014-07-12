@@ -25,6 +25,7 @@ import functools
 import six
 from six.moves import urllib
 
+from keystoneclient import auth
 from keystoneclient import exceptions
 from keystoneclient.openstack.common.apiclient import base
 
@@ -337,19 +338,26 @@ class CrudManager(Manager):
         return self._head(self.build_url(dict_args_in_out=kwargs))
 
     @filter_kwargs
-    def list(self, **kwargs):
+    def list(self, fallback_to_auth=False, **kwargs):
         url = self.build_url(dict_args_in_out=kwargs)
 
-        if kwargs:
-            query = '?%s' % urllib.parse.urlencode(kwargs)
-        else:
-            query = ''
-        return self._list(
-            '%(url)s%(query)s' % {
-                'url': url,
-                'query': query,
-            },
-            self.collection_key)
+        try:
+            if kwargs:
+                query = '?%s' % urllib.parse.urlencode(kwargs)
+            else:
+                query = ''
+            url_query = '%(url)s%(query)s' % {'url': url, 'query': query}
+            return self._list(
+                url_query,
+                self.collection_key)
+        except exceptions.EmptyCatalog:
+            if fallback_to_auth:
+                return self._list(
+                    url_query,
+                    self.collection_key,
+                    endpoint_filter={'interface': auth.AUTH_INTERFACE})
+            else:
+                raise
 
     @filter_kwargs
     def put(self, **kwargs):

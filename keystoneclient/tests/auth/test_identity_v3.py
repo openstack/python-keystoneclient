@@ -15,7 +15,9 @@ import uuid
 
 from keystoneclient import access
 from keystoneclient.auth.identity import v3
+from keystoneclient import client
 from keystoneclient import exceptions
+from keystoneclient import fixture
 from keystoneclient import session
 from keystoneclient.tests import utils
 
@@ -110,6 +112,11 @@ class V3IdentityPlugin(utils.TestCase):
 
     def setUp(self):
         super(V3IdentityPlugin, self).setUp()
+
+        V3_URL = "%sv3" % self.TEST_URL
+        self.TEST_DISCOVERY_RESPONSE = {
+            'versions': {'values': [fixture.V3Discovery(V3_URL)]}}
+
         self.TEST_RESPONSE_DICT = {
             "token": {
                 "methods": [
@@ -138,6 +145,31 @@ class V3IdentityPlugin(utils.TestCase):
                 "catalog": self.TEST_SERVICE_CATALOG
             },
         }
+        self.TEST_PROJECTS_RESPONSE = {
+            "projects": [
+                {
+                    "domain_id": "1789d1",
+                    "enabled": "True",
+                    "id": "263fd9",
+                    "links": {
+                        "self": "https://identity:5000/v3/projects/263fd9"
+                    },
+                    "name": "Dev Group A"
+                },
+                {
+                    "domain_id": "1789d1",
+                    "enabled": "True",
+                    "id": "e56ad3",
+                    "links": {
+                        "self": "https://identity:5000/v3/projects/e56ad3"
+                    },
+                    "name": "Dev Group B"
+                }
+            ],
+            "links": {
+                "self": "https://identity:5000/v3/projects",
+            }
+        }
 
     def stub_auth(self, subject_token=None, **kwargs):
         if not subject_token:
@@ -164,6 +196,29 @@ class V3IdentityPlugin(utils.TestCase):
         self.assertRequestHeaderEqual('Content-Type', 'application/json')
         self.assertRequestHeaderEqual('Accept', 'application/json')
         self.assertEqual(s.auth.auth_ref.auth_token, self.TEST_TOKEN)
+
+    def test_authenticate_with_username_password_unscoped(self):
+        del self.TEST_RESPONSE_DICT['token']['catalog']
+        del self.TEST_RESPONSE_DICT['token']['project']
+
+        self.stub_auth(json=self.TEST_RESPONSE_DICT)
+        self.stub_url(method="GET", json=self.TEST_DISCOVERY_RESPONSE)
+        test_user_id = self.TEST_RESPONSE_DICT['token']['user']['id']
+        self.stub_url(method="GET",
+                      json=self.TEST_PROJECTS_RESPONSE,
+                      parts=['users', test_user_id, 'projects'])
+
+        a = v3.Password(self.TEST_URL,
+                        username=self.TEST_USER,
+                        password=self.TEST_PASS)
+        s = session.Session(auth=a)
+        cs = client.Client(session=s, auth_url=self.TEST_URL)
+
+        # As a sanity check on the auth_ref, make sure client has the
+        # proper user id, that it fetches the right project response
+        self.assertEqual(test_user_id, a.auth_ref.user_id)
+        t = cs.projects.list(user=a.auth_ref.user_id)
+        self.assertEqual(2, len(t))
 
     def test_authenticate_with_username_password_domain_scoped(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
