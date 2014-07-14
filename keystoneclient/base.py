@@ -89,7 +89,7 @@ class Manager(object):
         """
         return self.client
 
-    def _list(self, url, response_key, obj_class=None, body=None):
+    def _list(self, url, response_key, obj_class=None, body=None, **kwargs):
         """List the collection.
 
         :param url: a partial URL, e.g., '/servers'
@@ -99,11 +99,12 @@ class Manager(object):
             (self.resource_class will be used by default)
         :param body: data that will be encoded as JSON and passed in POST
             request (GET will be sent by default)
+        :param kwargs: Additional arguments will be passed to the request.
         """
         if body:
-            resp, body = self.client.post(url, body=body)
+            resp, body = self.client.post(url, body=body, **kwargs)
         else:
-            resp, body = self.client.get(url)
+            resp, body = self.client.get(url, **kwargs)
 
         if obj_class is None:
             obj_class = self.resource_class
@@ -118,30 +119,32 @@ class Manager(object):
 
         return [obj_class(self, res, loaded=True) for res in data if res]
 
-    def _get(self, url, response_key):
+    def _get(self, url, response_key, **kwargs):
         """Get an object from collection.
 
         :param url: a partial URL, e.g., '/servers'
         :param response_key: the key to be looked up in response dictionary,
             e.g., 'server'
+        :param kwargs: Additional arguments will be passed to the request.
         """
-        resp, body = self.client.get(url)
+        resp, body = self.client.get(url, **kwargs)
         return self.resource_class(self, body[response_key], loaded=True)
 
-    def _head(self, url):
+    def _head(self, url, **kwargs):
         """Retrieve request headers for an object.
 
         :param url: a partial URL, e.g., '/servers'
+        :param kwargs: Additional arguments will be passed to the request.
         """
-        resp, body = self.client.head(url)
+        resp, body = self.client.head(url, **kwargs)
         return resp.status_code == 204
 
-    def _create(self, url, body, response_key, return_raw=False):
+    def _create(self, url, body, response_key, return_raw=False, **kwargs):
         """Deprecated. Use `_post` instead.
         """
-        return self._post(url, body, response_key, return_raw)
+        return self._post(url, body, response_key, return_raw, **kwargs)
 
-    def _post(self, url, body, response_key, return_raw=False):
+    def _post(self, url, body, response_key, return_raw=False, **kwargs):
         """Create an object.
 
         :param url: a partial URL, e.g., '/servers'
@@ -151,13 +154,14 @@ class Manager(object):
             e.g., 'servers'
         :param return_raw: flag to force returning raw JSON instead of
             Python object of self.resource_class
+        :param kwargs: Additional arguments will be passed to the request.
         """
-        resp, body = self.client.post(url, body=body)
+        resp, body = self.client.post(url, body=body, **kwargs)
         if return_raw:
             return body[response_key]
         return self.resource_class(self, body[response_key])
 
-    def _put(self, url, body=None, response_key=None):
+    def _put(self, url, body=None, response_key=None, **kwargs):
         """Update an object with PUT method.
 
         :param url: a partial URL, e.g., '/servers'
@@ -165,8 +169,9 @@ class Manager(object):
             request (GET will be sent by default)
         :param response_key: the key to be looked up in response dictionary,
             e.g., 'servers'
+        :param kwargs: Additional arguments will be passed to the request.
         """
-        resp, body = self.client.put(url, body=body)
+        resp, body = self.client.put(url, body=body, **kwargs)
         # PUT requests may not return a body
         if body is not None:
             if response_key is not None:
@@ -174,7 +179,7 @@ class Manager(object):
             else:
                 return self.resource_class(self, body)
 
-    def _patch(self, url, body=None, response_key=None):
+    def _patch(self, url, body=None, response_key=None, **kwargs):
         """Update an object with PATCH method.
 
         :param url: a partial URL, e.g., '/servers'
@@ -182,28 +187,31 @@ class Manager(object):
             request (GET will be sent by default)
         :param response_key: the key to be looked up in response dictionary,
             e.g., 'servers'
+        :param kwargs: Additional arguments will be passed to the request.
         """
-        resp, body = self.client.patch(url, body=body)
+        resp, body = self.client.patch(url, body=body, **kwargs)
         if response_key is not None:
             return self.resource_class(self, body[response_key])
         else:
             return self.resource_class(self, body)
 
-    def _delete(self, url):
+    def _delete(self, url, **kwargs):
         """Delete an object.
 
         :param url: a partial URL, e.g., '/servers/my-server'
+        :param kwargs: Additional arguments will be passed to the request.
         """
-        return self.client.delete(url)
+        return self.client.delete(url, **kwargs)
 
     def _update(self, url, body=None, response_key=None, method="PUT",
-                management=True):
+                management=True, **kwargs):
         methods = {"PUT": self.client.put,
                    "POST": self.client.post,
                    "PATCH": self.client.patch}
         try:
             resp, body = methods[method](url, body=body,
-                                         management=management)
+                                         management=management,
+                                         **kwargs)
         except KeyError:
             raise exceptions.ClientException("Invalid update method: %s"
                                              % method)
