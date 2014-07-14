@@ -10,7 +10,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from keystoneclient import auth
 from keystoneclient import base
+from keystoneclient import exceptions
 from keystoneclient import utils
 
 
@@ -48,14 +50,19 @@ class TokenManager(base.Manager):
             params['auth']['tenantId'] = tenant_id
         elif tenant_name:
             params['auth']['tenantName'] = tenant_name
-        reset = 0
-        if self.api.management_url is None:
-            reset = 1
-            self.api.management_url = self.api.auth_url
-        token_ref = self._create('/tokens', params, "access",
-                                 return_raw=return_raw, log=False)
-        if reset:
-            self.api.management_url = None
+
+        args = ['/tokens', params, 'access']
+        kwargs = {'return_raw': return_raw, 'log': False}
+
+        # NOTE(jamielennox): try doing a regular admin query first. If there is
+        # no endpoint that can satisfy the request (eg an unscoped token) then
+        # issue it against the auth_url.
+        try:
+            token_ref = self._create(*args, **kwargs)
+        except exceptions.EndpointNotFound:
+            kwargs['endpoint_filter'] = {'interface': auth.AUTH_INTERFACE}
+            token_ref = self._create(*args, **kwargs)
+
         return token_ref
 
     def delete(self, token):
