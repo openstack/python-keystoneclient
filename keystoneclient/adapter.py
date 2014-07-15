@@ -10,6 +10,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from keystoneclient.openstack.common import jsonutils
 from keystoneclient import utils
 
 
@@ -108,7 +109,7 @@ class LegacyJsonAdapter(Adapter):
         body = None
         if resp.text:
             try:
-                body = resp.json()
+                body = jsonutils.loads(resp.text)
             except ValueError:
                 pass
 
