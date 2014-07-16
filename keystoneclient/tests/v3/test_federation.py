@@ -15,9 +15,12 @@ import uuid
 
 from keystoneclient import exceptions
 from keystoneclient.tests.v3 import utils
+from keystoneclient.v3.contrib.federation import base
 from keystoneclient.v3.contrib.federation import identity_providers
 from keystoneclient.v3.contrib.federation import mappings
 from keystoneclient.v3.contrib.federation import protocols
+from keystoneclient.v3 import domains
+from keystoneclient.v3 import projects
 
 
 class IdentityProviderTests(utils.TestCase, utils.CrudTests):
@@ -313,3 +316,72 @@ class ProtocolTests(utils.TestCase, utils.CrudTests):
         self.assertEqual(expected, returned.to_dict())
         request_body = {'mapping_id': request_args['mapping']}
         self.assertEntityRequestBodyIs(request_body)
+
+
+class EntityManagerTests(utils.TestCase):
+    def test_create_object_expect_fail(self):
+        self.assertRaises(TypeError,
+                          base.EntityManager,
+                          self.client)
+
+
+class FederationProjectTests(utils.TestCase):
+
+    def setUp(self):
+        super(FederationProjectTests, self).setUp()
+        self.key = 'project'
+        self.collection_key = 'projects'
+        self.model = projects.Project
+        self.manager = self.client.federation.projects
+        self.URL = "%s%s" % (self.TEST_URL, '/OS-FEDERATION/projects')
+
+    def new_ref(self, **kwargs):
+        kwargs.setdefault('id', uuid.uuid4().hex)
+        kwargs.setdefault('domain_id', uuid.uuid4().hex)
+        kwargs.setdefault('enabled', True)
+        kwargs.setdefault('name', uuid.uuid4().hex)
+        return kwargs
+
+    def test_list_accessible_projects(self):
+        projects_ref = [self.new_ref(), self.new_ref()]
+        projects_json = {
+            self.collection_key: [self.new_ref(), self.new_ref()]
+        }
+        self.requests.register_uri('GET', self.URL,
+                                   json=projects_json, status_code=200)
+        returned_list = self.manager.list()
+
+        self.assertEqual(len(projects_ref), len(returned_list))
+        for project in returned_list:
+            self.assertIsInstance(project, self.model)
+
+
+class FederationDomainTests(utils.TestCase):
+
+    def setUp(self):
+        super(FederationDomainTests, self).setUp()
+        self.key = 'domain'
+        self.collection_key = 'domains'
+        self.model = domains.Domain
+        self.manager = self.client.federation.domains
+
+        self.URL = "%s%s" % (self.TEST_URL, '/OS-FEDERATION/domains')
+
+    def new_ref(self, **kwargs):
+        kwargs.setdefault('id', uuid.uuid4().hex)
+        kwargs.setdefault('enabled', True)
+        kwargs.setdefault('name', uuid.uuid4().hex)
+        kwargs.setdefault('description', uuid.uuid4().hex)
+        return kwargs
+
+    def test_list_accessible_domains(self):
+        domains_ref = [self.new_ref(), self.new_ref()]
+        domains_json = {
+            self.collection_key: domains_ref
+        }
+        self.requests.register_uri('GET', self.URL,
+                                   json=domains_json, status_code=200)
+        returned_list = self.manager.list()
+        self.assertEqual(len(domains_ref), len(returned_list))
+        for domain in returned_list:
+            self.assertIsInstance(domain, self.model)
