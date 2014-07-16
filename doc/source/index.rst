@@ -16,6 +16,7 @@ Contents:
    using-api-v2
    using-api-v3
 
+   authentication-plugins
    middlewarearchitecture
 
    api/modules
