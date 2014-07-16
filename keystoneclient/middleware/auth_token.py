@@ -458,6 +458,10 @@ class AuthProtocol(object):
     def __init__(self, app, conf):
         self.LOG = logging.getLogger(conf.get('log_name', __name__))
         self.LOG.info('Starting keystone auth_token middleware')
+        self.LOG.warning(
+            'This middleware module is deprecated as of v0.10.0 in favor of '
+            'keystonemiddleware.auth_token - please update your WSGI pipeline '
+            'to reference the new middleware package.')
         self.conf = conf
         self.app = app
 
