@@ -19,6 +19,7 @@ import six
 from keystoneclient import _discover
 from keystoneclient.auth import base
 from keystoneclient import exceptions
+from keystoneclient import utils
 
 LOG = logging.getLogger(__name__)
 
@@ -192,7 +193,7 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
             return url
 
         try:
-            disc = self.get_discovery(session, url)
+            disc = self.get_discovery(session, url, authenticated=False)
         except (exceptions.DiscoveryFailure,
                 exceptions.HTTPError,
                 exceptions.ConnectionError):
@@ -206,7 +207,8 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
 
         return url
 
-    def get_discovery(self, session, url):
+    @utils.positional()
+    def get_discovery(self, session, url, authenticated=None):
         """Return the discovery object for a URL.
 
         Check the session and the plugin cache to see if we have already
@@ -218,6 +220,9 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
 
         :param Session session: A session object to discover with.
         :param str url: The url to lookup.
+        :param bool authenticated: Include a token in the discovery call.
+                                   (optional) Defaults to None (use a token
+                                   if a plugin is installed).
 
         :raises: DiscoveryFailure if for some reason the lookup fails.
         :raises: HttpError An error from an invalid HTTP response.
@@ -241,7 +246,8 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
             if disc:
                 break
         else:
-            disc = _discover.Discover(session, url)
+            disc = _discover.Discover(session, url,
+                                      authenticated=authenticated)
             self._endpoint_cache[url] = disc
             session_endpoint_cache[url] = disc
 

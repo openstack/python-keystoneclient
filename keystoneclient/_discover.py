@@ -24,16 +24,18 @@ raw data specified in version discovery responses.
 import logging
 
 from keystoneclient import exceptions
+from keystoneclient import utils
 
 
 _LOGGER = logging.getLogger(__name__)
 
 
-def get_version_data(session, url):
+@utils.positional()
+def get_version_data(session, url, authenticated=None):
     """Retrieve raw version data from a url."""
     headers = {'Accept': 'application/json'}
 
-    resp = session.get(url, headers=headers)
+    resp = session.get(url, headers=headers, authenticated=authenticated)
 
     try:
         body_resp = resp.json()
@@ -131,8 +133,10 @@ class Discover(object):
     DEPRECATED_STATUSES = ('deprecated',)
     EXPERIMENTAL_STATUSES = ('experimental',)
 
-    def __init__(self, session, url):
-        self._data = get_version_data(session, url)
+    @utils.positional()
+    def __init__(self, session, url, authenticated=None):
+        self._data = get_version_data(session, url,
+                                      authenticated=authenticated)
 
     def raw_version_data(self, allow_experimental=False,
                          allow_deprecated=True, allow_unknown=False):

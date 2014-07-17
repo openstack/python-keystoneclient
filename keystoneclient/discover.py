@@ -17,6 +17,7 @@ import six
 from keystoneclient import _discover
 from keystoneclient import exceptions
 from keystoneclient import session as client_session
+from keystoneclient import utils
 from keystoneclient.v2_0 import client as v2_client
 from keystoneclient.v3 import client as v3_client
 
@@ -44,7 +45,8 @@ class Discover(_discover.Discover):
     operates upon the data that was retrieved.
     """
 
-    def __init__(self, session=None, **kwargs):
+    @utils.positional(2)
+    def __init__(self, session=None, authenticated=None, **kwargs):
         """Construct a new discovery object.
 
         The connection parameters associated with this method are the same
@@ -98,6 +100,10 @@ class Discover(_discover.Discover):
                                  service. default: False (optional)
                                  DEPRECATED: use the session object. This is
                                  ignored if a session is provided.
+        :param bool authenticated: Should a token be used to perform the
+                                   initial discovery operations.
+                                   default: None (attach a token if an auth
+                                   plugin is available).
         """
 
         if not session:
@@ -121,7 +127,8 @@ class Discover(_discover.Discover):
                                               'auth_url or endpoint')
 
         self._client_kwargs = kwargs
-        super(Discover, self).__init__(session, url)
+        super(Discover, self).__init__(session, url,
+                                       authenticated=authenticated)
 
     def available_versions(self, **kwargs):
         """Return a list of identity APIs available on the server and the data
