@@ -218,7 +218,7 @@ class Token(dict):
 
     @property
     def project_domain_name(self):
-        return self.root.get('project', {}).get('project', {}).get('name')
+        return self.root.get('project', {}).get('domain', {}).get('name')
 
     @project_domain_name.setter
     def project_domain_name(self, value):
