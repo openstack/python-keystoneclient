@@ -32,8 +32,7 @@ class CertificateConfigError(Exception):
     """Error reading the certificate"""
     def __init__(self, output):
         self.output = output
-        msg = ("Unable to load certificate. "
-               "Ensure your system is configured properly.")
+        msg = 'Unable to load certificate.'
         super(CertificateConfigError, self).__init__(msg)
 
 
@@ -41,7 +40,7 @@ class CMSError(Exception):
     """Error reading the certificate"""
     def __init__(self, output):
         self.output = output
-        msg = ("Unable to sign or verify data.")
+        msg = 'Unable to sign or verify data.'
         super(CMSError, self).__init__(msg)
 
 
