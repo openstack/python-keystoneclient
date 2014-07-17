@@ -34,7 +34,8 @@ class Auth(base.BaseIdentityPlugin):
                  project_id=None,
                  project_name=None,
                  project_domain_id=None,
-                 project_domain_name=None):
+                 project_domain_name=None,
+                 reauthenticate=True):
         """Construct an Identity V3 Authentication Plugin.
 
         :param string auth_url: Identity service endpoint for authentication.
@@ -46,9 +47,13 @@ class Auth(base.BaseIdentityPlugin):
         :param string project_name: Project name for project scoping.
         :param string project_domain_id: Project's domain ID for project.
         :param string project_domain_name: Project's domain name for project.
+        :param bool reauthenticate: Allow fetching a new token if the current
+                                    one is going to expire.
+                                    (optional) default True
         """
 
-        super(Auth, self).__init__(auth_url=auth_url)
+        super(Auth, self).__init__(auth_url=auth_url,
+                                   reauthenticate=reauthenticate)
 
         self.auth_methods = auth_methods
         self.trust_id = trust_id

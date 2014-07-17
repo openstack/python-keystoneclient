@@ -34,12 +34,14 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
                  username=None,
                  password=None,
                  token=None,
-                 trust_id=None):
+                 trust_id=None,
+                 reauthenticate=True):
 
         super(BaseIdentityPlugin, self).__init__()
 
         self.auth_url = auth_url
         self.auth_ref = None
+        self.reauthenticate = reauthenticate
 
         self._endpoint_cache = {}
 
@@ -81,6 +83,28 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
         """
         return self.get_access(session).auth_token
 
+    def _needs_reauthenticate(self):
+        """Return if the existing token needs to be re-authenticated.
+
+        The token should be refreshed if it is about to expire.
+
+        :returns: True if the plugin should fetch a new token. False otherwise.
+        """
+        if not self.auth_ref:
+            # authentication was never fetched.
+            return True
+
+        if not self.reauthenticate:
+            # don't re-authenticate if it has been disallowed.
+            return False
+
+        if self.auth_ref.will_expire_soon(self.MIN_TOKEN_LIFE_SECONDS):
+            # if it's about to expire we should re-authenticate now.
+            return True
+
+        # otherwise it's fine and use the existing one.
+        return False
+
     def get_access(self, session, **kwargs):
         """Fetch or return a current AccessInfo object.
 
@@ -91,8 +115,7 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
 
         :returns AccessInfo: Valid AccessInfo
         """
-        if (not self.auth_ref or
-                self.auth_ref.will_expire_soon(self.MIN_TOKEN_LIFE_SECONDS)):
+        if self._needs_reauthenticate():
             self.auth_ref = self.get_auth_ref(session)
 
         return self.auth_ref
