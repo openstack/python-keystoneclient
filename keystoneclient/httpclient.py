@@ -20,14 +20,26 @@ OpenStack Client interface. Handles the REST calls and responses.
 """
 
 import logging
+import pkg_resources
 
 from six.moves.urllib import parse as urlparse
 
 try:
     import pickle
 
-    import keyring
-except ImportError:
+    # NOTE(sdague): The conditional keyring import needs to only
+    # trigger if it's a version of keyring that's supported in global
+    # requirements. Update _min and _bad when that changes.
+    keyring_v = pkg_resources.parse_version(
+        pkg_resources.get_distribution("keyring").version)
+    keyring_min = pkg_resources.parse_version('2.1')
+    keyring_bad = (pkg_resources.parse_version('3.3'),)
+
+    if keyring_v >= keyring_min and keyring_v not in keyring_bad:
+        import keyring
+    else:
+        keyring = None
+except (ImportError, pkg_resources.DistributionNotFound):
     keyring = None
     pickle = None
 
