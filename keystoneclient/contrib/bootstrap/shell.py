@@ -18,16 +18,17 @@ from keystoneclient.v2_0 import client
            help='The name of the user to be created (default="admin").')
 @utils.arg('--pass', metavar='<password>', required=True, dest='passwd',
            help='The password for the new user.')
-@utils.arg('--role-name', metavar='<role-name>', default='admin', dest='role',
-           help='The name of the role to be created and granted to the user '
-           '(default="admin").')
+@utils.arg('--role-name', metavar='<role-name>', default='Admin', dest='role',
+           help='The name of the role to be granted to the user (no role created)'
+           '(default="Admin").')
 @utils.arg('--tenant-name', metavar='<tenant-name>', default='admin',
            dest='tenant',
            help='The name of the tenant to be created (default="admin").')
 def do_bootstrap(kc, args):
-    """Grants a new role to a new user on a new tenant, after creating each."""
+    """Grants an existing role to a new user on a new tenant."""
     tenant = kc.tenants.create(tenant_name=args.tenant)
-    role = kc.roles.create(name=args.role)
+    print args.role
+    role = utils.find_resource(kc.roles, args.role)
     user = kc.users.create(name=args.user, password=args.passwd, email=None)
     kc.roles.add_user_role(user=user, role=role, tenant=tenant)
 
