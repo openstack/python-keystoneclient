@@ -137,7 +137,8 @@ class Saml2UnscopedToken(v3.AuthConstructor):
             return response
 
         location = response.headers['location']
-        return session.request(location, method, **kwargs)
+        return session.request(location, method, authenticated=False,
+                               **kwargs)
 
     def _first(self, _list):
         if len(_list) != 1:
@@ -244,7 +245,8 @@ class Saml2UnscopedToken(v3.AuthConstructor):
             self.identity_provider_url,
             headers={'Content-type': 'text/xml'},
             data=etree.tostring(idp_saml2_authn_request),
-            requests_auth=(self.username, self.password))
+            requests_auth=(self.username, self.password),
+            authenticated=False)
 
         try:
             self.saml2_idp_authn_response = etree.XML(idp_response.content)
