@@ -177,7 +177,7 @@ class Saml2UnscopedToken(v3.AuthConstructor):
                    "%(sp_consumer_url)s and Identity Provider "
                    "%(identity_provider)s %(idp_consumer_url)s are not equal")
             msg = msg % {
-                'service_provider': self.saml2_token_url,
+                'service_provider': self.token_url,
                 'sp_consumer_url': sp_response_consumer_url,
                 'identity_provider': self.identity_provider,
                 'idp_consumer_url': idp_sp_response_consumer_url
@@ -208,7 +208,7 @@ class Saml2UnscopedToken(v3.AuthConstructor):
         :type session: keystoneclient.session.Session
 
         """
-        sp_response = session.get(self.saml2_token_url,
+        sp_response = session.get(self.token_url,
                                   headers=self.ECP_SP_EMPTY_REQUEST_HEADERS,
                                   authenticated=False)
 
@@ -301,7 +301,7 @@ class Saml2UnscopedToken(v3.AuthConstructor):
         self.authenticated_response = response
 
     @property
-    def saml2_token_url(self):
+    def token_url(self):
         """Return full URL where authorization data is sent."""
         values = {
             'host': self.auth_url.rstrip('/'),
