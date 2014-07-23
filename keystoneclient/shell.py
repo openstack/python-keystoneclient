@@ -176,10 +176,6 @@ class OpenStackIdentityShell(object):
         parser.add_argument('--os_cache',
                             help=argparse.SUPPRESS)
 
-        parser.add_argument('--os_cacert', help=argparse.SUPPRESS)
-        parser.add_argument('--os_key', help=argparse.SUPPRESS)
-        parser.add_argument('--os_cert', help=argparse.SUPPRESS)
-
         parser.add_argument('--force-new-token',
                             default=False,
                             action="store_true",
@@ -203,6 +199,11 @@ class OpenStackIdentityShell(object):
                                  access.STALE_TOKEN_DURATION)
 
         session.Session.register_cli_options(parser)
+
+        parser.add_argument('--os_cacert', help=argparse.SUPPRESS)
+        parser.add_argument('--os_key', help=argparse.SUPPRESS)
+        parser.add_argument('--os_cert', help=argparse.SUPPRESS)
+
         return parser
 
     def get_subcommand_parser(self, version):
