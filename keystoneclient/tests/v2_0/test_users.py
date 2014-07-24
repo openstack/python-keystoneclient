@@ -47,10 +47,11 @@ class UserTests(utils.TestCase):
     def test_create(self):
         tenant_id = uuid.uuid4().hex
         user_id = uuid.uuid4().hex
+        password = uuid.uuid4().hex
         req_body = {
             "user": {
                 "name": "gabriel",
-                "password": "test",
+                "password": password,
                 "tenantId": tenant_id,
                 "email": "test@example.com",
                 "enabled": True,
@@ -63,7 +64,7 @@ class UserTests(utils.TestCase):
                 "enabled": True,
                 "tenantId": tenant_id,
                 "id": user_id,
-                "password": "test",
+                "password": password,
                 "email": "test@example.com",
             }
         }
@@ -80,6 +81,7 @@ class UserTests(utils.TestCase):
         self.assertEqual(user.name, "gabriel")
         self.assertEqual(user.email, "test@example.com")
         self.assertRequestBodyIs(json=req_body)
+        self.assertNotIn(password, self.logger.output)
 
     @httpretty.activate
     def test_create_user_without_email(self):
@@ -210,10 +212,11 @@ class UserTests(utils.TestCase):
                 "name": "gabriel",
             }
         }
+        password = uuid.uuid4().hex
         req_2 = {
             "user": {
                 "id": self.DEMO_USER_ID,
-                "password": "swordfish",
+                "password": password,
             }
         }
         tenant_id = uuid.uuid4().hex
@@ -245,18 +248,22 @@ class UserTests(utils.TestCase):
                                  name='gabriel',
                                  email='gabriel@example.com')
         self.assertRequestBodyIs(json=req_1)
-        self.client.users.update_password(self.DEMO_USER_ID, 'swordfish')
+        self.client.users.update_password(self.DEMO_USER_ID, password)
         self.assertRequestBodyIs(json=req_2)
         self.client.users.update_tenant(self.DEMO_USER_ID, tenant_id)
         self.assertRequestBodyIs(json=req_3)
         self.client.users.update_enabled(self.DEMO_USER_ID, False)
         self.assertRequestBodyIs(json=req_4)
+        self.assertNotIn(password, self.logger.output)
 
     @httpretty.activate
     def test_update_own_password(self):
+        old_password = uuid.uuid4().hex
+        new_password = uuid.uuid4().hex
         req_body = {
             'user': {
-                'password': 'ABCD', 'original_password': 'DCBA'
+                'password': new_password,
+                'original_password': old_password
             }
         }
         resp_body = {
@@ -267,8 +274,10 @@ class UserTests(utils.TestCase):
                       json=resp_body)
 
         self.client.user_id = user_id
-        self.client.users.update_own_password('DCBA', 'ABCD')
+        self.client.users.update_own_password(old_password, new_password)
         self.assertRequestBodyIs(json=req_body)
+        self.assertNotIn(old_password, self.logger.output)
+        self.assertNotIn(new_password, self.logger.output)
 
     @httpretty.activate
     def test_user_role_listing(self):

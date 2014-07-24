@@ -11,6 +11,7 @@
 # under the License.
 
 import abc
+import logging
 
 from oslo.config import cfg
 import six
@@ -19,6 +20,8 @@ from keystoneclient import access
 from keystoneclient.auth.identity import base
 from keystoneclient import exceptions
 from keystoneclient import utils
+
+_logger = logging.getLogger(__name__)
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -66,8 +69,9 @@ class Auth(base.BaseIdentityPlugin):
         if self.trust_id:
             params['auth']['trust_id'] = self.trust_id
 
+        _logger.debug('Making authentication request to %s', url)
         resp = session.post(url, json=params, headers=headers,
-                            authenticated=False)
+                            authenticated=False, log=False)
 
         try:
             resp_data = resp.json()['access']

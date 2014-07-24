@@ -97,6 +97,25 @@ class UserTests(utils.TestCase, utils.CrudTests):
                           group=None)
 
     @httpretty.activate
+    def test_create_doesnt_log_password(self):
+        password = uuid.uuid4().hex
+        ref = self.new_ref()
+
+        self.stub_entity(httpretty.POST, [self.collection_key],
+                         status=201, entity=ref)
+
+        req_ref = ref.copy()
+        req_ref.pop('id')
+        param_ref = req_ref.copy()
+
+        param_ref['password'] = password
+        params = utils.parameterize(param_ref)
+
+        self.manager.create(**params)
+
+        self.assertNotIn(password, self.logger.output)
+
+    @httpretty.activate
     def test_create_with_project(self):
         # Can create a user with the deprecated project option rather than
         # default_project_id.
@@ -147,6 +166,26 @@ class UserTests(utils.TestCase, utils.CrudTests):
                 ref[attr],
                 'Expected different %s' % attr)
         self.assertEntityRequestBodyIs(req_ref)
+
+    @httpretty.activate
+    def test_update_doesnt_log_password(self):
+        password = uuid.uuid4().hex
+        ref = self.new_ref()
+
+        req_ref = ref.copy()
+        req_ref.pop('id')
+        param_ref = req_ref.copy()
+
+        self.stub_entity(httpretty.PATCH,
+                         [self.collection_key, ref['id']],
+                         status=200, entity=ref)
+
+        param_ref['password'] = password
+        params = utils.parameterize(param_ref)
+
+        self.manager.update(ref['id'], **params)
+
+        self.assertNotIn(password, self.logger.output)
 
     @httpretty.activate
     def test_update_with_project(self):
@@ -217,6 +256,8 @@ class UserTests(utils.TestCase, utils.CrudTests):
         self.assertEqual('/v3/users/test/password',
                          httpretty.last_request().path)
         self.assertRequestBodyIs(json=exp_req_body)
+        self.assertNotIn(old_password, self.logger.output)
+        self.assertNotIn(new_password, self.logger.output)
 
     def test_update_password_with_bad_inputs(self):
         old_password = uuid.uuid4().hex

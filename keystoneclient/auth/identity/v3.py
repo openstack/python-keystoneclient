@@ -105,8 +105,9 @@ class Auth(base.BaseIdentityPlugin):
         elif self.trust_id:
             body['auth']['scope'] = {'OS-TRUST:trust': {'id': self.trust_id}}
 
+        _logger.debug('Making authentication request to %s', self.token_url)
         resp = session.post(self.token_url, json=body, headers=headers,
-                            authenticated=False)
+                            authenticated=False, log=False)
 
         try:
             resp_data = resp.json()['token']

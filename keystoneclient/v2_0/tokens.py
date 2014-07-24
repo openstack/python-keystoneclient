@@ -53,7 +53,7 @@ class TokenManager(base.Manager):
             reset = 1
             self.api.management_url = self.api.auth_url
         token_ref = self._create('/tokens', params, "access",
-                                 return_raw=return_raw)
+                                 return_raw=return_raw, log=False)
         if reset:
             self.api.management_url = None
         return token_ref
