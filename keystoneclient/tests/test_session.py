@@ -11,6 +11,7 @@
 # under the License.
 
 import argparse
+import itertools
 import uuid
 
 import mock
@@ -139,10 +140,15 @@ class SessionTests(utils.TestCase):
     def test_session_debug_output(self):
         session = client_session.Session(verify=False)
         headers = {'HEADERA': 'HEADERVALB'}
+        security_headers = {'Authorization': uuid.uuid4().hex,
+                            'X-Auth-Token': uuid.uuid4().hex,
+                            'X-Subject-Token': uuid.uuid4().hex, }
         body = 'BODYRESPONSE'
         data = 'BODYDATA'
         self.stub_url('POST', text=body)
-        session.post(self.TEST_URL, headers=headers, data=data)
+        all_headers = dict(
+            itertools.chain(headers.items(), security_headers.items()))
+        session.post(self.TEST_URL, headers=all_headers, data=data)
 
         self.assertIn('curl', self.logger.output)
         self.assertIn('POST', self.logger.output)
@@ -153,6 +159,9 @@ class SessionTests(utils.TestCase):
         for k, v in six.iteritems(headers):
             self.assertIn(k, self.logger.output)
             self.assertIn(v, self.logger.output)
+        for k, v in six.iteritems(security_headers):
+            self.assertIn(k, self.logger.output)
+            self.assertNotIn(v, self.logger.output)
 
 
 class RedirectTests(utils.TestCase):

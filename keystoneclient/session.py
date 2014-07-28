@@ -139,6 +139,13 @@ class Session(object):
             # debug log.
             return
 
+        def process_header(header):
+            secure_headers = ('authorization', 'x-auth-token',
+                              'x-subject-token',)
+            if header[0].lower() in secure_headers:
+                return (header[0], 'TOKEN_REDACTED')
+            return header
+
         string_parts = ['REQ: curl -i']
 
         # NOTE(jamielennox): None means let requests do its default validation
@@ -153,7 +160,7 @@ class Session(object):
 
         if headers:
             for header in six.iteritems(headers):
-                string_parts.append('-H "%s: %s"' % header)
+                string_parts.append('-H "%s: %s"' % process_header(header))
         if json:
             data = jsonutils.dumps(json)
         if data:
