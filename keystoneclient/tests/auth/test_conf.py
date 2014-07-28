@@ -14,6 +14,7 @@ import uuid
 
 import mock
 from oslo.config import cfg
+from oslo.config import fixture as config
 import stevedore
 
 from keystoneclient.auth import base
@@ -21,7 +22,6 @@ from keystoneclient.auth import conf
 from keystoneclient.auth.identity import v2 as v2_auth
 from keystoneclient.auth.identity import v3 as v3_auth
 from keystoneclient import exceptions
-from keystoneclient.openstack.common.fixture import config
 from keystoneclient.tests.auth import utils
 
 
