@@ -111,3 +111,23 @@ domain name), to obtain a scoped token::
     ...                          user_domain_name=user_domain_name,
     ...                          project_name=project_name,
     ...                          project_domain_name=project_domain_name)
+
+Using Sessions
+==============
+
+It's also possible to instantiate a :py:class:`keystoneclient.v3.client.Client`
+class by using :py:class:`keystoneclient.session.Session`.::
+
+    >>> from keystoneclient.auth.identity import v3
+    >>> from keystoneclient import session
+    >>> from keystoneclient.v3 import client
+    >>> auth = v3.Password(auth_url='https://my.keystone.com:5000/v3',
+    ...                    user_id='myuserid',
+    ...                    password='mypassword',
+    ...                    project_id='myprojectid')
+    >>> sess = session.Session(auth=auth)
+    >>> keystone = client.Client(session=sess)
+
+For more information on Sessions refer to: `Using Sessions`_.
+
+.. _`Using Sessions`: using-sessions.html
