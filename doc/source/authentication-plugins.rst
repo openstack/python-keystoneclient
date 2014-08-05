@@ -99,6 +99,26 @@ endpoint you want to communicate with.
 It can be found at :py:class:`keystoneclient.auth.token_endpoint.Token`.
 
 
+V3 OAuth 1.0a Plugins
+---------------------
+
+There also exists a plugin for OAuth 1.0a authentication. We provide a helper
+authentication plugin at:
+:py:class:`~keystoneclient.v3.contrib.oauth1.auth.OAuth`.
+The plugin requires the OAuth consumer's key and secret, as well as the OAuth
+access token's key and secret. For example::
+
+    >>> from keystoneclient.v3.contrib.oauth1 import auth
+    >>> from keystoneclient import session
+    >>> from keystoneclient.v3 import client
+    >>> a = auth.OAuth('http://my.keystone.com:5000/v3',
+    ...                consumer_key=consumer_id,
+    ...                consumer_secret=consumer_secret,
+    ...                access_key=access_token_key,
+    ...                access_secret=access_token_secret)
+    >>> s = session.Session(auth=a)
+
+
 Creating Authentication Plugins
 ===============================
 
