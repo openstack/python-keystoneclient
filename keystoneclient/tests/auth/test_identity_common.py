@@ -18,6 +18,7 @@ import six
 from keystoneclient.auth import base
 from keystoneclient.auth.identity import v2
 from keystoneclient.auth.identity import v3
+from keystoneclient import fixture
 from keystoneclient import session
 from keystoneclient.tests import utils
 
@@ -39,34 +40,7 @@ class CommonIdentityTests(object):
 
         self.TEST_URL = '%s%s' % (self.TEST_ROOT_URL, self.version)
         self.TEST_ADMIN_URL = '%s%s' % (self.TEST_ROOT_ADMIN_URL, self.version)
-
-        disc_v2 = {
-            'id': 'v2.0',
-            'links': [
-                {
-                    'href': '%sv2.0' % self.TEST_ROOT_URL,
-                    'rel': 'self'
-                },
-            ],
-            'status': 'stable',
-            'updated': '2014-04-17T00:00:00Z'
-        }
-
-        disc_v3 = {
-            'id': 'v3.0',
-            'links': [
-                {
-                    'href': '%sv3' % self.TEST_ROOT_URL,
-                    'rel': 'self'
-                }
-            ],
-            'status': 'stable',
-            'updated': '2013-03-06T00:00:00Z'
-        }
-
-        self.TEST_DISCOVERY = {
-            'versions': [disc_v2, disc_v3]
-        }
+        self.TEST_DISCOVERY = fixture.DiscoveryList(href=self.TEST_ROOT_URL)
 
         self.stub_auth_data()
 
@@ -211,112 +185,17 @@ class V3(CommonIdentityTests, utils.TestCase):
         return 'v3'
 
     def stub_auth_data(self):
-        service_catalog = [{
-            'endpoints': [{
-                'url': 'http://cdn.admin-nets.local:8774/v1.0/',
-                'region': 'RegionOne',
-                'interface': 'public'
-            }, {
-                'url': 'http://127.0.0.1:8774/v1.0',
-                'region': 'RegionOne',
-                'interface': 'internal'
-            }, {
-                'url': 'http://cdn.admin-nets.local:8774/v1.0',
-                'region': 'RegionOne',
-                'interface': 'admin'
-            }],
-            'type': 'nova_compat'
-        }, {
-            'endpoints': [{
-                'url': self.TEST_COMPUTE_PUBLIC,
-                'region': 'RegionOne',
-                'interface': 'public'
-            }, {
-                'url': self.TEST_COMPUTE_INTERNAL,
-                'region': 'RegionOne',
-                'interface': 'internal'
-            }, {
-                'url': self.TEST_COMPUTE_ADMIN,
-                'region': 'RegionOne',
-                'interface': 'admin'
-            }],
-            'type': 'compute'
-        }, {
-            'endpoints': [{
-                'url': 'http://glance/glanceapi/public',
-                'region': 'RegionOne',
-                'interface': 'public'
-            }, {
-                'url': 'http://glance/glanceapi/internal',
-                'region': 'RegionOne',
-                'interface': 'internal'
-            }, {
-                'url': 'http://glance/glanceapi/admin',
-                'region': 'RegionOne',
-                'interface': 'admin'
-            }],
-            'type': 'image',
-            'name': 'glance'
-        }, {
-            'endpoints': [{
-                'url': 'http://127.0.0.1:5000/v3',
-                'region': 'RegionOne',
-                'interface': 'public'
-            }, {
-                'url': 'http://127.0.0.1:5000/v3',
-                'region': 'RegionOne',
-                'interface': 'internal'
-            }, {
-                'url': self.TEST_ADMIN_URL,
-                'region': 'RegionOne',
-                'interface': 'admin'
-            }],
-            'type': 'identity'
-        }, {
-            'endpoints': [{
-                'url': 'http://swift/swiftapi/public',
-                'region': 'RegionOne',
-                'interface': 'public'
-            }, {
-                'url': 'http://swift/swiftapi/internal',
-                'region': 'RegionOne',
-                'interface': 'internal'
-            }, {
-                'url': 'http://swift/swiftapi/admin',
-                'region': 'RegionOne',
-                'interface': 'admin'
-            }],
-            'type': 'object-store'
-        }]
+        token = fixture.V3Token()
+        region = 'RegionOne'
 
-        token = {
-            'token': {
-                'methods': [
-                    'token',
-                    'password'
-                ],
+        svc = token.add_service('identity')
+        svc.add_standard_endpoints(admin=self.TEST_ADMIN_URL, region=region)
 
-                'expires_at': '2020-01-01T00:00:10.000123Z',
-                'project': {
-                    'domain': {
-                        'id': self.TEST_DOMAIN_ID,
-                        'name': self.TEST_DOMAIN_NAME
-                    },
-                    'id': self.TEST_TENANT_ID,
-                    'name': self.TEST_TENANT_NAME
-                },
-                'user': {
-                    'domain': {
-                        'id': self.TEST_DOMAIN_ID,
-                        'name': self.TEST_DOMAIN_NAME
-                    },
-                    'id': self.TEST_USER,
-                    'name': self.TEST_USER
-                },
-                'issued_at': '2013-05-29T16:55:21.468960Z',
-                'catalog': service_catalog
-            },
-        }
+        svc = token.add_service('compute')
+        svc.add_standard_endpoints(admin=self.TEST_COMPUTE_ADMIN,
+                                   public=self.TEST_COMPUTE_PUBLIC,
+                                   internal=self.TEST_COMPUTE_INTERNAL,
+                                   region=region)
 
         self.stub_auth(json=token)
 
@@ -345,68 +224,17 @@ class V2(CommonIdentityTests, utils.TestCase):
                            password=self.TEST_PASS)
 
     def stub_auth_data(self):
-        service_catalog = [{
-            'endpoints': [{
-                'adminURL': 'http://cdn.admin-nets.local:8774/v1.0',
-                'region': 'RegionOne',
-                'internalURL': 'http://127.0.0.1:8774/v1.0',
-                'publicURL': 'http://cdn.admin-nets.local:8774/v1.0/'
-            }],
-            'type': 'nova_compat',
-            'name': 'nova_compat'
-        }, {
-            'endpoints': [{
-                'adminURL': self.TEST_COMPUTE_ADMIN,
-                'region': 'RegionOne',
-                'internalURL': self.TEST_COMPUTE_INTERNAL,
-                'publicURL': self.TEST_COMPUTE_PUBLIC
-            }],
-            'type': 'compute',
-            'name': 'nova'
-        }, {
-            'endpoints': [{
-                'adminURL': 'http://glance/glanceapi/admin',
-                'region': 'RegionOne',
-                'internalURL': 'http://glance/glanceapi/internal',
-                'publicURL': 'http://glance/glanceapi/public'
-            }],
-            'type': 'image',
-            'name': 'glance'
-        }, {
-            'endpoints': [{
-                'adminURL': self.TEST_ADMIN_URL,
-                'region': 'RegionOne',
-                'internalURL': 'http://127.0.0.1:5000/v2.0',
-                'publicURL': 'http://127.0.0.1:5000/v2.0'
-            }],
-            'type': 'identity',
-            'name': 'keystone'
-        }, {
-            'endpoints': [{
-                'adminURL': 'http://swift/swiftapi/admin',
-                'region': 'RegionOne',
-                'internalURL': 'http://swift/swiftapi/internal',
-                'publicURL': 'http://swift/swiftapi/public'
-            }],
-            'type': 'object-store',
-            'name': 'swift'
-        }]
+        token = fixture.V2Token()
+        region = 'RegionOne'
 
-        token = {
-            'access': {
-                'token': {
-                    'expires': '2020-01-01T00:00:10.000123Z',
-                    'id': self.TEST_TOKEN,
-                    'tenant': {
-                        'id': self.TEST_TENANT_ID
-                    },
-                },
-                'user': {
-                    'id': self.TEST_USER
-                },
-                'serviceCatalog': service_catalog,
-            },
-        }
+        svc = token.add_service('identity')
+        svc.add_endpoint(self.TEST_ADMIN_URL, region=region)
+
+        svc = token.add_service('compute')
+        svc.add_endpoint(public=self.TEST_COMPUTE_PUBLIC,
+                         internal=self.TEST_COMPUTE_INTERNAL,
+                         admin=self.TEST_COMPUTE_ADMIN,
+                         region=region)
 
         self.stub_auth(json=token)
 
