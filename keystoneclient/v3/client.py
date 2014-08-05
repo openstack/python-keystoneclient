@@ -141,10 +141,6 @@ EndpointFilterManager`
 
         :py:class:`keystoneclient.v3.services.ServiceManager`
 
-    .. py:attribute:: users
-
-        :py:class:`keystoneclient.v3.users.UserManager`
-
     .. py:attribute:: tokens
 
         :py:class:`keystoneclient.v3.tokens.TokenManager`
@@ -152,6 +148,10 @@ EndpointFilterManager`
     .. py:attribute:: trusts
 
         :py:class:`keystoneclient.v3.contrib.trusts.TrustManager`
+
+    .. py:attribute:: users
+
+        :py:class:`keystoneclient.v3.users.UserManager`
 
     """
 
@@ -174,9 +174,9 @@ EndpointFilterManager`
         self.role_assignments = role_assignments.RoleAssignmentManager(self)
         self.roles = roles.RoleManager(self)
         self.services = services.ServiceManager(self)
-        self.users = users.UserManager(self)
         self.tokens = tokens.TokenManager(self)
         self.trusts = trusts.TrustManager(self)
+        self.users = users.UserManager(self)
 
         # DEPRECATED: if session is passed then we go to the new behaviour of
         # authenticating on the first required call.
