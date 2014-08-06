@@ -520,6 +520,29 @@ class GeneralAuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
         self.assertEqual(middleware.token_revocation_list_cache_timeout,
                          datetime.timedelta(seconds=24))
 
+    def test_conf_values_type_convert(self):
+        conf = {
+            'revocation_cache_time': '24',
+            'identity_uri': 'https://keystone.example.com:1234',
+            'include_service_catalog': '0',
+            'nonexsit_option': '0',
+        }
+
+        middleware = auth_token.AuthProtocol(self.fake_app, conf)
+        self.assertEqual(datetime.timedelta(seconds=24),
+                         middleware.token_revocation_list_cache_timeout)
+        self.assertEqual(False, middleware.include_service_catalog)
+        self.assertEqual('https://keystone.example.com:1234',
+                         middleware.identity_uri)
+        self.assertEqual('0', middleware.conf['nonexsit_option'])
+
+    def test_conf_values_type_convert_with_wrong_value(self):
+        conf = {
+            'include_service_catalog': '123',
+        }
+        self.assertRaises(auth_token.ConfigurationError,
+                          auth_token.AuthProtocol, self.fake_app, conf)
+
 
 class CommonAuthTokenMiddlewareTest(object):
     """These tests are run once using v2 tokens and again using v3 tokens."""

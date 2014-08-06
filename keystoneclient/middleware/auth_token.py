@@ -423,6 +423,27 @@ def safe_quote(s):
     return urllib.parse.quote(s) if s == urllib.parse.unquote(s) else s
 
 
+def _conf_values_type_convert(conf):
+    """Convert conf values into correct type."""
+    if not conf:
+        return {}
+    _opts = {}
+    opt_types = dict((o.dest, o.type) for o in opts)
+    for k, v in six.iteritems(conf):
+        try:
+            if v is None:
+                _opts[k] = v
+            else:
+                _opts[k] = opt_types[k](v)
+        except KeyError:
+            _opts[k] = v
+        except ValueError as e:
+            raise ConfigurationError(
+                'Unable to convert the value of %s option into correct '
+                'type: %s' % (k, e))
+    return _opts
+
+
 class InvalidUserToken(Exception):
     pass
 
@@ -462,7 +483,10 @@ class AuthProtocol(object):
             'This middleware module is deprecated as of v0.10.0 in favor of '
             'keystonemiddleware.auth_token - please update your WSGI pipeline '
             'to reference the new middleware package.')
-        self.conf = conf
+        # NOTE(wanghong): If options are set in paste file, all the option
+        # values passed into conf are string type. So, we should convert the
+        # conf value into correct type.
+        self.conf = _conf_values_type_convert(conf)
         self.app = app
 
         # delay_auth_decision means we still allow unauthenticated requests
