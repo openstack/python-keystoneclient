@@ -43,15 +43,20 @@ class Auth(base.BaseIdentityPlugin):
     def __init__(self, auth_url,
                  trust_id=None,
                  tenant_id=None,
-                 tenant_name=None):
+                 tenant_name=None,
+                 reauthenticate=True):
         """Construct an Identity V2 Authentication Plugin.
 
         :param string auth_url: Identity service endpoint for authorization.
         :param string trust_id: Trust ID for trust scoping.
         :param string tenant_id: Tenant ID for project scoping.
         :param string tenant_name: Tenant name for project scoping.
+        :param bool reauthenticate: Allow fetching a new token if the current
+                                    one is going to expire.
+                                    (optional) default True
         """
-        super(Auth, self).__init__(auth_url=auth_url)
+        super(Auth, self).__init__(auth_url=auth_url,
+                                   reauthenticate=reauthenticate)
 
         self.trust_id = trust_id
         self.tenant_id = tenant_id
