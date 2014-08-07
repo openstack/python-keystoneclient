@@ -44,7 +44,9 @@ class Token(base.BaseAuthPlugin):
         options.extend([
             cfg.StrOpt('endpoint',
                        help='The endpoint that will always be used'),
-            cfg.StrOpt('token', help='The token that will always be used'),
+            cfg.StrOpt('token',
+                       secret=True,
+                       help='The token that will always be used'),
         ])
 
         return options

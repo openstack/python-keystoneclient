@@ -121,7 +121,7 @@ class Password(Auth):
                        dest='username',
                        deprecated_name='username',
                        help='Username to login with'),
-            cfg.StrOpt('password', help='Password to use'),
+            cfg.StrOpt('password', secret=True, help='Password to use'),
         ])
 
         return options
@@ -148,7 +148,7 @@ class Token(Auth):
         options = super(Token, cls).get_options()
 
         options.extend([
-            cfg.StrOpt('token', help='Token'),
+            cfg.StrOpt('token', secret=True, help='Token'),
         ])
 
         return options
