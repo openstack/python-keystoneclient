@@ -11,6 +11,7 @@
 # under the License.
 
 import abc
+import os
 
 import six
 import stevedore
@@ -121,3 +122,52 @@ class BaseAuthPlugin(object):
         to create the plugin.
         """
         return cls(**kwargs)
+
+    @classmethod
+    def register_argparse_arguments(cls, parser):
+        """Register the CLI options provided by a specific plugin.
+
+        Given a plugin class convert it's options into argparse arguments and
+        add them to a parser.
+
+        :param AuthPlugin plugin: an auth plugin class.
+        :param argparse.ArgumentParser: the parser to attach argparse options.
+        """
+
+        # NOTE(jamielennox): ideally oslo.config would be smart enough to
+        # handle all the Opt manipulation that goes on in this file. However it
+        # is currently not.  Options are handled in as similar a way as
+        # possible to oslo.config such that when available we should be able to
+        # transition.
+
+        for opt in cls.get_options():
+            if opt.default is None:
+                env_name = opt.name.replace('-', '_').upper()
+                default = os.environ.get('OS_' + env_name)
+            else:
+                default = opt.default
+
+            parser.add_argument('--os-' + opt.name,
+                                default=default,
+                                metavar=opt.metavar,
+                                help=opt.help,
+                                dest=opt.dest)
+
+    @classmethod
+    def load_from_argparse_arguments(cls, namespace, **kwargs):
+        """Load a specific plugin object from an argparse result.
+
+        Convert the results of a parse into the specified plugin.
+
+        :param AuthPlugin plugin: an auth plugin class.
+        :param Namespace namespace: The result from CLI parsing.
+
+        :returns: An auth plugin, or None if a name is not provided.
+        """
+        for opt in cls.get_options():
+            val = getattr(namespace, opt.dest)
+            if val is not None:
+                val = opt.type(val)
+            kwargs.setdefault(opt.dest, val)
+
+        return cls.load_from_options(**kwargs)

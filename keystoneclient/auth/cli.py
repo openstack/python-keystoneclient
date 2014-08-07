@@ -15,11 +15,6 @@ import os
 
 from keystoneclient.auth import base
 
-# NOTE(jamielennox): ideally oslo.config would be smart enough to handle all
-# the Opt manipulation that goes on in this file. However it is currently not.
-# Options are handled in as similar a way as possible to oslo.config such that
-# when available we should be able to transition.
-
 
 def register_argparse_arguments(parser, argv):
     """Register CLI options needed to create a plugin.
@@ -43,27 +38,16 @@ def register_argparse_arguments(parser, argv):
                        help='The auth plugin to load')
 
     options, _args = in_parser.parse_known_args(argv)
+    name = options.os_auth_plugin
 
-    if not options.os_auth_plugin:
+    if not name:
         return None
 
-    msg = 'Options specific to the %s plugin.' % options.os_auth_plugin
+    msg = 'Options specific to the %s plugin.' % name
     group = parser.add_argument_group('Authentication Options', msg)
-    plugin = base.get_plugin_class(options.os_auth_plugin)
 
-    for opt in plugin.get_options():
-        if opt.default is None:
-            env_name = opt.name.replace('-', '_').upper()
-            default = os.environ.get('OS_' + env_name)
-        else:
-            default = opt.default
-
-        group.add_argument('--os-' + opt.name,
-                           default=default,
-                           metavar=opt.metavar,
-                           help=opt.help,
-                           dest=opt.dest)
-
+    plugin = base.get_plugin_class(name)
+    plugin.register_argparse_arguments(group)
     return plugin
 
 
@@ -82,12 +66,5 @@ def load_from_argparse_arguments(namespace, **kwargs):
     if not namespace.os_auth_plugin:
         return None
 
-    plugin_class = base.get_plugin_class(namespace.os_auth_plugin)
-
-    for opt in plugin_class.get_options():
-        val = getattr(namespace, opt.dest)
-        if val is not None:
-            val = opt.type(val)
-        kwargs.setdefault(opt.dest, val)
-
-    return plugin_class.load_from_options(**kwargs)
+    plugin = base.get_plugin_class(namespace.os_auth_plugin)
+    return plugin.load_from_argparse_arguments(namespace, **kwargs)
