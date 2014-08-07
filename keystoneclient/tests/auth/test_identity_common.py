@@ -209,6 +209,18 @@ class CommonIdentityTests(object):
         s = session.Session(auth=a)
         self.assertIs(expired_auth_ref, a.get_access(s))
 
+    def test_invalidate(self):
+        a = self.create_auth_plugin()
+        s = session.Session(auth=a)
+
+        # trigger token fetching
+        s.get_token()
+
+        self.assertTrue(a.auth_ref)
+        self.assertTrue(a.invalidate())
+        self.assertIsNone(a.auth_ref)
+        self.assertFalse(a.invalidate())
+
 
 class V3(CommonIdentityTests, utils.TestCase):
 
