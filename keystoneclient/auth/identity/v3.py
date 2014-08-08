@@ -249,7 +249,7 @@ class Password(AuthConstructor):
                        deprecated_name='username'),
             cfg.StrOpt('user-domain-id', help="User's domain id"),
             cfg.StrOpt('user-domain-name', help="User's domain name"),
-            cfg.StrOpt('password', help="User's password"),
+            cfg.StrOpt('password', secret=True, help="User's password"),
         ])
 
         return options
@@ -282,7 +282,9 @@ class Token(AuthConstructor):
         options = super(Token, cls).get_options()
 
         options.extend([
-            cfg.StrOpt('token', help='Token to authenticate with'),
+            cfg.StrOpt('token',
+                       secret=True,
+                       help='Token to authenticate with'),
         ])
 
         return options
