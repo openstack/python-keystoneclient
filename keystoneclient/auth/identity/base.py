@@ -180,19 +180,50 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
             interface = 'public'
 
         service_catalog = self.get_access(session).service_catalog
-        sc_url = service_catalog.url_for(service_type=service_type,
-                                         endpoint_type=interface,
-                                         region_name=region_name,
-                                         service_name=service_name)
+        url = service_catalog.url_for(service_type=service_type,
+                                      endpoint_type=interface,
+                                      region_name=region_name,
+                                      service_name=service_name)
 
         if not version:
             # NOTE(jamielennox): This may not be the best thing to default to
             # but is here for backwards compatibility. It may be worth
             # defaulting to the most recent version.
-            return sc_url
+            return url
 
-        disc = None
+        try:
+            disc = self.get_discovery(session, url)
+        except (exceptions.DiscoveryFailure,
+                exceptions.HTTPError,
+                exceptions.ConnectionError):
+            # NOTE(jamielennox): Again if we can't contact the server we fall
+            # back to just returning the URL from the catalog. This may not be
+            # the best default but we need it for now.
+            LOG.warn('Failed to contact the endpoint at %s for discovery. '
+                     'Fallback to using that endpoint as the base url.', url)
+        else:
+            url = disc.url_for(version)
 
+        return url
+
+    def get_discovery(self, session, url):
+        """Return the discovery object for a URL.
+
+        Check the session and the plugin cache to see if we have already
+        performed discovery on the URL and if so return it, otherwise create
+        a new discovery object, cache it and return it.
+
+        This function is expected to be used by subclasses and should not
+        be needed by users.
+
+        :param Session session: A session object to discover with.
+        :param str url: The url to lookup.
+
+        :raises: DiscoveryFailure if for some reason the lookup fails.
+        :raises: HttpError An error from an invalid HTTP response.
+
+        :return: A discovery object with the results of looking up that URL.
+        """
         # NOTE(jamielennox): we want to cache endpoints on the session as well
         # so that they maintain sharing between auth plugins. Create a cache on
         # the session if it doesn't exist already.
@@ -205,24 +236,16 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
         # object and the auth plugin object so that they can be shared and the
         # cache is still usable
         for cache in (self._endpoint_cache, session_endpoint_cache):
-            disc = cache.get(sc_url)
+            disc = cache.get(url)
 
             if disc:
                 break
         else:
-            try:
-                disc = _discover.Discover(session, sc_url)
-            except (exceptions.HTTPError, exceptions.ConnectionError):
-                LOG.warn('Failed to contact the endpoint at %s for discovery. '
-                         'Fallback to using that endpoint as the '
-                         'base url.', sc_url)
+            disc = _discover.Discover(session, url)
+            self._endpoint_cache[url] = disc
+            session_endpoint_cache[url] = disc
 
-                return sc_url
-            else:
-                self._endpoint_cache[sc_url] = disc
-                session_endpoint_cache[sc_url] = disc
-
-        return disc.url_for(version)
+        return disc
 
     @classmethod
     def get_options(cls):
