@@ -103,6 +103,10 @@ class S3Token(object):
         self.app = app
         self.logger = logging.getLogger(conf.get('log_name', __name__))
         self.logger.debug('Starting the %s component', PROTOCOL_NAME)
+        self.logger.warning(
+            'This middleware module is deprecated as of v0.11.0 in favor of '
+            'keystonemiddleware.s3_token - please update your WSGI pipeline '
+            'to reference the new middleware package.')
         self.reseller_prefix = conf.get('reseller_prefix', 'AUTH_')
         # where to find the auth service (we use this to validate tokens)
 
