@@ -11,6 +11,7 @@
 #    under the License.
 
 import abc
+
 import six
 
 from keystoneclient.auth import base as base_auth
