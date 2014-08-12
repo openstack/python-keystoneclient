@@ -110,6 +110,20 @@ class V2IdentityPlugin(utils.TestCase):
         self.assertRequestHeaderEqual('Accept', 'application/json')
         self.assertEqual(s.auth.auth_ref.auth_token, self.TEST_TOKEN)
 
+    def test_authenticate_with_user_id_password(self):
+        self.stub_auth(json=self.TEST_RESPONSE_DICT)
+        a = v2.Password(self.TEST_URL, user_id=self.TEST_USER,
+                        password=self.TEST_PASS)
+        s = session.Session(a)
+        s.get_token()
+
+        req = {'auth': {'passwordCredentials': {'userId': self.TEST_USER,
+                                                'password': self.TEST_PASS}}}
+        self.assertRequestBodyIs(json=req)
+        self.assertRequestHeaderEqual('Content-Type', 'application/json')
+        self.assertRequestHeaderEqual('Accept', 'application/json')
+        self.assertEqual(s.auth.auth_ref.auth_token, self.TEST_TOKEN)
+
     def test_authenticate_with_username_password_scoped(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
         a = v2.Password(self.TEST_URL, username=self.TEST_USER,
@@ -118,6 +132,19 @@ class V2IdentityPlugin(utils.TestCase):
         s.get_token()
 
         req = {'auth': {'passwordCredentials': {'username': self.TEST_USER,
+                                                'password': self.TEST_PASS},
+                        'tenantId': self.TEST_TENANT_ID}}
+        self.assertRequestBodyIs(json=req)
+        self.assertEqual(s.auth.auth_ref.auth_token, self.TEST_TOKEN)
+
+    def test_authenticate_with_user_id_password_scoped(self):
+        self.stub_auth(json=self.TEST_RESPONSE_DICT)
+        a = v2.Password(self.TEST_URL, user_id=self.TEST_USER,
+                        password=self.TEST_PASS, tenant_id=self.TEST_TENANT_ID)
+        s = session.Session(a)
+        s.get_token()
+
+        req = {'auth': {'passwordCredentials': {'userId': self.TEST_USER,
                                                 'password': self.TEST_PASS},
                         'tenantId': self.TEST_TENANT_ID}}
         self.assertRequestBodyIs(json=req)
@@ -247,3 +274,7 @@ class V2IdentityPlugin(utils.TestCase):
         s = session.Session(auth=a)
         self.assertEqual(self.TEST_TOKEN, s.get_token())
         self.assertNotIn(password, self.logger.output)
+
+    def test_password_with_no_user_id_or_name(self):
+        self.assertRaises(TypeError,
+                          v2.Password, self.TEST_URL, password=self.TEST_PASS)

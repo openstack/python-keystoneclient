@@ -97,20 +97,39 @@ class Auth(base.BaseIdentityPlugin):
 
 class Password(Auth):
 
-    def __init__(self, auth_url, username, password, **kwargs):
+    @utils.positional(4)
+    def __init__(self, auth_url, username=None, password=None, user_id=None,
+                 **kwargs):
         """A plugin for authenticating with a username and password.
+
+        A username or user_id must be provided.
 
         :param string auth_url: Identity service endpoint for authorization.
         :param string username: Username for authentication.
         :param string password: Password for authentication.
+        :param string user_id: User ID for authentication.
+
+        :raises TypeError: if a user_id or username is not provided.
         """
         super(Password, self).__init__(auth_url, **kwargs)
+
+        if not (user_id or username):
+            msg = 'You need to specify either a username or user_id'
+            raise TypeError(msg)
+
+        self.user_id = user_id
         self.username = username
         self.password = password
 
     def get_auth_data(self, headers=None):
-        return {'passwordCredentials': {'username': self.username,
-                                        'password': self.password}}
+        auth = {'password': self.password}
+
+        if self.username:
+            auth['username'] = self.username
+        elif self.user_id:
+            auth['userId'] = self.user_id
+
+        return {'passwordCredentials': auth}
 
     @classmethod
     def get_options(cls):
@@ -121,6 +140,7 @@ class Password(Auth):
                        dest='username',
                        deprecated_name='username',
                        help='Username to login with'),
+            cfg.StrOpt('user-id', help='User ID to longin with'),
             cfg.StrOpt('password', secret=True, help='Password to use'),
         ])
 
