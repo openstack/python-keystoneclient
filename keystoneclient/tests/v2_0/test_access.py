@@ -165,6 +165,37 @@ class AccessInfoTest(utils.TestCase, testresources.ResourcedTestCase):
 
         self.assertEqual(trust_id, token['access']['trust']['id'])
 
+    def test_override_auth_token(self):
+        token = fixture.V2Token()
+        token.set_scope()
+        token.add_role()
+
+        new_auth_token = uuid.uuid4().hex
+
+        auth_ref = access.AccessInfo.factory(body=token)
+
+        self.assertEqual(token.token_id, auth_ref.auth_token)
+
+        auth_ref.auth_token = new_auth_token
+        self.assertEqual(new_auth_token, auth_ref.auth_token)
+
+        del auth_ref.auth_token
+        self.assertEqual(token.token_id, auth_ref.auth_token)
+
+    def test_override_auth_token_in_factory(self):
+        token = fixture.V2Token()
+        token.set_scope()
+        token.add_role()
+
+        new_auth_token = uuid.uuid4().hex
+
+        auth_ref = access.AccessInfo.factory(body=token,
+                                             auth_token=new_auth_token)
+
+        self.assertEqual(new_auth_token, auth_ref.auth_token)
+        del auth_ref.auth_token
+        self.assertEqual(token.token_id, auth_ref.auth_token)
+
 
 def load_tests(loader, tests, pattern):
     return testresources.OptimisingTestSuite(tests)
