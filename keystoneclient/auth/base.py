@@ -141,13 +141,20 @@ class BaseAuthPlugin(object):
         # transition.
 
         for opt in cls.get_options():
-            if opt.default is None:
-                env_name = opt.name.replace('-', '_').upper()
-                default = os.environ.get('OS_' + env_name)
-            else:
-                default = opt.default
+            args = []
+            envs = []
 
-            parser.add_argument('--os-' + opt.name,
+            for o in [opt] + opt.deprecated_opts:
+                args.append('--os-%s' % o.name)
+                envs.append('OS_%s' % o.name.replace('-', '_').upper())
+
+            default = opt.default
+            if default is None:
+                # select the first ENV that is not false-y or return None
+                env_vars = (os.environ.get(e) for e in envs)
+                default = six.next(six.moves.filter(None, env_vars), None)
+
+            parser.add_argument(*args,
                                 default=default,
                                 metavar=opt.metavar,
                                 help=opt.help,
