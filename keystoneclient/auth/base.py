@@ -151,7 +151,7 @@ class BaseAuthPlugin(object):
                                 default=default,
                                 metavar=opt.metavar,
                                 help=opt.help,
-                                dest=opt.dest)
+                                dest='os_%s' % opt.dest)
 
     @classmethod
     def load_from_argparse_arguments(cls, namespace, **kwargs):
@@ -165,7 +165,7 @@ class BaseAuthPlugin(object):
         :returns: An auth plugin, or None if a name is not provided.
         """
         for opt in cls.get_options():
-            val = getattr(namespace, opt.dest)
+            val = getattr(namespace, 'os_%s' % opt.dest)
             if val is not None:
                 val = opt.type(val)
             kwargs.setdefault(opt.dest, val)
