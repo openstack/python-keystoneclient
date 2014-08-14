@@ -104,13 +104,5 @@ def load_from_conf_options(conf, group, **kwargs):
         raise exceptions.NoMatchingPlugin('No plugin name provided for config')
 
     plugin_class = base.get_plugin_class(name)
-    plugin_opts = plugin_class.get_options()
-    conf.register_opts(plugin_opts, group=group)
-
-    for opt in plugin_opts:
-        val = conf[group][opt.dest]
-        if val is not None:
-            val = opt.type(val)
-        kwargs.setdefault(opt.dest, val)
-
-    return plugin_class.load_from_options(**kwargs)
+    plugin_class.register_conf_options(conf, group)
+    return plugin_class.load_from_conf_options(conf, group, **kwargs)

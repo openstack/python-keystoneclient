@@ -171,3 +171,34 @@ class BaseAuthPlugin(object):
             kwargs.setdefault(opt.dest, val)
 
         return cls.load_from_options(**kwargs)
+
+    @classmethod
+    def register_conf_options(cls, conf, group):
+        """Register the oslo.config options that are needed for a plugin.
+
+        :param conf: An oslo.config conf object.
+        :param string group: The group name that options should be read from.
+        """
+        plugin_opts = cls.get_options()
+        conf.register_opts(plugin_opts, group=group)
+
+    @classmethod
+    def load_from_conf_options(cls, conf, group, **kwargs):
+        """Load the plugin from a CONF object.
+
+        Convert the options already registered into a real plugin.
+
+        :param conf: An oslo.config conf object.
+        :param string group: The group name that options should be read from.
+
+        :returns plugin: An authentication Plugin.
+        """
+        plugin_opts = cls.get_options()
+
+        for opt in plugin_opts:
+            val = conf[group][opt.dest]
+            if val is not None:
+                val = opt.type(val)
+            kwargs.setdefault(opt.dest, val)
+
+        return cls.load_from_options(**kwargs)
