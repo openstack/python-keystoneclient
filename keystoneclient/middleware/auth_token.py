@@ -1407,7 +1407,7 @@ class TokenCache(object):
 
         """
 
-        if cms.is_asn1_token(user_token):
+        if cms.is_asn1_token(user_token) or cms.is_pkiz(user_token):
             # user_token is a PKI token that's not hashed.
 
             token_hashes = list(cms.cms_hash_token(user_token, mode=algo)
