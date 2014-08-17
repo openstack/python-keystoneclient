@@ -17,11 +17,11 @@ import inspect
 import logging
 import sys
 
-from oslo.utils import encodeutils
 import prettytable
 import six
 
 from keystoneclient import exceptions
+from keystoneclient.openstack.common import strutils
 
 
 logger = logging.getLogger(__name__)
@@ -61,7 +61,7 @@ def print_list(objs, fields, formatters={}, order_by=None):
 
     if order_by is None:
         order_by = fields[0]
-    encoded = encodeutils.safe_encode(pt.get_string(sortby=order_by))
+    encoded = strutils.safe_encode(pt.get_string(sortby=order_by))
     if six.PY3:
         encoded = encoded.decode()
     print(encoded)
@@ -88,7 +88,7 @@ def print_dict(d, wrap=0):
             value = ''
         value = _word_wrap(value, max_length=wrap)
         pt.add_row([prop, value])
-    encoded = encodeutils.safe_encode(pt.get_string(sortby='Property'))
+    encoded = strutils.safe_encode(pt.get_string(sortby='Property'))
     if six.PY3:
         encoded = encoded.decode()
     print(encoded)

@@ -26,9 +26,9 @@ import argparse
 import getpass
 import sys
 
-from oslo.utils import strutils
 import six
 
+from keystoneclient.openstack.common import strutils
 from keystoneclient import utils
 from keystoneclient.v2_0 import client
 

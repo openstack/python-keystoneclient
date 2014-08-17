@@ -15,12 +15,12 @@ import logging
 import os
 
 from oslo.config import cfg
-from oslo.utils import importutils
 import requests
 import six
 from six.moves import urllib
 
 from keystoneclient import exceptions
+from keystoneclient.openstack.common import importutils
 from keystoneclient.openstack.common import jsonutils
 from keystoneclient import utils
 
