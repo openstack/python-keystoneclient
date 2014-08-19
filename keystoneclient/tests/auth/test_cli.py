@@ -62,6 +62,11 @@ class CliTests(utils.TestCase):
         a = cli.load_from_argparse_arguments(opts)
         self.assertTestVals(a)
 
+        self.assertEqual(name, opts.os_auth_plugin)
+        self.assertEqual(str(self.a_int), opts.os_a_int)
+        self.assertEqual(str(self.a_float), opts.os_a_float)
+        self.assertEqual(str(self.a_bool), opts.os_a_bool)
+
     @utils.mock_plugin
     def test_default_options(self, m):
         name = uuid.uuid4().hex
