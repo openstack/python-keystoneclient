@@ -13,8 +13,28 @@
 import argparse
 import uuid
 
+import mock
+from oslo.config import cfg
+
+from keystoneclient.auth import base
 from keystoneclient.auth import cli
 from keystoneclient.tests.auth import utils
+
+
+class TesterPlugin(base.BaseAuthPlugin):
+
+    def get_token(self, *args, **kwargs):
+        return None
+
+    @classmethod
+    def get_options(cls):
+        # NOTE(jamielennox): this is kind of horrible. If you specify this as
+        # a deprecated_name= value it will convert - to _ which is not what we
+        # want for a CLI option.
+        deprecated = [cfg.DeprecatedOpt('test-other')]
+        return [
+            cfg.StrOpt('test-opt', help='tester', deprecated_opts=deprecated)
+        ]
 
 
 class CliTests(utils.TestCase):
@@ -83,3 +103,38 @@ class CliTests(utils.TestCase):
 
         self.assertEqual(self.a_float, a['a_float'])
         self.assertEqual(3, a['a_int'])
+
+    def test_deprecated_cli_options(self):
+        TesterPlugin.register_argparse_arguments(self.p)
+        val = uuid.uuid4().hex
+        opts = self.p.parse_args(['--os-test-other', val])
+        self.assertEqual(val, opts.os_test_opt)
+
+    def test_deprecated_multi_cli_options(self):
+        TesterPlugin.register_argparse_arguments(self.p)
+        val1 = uuid.uuid4().hex
+        val2 = uuid.uuid4().hex
+        # argarse rules say that the last specified wins.
+        opts = self.p.parse_args(['--os-test-other', val2,
+                                  '--os-test-opt', val1])
+        self.assertEqual(val1, opts.os_test_opt)
+
+    def test_deprecated_env_options(self):
+        val = uuid.uuid4().hex
+
+        with mock.patch.dict('os.environ', {'OS_TEST_OTHER': val}):
+            TesterPlugin.register_argparse_arguments(self.p)
+
+        opts = self.p.parse_args([])
+        self.assertEqual(val, opts.os_test_opt)
+
+    def test_deprecated_env_multi_options(self):
+        val1 = uuid.uuid4().hex
+        val2 = uuid.uuid4().hex
+
+        with mock.patch.dict('os.environ', {'OS_TEST_OPT': val1,
+                                            'OS_TEST_OTHER': val2}):
+            TesterPlugin.register_argparse_arguments(self.p)
+
+        opts = self.p.parse_args([])
+        self.assertEqual(val1, opts.os_test_opt)
