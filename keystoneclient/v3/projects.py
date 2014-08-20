@@ -26,6 +26,11 @@ class Project(base.Resource):
         * name: project name
         * description: project description
         * enabled: boolean to indicate if project is enabled
+        * parent_id: a uuid representing this project's parent in hierarchy
+        * parents: a list or a structured dict containing the parents of this
+                   project in the hierarchy
+        * subtree: a list or a structured dict containing the subtree of this
+                   project in the hierarchy
 
     """
     @utils.positional(enforcement=utils.positional.WARN)
@@ -54,7 +59,26 @@ class ProjectManager(base.CrudManager):
     key = 'project'
 
     @utils.positional(1, enforcement=utils.positional.WARN)
-    def create(self, name, domain, description=None, enabled=True, **kwargs):
+    def create(self, name, domain, description=None,
+               enabled=True, parent=None, **kwargs):
+        """Create a project.
+
+        :param str name: project name.
+        :param domain: the project domain.
+        :type domain: :py:class:`keystoneclient.v3.domains.Domain` or str
+        :param str description: the project description. (optional)
+        :param boolean enabled: if the project is enabled. (optional)
+        :param parent: the project's parent in the hierarchy. (optional)
+        :type parent: :py:class:`keystoneclient.v3.projects.Project` or str
+        """
+
+        # NOTE(rodrigods): the API must be backwards compatible, so if an
+        # application was passing a 'parent_id' before as kwargs, the call
+        # should not fail. If both 'parent' and 'parent_id' are provided,
+        # 'parent' will be preferred.
+        if parent:
+            kwargs['parent_id'] = base.getid(parent)
+
         return super(ProjectManager, self).create(
             domain_id=base.getid(domain),
             name=name,
@@ -79,9 +103,29 @@ class ProjectManager(base.CrudManager):
             fallback_to_auth=True,
             **kwargs)
 
-    def get(self, project):
-        return super(ProjectManager, self).get(
-            project_id=base.getid(project))
+    @utils.positional()
+    def get(self, project, subtree_as_list=False, parents_as_list=False):
+        """Get a project.
+
+        :param project: project to be retrieved.
+        :type project: :py:class:`keystoneclient.v3.projects.Project` or str
+        :param boolean subtree_as_list: retrieve projects below this project
+                                        in the hierarchy as a flat list.
+                                        (optional)
+        :param boolean parents_as_list: retrieve projects above this project
+                                        in the hierarchy as a flat list.
+                                        (optional)
+        """
+        # According to the API spec, the query params are key only
+        query = ''
+        if subtree_as_list:
+            query = '?subtree_as_list'
+        if parents_as_list:
+            query = query + '&parents_as_list' if query else '?parents_as_list'
+
+        dict_args = {'project_id': base.getid(project)}
+        url = self.build_url(dict_args_in_out=dict_args) + query
+        return self._get(url, self.key)
 
     @utils.positional(enforcement=utils.positional.WARN)
     def update(self, project, name=None, domain=None, description=None,

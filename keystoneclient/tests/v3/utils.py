@@ -219,6 +219,9 @@ class CrudTests(object):
                 'Expected different %s' % attr)
         self.assertEntityRequestBodyIs(req_ref)
 
+        # The entity created here may be used in other test cases
+        return returned
+
     def test_get(self, ref=None):
         ref = ref or self.new_ref()
 
