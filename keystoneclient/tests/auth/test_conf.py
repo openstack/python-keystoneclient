@@ -101,10 +101,8 @@ class ConfTests(utils.TestCase):
                           self.GROUP)
 
     def test_loading_with_no_data(self):
-        self.assertRaises(exceptions.NoMatchingPlugin,
-                          conf.load_from_conf_options,
-                          self.conf_fixture.conf,
-                          self.GROUP)
+        self.assertIsNone(conf.load_from_conf_options(self.conf_fixture.conf,
+                                                      self.GROUP))
 
     @mock.patch('stevedore.DriverManager')
     def test_other_params(self, m):
