@@ -232,12 +232,19 @@ class Ec2Signer(object):
                 header_list.append('%s:%s' % (h, headers_lower[h]))
             return '\n'.join(header_list) + '\n'
 
+        def canonical_query_str(verb, params):
+            # POST requests pass parameters in through the request body
+            canonical_qs = ''
+            if verb.upper() != 'POST':
+                canonical_qs = self._canonical_qs(params)
+            return canonical_qs
+
         # Create canonical request:
         # http://docs.aws.amazon.com/general/latest/gr/
         # sigv4-create-canonical-request.html
         # Get parameters and headers in expected string format
         cr = "\n".join((verb.upper(), path,
-                        self._canonical_qs(params),
+                        canonical_query_str(verb, params),
                         canonical_header_str(),
                         auth_param('SignedHeaders'),
                         body_hash))
