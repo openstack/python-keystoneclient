@@ -22,6 +22,7 @@ OpenStack Client interface. Handles the REST calls and responses.
 import logging
 import pkg_resources
 
+import requests
 from six.moves.urllib import parse as urlparse
 
 try:
@@ -64,6 +65,22 @@ _logger = logging.getLogger(__name__)
 # Maintain here for compatibility.
 USER_AGENT = client_session.USER_AGENT
 request = client_session.request
+
+
+class _FakeRequestSession(object):
+    """This object is a temporary hack that should be removed later.
+
+    Keystoneclient has a cyclical dependency with its managers which is
+    preventing it from being cleaned up correctly. This is always bad but when
+    we switched to doing connection pooling this object wasn't getting cleaned
+    either and so we had left over TCP connections hanging around.
+
+    Until we can fix the client cleanup we rollback the use of a requests
+    session and do individual connections like we used to.
+    """
+
+    def request(self, *args, **kwargs):
+        return requests.request(*args, **kwargs)
 
 
 class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
@@ -238,6 +255,7 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         self._auth_token = None
 
         if not session:
+            kwargs['session'] = _FakeRequestSession()
             session = client_session.Session.construct(kwargs)
             session.auth = self
 
