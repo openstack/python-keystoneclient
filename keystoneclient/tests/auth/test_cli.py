@@ -104,6 +104,42 @@ class CliTests(utils.TestCase):
         self.assertEqual(self.a_float, a['a_float'])
         self.assertEqual(3, a['a_int'])
 
+    @utils.mock_plugin
+    def test_with_default_string_value(self, m):
+        name = uuid.uuid4().hex
+        klass = cli.register_argparse_arguments(self.p, [], default=name)
+        self.assertIs(utils.MockPlugin, klass)
+        m.assert_called_once_with(name)
+
+    @utils.mock_plugin
+    def test_overrides_default_string_value(self, m):
+        name = uuid.uuid4().hex
+        default = uuid.uuid4().hex
+        argv = ['--os-auth-plugin', name]
+        klass = cli.register_argparse_arguments(self.p, argv, default=default)
+        self.assertIs(utils.MockPlugin, klass)
+        m.assert_called_once_with(name)
+
+    @utils.mock_plugin
+    def test_with_default_type_value(self, m):
+        klass = cli.register_argparse_arguments(self.p, [],
+                                                default=utils.MockPlugin)
+        self.assertIs(utils.MockPlugin, klass)
+        self.assertEqual(0, m.call_count)
+
+    @utils.mock_plugin
+    def test_overrides_default_type_value(self, m):
+        # using this test plugin would fail if called because there
+        # is no get_options() function
+        class TestPlugin(object):
+            pass
+        name = uuid.uuid4().hex
+        argv = ['--os-auth-plugin', name]
+        klass = cli.register_argparse_arguments(self.p, argv,
+                                                default=TestPlugin)
+        self.assertIs(utils.MockPlugin, klass)
+        m.assert_called_once_with(name)
+
     def test_deprecated_cli_options(self):
         TesterPlugin.register_argparse_arguments(self.p)
         val = uuid.uuid4().hex
