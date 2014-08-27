@@ -20,6 +20,7 @@ import requests
 from requests_mock.contrib import fixture
 import six
 from six.moves.urllib import parse as urlparse
+import testscenarios
 import testtools
 
 from keystoneclient.tests.unit import client_fixtures
@@ -187,6 +188,30 @@ class DisableModuleFixture(fixtures.Fixture):
         finder = NoModuleFinder(self.module)
         self._finders.append(finder)
         sys.meta_path.insert(0, finder)
+
+
+class ClientTestCaseMixin(testscenarios.WithScenarios):
+
+    client_fixture_class = None
+    data_fixture_class = None
+
+    def setUp(self):
+        super(ClientTestCaseMixin, self).setUp()
+
+        self.data_fixture = None
+        self.client_fixture = None
+        self.client = None
+
+        if self.client_fixture_class:
+            fix = self.client_fixture_class(self.requests_mock,
+                                            self.deprecations)
+            self.client_fixture = self.useFixture(fix)
+            self.client = self.client_fixture.client
+            self.TEST_USER_ID = self.client_fixture.user_id
+
+        if self.data_fixture_class:
+            fix = self.data_fixture_class(self.requests_mock)
+            self.data_fixture = self.useFixture(fix)
 
 
 class NoModuleFinder(object):

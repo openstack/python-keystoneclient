@@ -15,8 +15,8 @@ import uuid
 import six
 from six.moves.urllib import parse as urlparse
 
+from keystoneclient.tests.unit import client_fixtures
 from keystoneclient.tests.unit import utils
-from keystoneclient.v3 import client
 
 
 TestResponse = utils.TestResponse
@@ -128,6 +128,7 @@ class TestCase(UnauthenticatedTestCase):
     }]
 
     def stub_auth(self, subject_token=None, **kwargs):
+
         if not subject_token:
             subject_token = self.TEST_TOKEN
 
@@ -144,16 +145,42 @@ class TestCase(UnauthenticatedTestCase):
         self.stub_url('POST', ['auth', 'tokens'], **kwargs)
 
 
-class ClientTestCase(TestCase):
+class ClientTestCase(utils.ClientTestCaseMixin, TestCase):
 
-    def setUp(self):
-        super(TestCase, self).setUp()
+    ORIGINAL_CLIENT_TYPE = 'original'
+    KSC_SESSION_CLIENT_TYPE = 'ksc-session'
+    KSA_SESSION_CLIENT_TYPE = 'ksa-session'
 
-        # Creating a Client not using session is deprecated.
-        with self.deprecations.expect_deprecations_here():
-            self.client = client.Client(token=self.TEST_TOKEN,
-                                        auth_url=self.TEST_URL,
-                                        endpoint=self.TEST_URL)
+    scenarios = [
+        (
+            ORIGINAL_CLIENT_TYPE, {
+                'client_fixture_class': client_fixtures.OriginalV3,
+                'client_type': ORIGINAL_CLIENT_TYPE
+            }
+        ),
+        (
+            KSC_SESSION_CLIENT_TYPE, {
+                'client_fixture_class': client_fixtures.KscSessionV3,
+                'client_type': KSC_SESSION_CLIENT_TYPE
+            }
+        ),
+        (
+            KSA_SESSION_CLIENT_TYPE, {
+                'client_fixture_class': client_fixtures.KsaSessionV3,
+                'client_type': KSA_SESSION_CLIENT_TYPE
+            }
+        )
+
+    ]
+
+    @property
+    def is_original_client(self):
+        return self.client_type == self.ORIGINAL_CLIENT_TYPE
+
+    @property
+    def is_session_client(self):
+        return self.client_type in (self.KSC_SESSION_CLIENT_TYPE,
+                                    self.KSA_SESSION_CLIENT_TYPE)
 
 
 class CrudTests(object):

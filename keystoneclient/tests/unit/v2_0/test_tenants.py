@@ -332,9 +332,9 @@ class TenantTests(utils.ClientTestCase):
     def test_list_tenants_use_admin_url(self):
         self.stub_url('GET', ['tenants'], json=self.TEST_TENANTS)
 
-        self.assertEqual(self.TEST_URL, self.client.management_url)
-
         tenant_list = self.client.tenants.list()
+        self.assertEqual(self.TEST_URL + '/tenants',
+                         self.requests_mock.last_request.url)
         [self.assertIsInstance(t, tenants.Tenant) for t in tenant_list]
 
         self.assertEqual(len(self.TEST_TENANTS['tenants']['values']),

@@ -14,23 +14,187 @@
 
 import contextlib
 import os
+import uuid
 import warnings
 
 import fixtures
+from keystoneauth1 import identity as ksa_identity
+from keystoneauth1 import session as ksa_session
 from oslo_serialization import jsonutils
 from oslo_utils import timeutils
 import six
 import testresources
 
+from keystoneclient.auth import identity as ksc_identity
 from keystoneclient.common import cms
+from keystoneclient import fixture
+from keystoneclient import session as ksc_session
 from keystoneclient import utils
+from keystoneclient.v2_0 import client as v2_client
+from keystoneclient.v3 import client as v3_client
 
+
+TEST_ROOT_URL = 'http://127.0.0.1:5000/'
 
 TESTDIR = os.path.dirname(os.path.abspath(__file__))
 ROOTDIR = os.path.normpath(os.path.join(TESTDIR, '..', '..', '..'))
 CERTDIR = os.path.join(ROOTDIR, 'examples', 'pki', 'certs')
 CMSDIR = os.path.join(ROOTDIR, 'examples', 'pki', 'cms')
 KEYDIR = os.path.join(ROOTDIR, 'examples', 'pki', 'private')
+
+
+class BaseFixture(fixtures.Fixture):
+
+    TEST_ROOT_URL = TEST_ROOT_URL
+
+    def __init__(self, requests, deprecations):
+        super(BaseFixture, self).__init__()
+        self.requests = requests
+        self.deprecations = deprecations
+        self.user_id = uuid.uuid4().hex
+        self.client = self.new_client()
+
+
+class BaseV2(BaseFixture):
+
+    TEST_URL = '%s%s' % (TEST_ROOT_URL, 'v2.0')
+
+
+class OriginalV2(BaseV2):
+
+    def new_client(self):
+        # Creating a Client not using session is deprecated.
+        with self.deprecations.expect_deprecations_here():
+            return v2_client.Client(username=uuid.uuid4().hex,
+                                    user_id=self.user_id,
+                                    token=uuid.uuid4().hex,
+                                    tenant_name=uuid.uuid4().hex,
+                                    auth_url=self.TEST_URL,
+                                    endpoint=self.TEST_URL)
+
+
+class KscSessionV2(BaseV2):
+
+    def new_client(self):
+        t = fixture.V2Token(user_id=self.user_id)
+        t.set_scope()
+
+        s = t.add_service('identity')
+        s.add_endpoint(self.TEST_URL)
+
+        d = fixture.V2Discovery(self.TEST_URL)
+
+        self.requests.register_uri('POST', self.TEST_URL + '/tokens', json=t)
+
+        # NOTE(jamielennox): Because of the versioned URL hack here even though
+        # the V2 URL will be in the service catalog it will be the root URL
+        # that will be queried for discovery.
+        self.requests.register_uri('GET', self.TEST_ROOT_URL,
+                                   json={'version': d})
+
+        a = ksc_identity.V2Password(username=uuid.uuid4().hex,
+                                    password=uuid.uuid4().hex,
+                                    auth_url=self.TEST_URL)
+        s = ksc_session.Session(auth=a)
+        return v2_client.Client(session=s)
+
+
+class KsaSessionV2(BaseV2):
+
+    def new_client(self):
+        t = fixture.V2Token(user_id=self.user_id)
+        t.set_scope()
+
+        s = t.add_service('identity')
+        s.add_endpoint(self.TEST_URL)
+
+        d = fixture.V2Discovery(self.TEST_URL)
+
+        self.requests.register_uri('POST', self.TEST_URL + '/tokens', json=t)
+
+        # NOTE(jamielennox): Because of the versioned URL hack here even though
+        # the V2 URL will be in the service catalog it will be the root URL
+        # that will be queried for discovery.
+        self.requests.register_uri('GET', self.TEST_ROOT_URL,
+                                   json={'version': d})
+
+        a = ksa_identity.V2Password(username=uuid.uuid4().hex,
+                                    password=uuid.uuid4().hex,
+                                    auth_url=self.TEST_URL)
+        s = ksa_session.Session(auth=a)
+        return v2_client.Client(session=s)
+
+
+class BaseV3(BaseFixture):
+
+    TEST_URL = '%s%s' % (TEST_ROOT_URL, 'v3')
+
+
+class OriginalV3(BaseV3):
+
+    def new_client(self):
+        # Creating a Client not using session is deprecated.
+        with self.deprecations.expect_deprecations_here():
+            return v3_client.Client(username=uuid.uuid4().hex,
+                                    user_id=self.user_id,
+                                    token=uuid.uuid4().hex,
+                                    tenant_name=uuid.uuid4().hex,
+                                    auth_url=self.TEST_URL,
+                                    endpoint=self.TEST_URL)
+
+
+class KscSessionV3(BaseV3):
+
+    def new_client(self):
+        t = fixture.V3Token(user_id=self.user_id)
+        t.set_project_scope()
+
+        s = t.add_service('identity')
+        s.add_standard_endpoints(public=self.TEST_URL,
+                                 admin=self.TEST_URL)
+
+        d = fixture.V3Discovery(self.TEST_URL)
+
+        headers = {'X-Subject-Token': uuid.uuid4().hex}
+        self.requests.register_uri('POST',
+                                   self.TEST_URL + '/auth/tokens',
+                                   headers=headers,
+                                   json=t)
+        self.requests.register_uri('GET', self.TEST_URL, json={'version': d})
+
+        a = ksc_identity.V3Password(username=uuid.uuid4().hex,
+                                    password=uuid.uuid4().hex,
+                                    user_domain_id=uuid.uuid4().hex,
+                                    auth_url=self.TEST_URL)
+        s = ksc_session.Session(auth=a)
+        return v3_client.Client(session=s)
+
+
+class KsaSessionV3(BaseV3):
+
+    def new_client(self):
+        t = fixture.V3Token(user_id=self.user_id)
+        t.set_project_scope()
+
+        s = t.add_service('identity')
+        s.add_standard_endpoints(public=self.TEST_URL,
+                                 admin=self.TEST_URL)
+
+        d = fixture.V3Discovery(self.TEST_URL)
+
+        headers = {'X-Subject-Token': uuid.uuid4().hex}
+        self.requests.register_uri('POST',
+                                   self.TEST_URL + '/auth/tokens',
+                                   headers=headers,
+                                   json=t)
+        self.requests.register_uri('GET', self.TEST_URL, json={'version': d})
+
+        a = ksa_identity.V3Password(username=uuid.uuid4().hex,
+                                    password=uuid.uuid4().hex,
+                                    user_domain_id=uuid.uuid4().hex,
+                                    auth_url=self.TEST_URL)
+        s = ksa_session.Session(auth=a)
+        return v3_client.Client(session=s)
 
 
 def _hash_signed_token_safe(signed_text, **kwargs):

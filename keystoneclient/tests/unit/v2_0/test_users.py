@@ -252,10 +252,10 @@ class UserTests(utils.ClientTestCase):
         resp_body = {
             'access': {}
         }
-        user_id = uuid.uuid4().hex
-        self.stub_url('PATCH', ['OS-KSCRUD', 'users', user_id], json=resp_body)
+        self.stub_url('PATCH',
+                      ['OS-KSCRUD', 'users', self.TEST_USER_ID],
+                      json=resp_body)
 
-        self.client.user_id = user_id
         self.client.users.update_own_password(old_password, new_password)
         self.assertRequestBodyIs(json=req_body)
         self.assertNotIn(old_password, self.logger.output)
