@@ -499,6 +499,47 @@ class SessionAuthTests(utils.TestCase):
                           authenticated=True, allow_reauth=False)
         self.assertFalse(auth.invalidate_called)
 
+    def test_endpoint_override_overrides_filter(self):
+        auth = CalledAuthPlugin()
+        sess = client_session.Session(auth=auth)
+
+        override_base = 'http://mytest/'
+        path = 'path'
+        override_url = override_base + path
+        resp_text = uuid.uuid4().hex
+
+        self.requests.register_uri('GET', override_url, text=resp_text)
+
+        resp = sess.get(path,
+                        endpoint_override=override_base,
+                        endpoint_filter={'service_type': 'identity'})
+
+        self.assertEqual(resp_text, resp.text)
+        self.assertEqual(override_url, self.requests.last_request.url)
+
+        self.assertTrue(auth.get_token_called)
+        self.assertFalse(auth.get_endpoint_called)
+
+    def test_endpoint_override_ignore_full_url(self):
+        auth = CalledAuthPlugin()
+        sess = client_session.Session(auth=auth)
+
+        path = 'path'
+        url = self.TEST_URL + path
+
+        resp_text = uuid.uuid4().hex
+        self.requests.register_uri('GET', url, text=resp_text)
+
+        resp = sess.get(url,
+                        endpoint_override='http://someother.url',
+                        endpoint_filter={'service_type': 'identity'})
+
+        self.assertEqual(resp_text, resp.text)
+        self.assertEqual(url, self.requests.last_request.url)
+
+        self.assertTrue(auth.get_token_called)
+        self.assertFalse(auth.get_endpoint_called)
+
 
 class AdapterTest(utils.TestCase):
 
@@ -584,6 +625,23 @@ class AdapterTest(utils.TestCase):
             with mock.patch.object(adpt, 'request') as m:
                 getattr(adpt, method)(url)
                 m.assert_called_once_with(url, method.upper())
+
+    def test_setting_endpoint_override(self):
+        endpoint_override = 'http://overrideurl'
+        path = '/path'
+        endpoint_url = endpoint_override + path
+
+        auth = CalledAuthPlugin()
+        sess = client_session.Session(auth=auth)
+        adpt = adapter.Adapter(sess, endpoint_override=endpoint_override)
+
+        response = uuid.uuid4().hex
+        self.requests.register_uri('GET', endpoint_url, text=response)
+
+        resp = adpt.get(path)
+
+        self.assertEqual(response, resp.text)
+        self.assertEqual(endpoint_url, self.requests.last_request.url)
 
 
 class ConfLoadingTests(utils.TestCase):
