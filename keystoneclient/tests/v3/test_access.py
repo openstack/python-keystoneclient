@@ -172,3 +172,12 @@ class AccessInfoTest(utils.TestCase):
         self.assertEqual(consumer_id, auth_ref['OS-OAUTH1']['consumer_id'])
         self.assertEqual(access_token_id,
                          auth_ref['OS-OAUTH1']['access_token_id'])
+
+    def test_override_auth_token(self):
+        token = fixture.V3Token()
+        token.set_project_scope()
+
+        new_auth_token = uuid.uuid4().hex
+        auth_ref = access.AccessInfo.factory(body=token,
+                                             auth_token=new_auth_token)
+        self.assertEqual(new_auth_token, auth_ref.auth_token)
