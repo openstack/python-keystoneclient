@@ -163,6 +163,29 @@ class SessionTests(utils.TestCase):
             self.assertIn(k, self.logger.output)
             self.assertNotIn(v, self.logger.output)
 
+    def test_connect_retries(self):
+
+        def _timeout_error(request, context):
+            raise requests.exceptions.Timeout()
+
+        self.stub_url('GET', text=_timeout_error)
+
+        session = client_session.Session()
+        retries = 3
+
+        with mock.patch('time.sleep') as m:
+            self.assertRaises(exceptions.RequestTimeout,
+                              session.get,
+                              self.TEST_URL, connect_retries=retries)
+
+            self.assertEqual(retries, m.call_count)
+            # 3 retries finishing with 2.0 means 0.5, 1.0 and 2.0
+            m.assert_called_with(2.0)
+
+        # we count retries so there will be one initial request + 3 retries
+        self.assertThat(self.requests.request_history,
+                        matchers.HasLength(retries + 1))
+
 
 class RedirectTests(utils.TestCase):
 
@@ -673,6 +696,25 @@ class AdapterTest(utils.TestCase):
 
         self.assertEqual(self.TEST_TOKEN, adpt.get_token())
         self.assertTrue(auth.get_token_called)
+
+    def test_adapter_connect_retries(self):
+        retries = 2
+        sess = client_session.Session()
+        adpt = adapter.Adapter(sess, connect_retries=retries)
+
+        def _refused_error(request, context):
+            raise requests.exceptions.ConnectionError()
+
+        self.stub_url('GET', text=_refused_error)
+
+        with mock.patch('time.sleep') as m:
+            self.assertRaises(exceptions.ConnectionRefused,
+                              adpt.get, self.TEST_URL)
+            self.assertEqual(retries, m.call_count)
+
+        # we count retries so there will be one initial request + 2 retries
+        self.assertThat(self.requests.request_history,
+                        matchers.HasLength(retries + 1))
 
 
 class ConfLoadingTests(utils.TestCase):
