@@ -191,7 +191,7 @@ class CommonIdentityTests(object):
 
         body = 'SUCCESS'
         self.stub_url('GET', ['path'],
-                      base_url=self.TEST_COMPUTE_ADMIN, body=body)
+                      base_url=self.TEST_COMPUTE_ADMIN, text=body)
 
         a = self.create_auth_plugin(**kwargs)
         a.auth_ref = expired_auth_ref

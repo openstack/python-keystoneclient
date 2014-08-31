@@ -101,7 +101,7 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         self.assertRequestBodyIs(json=self.TEST_REQUEST_BODY)
 
     def test_auth_redirect(self):
-        self.stub_auth(status_code=305, body='Use Proxy',
+        self.stub_auth(status_code=305, text='Use Proxy',
                        headers={'Location': self.TEST_ADMIN_URL + "/tokens"})
 
         self.stub_auth(base_url=self.TEST_ADMIN_URL,
