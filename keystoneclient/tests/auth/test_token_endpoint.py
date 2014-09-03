@@ -53,3 +53,11 @@ class TokenEndpointTest(utils.TestCase):
 
         self.assertIn('token', opt_names)
         self.assertIn('endpoint', opt_names)
+
+    def test_token_endpoint_user_id(self):
+        a = token_endpoint.Token(self.TEST_URL, self.TEST_TOKEN)
+        s = session.Session()
+
+        # we can't know this information about this sort of plugin
+        self.assertIsNone(a.get_user_id(s))
+        self.assertIsNone(a.get_project_id(s))

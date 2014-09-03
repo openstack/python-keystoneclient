@@ -40,6 +40,10 @@ class KeystoneClientTest(utils.TestCase):
                          'c4da488862bd435c9e6c0275a0d0e49a')
         self.assertFalse(c.has_service_catalog())
 
+        self.assertEqual('c4da488862bd435c9e6c0275a0d0e49a',
+                         c.get_user_id(session=None))
+        self.assertIsNone(c.get_project_id(session=None))
+
     def test_domain_scoped_init(self):
         self.stub_auth(json=client_fixtures.domain_scoped_token())
 
@@ -70,6 +74,10 @@ class KeystoneClientTest(utils.TestCase):
                          'c4da488862bd435c9e6c0275a0d0e49a')
         self.assertEqual(c.auth_tenant_id,
                          '225da22d3ce34b15877ea70b2a575f58')
+        self.assertEqual('c4da488862bd435c9e6c0275a0d0e49a',
+                         c.get_user_id(session=None))
+        self.assertEqual('225da22d3ce34b15877ea70b2a575f58',
+                         c.get_project_id(session=None))
 
     def test_auth_ref_load(self):
         self.stub_auth(json=client_fixtures.project_scoped_token())
