@@ -80,7 +80,7 @@ def register_conf_options(conf, group):
 def load_from_conf_options(conf, group, **kwargs):
     """Load a plugin from an oslo.config CONF object.
 
-    Each plugin will register there own required options and so there is no
+    Each plugin will register their own required options and so there is no
     standard list and the plugin should be consulted.
 
     The base options should have been registered with register_conf_options
