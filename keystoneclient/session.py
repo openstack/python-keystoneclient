@@ -183,7 +183,8 @@ class Session(object):
     def request(self, url, method, json=None, original_ip=None,
                 user_agent=None, redirect=None, authenticated=None,
                 endpoint_filter=None, auth=None, requests_auth=None,
-                raise_exc=True, allow_reauth=True, log=True, **kwargs):
+                raise_exc=True, allow_reauth=True, log=True,
+                endpoint_override=None, **kwargs):
         """Send an HTTP request with the specified characteristics.
 
         Wrapper around `requests.Session.request` to handle tasks such as
@@ -218,6 +219,11 @@ class Session(object):
                                      endpoint to use for this request. If not
                                      provided then URL is expected to be a
                                      fully qualified URL. (optional)
+        :param str endpoint_override: The URL to use instead of looking up the
+                                      endpoint in the auth plugin. This will be
+                                      ignored if a fully qualified URL is
+                                      provided but take priority over an
+                                      endpoint_filter. (optional)
         :param auth: The auth plugin to use when authenticating this request.
                      This will override the plugin that is attached to the
                      session (if any). (optional)
@@ -266,9 +272,13 @@ class Session(object):
         # should ignore the filter. This will make it easier for clients who
         # want to overrule the default endpoint_filter data added to all client
         # requests. We check fully qualified here by the presence of a host.
-        url_data = urllib.parse.urlparse(url)
-        if endpoint_filter and not url_data.netloc:
-            base_url = self.get_endpoint(auth, **endpoint_filter)
+        if not urllib.parse.urlparse(url).netloc:
+            base_url = None
+
+            if endpoint_override:
+                base_url = endpoint_override
+            elif endpoint_filter:
+                base_url = self.get_endpoint(auth, **endpoint_filter)
 
             if not base_url:
                 raise exceptions.EndpointNotFound()

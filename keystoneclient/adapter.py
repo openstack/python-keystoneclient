@@ -26,8 +26,8 @@ class Adapter(object):
 
     @utils.positional()
     def __init__(self, session, service_type=None, service_name=None,
-                 interface=None, region_name=None, auth=None,
-                 user_agent=None):
+                 interface=None, region_name=None, endpoint_override=None,
+                 auth=None, user_agent=None):
         """Create a new adapter.
 
         :param Session session: The session object to wrap.
@@ -35,16 +35,18 @@ class Adapter(object):
         :param str service_name: The default service_name for URL discovery.
         :param str interface: The default interface for URL discovery.
         :param str region_name: The default region_name for URL discovery.
+        :param str endpoint_override: Always use this endpoint URL for requests
+                                      for this client.
         :param auth.BaseAuthPlugin auth: An auth plugin to use instead of the
                                          session one.
         :param str user_agent: The User-Agent string to set.
         """
-
         self.session = session
         self.service_type = service_type
         self.service_name = service_name
         self.interface = interface
         self.region_name = region_name
+        self.endpoint_override = endpoint_override
         self.user_agent = user_agent
         self.auth = auth
 
@@ -59,6 +61,9 @@ class Adapter(object):
             endpoint_filter.setdefault('interface', self.interface)
         if self.region_name:
             endpoint_filter.setdefault('region_name', self.region_name)
+
+        if self.endpoint_override:
+            kwargs.setdefault('endpoint_override', self.endpoint_override)
 
         if self.auth:
             kwargs.setdefault('auth', self.auth)
