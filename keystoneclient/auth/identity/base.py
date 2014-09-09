@@ -134,8 +134,11 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
                        invalidate. This means that it makes sense to try again.
                        If nothing happens returns False to indicate give up.
         """
-        self.auth_ref = None
-        return True
+        if self.auth_ref:
+            self.auth_ref = None
+            return True
+
+        return False
 
     def get_endpoint(self, session, service_type=None, interface=None,
                      region_name=None, service_name=None, version=None,
