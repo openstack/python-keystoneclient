@@ -548,6 +548,7 @@ class AdapterTest(utils.TestCase):
     INTERFACE = uuid.uuid4().hex
     REGION_NAME = uuid.uuid4().hex
     USER_AGENT = uuid.uuid4().hex
+    VERSION = uuid.uuid4().hex
 
     TEST_URL = CalledAuthPlugin.ENDPOINT
 
@@ -563,7 +564,8 @@ class AdapterTest(utils.TestCase):
                                service_name=self.SERVICE_NAME,
                                interface=self.INTERFACE,
                                region_name=self.REGION_NAME,
-                               user_agent=self.USER_AGENT)
+                               user_agent=self.USER_AGENT,
+                               version=self.VERSION)
 
         resp = adpt.get('/')
         self.assertEqual(resp.text, response)
@@ -576,6 +578,8 @@ class AdapterTest(utils.TestCase):
                          auth.endpoint_arguments['interface'])
         self.assertEqual(self.REGION_NAME,
                          auth.endpoint_arguments['region_name'])
+        self.assertEqual(self.VERSION,
+                         auth.endpoint_arguments['version'])
 
         self.assertTrue(auth.get_token_called)
         self.assertRequestHeaderEqual('User-Agent', self.USER_AGENT)
