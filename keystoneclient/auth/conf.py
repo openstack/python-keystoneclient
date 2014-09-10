@@ -13,7 +13,6 @@
 from oslo.config import cfg
 
 from keystoneclient.auth import base
-from keystoneclient import exceptions
 
 _AUTH_PLUGIN_OPT = cfg.StrOpt('auth_plugin', help='Name of the plugin to load')
 
@@ -89,7 +88,7 @@ def load_from_conf_options(conf, group, **kwargs):
     :param conf: An oslo.config conf object.
     :param string group: The group name that options should be read from.
 
-    :returns plugin: An authentication Plugin.
+    :returns plugin: An authentication Plugin or None if a name is not provided
 
     :raises exceptions.NoMatchingPlugin: if a plugin cannot be created.
     """
@@ -101,7 +100,7 @@ def load_from_conf_options(conf, group, **kwargs):
 
     name = conf[group].auth_plugin
     if not name:
-        raise exceptions.NoMatchingPlugin('No plugin name provided for config')
+        return None
 
     plugin_class = base.get_plugin_class(name)
     plugin_class.register_conf_options(conf, group)
