@@ -319,14 +319,14 @@ class ScopeFederationTokenTests(AuthenticateviaSAML2Tests):
         self.PROJECT_SCOPED_TOKEN_JSON = client_fixtures.project_scoped_token()
         self.PROJECT_SCOPED_TOKEN_JSON['methods'] = ['saml2']
 
-        # for better readibility
+        # for better readability
         self.TEST_TENANT_ID = self.PROJECT_SCOPED_TOKEN_JSON.project_id
         self.TEST_TENANT_NAME = self.PROJECT_SCOPED_TOKEN_JSON.project_name
 
         self.DOMAIN_SCOPED_TOKEN_JSON = client_fixtures.domain_scoped_token()
         self.DOMAIN_SCOPED_TOKEN_JSON['methods'] = ['saml2']
 
-        # for better readibility
+        # for better readability
         self.TEST_DOMAIN_ID = self.DOMAIN_SCOPED_TOKEN_JSON.domain_id
         self.TEST_DOMAIN_NAME = self.DOMAIN_SCOPED_TOKEN_JSON.domain_name
 

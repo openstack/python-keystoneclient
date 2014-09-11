@@ -154,7 +154,7 @@ class V3Discovery(DiscoveryBase):
 
     Provides some default values and helper methods for creating a v3
     endpoint version structure. Clients should use this instead of creating
-    there own structures.
+    their own structures.
     """
 
     @utils.positional()
