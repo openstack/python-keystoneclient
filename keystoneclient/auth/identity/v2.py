@@ -95,11 +95,14 @@ class Auth(base.BaseIdentityPlugin):
         """
 
 
+_NOT_PASSED = object()
+
+
 class Password(Auth):
 
     @utils.positional(4)
-    def __init__(self, auth_url, username=None, password=None, user_id=None,
-                 **kwargs):
+    def __init__(self, auth_url, username=_NOT_PASSED, password=None,
+                 user_id=_NOT_PASSED, **kwargs):
         """A plugin for authenticating with a username and password.
 
         A username or user_id must be provided.
@@ -113,9 +116,14 @@ class Password(Auth):
         """
         super(Password, self).__init__(auth_url, **kwargs)
 
-        if not (user_id or username):
+        if username is _NOT_PASSED and user_id is _NOT_PASSED:
             msg = 'You need to specify either a username or user_id'
             raise TypeError(msg)
+
+        if username is _NOT_PASSED:
+            username = None
+        if user_id is _NOT_PASSED:
+            user_id = None
 
         self.user_id = user_id
         self.username = username

@@ -100,6 +100,7 @@ class V2IdentityPlugin(utils.TestCase):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
         a = v2.Password(self.TEST_URL, username=self.TEST_USER,
                         password=self.TEST_PASS)
+        self.assertIsNone(a.user_id)
         s = session.Session(a)
         s.get_token()
 
@@ -114,6 +115,7 @@ class V2IdentityPlugin(utils.TestCase):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
         a = v2.Password(self.TEST_URL, user_id=self.TEST_USER,
                         password=self.TEST_PASS)
+        self.assertIsNone(a.username)
         s = session.Session(a)
         s.get_token()
 
@@ -128,6 +130,7 @@ class V2IdentityPlugin(utils.TestCase):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
         a = v2.Password(self.TEST_URL, username=self.TEST_USER,
                         password=self.TEST_PASS, tenant_id=self.TEST_TENANT_ID)
+        self.assertIsNone(a.user_id)
         s = session.Session(a)
         s.get_token()
 
@@ -141,6 +144,7 @@ class V2IdentityPlugin(utils.TestCase):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
         a = v2.Password(self.TEST_URL, user_id=self.TEST_USER,
                         password=self.TEST_PASS, tenant_id=self.TEST_TENANT_ID)
+        self.assertIsNone(a.username)
         s = session.Session(a)
         s.get_token()
 
