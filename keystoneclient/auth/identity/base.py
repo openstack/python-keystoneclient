@@ -24,6 +24,12 @@ from keystoneclient import utils
 LOG = logging.getLogger(__name__)
 
 
+def get_options():
+    return [
+        cfg.StrOpt('auth-url', help='Authentication URL'),
+    ]
+
+
 @six.add_metaclass(abc.ABCMeta)
 class BaseIdentityPlugin(base.BaseAuthPlugin):
 
@@ -259,9 +265,5 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
     @classmethod
     def get_options(cls):
         options = super(BaseIdentityPlugin, cls).get_options()
-
-        options.extend([
-            cfg.StrOpt('auth-url', help='Authentication URL'),
-        ])
-
+        options.extend(get_options())
         return options
