@@ -461,7 +461,9 @@ class OpenStackHelpFormatter(argparse.HelpFormatter):
 def main():
     try:
         OpenStackIdentityShell().main(sys.argv[1:])
-
+    except KeyboardInterrupt:
+        print("... terminating keystone client", file=sys.stderr)
+        sys.exit(130)
     except Exception as e:
         print(encodeutils.safe_encode(six.text_type(e)), file=sys.stderr)
         sys.exit(1)
