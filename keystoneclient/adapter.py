@@ -52,19 +52,21 @@ class Adapter(object):
         self.user_agent = user_agent
         self.auth = auth
 
+    def _set_endpoint_filter_kwargs(self, kwargs):
+        if self.service_type:
+            kwargs.setdefault('service_type', self.service_type)
+        if self.service_name:
+            kwargs.setdefault('service_name', self.service_name)
+        if self.interface:
+            kwargs.setdefault('interface', self.interface)
+        if self.region_name:
+            kwargs.setdefault('region_name', self.region_name)
+        if self.version:
+            kwargs.setdefault('version', self.version)
+
     def request(self, url, method, **kwargs):
         endpoint_filter = kwargs.setdefault('endpoint_filter', {})
-
-        if self.service_type:
-            endpoint_filter.setdefault('service_type', self.service_type)
-        if self.service_name:
-            endpoint_filter.setdefault('service_name', self.service_name)
-        if self.interface:
-            endpoint_filter.setdefault('interface', self.interface)
-        if self.region_name:
-            endpoint_filter.setdefault('region_name', self.region_name)
-        if self.version:
-            endpoint_filter.setdefault('version', self.version)
+        self._set_endpoint_filter_kwargs(endpoint_filter)
 
         if self.endpoint_override:
             kwargs.setdefault('endpoint_override', self.endpoint_override)
@@ -75,6 +77,37 @@ class Adapter(object):
             kwargs.setdefault('user_agent', self.user_agent)
 
         return self.session.request(url, method, **kwargs)
+
+    def get_token(self, auth=None):
+        """Return a token as provided by the auth plugin.
+
+        :param auth: The auth plugin to use for token. Overrides the plugin
+                     on the session. (optional)
+        :type auth: :class:`keystoneclient.auth.base.BaseAuthPlugin`
+
+        :raises AuthorizationFailure: if a new token fetch fails.
+
+        :returns string: A valid token.
+        """
+        return self.session.get_token(auth or self.auth)
+
+    def get_endpoint(self, auth=None, **kwargs):
+        """Get an endpoint as provided by the auth plugin.
+
+        :param auth: The auth plugin to use for token. Overrides the plugin on
+                     the session. (optional)
+        :type auth: :class:`keystoneclient.auth.base.BaseAuthPlugin`
+
+        :raises MissingAuthPlugin: if a plugin is not available.
+
+        :returns string: An endpoint if available or None.
+        """
+        self._set_endpoint_filter_kwargs(kwargs)
+        return self.session.get_endpoint(auth or self.auth, **kwargs)
+
+    def invalidate(self, auth=None):
+        """Invalidate an authentication plugin."""
+        return self.session.invalidate(auth or self.auth)
 
     def get(self, url, **kwargs):
         return self.request(url, 'GET', **kwargs)

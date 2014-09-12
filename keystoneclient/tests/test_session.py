@@ -552,13 +552,10 @@ class AdapterTest(utils.TestCase):
 
     TEST_URL = CalledAuthPlugin.ENDPOINT
 
-    def test_setting_variables(self):
-        response = uuid.uuid4().hex
-        self.stub_url('GET', text=response)
-
+    def _create_loaded_adapter(self):
         auth = CalledAuthPlugin()
         sess = client_session.Session()
-        adpt = adapter.Adapter(sess,
+        return adapter.Adapter(sess,
                                auth=auth,
                                service_type=self.SERVICE_TYPE,
                                service_name=self.SERVICE_NAME,
@@ -567,22 +564,35 @@ class AdapterTest(utils.TestCase):
                                user_agent=self.USER_AGENT,
                                version=self.VERSION)
 
+    def _verify_endpoint_called(self, adpt):
+        self.assertEqual(self.SERVICE_TYPE,
+                         adpt.auth.endpoint_arguments['service_type'])
+        self.assertEqual(self.SERVICE_NAME,
+                         adpt.auth.endpoint_arguments['service_name'])
+        self.assertEqual(self.INTERFACE,
+                         adpt.auth.endpoint_arguments['interface'])
+        self.assertEqual(self.REGION_NAME,
+                         adpt.auth.endpoint_arguments['region_name'])
+        self.assertEqual(self.VERSION,
+                         adpt.auth.endpoint_arguments['version'])
+
+    def test_setting_variables_on_request(self):
+        response = uuid.uuid4().hex
+        self.stub_url('GET', text=response)
+        adpt = self._create_loaded_adapter()
         resp = adpt.get('/')
         self.assertEqual(resp.text, response)
 
-        self.assertEqual(self.SERVICE_TYPE,
-                         auth.endpoint_arguments['service_type'])
-        self.assertEqual(self.SERVICE_NAME,
-                         auth.endpoint_arguments['service_name'])
-        self.assertEqual(self.INTERFACE,
-                         auth.endpoint_arguments['interface'])
-        self.assertEqual(self.REGION_NAME,
-                         auth.endpoint_arguments['region_name'])
-        self.assertEqual(self.VERSION,
-                         auth.endpoint_arguments['version'])
-
-        self.assertTrue(auth.get_token_called)
+        self._verify_endpoint_called(adpt)
+        self.assertTrue(adpt.auth.get_token_called)
         self.assertRequestHeaderEqual('User-Agent', self.USER_AGENT)
+
+    def test_setting_variables_on_get_endpoint(self):
+        adpt = self._create_loaded_adapter()
+        url = adpt.get_endpoint()
+
+        self.assertEqual(self.TEST_URL, url)
+        self._verify_endpoint_called(adpt)
 
     def test_legacy_binding(self):
         key = uuid.uuid4().hex
@@ -646,6 +656,23 @@ class AdapterTest(utils.TestCase):
 
         self.assertEqual(response, resp.text)
         self.assertEqual(endpoint_url, self.requests.last_request.url)
+
+    def test_adapter_invalidate(self):
+        auth = CalledAuthPlugin()
+        sess = client_session.Session()
+        adpt = adapter.Adapter(sess, auth=auth)
+
+        adpt.invalidate()
+
+        self.assertTrue(auth.invalidate_called)
+
+    def test_adapter_get_token(self):
+        auth = CalledAuthPlugin()
+        sess = client_session.Session()
+        adpt = adapter.Adapter(sess, auth=auth)
+
+        self.assertEqual(self.TEST_TOKEN, adpt.get_token())
+        self.assertTrue(auth.get_token_called)
 
 
 class ConfLoadingTests(utils.TestCase):
