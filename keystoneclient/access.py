@@ -388,6 +388,14 @@ class AccessInfo(dict):
         """
         raise NotImplementedError()
 
+    @property
+    def is_federated(self):
+        """Returns true if federation was used to get the token.
+
+        :returns: boolean
+        """
+        raise NotImplementedError()
+
 
 class AccessInfoV2(AccessInfo):
     """An object for encapsulating a raw v2 auth token from identity
@@ -576,6 +584,10 @@ class AccessInfoV2(AccessInfo):
     def oauth_consumer_id(self):
         return None
 
+    @property
+    def is_federated(self):
+        return False
+
 
 class AccessInfoV3(AccessInfo):
     """An object for encapsulating a raw v3 auth token from identity
@@ -605,6 +617,10 @@ class AccessInfoV3(AccessInfo):
         return 'catalog' in self
 
     @property
+    def is_federated(self):
+        return 'OS-FEDERATION' in self['user']
+
+    @property
     def expires(self):
         return timeutils.parse_isotime(self['expires_at'])
 
@@ -618,11 +634,21 @@ class AccessInfoV3(AccessInfo):
 
     @property
     def user_domain_id(self):
-        return self['user']['domain']['id']
+        try:
+            return self['user']['domain']['id']
+        except KeyError:
+            if self.is_federated:
+                return None
+            raise
 
     @property
     def user_domain_name(self):
-        return self['user']['domain']['name']
+        try:
+            return self['user']['domain']['name']
+        except KeyError:
+            if self.is_federated:
+                return None
+            raise
 
     @property
     def role_ids(self):

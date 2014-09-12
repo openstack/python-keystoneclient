@@ -13,7 +13,9 @@
 import copy
 import uuid
 
+from keystoneclient import access
 from keystoneclient import exceptions
+from keystoneclient import fixture
 from keystoneclient.tests.v3 import utils
 from keystoneclient.v3.contrib.federation import base
 from keystoneclient.v3.contrib.federation import identity_providers
@@ -385,3 +387,25 @@ class FederationDomainTests(utils.TestCase):
         self.assertEqual(len(domains_ref), len(returned_list))
         for domain in returned_list:
             self.assertIsInstance(domain, self.model)
+
+
+class FederatedTokenTests(utils.TestCase):
+
+    def setUp(self):
+        super(FederatedTokenTests, self).setUp()
+        token = fixture.V3FederationToken()
+        token.set_project_scope()
+        token.add_role()
+        self.federated_token = access.AccessInfo.factory(body=token)
+
+    def test_federated_property_federated_token(self):
+        """Check if is_federated property returns expected value."""
+        self.assertTrue(self.federated_token.is_federated)
+
+    def test_get_user_domain_name(self):
+        """Ensure a federated user's domain name does not exist."""
+        self.assertIsNone(self.federated_token.user_domain_name)
+
+    def test_get_user_domain_id(self):
+        """Ensure a federated user's domain ID does not exist."""
+        self.assertIsNone(self.federated_token.user_domain_id)
