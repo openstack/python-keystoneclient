@@ -73,9 +73,13 @@ class Auth(base.BaseIdentityPlugin):
         headers = {'Accept': 'application/json'}
         body = {'auth': {'identity': {}}}
         ident = body['auth']['identity']
+        rkwargs = {}
 
         for method in self.auth_methods:
-            name, auth_data = method.get_auth_data(session, self, headers)
+            name, auth_data = method.get_auth_data(session,
+                                                   self,
+                                                   headers,
+                                                   request_kwargs=rkwargs)
             ident.setdefault('methods', []).append(name)
             ident[name] = auth_data
 
@@ -112,7 +116,7 @@ class Auth(base.BaseIdentityPlugin):
 
         _logger.debug('Making authentication request to %s', self.token_url)
         resp = session.post(self.token_url, json=body, headers=headers,
-                            authenticated=False, log=False)
+                            authenticated=False, log=False, **rkwargs)
 
         try:
             resp_data = resp.json()['token']
