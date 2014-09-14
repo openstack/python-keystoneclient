@@ -447,8 +447,8 @@ def from_response(response, method, url):
         except ValueError:
             pass
         else:
-            if isinstance(body, dict):
-                error = list(body.values())[0]
+            if isinstance(body, dict) and isinstance(body.get("error"), dict):
+                error = body["error"]
                 kwargs["message"] = error.get("message")
                 kwargs["details"] = error.get("details")
     elif content_type.startswith("text/"):
