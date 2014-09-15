@@ -23,12 +23,6 @@ import pbr.version
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__),
                 '..', '..')))
 
-# NOTE(blk-u): Path for our Sphinx extension, remove when
-# https://launchpad.net/bugs/1260495 is fixed.
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__),
-                '..')))
-
-
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -44,10 +38,6 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.coverage',
               'sphinx.ext.intersphinx',
               'oslosphinx',
-              # NOTE(blk-u): Uncomment the [pbr] section in setup.cfg and
-              # remove this Sphinx extension when
-              # https://launchpad.net/bugs/1260495 is fixed.
-              'ext.apidoc',
              ]
 
 todo_include_todos = True
