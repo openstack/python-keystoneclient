@@ -27,7 +27,8 @@ class Adapter(object):
     @utils.positional()
     def __init__(self, session, service_type=None, service_name=None,
                  interface=None, region_name=None, endpoint_override=None,
-                 version=None, auth=None, user_agent=None):
+                 version=None, auth=None, user_agent=None,
+                 connect_retries=None):
         """Create a new adapter.
 
         :param Session session: The session object to wrap.
@@ -41,6 +42,10 @@ class Adapter(object):
         :param auth.BaseAuthPlugin auth: An auth plugin to use instead of the
                                          session one.
         :param str user_agent: The User-Agent string to set.
+        :param int connect_retries: the maximum number of retries that should
+                                    be attempted for connection errors.
+                                    Default None - use session default which
+                                    is don't retry.
         """
         self.session = session
         self.service_type = service_type
@@ -51,6 +56,7 @@ class Adapter(object):
         self.version = version
         self.user_agent = user_agent
         self.auth = auth
+        self.connect_retries = connect_retries
 
     def _set_endpoint_filter_kwargs(self, kwargs):
         if self.service_type:
@@ -75,6 +81,8 @@ class Adapter(object):
             kwargs.setdefault('auth', self.auth)
         if self.user_agent:
             kwargs.setdefault('user_agent', self.user_agent)
+        if self.connect_retries is not None:
+            kwargs.setdefault('connect_retries', self.connect_retries)
 
         return self.session.request(url, method, **kwargs)
 
