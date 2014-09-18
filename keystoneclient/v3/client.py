@@ -20,6 +20,7 @@ from keystoneclient import exceptions
 from keystoneclient import httpclient
 from keystoneclient.openstack.common import jsonutils
 from keystoneclient.v3.contrib import endpoint_filter
+from keystoneclient.v3.contrib import endpoint_policy
 from keystoneclient.v3.contrib import federation
 from keystoneclient.v3.contrib import oauth1
 from keystoneclient.v3.contrib import trusts
@@ -101,6 +102,11 @@ class Client(httpclient.HTTPClient):
         :py:class:`keystoneclient.v3.contrib.endpoint_filter.\
 EndpointFilterManager`
 
+    .. py:attribute:: endpoint_policy
+
+        :py:class:`keystoneclient.v3.contrib.endpoint_policy.\
+EndpointPolicyManager`
+
     .. py:attribute:: endpoints
 
         :py:class:`keystoneclient.v3.endpoints.EndpointManager`
@@ -163,6 +169,7 @@ EndpointFilterManager`
 
         self.credentials = credentials.CredentialManager(self)
         self.endpoint_filter = endpoint_filter.EndpointFilterManager(self)
+        self.endpoint_policy = endpoint_policy.EndpointPolicyManager(self)
         self.endpoints = endpoints.EndpointManager(self)
         self.domains = domains.DomainManager(self)
         self.federation = federation.FederationManager(self)

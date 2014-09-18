@@ -17,18 +17,8 @@ import uuid
 from keystoneclient.tests.v3 import utils
 
 
-class EndpointFilterTests(utils.TestCase):
-    """Test project-endpoint associations (a.k.a. EndpointFilter Extension).
-
-    Endpoint filter provides associations between service endpoints and
-    projects. These assciations are then used to create ad-hoc catalogs for
-    each project-scoped token request.
-
-    """
-
-    def setUp(self):
-        super(EndpointFilterTests, self).setUp()
-        self.manager = self.client.endpoint_filter
+class EndpointTestUtils(object):
+    """Mixin class with shared methods between Endpoint Filter & Policy."""
 
     def new_ref(self, **kwargs):
         # copied from CrudTests as we need to create endpoint and project
@@ -45,6 +35,20 @@ class EndpointFilterTests(utils.TestCase):
         kwargs.setdefault('service_id', uuid.uuid4().hex)
         kwargs.setdefault('url', uuid.uuid4().hex)
         return kwargs
+
+
+class EndpointFilterTests(utils.TestCase, EndpointTestUtils):
+    """Test project-endpoint associations (a.k.a. EndpointFilter Extension).
+
+    Endpoint filter provides associations between service endpoints and
+    projects. These assciations are then used to create ad-hoc catalogs for
+    each project-scoped token request.
+
+    """
+
+    def setUp(self):
+        super(EndpointFilterTests, self).setUp()
+        self.manager = self.client.endpoint_filter
 
     def new_project_ref(self, **kwargs):
         # copied from ProjectTests as we need project refs for our tests
