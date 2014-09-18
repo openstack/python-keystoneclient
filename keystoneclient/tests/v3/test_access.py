@@ -181,3 +181,10 @@ class AccessInfoTest(utils.TestCase):
         auth_ref = access.AccessInfo.factory(body=token,
                                              auth_token=new_auth_token)
         self.assertEqual(new_auth_token, auth_ref.auth_token)
+
+    def test_federated_property_standard_token(self):
+        """Check if is_federated property returns expected value."""
+        token = fixture.V3Token()
+        token.set_project_scope()
+        auth_ref = access.AccessInfo.factory(body=token)
+        self.assertFalse(auth_ref.is_federated)

@@ -25,6 +25,7 @@ from keystoneclient.fixture.discovery import *  # noqa
 from keystoneclient.fixture.exception import FixtureValidationError  # noqa
 from keystoneclient.fixture.v2 import Token as V2Token  # noqa
 from keystoneclient.fixture.v3 import Token as V3Token  # noqa
+from keystoneclient.fixture.v3 import V3FederationToken  # noqa
 
 __all__ = ['DiscoveryList',
            'FixtureValidationError',
@@ -32,4 +33,5 @@ __all__ = ['DiscoveryList',
            'V3Discovery',
            'V2Token',
            'V3Token',
+           'V3FederationToken',
            ]
