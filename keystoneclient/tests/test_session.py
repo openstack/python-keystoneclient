@@ -138,6 +138,10 @@ class SessionTests(utils.TestCase):
                           session.get, self.TEST_URL)
 
     def test_session_debug_output(self):
+        """Test request and response headers in debug logs
+
+        in order to redact secure headers while debug is true.
+        """
         session = client_session.Session(verify=False)
         headers = {'HEADERA': 'HEADERVALB'}
         security_headers = {'Authorization': uuid.uuid4().hex,
@@ -145,10 +149,11 @@ class SessionTests(utils.TestCase):
                             'X-Subject-Token': uuid.uuid4().hex, }
         body = 'BODYRESPONSE'
         data = 'BODYDATA'
-        self.stub_url('POST', text=body)
         all_headers = dict(
             itertools.chain(headers.items(), security_headers.items()))
-        session.post(self.TEST_URL, headers=all_headers, data=data)
+        self.stub_url('POST', text=body, headers=all_headers)
+        resp = session.post(self.TEST_URL, headers=all_headers, data=data)
+        self.assertEqual(resp.status_code, 200)
 
         self.assertIn('curl', self.logger.output)
         self.assertIn('POST', self.logger.output)
@@ -159,8 +164,12 @@ class SessionTests(utils.TestCase):
         for k, v in six.iteritems(headers):
             self.assertIn(k, self.logger.output)
             self.assertIn(v, self.logger.output)
+
+        # Assert that response headers contains actual values and
+        # only debug logs has been masked
         for k, v in six.iteritems(security_headers):
-            self.assertIn(k, self.logger.output)
+            self.assertIn('%s: TOKEN_REDACTED' % k, self.logger.output)
+            self.assertEqual(v, resp.headers[k])
             self.assertNotIn(v, self.logger.output)
 
     def test_connect_retries(self):
