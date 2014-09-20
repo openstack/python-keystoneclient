@@ -130,7 +130,17 @@ class Ec2SignerTest(testtools.TestCase):
         # examples specify no query string, but the final POST example
         # does, apparently incorrectly since an empty parameter list
         # aligns all steps and the final signature with the examples
-        params = {}
+        params = {'Action': 'CreateUser',
+                  'UserName': 'NewUser',
+                  'Version': '2010-05-08',
+                  'X-Amz-Algorithm': 'AWS4-HMAC-SHA256',
+                  'X-Amz-Credential': 'AKIAEXAMPLE/20140611/'
+                                      'us-east-1/iam/aws4_request',
+                  'X-Amz-Date': '20140611T231318Z',
+                  'X-Amz-Expires': '30',
+                  'X-Amz-SignedHeaders': 'host',
+                  'X-Amz-Signature': 'ced6826de92d2bdeed8f846f0bf508e8'
+                                     '559e98e4b0199114b84c54174deb456c'}
         credentials = {'host': 'iam.amazonaws.com',
                        'verb': 'POST',
                        'path': '/',
