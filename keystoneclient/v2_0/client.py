@@ -120,7 +120,7 @@ class Client(httpclient.HTTPClient):
         >>> admin_client = client.Client(
         ...     token='12345secret7890',
         ...     endpoint='http://localhost:35357/v2.0')
-        >>> keystone.tenants.list()
+        >>> admin_client.tenants.list()
 
     """
 
