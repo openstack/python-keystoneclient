@@ -115,6 +115,12 @@ class ShellTest(utils.TestCase):
         self.assertThat(help_text,
                         matchers.MatchesRegex(required))
 
+    def test_help_command_with_no_action_choices(self):
+        required = 'usage: keystone user-update'
+        help_text = self.shell('help user-update')
+        self.assertThat(help_text,
+                        matchers.MatchesRegex(required))
+
     def test_auth_no_credentials(self):
         with testtools.ExpectedException(
                 exceptions.CommandError, 'Expecting'):
