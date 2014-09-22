@@ -428,7 +428,7 @@ def _conf_values_type_convert(conf):
     if not conf:
         return {}
     _opts = {}
-    opt_types = dict((o.dest, o.type) for o in opts)
+    opt_types = dict((o.dest, getattr(o, 'type', str)) for o in opts)
     for k, v in six.iteritems(conf):
         try:
             if v is None:
