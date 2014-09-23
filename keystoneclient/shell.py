@@ -443,6 +443,8 @@ class OpenStackHelpFormatter(argparse.HelpFormatter):
 
     def add_arguments(self, actions):
         for action in filter(lambda x: not x.option_strings, actions):
+            if not action.choices:
+                continue
             for choice in action.choices:
                 length = len(choice) + self.INDENT_BEFORE_ARGUMENTS
                 if(length > self._max_help_position and
