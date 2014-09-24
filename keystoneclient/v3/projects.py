@@ -76,6 +76,7 @@ class ProjectManager(base.CrudManager):
         return super(ProjectManager, self).list(
             base_url=base_url,
             domain_id=base.getid(domain),
+            fallback_to_auth=True,
             **kwargs)
 
     def get(self, project):
