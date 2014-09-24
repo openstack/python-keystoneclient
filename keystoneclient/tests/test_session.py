@@ -168,7 +168,7 @@ class SessionTests(utils.TestCase):
         # Assert that response headers contains actual values and
         # only debug logs has been masked
         for k, v in six.iteritems(security_headers):
-            self.assertIn('%s: TOKEN_REDACTED' % k, self.logger.output)
+            self.assertIn('%s: {SHA1}' % k, self.logger.output)
             self.assertEqual(v, resp.headers[k])
             self.assertNotIn(v, self.logger.output)
 
