@@ -235,7 +235,7 @@ class ShellTest(utils.TestCase):
             # Old_style options
             # Test case with one --tenant_id args present: ec2 creds
             shell('user-create --name=FOO '
-                  '--pass=secrete --tenant_id=barrr --enabled=true')
+                  '--pass=secret --tenant_id=barrr --enabled=true')
             assert do_uc_mock.called
             ((a, b), c) = do_uc_mock.call_args
             actual = (b.os_auth_url, b.os_password, b.os_tenant_id,
@@ -245,13 +245,13 @@ class ShellTest(utils.TestCase):
                       DEFAULT_TENANT_NAME, DEFAULT_USERNAME, '')
             self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
             actual = (b.tenant_id, b.name, b.passwd, b.enabled)
-            expect = ('barrr', 'FOO', 'secrete', 'true')
+            expect = ('barrr', 'FOO', 'secret', 'true')
             self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
 
             # New-style options
             # Test case with one --tenant args present: ec2 creds
             shell('user-create --name=foo '
-                  '--pass=secrete --tenant=BARRR --enabled=true')
+                  '--pass=secret --tenant=BARRR --enabled=true')
             assert do_uc_mock.called
             ((a, b), c) = do_uc_mock.call_args
             actual = (b.os_auth_url, b.os_password, b.os_tenant_id,
@@ -261,13 +261,13 @@ class ShellTest(utils.TestCase):
                       DEFAULT_TENANT_NAME, DEFAULT_USERNAME, '')
             self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
             actual = (b.tenant, b.name, b.passwd, b.enabled)
-            expect = ('BARRR', 'foo', 'secrete', 'true')
+            expect = ('BARRR', 'foo', 'secret', 'true')
             self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
 
             # New-style options
             # Test case with one --tenant-id args present: ec2 creds
             shell('user-create --name=foo '
-                  '--pass=secrete --tenant-id=BARRR --enabled=true')
+                  '--pass=secret --tenant-id=BARRR --enabled=true')
             assert do_uc_mock.called
             ((a, b), c) = do_uc_mock.call_args
             actual = (b.os_auth_url, b.os_password, b.os_tenant_id,
@@ -277,13 +277,13 @@ class ShellTest(utils.TestCase):
                       DEFAULT_TENANT_NAME, DEFAULT_USERNAME, '')
             self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
             actual = (b.tenant, b.name, b.passwd, b.enabled)
-            expect = ('BARRR', 'foo', 'secrete', 'true')
+            expect = ('BARRR', 'foo', 'secret', 'true')
             self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
 
             # Old_style options
             # Test case with --os_tenant_id and --tenant_id args present
             shell('--os_tenant_id=os-tenant user-create --name=FOO '
-                  '--pass=secrete --tenant_id=barrr --enabled=true')
+                  '--pass=secret --tenant_id=barrr --enabled=true')
             assert do_uc_mock.called
             ((a, b), c) = do_uc_mock.call_args
             actual = (b.os_auth_url, b.os_password, b.os_tenant_id,
@@ -293,13 +293,13 @@ class ShellTest(utils.TestCase):
                       DEFAULT_TENANT_NAME, DEFAULT_USERNAME, '')
             self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
             actual = (b.tenant_id, b.name, b.passwd, b.enabled)
-            expect = ('barrr', 'FOO', 'secrete', 'true')
+            expect = ('barrr', 'FOO', 'secret', 'true')
             self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
 
             # New-style options
             # Test case with --os-tenant-id and --tenant-id args present
             shell('--os-tenant-id=ostenant user-create --name=foo '
-                  '--pass=secrete --tenant-id=BARRR --enabled=true')
+                  '--pass=secret --tenant-id=BARRR --enabled=true')
             assert do_uc_mock.called
             ((a, b), c) = do_uc_mock.call_args
             actual = (b.os_auth_url, b.os_password, b.os_tenant_id,
@@ -309,7 +309,7 @@ class ShellTest(utils.TestCase):
                       DEFAULT_TENANT_NAME, DEFAULT_USERNAME, '')
             self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
             actual = (b.tenant, b.name, b.passwd, b.enabled)
-            expect = ('BARRR', 'foo', 'secrete', 'true')
+            expect = ('BARRR', 'foo', 'secret', 'true')
             self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
 
     def test_do_tenant_create(self):
