@@ -695,7 +695,7 @@ class CommonAuthTokenMiddlewareTest(object):
         self.middleware(req.environ, self.start_fake_response)
         self.assertEqual(200, self.response_status)
 
-       # This time use the PKI(Z) token
+        # This time use the PKI(Z) token
         req.headers['X-Auth-Token'] = token
         self.middleware(req.environ, self.start_fake_response)
 

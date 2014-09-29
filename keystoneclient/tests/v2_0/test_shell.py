@@ -145,10 +145,9 @@ class ShellTests(utils.TestCase):
         self.run_command('user-update --name new-user1'
                          ' --email user@email.com --enabled true 1')
         self.assert_called('PUT', '/users/1')
-        self.assertRequestBodyIs(json={'user': {'id': '1',
-                                       'email': 'user@email.com',
-                                       'enabled': True,
-                                       'name': 'new-user1'}})
+        body = {'user': {'id': '1', 'email': 'user@email.com',
+                         'enabled': True, 'name': 'new-user1'}}
+        self.assertRequestBodyIs(json=body)
 
         required = 'User not updated, no arguments present.'
         out = self.run_command('user-update 1')

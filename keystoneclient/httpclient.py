@@ -20,8 +20,8 @@ OpenStack Client interface. Handles the REST calls and responses.
 """
 
 import logging
-import pkg_resources
 
+import pkg_resources
 import requests
 from six.moves.urllib import parse as urlparse
 
