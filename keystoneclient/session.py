@@ -116,6 +116,15 @@ class Session(object):
         if user_agent is not None:
             self.user_agent = user_agent
 
+    @classmethod
+    def process_header(cls, header):
+        """Redacts the secure headers to be logged."""
+        secure_headers = ('authorization', 'x-auth-token',
+                          'x-subject-token',)
+        if header[0].lower() in secure_headers:
+            return (header[0], 'TOKEN_REDACTED')
+        return header
+
     @utils.positional()
     def _http_log_request(self, url, method=None, data=None,
                           json=None, headers=None):
@@ -124,13 +133,6 @@ class Session(object):
             # there is no need to do the work if we're not going to emit a
             # debug log.
             return
-
-        def process_header(header):
-            secure_headers = ('authorization', 'x-auth-token',
-                              'x-subject-token',)
-            if header[0].lower() in secure_headers:
-                return (header[0], 'TOKEN_REDACTED')
-            return header
 
         string_parts = ['REQ: curl -i']
 
@@ -146,7 +148,8 @@ class Session(object):
 
         if headers:
             for header in six.iteritems(headers):
-                string_parts.append('-H "%s: %s"' % process_header(header))
+                string_parts.append('-H "%s: %s"'
+                                    % Session.process_header(header))
         if json:
             data = jsonutils.dumps(json)
         if data:
@@ -175,7 +178,8 @@ class Session(object):
         if status_code:
             string_parts.append('[%s]' % status_code)
         if headers:
-            string_parts.append('%s' % headers)
+            for header in six.iteritems(headers):
+                string_parts.append('%s: %s' % Session.process_header(header))
         if text:
             string_parts.append('\nRESP BODY: %s\n' % text)
 
