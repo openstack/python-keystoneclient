@@ -337,15 +337,15 @@ class CrudManager(Manager):
     def head(self, **kwargs):
         return self._head(self.build_url(dict_args_in_out=kwargs))
 
+    def _build_query(self, params):
+        return '?%s' % urllib.parse.urlencode(params) if params else ''
+
     @filter_kwargs
     def list(self, fallback_to_auth=False, **kwargs):
         url = self.build_url(dict_args_in_out=kwargs)
 
         try:
-            if kwargs:
-                query = '?%s' % urllib.parse.urlencode(kwargs)
-            else:
-                query = ''
+            query = self._build_query(kwargs)
             url_query = '%(url)s%(query)s' % {'url': url, 'query': query}
             return self._list(
                 url_query,
@@ -385,10 +385,7 @@ class CrudManager(Manager):
         """Find a single item with attributes matching ``**kwargs``."""
         url = self.build_url(dict_args_in_out=kwargs)
 
-        if kwargs:
-            query = '?%s' % urllib.parse.urlencode(kwargs)
-        else:
-            query = ''
+        query = self._build_query(kwargs)
         rl = self._list(
             '%(url)s%(query)s' % {
                 'url': url,
