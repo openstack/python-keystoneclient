@@ -16,6 +16,12 @@
 """
 TOKEN-BASED AUTH MIDDLEWARE
 
+.. warning::
+
+  This module is DEPRECATED. The auth_token middleware has been moved to the
+  `keystonemiddleware repository
+  <http://docs.openstack.org/developer/keystonemiddleware/>`_.
+
 This WSGI component:
 
 * Verifies that incoming client requests have valid tokens by validating
@@ -25,9 +31,6 @@ This WSGI component:
   component (usually the OpenStack service)
 * Collects and forwards identity information based on a valid token
   such as user name, tenant, etc
-
-Refer to: http://docs.openstack.org/developer/python-keystoneclient/
-middlewarearchitecture.html
 
 HEADERS
 -------
