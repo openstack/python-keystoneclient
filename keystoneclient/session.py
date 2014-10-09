@@ -12,6 +12,7 @@
 
 import argparse
 import functools
+import hashlib
 import logging
 import os
 import time
@@ -122,7 +123,10 @@ class Session(object):
         secure_headers = ('authorization', 'x-auth-token',
                           'x-subject-token',)
         if header[0].lower() in secure_headers:
-            return (header[0], 'TOKEN_REDACTED')
+            token_hasher = hashlib.sha1()
+            token_hasher.update(header[1].encode('utf-8'))
+            token_hash = token_hasher.hexdigest()
+            return (header[0], '{SHA1}%s' % token_hash)
         return header
 
     @utils.positional()
