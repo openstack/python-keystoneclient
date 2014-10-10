@@ -498,7 +498,7 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
                 endpoint_type='admin',
                 region_name=region_name)
         except exceptions.EndpointNotFound:
-            _logger.warning("Failed to retrieve management_url from token")
+            pass
 
     def process_token(self, region_name=None):
         """Extract and process information from the new auth_ref.
