@@ -80,11 +80,32 @@ exception it will raise an instance of subclass of
 ``keystoneclient.exceptions.ClientException`` (see
 :py:class:`keystoneclient.openstack.common.apiclient.exceptions.ClientException`)
 
-Authenticating
-==============
+Authenticating Using Sessions
+=============================
 
-You can authenticate against Keystone using a username, a user domain
-name (which will default to 'Default' if it is not specified) and a
+Instantiate a :py:class:`keystoneclient.v3.client.Client` using a
+:py:class:`~keystoneclient.session.Session` to provide the authentication
+plugin, SSL/TLS certificates, and other data::
+
+    >>> from keystoneclient.auth.identity import v3
+    >>> from keystoneclient import session
+    >>> from keystoneclient.v3 import client
+    >>> auth = v3.Password(auth_url='https://my.keystone.com:5000/v3',
+    ...                    user_id='myuserid',
+    ...                    password='mypassword',
+    ...                    project_id='myprojectid')
+    >>> sess = session.Session(auth=auth)
+    >>> keystone = client.Client(session=sess)
+
+For more information on Sessions refer to: `Using Sessions`_.
+
+.. _`Using Sessions`: using-sessions.html
+
+Non-Session Authentication (deprecated)
+=======================================
+
+The *deprecated* way to authenticate is to pass the username, the user's domain
+name (which will default to 'Default' if it is not specified), and a
 password::
 
     >>> from keystoneclient import client
@@ -95,6 +116,11 @@ password::
     >>> keystone = client.Client(auth_url=auth_url, version=(3,),
     ...                          username=username, password=password,
     ...                          user_domain_name=user_domain_name)
+
+A :py:class:`~keystoneclient.session.Session` should be passed to the Client
+instead. Using a Session you're not limited to authentication using a username
+and password but can take advantage of other more secure authentication
+methods.
 
 You may optionally specify a domain or project (along with its project
 domain name), to obtain a scoped token::
@@ -111,23 +137,3 @@ domain name), to obtain a scoped token::
     ...                          user_domain_name=user_domain_name,
     ...                          project_name=project_name,
     ...                          project_domain_name=project_domain_name)
-
-Using Sessions
-==============
-
-It's also possible to instantiate a :py:class:`keystoneclient.v3.client.Client`
-class by using :py:class:`keystoneclient.session.Session`.::
-
-    >>> from keystoneclient.auth.identity import v3
-    >>> from keystoneclient import session
-    >>> from keystoneclient.v3 import client
-    >>> auth = v3.Password(auth_url='https://my.keystone.com:5000/v3',
-    ...                    user_id='myuserid',
-    ...                    password='mypassword',
-    ...                    project_id='myprojectid')
-    >>> sess = session.Session(auth=auth)
-    >>> keystone = client.Client(session=sess)
-
-For more information on Sessions refer to: `Using Sessions`_.
-
-.. _`Using Sessions`: using-sessions.html
