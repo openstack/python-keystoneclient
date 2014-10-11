@@ -54,52 +54,58 @@ def request(url, method='GET', **kwargs):
 
 
 class Session(object):
+    """Maintains client communication state and common functionality.
+
+    As much as possible the parameters to this class reflect and are passed
+    directly to the requests library.
+
+    :param auth: An authentication plugin to authenticate the session with.
+                 (optional, defaults to None)
+    :type auth: :py:class:`keystoneclient.auth.base.BaseAuthPlugin`
+    :param requests.Session session: A requests session object that can be used
+                                     for issuing requests. (optional)
+    :param string original_ip: The original IP of the requesting user which
+                               will be sent to identity service in a
+                               'Forwarded' header. (optional)
+    :param verify: The verification arguments to pass to requests. These are of
+                   the same form as requests expects, so True or False to
+                   verify (or not) against system certificates or a path to a
+                   bundle or CA certs to check against or None for requests to
+                   attempt to locate and use certificates. (optional, defaults
+                   to True)
+    :param cert: A client certificate to pass to requests. These are of the
+                 same form as requests expects. Either a single filename
+                 containing both the certificate and key or a tuple containing
+                 the path to the certificate then a path to the key. (optional)
+    :param float timeout: A timeout to pass to requests. This should be a
+                          numerical value indicating some amount (or fraction)
+                          of seconds or 0 for no timeout. (optional, defaults
+                          to 0)
+    :param string user_agent: A User-Agent header string to use for the
+                              request. If not provided a default is used.
+                              (optional, defaults to 'python-keystoneclient')
+    :param int/bool redirect: Controls the maximum number of redirections that
+                              can be followed by a request. Either an integer
+                              for a specific count or True/False for
+                              forever/never. (optional, default to 30)
+    """
 
     user_agent = None
 
-    REDIRECT_STATUSES = (301, 302, 303, 305, 307)
-    DEFAULT_REDIRECT_LIMIT = 30
+    _REDIRECT_STATUSES = (301, 302, 303, 305, 307)
+
+    REDIRECT_STATUSES = _REDIRECT_STATUSES
+    """This property is deprecated."""
+
+    _DEFAULT_REDIRECT_LIMIT = 30
+
+    DEFAULT_REDIRECT_LIMIT = _DEFAULT_REDIRECT_LIMIT
+    """This property is deprecated."""
 
     @utils.positional(2, enforcement=utils.positional.WARN)
     def __init__(self, auth=None, session=None, original_ip=None, verify=True,
                  cert=None, timeout=None, user_agent=None,
-                 redirect=DEFAULT_REDIRECT_LIMIT):
-        """Maintains client communication state and common functionality.
-
-        As much as possible the parameters to this class reflect and are passed
-        directly to the requests library.
-
-        :param auth: An authentication plugin to authenticate the session with.
-                     (optional, defaults to None)
-        :param requests.Session session: A requests session object that can be
-                                         used for issuing requests. (optional)
-        :param string original_ip: The original IP of the requesting user
-                                   which will be sent to identity service in a
-                                   'Forwarded' header. (optional)
-        :param verify: The verification arguments to pass to requests. These
-                       are of the same form as requests expects, so True or
-                       False to verify (or not) against system certificates or
-                       a path to a bundle or CA certs to check against or None
-                       for requests to attempt to locate and use certificates.
-                       (optional, defaults to True)
-        :param cert: A client certificate to pass to requests. These are of the
-                     same form as requests expects. Either a single filename
-                     containing both the certificate and key or a tuple
-                     containing the path to the certificate then a path to the
-                     key. (optional)
-        :param float timeout: A timeout to pass to requests. This should be a
-                              numerical value indicating some amount
-                              (or fraction) of seconds or 0 for no timeout.
-                              (optional, defaults to 0)
-        :param string user_agent: A User-Agent header string to use for the
-                                  request. If not provided a default is used.
-                                  (optional, defaults to
-                                  'python-keystoneclient')
-        :param int/bool redirect: Controls the maximum number of redirections
-                                  that can be followed by a request. Either an
-                                  integer for a specific count or True/False
-                                  for forever/never. (optional, default to 30)
-        """
+                 redirect=_DEFAULT_REDIRECT_LIMIT):
         if not session:
             session = requests.Session()
 
@@ -241,11 +247,11 @@ class Session(object):
         :param auth: The auth plugin to use when authenticating this request.
                      This will override the plugin that is attached to the
                      session (if any). (optional)
-        :type auth: :class:`keystoneclient.auth.base.BaseAuthPlugin`
+        :type auth: :py:class:`keystoneclient.auth.base.BaseAuthPlugin`
         :param requests_auth: A requests library auth plugin that cannot be
                               passed via kwarg because the `auth` kwarg
                               collides with our own auth plugins. (optional)
-        :type requests_auth: :class:`requests.auth.AuthBase`
+        :type requests_auth: :py:class:`requests.auth.AuthBase`
         :param bool raise_exc: If True then raise an appropriate exception for
                                failed HTTP requests. If False then return the
                                request object. (optional, default True)
@@ -398,7 +404,7 @@ class Session(object):
         if log:
             self._http_log_response(response=resp)
 
-        if resp.status_code in self.REDIRECT_STATUSES:
+        if resp.status_code in self._REDIRECT_STATUSES:
             # be careful here in python True == 1 and False == 0
             if isinstance(redirect, bool):
                 redirect_allowed = redirect
@@ -430,35 +436,67 @@ class Session(object):
         return resp
 
     def head(self, url, **kwargs):
+        """Perform a HEAD request.
+
+        This calls :py:meth:`.request()` with ``method`` set to ``HEAD``.
+
+        """
         return self.request(url, 'HEAD', **kwargs)
 
     def get(self, url, **kwargs):
+        """Perform a GET request.
+
+        This calls :py:meth:`.request()` with ``method`` set to ``GET``.
+
+        """
         return self.request(url, 'GET', **kwargs)
 
     def post(self, url, **kwargs):
+        """Perform a POST request.
+
+        This calls :py:meth:`.request()` with ``method`` set to ``POST``.
+
+        """
         return self.request(url, 'POST', **kwargs)
 
     def put(self, url, **kwargs):
+        """Perform a PUT request.
+
+        This calls :py:meth:`.request()` with ``method`` set to ``PUT``.
+
+        """
         return self.request(url, 'PUT', **kwargs)
 
     def delete(self, url, **kwargs):
+        """Perform a DELETE request.
+
+        This calls :py:meth:`.request()` with ``method`` set to ``DELETE``.
+
+        """
         return self.request(url, 'DELETE', **kwargs)
 
     def patch(self, url, **kwargs):
+        """Perform a PATCH request.
+
+        This calls :py:meth:`.request()` with ``method`` set to ``PATCH``.
+
+        """
         return self.request(url, 'PATCH', **kwargs)
 
     @classmethod
     def construct(cls, kwargs):
-        """Handles constructing a session from the older HTTPClient args as
-        well as the new request style arguments.
+        """Handles constructing a session from the older
+        :py:class:`~keystoneclient.httpclient.HTTPClient` args as well as the
+        new request-style arguments.
 
-        *DEPRECATED*: This function is purely for bridging the gap between
-        older client arguments and the session arguments that they relate to.
-        It is not intended to be used as a generic Session Factory.
+        .. warning::
+            *DEPRECATED*: This function is purely for bridging the gap between
+            older client arguments and the session arguments that they relate
+            to. It is not intended to be used as a generic Session Factory.
 
         This function purposefully modifies the input kwargs dictionary so that
         the remaining kwargs dict can be reused and passed on to other
-        functionswithout session arguments.
+        functions without session arguments.
 
         """
         params = {}
@@ -499,10 +537,12 @@ class Session(object):
 
         :param auth: The auth plugin to use for token. Overrides the plugin
                      on the session. (optional)
-        :type auth: :class:`keystoneclient.auth.base.BaseAuthPlugin`
+        :type auth: :py:class:`keystoneclient.auth.base.BaseAuthPlugin`
 
         :raises keystoneclient.exceptions.AuthorizationFailure: if a new token
                                                                 fetch fails.
+        :raises keystoneclient.exceptions.MissingAuthPlugin: if a plugin is not
+                                                             available.
 
         :returns: A valid token.
         :rtype: string
@@ -524,7 +564,7 @@ class Session(object):
 
         :param auth: The auth plugin to use for token. Overrides the plugin on
                      the session. (optional)
-        :type auth: :class:`keystoneclient.auth.base.BaseAuthPlugin`
+        :type auth: :py:class:`keystoneclient.auth.base.BaseAuthPlugin`
 
         :raises keystoneclient.exceptions.MissingAuthPlugin: if a plugin is not
                                                              available.
@@ -544,6 +584,11 @@ class Session(object):
 
     def invalidate(self, auth=None):
         """Invalidate an authentication plugin.
+
+        :param auth: The auth plugin to invalidate. Overrides the plugin on the
+                     session. (optional)
+        :type auth: :py:class:`keystoneclient.auth.base.BaseAuthPlugin`
+
         """
         if not auth:
             auth = self.auth
@@ -556,7 +601,8 @@ class Session(object):
 
     @utils.positional.classmethod()
     def get_conf_options(cls, deprecated_opts=None):
-        """Get the oslo.config options that are needed for a session.
+        """Get the oslo.config options that are needed for a
+        :py:class:`.Session`.
 
         These may be useful without being registered for config file generation
         or to manipulate the options before registering them yourself.
@@ -569,12 +615,12 @@ class Session(object):
             :timeout: The max time to wait for HTTP connections.
 
         :param dict deprecated_opts: Deprecated options that should be included
-             in the definition of new options. This should be a dictionary from
-             the name of the new option to a list of oslo.DeprecatedOpts that
+             in the definition of new options. This should be a dict from the
+             name of the new option to a list of oslo.DeprecatedOpts that
              correspond to the new option. (optional)
 
-             Example to support the 'ca_file' option pointing to the new
-             'cafile' option name::
+             For example, to support the ``ca_file`` option pointing to the new
+             ``cafile`` option name::
 
                  old_opt = oslo.cfg.DeprecatedOpt('ca_file', 'old_group')
                  deprecated_opts={'cafile': [old_opt]}
@@ -617,12 +663,12 @@ class Session(object):
         :param oslo.config.Cfg conf: config object to register with.
         :param string group: The ini group to register options in.
         :param dict deprecated_opts: Deprecated options that should be included
-             in the definition of new options. This should be a dictionary from
-             the name of the new option to a list of oslo.DeprecatedOpts that
+             in the definition of new options. This should be a dict from the
+             name of the new option to a list of oslo.DeprecatedOpts that
              correspond to the new option. (optional)
 
-             Example to support the 'ca_file' option pointing to the new
-             'cafile' option name::
+             For example, to support the ``ca_file`` option pointing to the new
+             ``cafile`` option name::
 
                  old_opt = oslo.cfg.DeprecatedOpt('ca_file', 'old_group')
                  deprecated_opts={'cafile': [old_opt]}
@@ -646,6 +692,7 @@ class Session(object):
         :param dict kwargs: Additional parameters to pass to session
                             construction.
         :returns: A new session object.
+        :rtype: :py:class:`.Session`
         """
         c = conf[group]
 
@@ -697,13 +744,15 @@ class Session(object):
 
     @classmethod
     def load_from_cli_options(cls, args, **kwargs):
-        """Create a session object from CLI arguments.
+        """Create a :py:class:`.Session` object from CLI arguments.
 
-        The CLI arguments must have been registered with register_cli_options.
+        The CLI arguments must have been registered with
+        :py:meth:`.register_cli_options`.
 
         :param Namespace args: result of parsed arguments.
 
         :returns: A new session object.
+        :rtype: :py:class:`.Session`
         """
         kwargs['insecure'] = args.insecure
         kwargs['cacert'] = args.os_cacert
