@@ -44,69 +44,63 @@ class Discover(_discover.Discover):
 
     Querying the server is done on object creation and every subsequent method
     operates upon the data that was retrieved.
+
+    The connection parameters associated with this method are the same format
+    and name as those used by a client (see
+    :py:class:`keystoneclient.v2_0.client.Client` and
+    :py:class:`keystoneclient.v3.client.Client`). If not overridden in
+    subsequent methods they will also be what is passed to the constructed
+    client.
+
+    In the event that auth_url and endpoint is provided then auth_url will be
+    used in accordance with how the client operates.
+
+    :param session: A session object that will be used for communication.
+                    Clients will also be constructed with this session.
+    :type session: keystoneclient.session.Session
+    :param string auth_url: Identity service endpoint for authorization.
+                            (optional)
+    :param string endpoint: A user-supplied endpoint URL for the identity
+                            service. (optional)
+    :param string original_ip: The original IP of the requesting user which
+                               will be sent to identity service in a
+                               'Forwarded' header. (optional) DEPRECATED: use
+                               the session object. This is ignored if a session
+                               is provided.
+    :param boolean debug: Enables debug logging of all request and responses to
+                          the identity service. default False (optional)
+                          DEPRECATED: use the session object. This is ignored
+                          if a session is provided.
+    :param string cacert: Path to the Privacy Enhanced Mail (PEM) file which
+                          contains the trusted authority X.509 certificates
+                          needed to established SSL connection with the
+                          identity service. (optional) DEPRECATED: use the
+                          session object. This is ignored if a session is
+                          provided.
+    :param string key: Path to the Privacy Enhanced Mail (PEM) file which
+                       contains the unencrypted client private key needed to
+                       established two-way SSL connection with the identity
+                       service. (optional) DEPRECATED: use the session object.
+                       This is ignored if a session is provided.
+    :param string cert: Path to the Privacy Enhanced Mail (PEM) file which
+                        contains the corresponding X.509 client certificate
+                        needed to established two-way SSL connection with the
+                        identity service. (optional) DEPRECATED: use the
+                        session object. This is ignored if a session is
+                        provided.
+    :param boolean insecure: Does not perform X.509 certificate validation when
+                             establishing SSL connection with identity service.
+                             default: False (optional) DEPRECATED: use the
+                             session object. This is ignored if a session is
+                             provided.
+    :param bool authenticated: Should a token be used to perform the initial
+                               discovery operations. default: None (attach a
+                               token if an auth plugin is available).
+
     """
 
     @utils.positional(2)
     def __init__(self, session=None, authenticated=None, **kwargs):
-        """Construct a new discovery object.
-
-        The connection parameters associated with this method are the same
-        format and name as those used by a client (see
-        keystoneclient.v2_0.client.Client and keystoneclient.v3.client.Client).
-        If not overridden in subsequent methods they will also be what is
-        passed to the constructed client.
-
-        In the event that auth_url and endpoint is provided then auth_url will
-        be used in accordance with how the client operates.
-
-        The initialization process also queries the server.
-
-        :param Session session: A session object that will be used for
-                                communication. Clients will also be constructed
-                                with this session.
-        :param string auth_url: Identity service endpoint for authorization.
-                                (optional)
-        :param string endpoint: A user-supplied endpoint URL for the identity
-                                service. (optional)
-        :param string original_ip: The original IP of the requesting user
-                                   which will be sent to identity service in a
-                                   'Forwarded' header. (optional)
-                                   DEPRECATED: use the session object. This is
-                                   ignored if a session is provided.
-        :param boolean debug: Enables debug logging of all request and
-                              responses to the identity service.
-                              default False (optional)
-                              DEPRECATED: use the session object. This is
-                              ignored if a session is provided.
-        :param string cacert: Path to the Privacy Enhanced Mail (PEM) file
-                              which contains the trusted authority X.509
-                              certificates needed to established SSL connection
-                              with the identity service. (optional)
-                              DEPRECATED: use the session object. This is
-                              ignored if a session is provided.
-        :param string key: Path to the Privacy Enhanced Mail (PEM) file which
-                           contains the unencrypted client private key needed
-                           to established two-way SSL connection with the
-                           identity service. (optional)
-                           DEPRECATED: use the session object. This is
-                           ignored if a session is provided.
-        :param string cert: Path to the Privacy Enhanced Mail (PEM) file which
-                            contains the corresponding X.509 client certificate
-                            needed to established two-way SSL connection with
-                            the identity service. (optional)
-                            DEPRECATED: use the session object. This is
-                            ignored if a session is provided.
-        :param boolean insecure: Does not perform X.509 certificate validation
-                                 when establishing SSL connection with identity
-                                 service. default: False (optional)
-                                 DEPRECATED: use the session object. This is
-                                 ignored if a session is provided.
-        :param bool authenticated: Should a token be used to perform the
-                                   initial discovery operations.
-                                   default: None (attach a token if an auth
-                                   plugin is available).
-        """
-
         if not session:
             session = client_session.Session.construct(kwargs)
         kwargs['session'] = session

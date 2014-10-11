@@ -79,14 +79,13 @@ class Manager(object):
 
     Managers interact with a particular type of API (servers, flavors, images,
     etc.) and provide CRUD operations for them.
+
+    :param client: instance of BaseClient descendant for HTTP requests
+
     """
     resource_class = None
 
     def __init__(self, client):
-        """Initializes Manager with `client`.
-
-        :param client: instance of BaseClient descendant for HTTP requests
-        """
         super(Manager, self).__init__()
         self.client = client
 

@@ -28,16 +28,14 @@ class DiscoveryBase(dict):
     """The basic version discovery structure.
 
     All version discovery elements should have access to these values.
+
+    :param string id: The version id for this version entry.
+    :param string status: The status of this entry.
+    :param DateTime updated: When the API was last updated.
     """
 
     @utils.positional()
     def __init__(self, id, status=None, updated=None):
-        """Create a new structure.
-
-        :param string id: The version id for this version entry.
-        :param string status: The status of this entry.
-        :param DateTime updated: When the API was last updated.
-        """
         super(DiscoveryBase, self).__init__()
 
         self.id = id
@@ -106,20 +104,19 @@ class V2Discovery(DiscoveryBase):
     Provides some default values and helper methods for creating a v2.0
     endpoint version structure. Clients should use this instead of creating
     their own structures.
+
+    :param string href: The url that this entry should point to.
+    :param string id: The version id that should be reported. (optional)
+                      Defaults to 'v2.0'.
+    :param bool html: Add HTML describedby links to the structure.
+    :param bool pdf: Add PDF describedby links to the structure.
+
     """
 
     _DESC_URL = 'http://docs.openstack.org/api/openstack-identity-service/2.0/'
 
     @utils.positional()
     def __init__(self, href, id=None, html=True, pdf=True, **kwargs):
-        """Create a new structure.
-
-        :param string href: The url that this entry should point to.
-        :param string id: The version id that should be reported. (optional)
-                          Defaults to 'v2.0'.
-        :param bool html: Add HTML describedby links to the structure.
-        :param bool pdf: Add PDF describedby links to the structure.
-        """
         super(V2Discovery, self).__init__(id or 'v2.0', **kwargs)
 
         self.add_link(href)
@@ -156,18 +153,16 @@ class V3Discovery(DiscoveryBase):
     Provides some default values and helper methods for creating a v3
     endpoint version structure. Clients should use this instead of creating
     their own structures.
+
+    :param href: The url that this entry should point to.
+    :param string id: The version id that should be reported. (optional)
+                      Defaults to 'v3.0'.
+    :param bool json: Add JSON media-type elements to the structure.
+    :param bool xml: Add XML media-type elements to the structure.
     """
 
     @utils.positional()
     def __init__(self, href, id=None, json=True, xml=True, **kwargs):
-        """Create a new structure.
-
-        :param href: The url that this entry should point to.
-        :param string id: The version id that should be reported. (optional)
-                          Defaults to 'v3.0'.
-        :param bool json: Add JSON media-type elements to the structure.
-        :param bool xml: Add XML media-type elements to the structure.
-        """
         super(V3Discovery, self).__init__(id or 'v3.0', **kwargs)
 
         self.add_link(href)
@@ -201,6 +196,18 @@ class DiscoveryList(dict):
 
     Creates a correctly structured list of identity service endpoints for
     use in testing with discovery.
+
+    :param string href: The url that this should be based at.
+    :param bool v2: Add a v2 element.
+    :param bool v3: Add a v3 element.
+    :param string v2_status: The status to use for the v2 element.
+    :param DateTime v2_updated: The update time to use for the v2 element.
+    :param bool v2_html: True to add a html link to the v2 element.
+    :param bool v2_pdf: True to add a pdf link to the v2 element.
+    :param string v3_status: The status to use for the v3 element.
+    :param DateTime v3_updated: The update time to use for the v3 element.
+    :param bool v3_json: True to add a html link to the v2 element.
+    :param bool v3_xml: True to add a pdf link to the v2 element.
     """
 
     TEST_URL = 'http://keystone.host:5000/'
@@ -209,21 +216,6 @@ class DiscoveryList(dict):
     def __init__(self, href=None, v2=True, v3=True, v2_id=None, v3_id=None,
                  v2_status=None, v2_updated=None, v2_html=True, v2_pdf=True,
                  v3_status=None, v3_updated=None, v3_json=True, v3_xml=True):
-        """Create a new structure.
-
-        :param string href: The url that this should be based at.
-        :param bool v2: Add a v2 element.
-        :param bool v3: Add a v3 element.
-        :param string v2_status: The status to use for the v2 element.
-        :param DateTime v2_updated: The update time to use for the v2 element.
-        :param bool v2_html: True to add a html link to the v2 element.
-        :param bool v2_pdf: True to add a pdf link to the v2 element.
-        :param string v3_status: The status to use for the v3 element.
-        :param DateTime v3_updated: The update time to use for the v3 element.
-        :param bool v3_json: True to add a html link to the v2 element.
-        :param bool v3_xml: True to add a pdf link to the v2 element.
-        """
-
         super(DiscoveryList, self).__init__(versions={'values': []})
 
         href = href or self.TEST_URL

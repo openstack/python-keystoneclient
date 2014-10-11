@@ -26,6 +26,20 @@ _logger = logging.getLogger(__name__)
 
 
 class Auth(base.BaseIdentityPlugin):
+    """Identity V3 Authentication Plugin.
+
+    :param string auth_url: Identity service endpoint for authentication.
+    :param list auth_methods: A collection of methods to authenticate with.
+    :param string trust_id: Trust ID for trust scoping.
+    :param string domain_id: Domain ID for domain scoping.
+    :param string domain_name: Domain name for domain scoping.
+    :param string project_id: Project ID for project scoping.
+    :param string project_name: Project name for project scoping.
+    :param string project_domain_id: Project's domain ID for project.
+    :param string project_domain_name: Project's domain name for project.
+    :param bool reauthenticate: Allow fetching a new token if the current one
+                                is going to expire. (optional) default True
+    """
 
     @utils.positional()
     def __init__(self, auth_url, auth_methods,
@@ -37,22 +51,6 @@ class Auth(base.BaseIdentityPlugin):
                  project_domain_id=None,
                  project_domain_name=None,
                  reauthenticate=True):
-        """Construct an Identity V3 Authentication Plugin.
-
-        :param string auth_url: Identity service endpoint for authentication.
-        :param list auth_methods: A collection of methods to authenticate with.
-        :param string trust_id: Trust ID for trust scoping.
-        :param string domain_id: Domain ID for domain scoping.
-        :param string domain_name: Domain name for domain scoping.
-        :param string project_id: Project ID for project scoping.
-        :param string project_name: Project name for project scoping.
-        :param string project_domain_id: Project's domain ID for project.
-        :param string project_domain_name: Project's domain name for project.
-        :param bool reauthenticate: Allow fetching a new token if the current
-                                    one is going to expire.
-                                    (optional) default True
-        """
-
         super(Auth, self).__init__(auth_url=auth_url,
                                    reauthenticate=reauthenticate)
 
@@ -207,23 +205,20 @@ class AuthConstructor(Auth):
 
 
 class PasswordMethod(AuthMethod):
+    """Construct a User/Password based authentication method.
+
+    :param string password: Password for authentication.
+    :param string username: Username for authentication.
+    :param string user_id: User ID for authentication.
+    :param string user_domain_id: User's domain ID for authentication.
+    :param string user_domain_name: User's domain name for authentication.
+    """
 
     _method_parameters = ['user_id',
                           'username',
                           'user_domain_id',
                           'user_domain_name',
                           'password']
-
-    def __init__(self, **kwargs):
-        """Construct a User/Password based authentication method.
-
-        :param string password: Password for authentication.
-        :param string username: Username for authentication.
-        :param string user_id: User ID for authentication.
-        :param string user_domain_id: User's domain ID for authentication.
-        :param string user_domain_name: User's domain name for authentication.
-        """
-        super(PasswordMethod, self).__init__(**kwargs)
 
     def get_auth_data(self, session, auth, headers, **kwargs):
         user = {'password': self.password}
@@ -261,15 +256,12 @@ class Password(AuthConstructor):
 
 
 class TokenMethod(AuthMethod):
+    """Construct an Auth plugin to fetch a token from a token.
+
+    :param string token: Token for authentication.
+    """
 
     _method_parameters = ['token']
-
-    def __init__(self, **kwargs):
-        """Construct an Auth plugin to fetch a token from a token.
-
-        :param string token: Token for authentication.
-        """
-        super(TokenMethod, self).__init__(**kwargs)
 
     def get_auth_data(self, session, auth, headers, **kwargs):
         headers['X-Auth-Token'] = self.token

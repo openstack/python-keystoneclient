@@ -88,19 +88,37 @@ class Saml2UnscopedTokenAuthMethod(v3.AuthMethod):
 class Saml2UnscopedToken(_BaseSAMLPlugin):
     """Implement authentication plugin for SAML2 protocol.
 
-    ECP stands for ``Enhanced Client or Proxy`` and is a SAML2 extension
+    ECP stands for `Enhanced Client or Proxy` and is a SAML2 extension
     for federated authentication where a transportation layer consists of
     HTTP protocol and XML SOAP messages.
 
-    Read for more information::
-    ``https://wiki.shibboleth.net/confluence/display/SHIB2/ECP``
+    `Read for more information
+    <https://wiki.shibboleth.net/confluence/display/SHIB2/ECP>`_ on ECP.
 
-    The SAML2 ECP specification can be found at::
-    ``https://www.oasis-open.org/committees/download.php/
-    49979/saml-ecp-v2.0-wd09.pdf``
+    Reference the `SAML2 ECP specification <https://www.oasis-open.org/\
+    committees/download.php/49979/saml-ecp-v2.0-wd09.pdf>`_.
 
     Currently only HTTPBasicAuth mechanism is available for the IdP
     authenication.
+
+    :param auth_url: URL of the Identity Service
+    :type auth_url: string
+
+    :param identity_provider: name of the Identity Provider the client will
+                              authenticate against. This parameter will be used
+                              to build a dynamic URL used to obtain unscoped
+                              OpenStack token.
+    :type identity_provider: string
+
+    :param identity_provider_url: An Identity Provider URL, where the SAML2
+                                  authn request will be sent.
+    :type identity_provider_url: string
+
+    :param username: User's login
+    :type username: string
+
+    :param password: User's password
+    :type password: string
 
     """
 
@@ -149,27 +167,6 @@ class Saml2UnscopedToken(_BaseSAMLPlugin):
                  identity_provider_url,
                  username, password,
                  **kwargs):
-        """Class constructor accepting following parameters:
-        :param auth_url: URL of the Identity Service
-        :type auth_url: string
-
-        :param identity_provider: name of the Identity Provider the client
-                                  will authenticate against. This parameter
-                                  will be used to build a dynamic URL used to
-                                  obtain unscoped OpenStack token.
-        :type identity_provider: string
-
-        :param identity_provider_url: An Identity Provider URL, where the SAML2
-                                      authn request will be sent.
-        :type identity_provider_url: string
-
-        :param username: User's login
-        :type username: string
-
-        :param password: User's password
-        :type password: string
-
-        """
         super(Saml2UnscopedToken, self).__init__(auth_url=auth_url, **kwargs)
         self.identity_provider = identity_provider
         self.identity_provider_url = identity_provider_url
@@ -438,7 +435,32 @@ class Saml2UnscopedToken(_BaseSAMLPlugin):
 
 
 class ADFSUnscopedToken(_BaseSAMLPlugin):
-    """Authentication plugin for Microsoft ADFS2.0 IdPs."""
+    """Authentication plugin for Microsoft ADFS2.0 IdPs.
+
+    :param auth_url: URL of the Identity Service
+    :type auth_url: string
+
+    :param identity_provider: name of the Identity Provider the client will
+                              authenticate against. This parameter will be used
+                              to build a dynamic URL used to obtain unscoped
+                              OpenStack token.
+    :type identity_provider: string
+
+    :param identity_provider_url: An Identity Provider URL, where the SAML2
+                                  authentication request will be sent.
+    :type identity_provider_url: string
+
+    :param service_provider_endpoint: Endpoint where an assertion is being
+        sent, for instance: ``https://host.domain/Shibboleth.sso/ADFS``
+    :type service_provider_endpoint: string
+
+    :param username: User's login
+    :type username: string
+
+    :param password: User's password
+    :type password: string
+
+    """
 
     _auth_method_class = Saml2UnscopedTokenAuthMethod
 
@@ -464,33 +486,6 @@ class ADFSUnscopedToken(_BaseSAMLPlugin):
 
     def __init__(self, auth_url, identity_provider, identity_provider_url,
                  service_provider_endpoint, username, password, **kwargs):
-        """Constructor for ``ADFSUnscopedToken``.
-
-        :param auth_url: URL of the Identity Service
-        :type auth_url: string
-
-        :param identity_provider: name of the Identity Provider the client
-                                  will authenticate against. This parameter
-                                  will be used to build a dynamic URL used to
-                                  obtain unscoped OpenStack token.
-        :type identity_provider: string
-
-        :param identity_provider_url: An Identity Provider URL, where the SAML2
-                                      authentication request will be sent.
-        :type identity_provider_url: string
-
-        :param service_provider_endpoint: Endpoint where an assertion is being
-            sent, for instance: ``https://host.domain/Shibboleth.sso/ADFS``
-        :type service_provider_endpoint: string
-
-        :param username: User's login
-        :type username: string
-
-        :param password: User's password
-        :type password: string
-
-        """
-
         super(ADFSUnscopedToken, self).__init__(auth_url=auth_url, **kwargs)
         self.identity_provider = identity_provider
         self.identity_provider_url = identity_provider_url

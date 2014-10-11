@@ -131,6 +131,62 @@ class _KeystoneAdapter(adapter.LegacyJsonAdapter):
 
 
 class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
+    """HTTP client
+
+    :param string user_id: User ID for authentication. (optional)
+    :param string username: Username for authentication. (optional)
+    :param string user_domain_id: User's domain ID for authentication.
+                                  (optional)
+    :param string user_domain_name: User's domain name for authentication.
+                                    (optional)
+    :param string password: Password for authentication. (optional)
+    :param string domain_id: Domain ID for domain scoping. (optional)
+    :param string domain_name: Domain name for domain scoping. (optional)
+    :param string project_id: Project ID for project scoping. (optional)
+    :param string project_name: Project name for project scoping. (optional)
+    :param string project_domain_id: Project's domain ID for project scoping.
+                                     (optional)
+    :param string project_domain_name: Project's domain name for project
+                                       scoping. (optional)
+    :param string auth_url: Identity service endpoint for authorization.
+    :param string region_name: Name of a region to select when choosing an
+                               endpoint from the service catalog.
+    :param integer timeout: DEPRECATED: use session. (optional)
+    :param string endpoint: A user-supplied endpoint URL for the identity
+                            service.  Lazy-authentication is possible for API
+                            service calls if endpoint is set at instantiation.
+                            (optional)
+    :param string token: Token for authentication. (optional)
+    :param string cacert: DEPRECATED: use session. (optional)
+    :param string key: DEPRECATED: use session. (optional)
+    :param string cert: DEPRECATED: use session. (optional)
+    :param boolean insecure: DEPRECATED: use session. (optional)
+    :param string original_ip: DEPRECATED: use session. (optional)
+    :param boolean debug: DEPRECATED: use logging configuration. (optional)
+    :param dict auth_ref: To allow for consumers of the client to manage their
+                          own caching strategy, you may initialize a client
+                          with a previously captured auth_reference (token). If
+                          there are keyword arguments passed that also exist in
+                          auth_ref, the value from the argument will take
+                          precedence.
+    :param boolean use_keyring: Enables caching auth_ref into keyring.
+                                default: False (optional)
+    :param boolean force_new_token: Keyring related parameter, forces request
+                                    for new token. default: False (optional)
+    :param integer stale_duration: Gap in seconds to determine if token from
+                                   keyring is about to expire. default: 30
+                                   (optional)
+    :param string tenant_name: Tenant name. (optional) The tenant_name keyword
+                               argument is deprecated, use project_name
+                               instead.
+    :param string tenant_id: Tenant id. (optional) The tenant_id keyword
+                             argument is deprecated, use project_id instead.
+    :param string trust_id: Trust ID for trust scoping. (optional)
+    :param object session: A Session object to be used for
+                           communicating with the identity service.
+    :type session: keystoneclient.session.Session
+
+    """
 
     version = None
 
@@ -143,64 +199,6 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
                  domain_name=None, project_id=None, project_name=None,
                  project_domain_id=None, project_domain_name=None,
                  trust_id=None, session=None, **kwargs):
-        """Construct a new http client
-
-        :param string user_id: User ID for authentication. (optional)
-        :param string username: Username for authentication. (optional)
-        :param string user_domain_id: User's domain ID for authentication.
-                                      (optional)
-        :param string user_domain_name: User's domain name for authentication.
-                                        (optional)
-        :param string password: Password for authentication. (optional)
-        :param string domain_id: Domain ID for domain scoping. (optional)
-        :param string domain_name: Domain name for domain scoping. (optional)
-        :param string project_id: Project ID for project scoping. (optional)
-        :param string project_name: Project name for project scoping.
-                                    (optional)
-        :param string project_domain_id: Project's domain ID for project
-                                         scoping. (optional)
-        :param string project_domain_name: Project's domain name for project
-                                           scoping. (optional)
-        :param string auth_url: Identity service endpoint for authorization.
-        :param string region_name: Name of a region to select when choosing an
-                                   endpoint from the service catalog.
-        :param integer timeout: DEPRECATED: use session. (optional)
-        :param string endpoint: A user-supplied endpoint URL for the identity
-                                service.  Lazy-authentication is possible for
-                                API service calls if endpoint is set at
-                                instantiation. (optional)
-        :param string token: Token for authentication. (optional)
-        :param string cacert: DEPRECATED: use session. (optional)
-        :param string key: DEPRECATED: use session. (optional)
-        :param string cert: DEPRECATED: use session. (optional)
-        :param boolean insecure: DEPRECATED: use session. (optional)
-        :param string original_ip: DEPRECATED: use session. (optional)
-        :param boolean debug: DEPRECATED: use logging configuration. (optional)
-        :param dict auth_ref: To allow for consumers of the client to manage
-                              their own caching strategy, you may initialize a
-                              client with a previously captured auth_reference
-                              (token). If there are keyword arguments passed
-                              that also exist in auth_ref, the value from the
-                              argument will take precedence.
-        :param boolean use_keyring: Enables caching auth_ref into keyring.
-                                    default: False (optional)
-        :param boolean force_new_token: Keyring related parameter, forces
-                                       request for new token.
-                                       default: False (optional)
-        :param integer stale_duration: Gap in seconds to determine if token
-                                       from keyring is about to expire.
-                                       default: 30 (optional)
-        :param string tenant_name: Tenant name. (optional)
-                                   The tenant_name keyword argument is
-                                   deprecated, use project_name instead.
-        :param string tenant_id: Tenant id. (optional)
-                                 The tenant_id keyword argument is
-                                 deprecated, use project_id instead.
-        :param string trust_id: Trust ID for trust scoping. (optional)
-        :param object session: A Session object to be used for
-                               communicating with the identity service.
-
-        """
         # set baseline defaults
         self.user_id = None
         self.username = None

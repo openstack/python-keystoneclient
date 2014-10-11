@@ -26,6 +26,15 @@ _logger = logging.getLogger(__name__)
 
 @six.add_metaclass(abc.ABCMeta)
 class Auth(base.BaseIdentityPlugin):
+    """Identity V2 Authentication Plugin.
+
+    :param string auth_url: Identity service endpoint for authorization.
+    :param string trust_id: Trust ID for trust scoping.
+    :param string tenant_id: Tenant ID for project scoping.
+    :param string tenant_name: Tenant name for project scoping.
+    :param bool reauthenticate: Allow fetching a new token if the current one
+                                is going to expire. (optional) default True
+    """
 
     @classmethod
     def get_options(cls):
@@ -45,16 +54,6 @@ class Auth(base.BaseIdentityPlugin):
                  tenant_id=None,
                  tenant_name=None,
                  reauthenticate=True):
-        """Construct an Identity V2 Authentication Plugin.
-
-        :param string auth_url: Identity service endpoint for authorization.
-        :param string trust_id: Trust ID for trust scoping.
-        :param string tenant_id: Tenant ID for project scoping.
-        :param string tenant_name: Tenant name for project scoping.
-        :param bool reauthenticate: Allow fetching a new token if the current
-                                    one is going to expire.
-                                    (optional) default True
-        """
         super(Auth, self).__init__(auth_url=auth_url,
                                    reauthenticate=reauthenticate)
 
@@ -100,21 +99,21 @@ _NOT_PASSED = object()
 
 
 class Password(Auth):
+    """A plugin for authenticating with a username and password.
+
+    A username or user_id must be provided.
+
+    :param string auth_url: Identity service endpoint for authorization.
+    :param string username: Username for authentication.
+    :param string password: Password for authentication.
+    :param string user_id: User ID for authentication.
+
+    :raises TypeError: if a user_id or username is not provided.
+    """
 
     @utils.positional(4)
     def __init__(self, auth_url, username=_NOT_PASSED, password=None,
                  user_id=_NOT_PASSED, **kwargs):
-        """A plugin for authenticating with a username and password.
-
-        A username or user_id must be provided.
-
-        :param string auth_url: Identity service endpoint for authorization.
-        :param string username: Username for authentication.
-        :param string password: Password for authentication.
-        :param string user_id: User ID for authentication.
-
-        :raises TypeError: if a user_id or username is not provided.
-        """
         super(Password, self).__init__(auth_url, **kwargs)
 
         if username is _NOT_PASSED and user_id is _NOT_PASSED:
@@ -157,13 +156,13 @@ class Password(Auth):
 
 
 class Token(Auth):
+    """A plugin for authenticating with an existing token.
+
+    :param string auth_url: Identity service endpoint for authorization.
+    :param string token: Existing token for authentication.
+    """
 
     def __init__(self, auth_url, token, **kwargs):
-        """A plugin for authenticating with an existing token.
-
-        :param string auth_url: Identity service endpoint for authorization.
-        :param string token: Existing token for authentication.
-        """
         super(Token, self).__init__(auth_url, **kwargs)
         self.token = token
 
