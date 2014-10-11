@@ -7,17 +7,18 @@ Introduction
 
 The main concepts in the Identity v3 API are:
 
- * credentials
- * domains
- * endpoints
- * groups
- * policies
- * projects
- * role assignments
- * roles
- * services
- * trusts
- * users
+ * :py:mod:`~keystoneclient.v3.credentials`
+ * :py:mod:`~keystoneclient.v3.domains`
+ * :py:mod:`~keystoneclient.v3.endpoints`
+ * :py:mod:`~keystoneclient.v3.groups`
+ * :py:mod:`~keystoneclient.v3.policies`
+ * :py:mod:`~keystoneclient.v3.projects`
+ * :py:mod:`~keystoneclient.v3.regions`
+ * :py:mod:`~keystoneclient.v3.role_assignments`
+ * :py:mod:`~keystoneclient.v3.roles`
+ * :py:mod:`~keystoneclient.v3.services`
+ * :py:mod:`~keystoneclient.v3.tokens`
+ * :py:mod:`~keystoneclient.v3.users`
 
 The :py:mod:`keystoneclient.v3.client` API lets you query and make changes
 through ``managers``. For example, to manipulate a project (formerly
