@@ -75,13 +75,13 @@ fashion by passing the Session object to the client's constructor.
 Migrating keystoneclient to use a Session
 -----------------------------------------
 
-By using a session with a keystonclient Client we define that you have opted in
-to new behaviour defined by the session. For example authentication is now
-on-demand rather than on creation. To allow this change in behaviour there are
-a number of functions that have changed behaviour or are no longer available.
+By using a session with a keystoneclient Client we presume that you have opted
+in to new behavior defined by the session. For example authentication is now
+on-demand rather than on creation. To allow this change in behavior there are
+a number of functions that have changed behavior or are no longer available.
 
 For example the
-:py:meth:`keystoneclient.httpclient.HTTPClient.authenticate` command used
+:py:meth:`keystoneclient.httpclient.HTTPClient.authenticate` method used
 to be able to always re-authenticate the current client and fetch a new token.
 As this is now controlled by the Session and not the client this has changed,
 however the function will still exist to provide compatibility with older
