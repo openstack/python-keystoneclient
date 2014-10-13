@@ -14,6 +14,15 @@
 #    under the License.
 """
 Exception definitions.
+
+.. py:exception:: AuthorizationFailure
+
+.. py:exception:: ClientException
+
+.. py:exception:: HttpError
+
+.. py:exception:: Unauthorized
+
 """
 
 #flake8: noqa

@@ -132,8 +132,10 @@ def cms_verify(formatted, signing_cert_file_name, ca_file_name,
                inform=PKI_ASN1_FORM):
     """Verifies the signature of the contents IAW CMS syntax.
 
-    :raises: subprocess.CalledProcessError
-    :raises: CertificateConfigError if certificate is not configured properly.
+    :raises subprocess.CalledProcessError:
+    :raises keystoneclient.exceptions.CertificateConfigError: if certificate
+                                                              is not configured
+                                                              properly.
     """
     _ensure_subprocess()
     if isinstance(formatted, six.string_types):

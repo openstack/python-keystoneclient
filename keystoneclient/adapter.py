@@ -93,7 +93,8 @@ class Adapter(object):
                      on the session. (optional)
         :type auth: :class:`keystoneclient.auth.base.BaseAuthPlugin`
 
-        :raises AuthorizationFailure: if a new token fetch fails.
+        :raises keystoneclient.exceptions.AuthorizationFailure: if a new token
+            fetch fails.
 
         :returns string: A valid token.
         """
@@ -106,7 +107,8 @@ class Adapter(object):
                      the session. (optional)
         :type auth: :class:`keystoneclient.auth.base.BaseAuthPlugin`
 
-        :raises MissingAuthPlugin: if a plugin is not available.
+        :raises keystoneclient.exceptions.MissingAuthPlugin: if a plugin is not
+                                                             available.
 
         :returns string: An endpoint if available or None.
         """

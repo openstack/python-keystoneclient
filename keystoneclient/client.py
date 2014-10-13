@@ -36,8 +36,10 @@ def Client(version=None, unstable=False, session=None, **kwargs):
     :returns: New keystone client object
               (keystoneclient.v2_0.Client or keystoneclient.v3.Client).
 
-    :raises: DiscoveryFailure if the server's response is invalid
-    :raises: VersionNotAvailable if a suitable client cannot be found.
+    :raises keystoneclient.exceptions.DiscoveryFailure: if the server's
+                                                        response is invalid
+    :raises keystoneclient.exceptions.VersionNotAvailable: if a suitable client
+                                                           cannot be found.
     """
     if not session:
         session = client_session.Session.construct(kwargs)

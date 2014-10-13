@@ -158,8 +158,8 @@ class Client(httpclient.HTTPClient):
         password.
 
         :returns: access.AccessInfo if authentication was successful.
-        :raises: AuthorizationFailure if unable to authenticate or validate
-                 the existing authorization token
+        :raises keystoneclient.exceptions.AuthorizationFailure: if unable to
+            authenticate or validate the existing authorization token
         """
         try:
             if auth_url is None:

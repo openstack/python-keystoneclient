@@ -227,9 +227,10 @@ EndpointPolicyManager`
         be used in the request.
 
         :returns: access.AccessInfo if authentication was successful.
-        :raises: AuthorizationFailure if unable to authenticate or validate
-                 the existing authorization token
-        :raises: Unauthorized if authentication fails due to invalid token
+        :raises keystoneclient.exceptions.AuthorizationFailure: if unable to
+            authenticate or validate the existing authorization token.
+        :raises keystoneclient.exceptions.Unauthorized: if authentication fails
+            due to invalid token.
 
         """
         try:

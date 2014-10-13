@@ -259,8 +259,8 @@ class Session(object):
                        'allow_redirects' is ignored as redirects are handled
                        by the session.
 
-        :raises exceptions.ClientException: For connection failure, or to
-                                            indicate an error response code.
+        :raises keystoneclient.exceptions.ClientException: For connection
+            failure, or to indicate an error response code.
 
         :returns: The response to the request.
         """
@@ -500,7 +500,8 @@ class Session(object):
                      on the session. (optional)
         :type auth: :class:`keystoneclient.auth.base.BaseAuthPlugin`
 
-        :raises AuthorizationFailure: if a new token fetch fails.
+        :raises keystoneclient.exceptions.AuthorizationFailure: if a new token
+                                                                fetch fails.
 
         :returns string: A valid token.
         """
@@ -523,7 +524,8 @@ class Session(object):
                      the session. (optional)
         :type auth: :class:`keystoneclient.auth.base.BaseAuthPlugin`
 
-        :raises MissingAuthPlugin: if a plugin is not available.
+        :raises keystoneclient.exceptions.MissingAuthPlugin: if a plugin is not
+                                                             available.
 
         :returns string: An endpoint if available or None.
         """
