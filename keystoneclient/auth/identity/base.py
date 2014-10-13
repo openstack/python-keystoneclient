@@ -76,7 +76,8 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
         :raises InvalidResponse: The response returned wasn't appropriate.
         :raises HttpError: An error from an invalid HTTP response.
 
-        :returns AccessInfo: Token access information.
+        :returns: Token access information.
+        :rtype: :py:class:`keystoneclient.access.AccessInfo`
         """
 
     def get_token(self, session, **kwargs):
@@ -86,7 +87,8 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
 
         :raises HttpError: An error from an invalid HTTP response.
 
-        :return string: A valid token.
+        :return: A valid token.
+        :rtype: string
         """
         return self.get_access(session).auth_token
 
@@ -120,7 +122,8 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
 
         :raises HttpError: An error from an invalid HTTP response.
 
-        :returns AccessInfo: Valid AccessInfo
+        :returns: Valid AccessInfo
+        :rtype: :py:class:`keystoneclient.access.AccessInfo`
         """
         if self._needs_reauthenticate():
             self.auth_ref = self.get_auth_ref(session)
@@ -136,9 +139,10 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
         returned to indicate that the token may have been revoked or is
         otherwise now invalid.
 
-        :returns bool: True if there was something that the plugin did to
-                       invalidate. This means that it makes sense to try again.
-                       If nothing happens returns False to indicate give up.
+        :returns: True if there was something that the plugin did to
+                  invalidate. This means that it makes sense to try again. If
+                  nothing happens returns False to indicate give up.
+        :rtype: bool
         """
         if self.auth_ref:
             self.auth_ref = None
@@ -171,7 +175,8 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
 
         :raises HttpError: An error from an invalid HTTP response.
 
-        :return string or None: A valid endpoint URL or None if not available.
+        :return: A valid endpoint URL or None if not available.
+        :rtype: string or None
         """
         # NOTE(jamielennox): if you specifically ask for requests to be sent to
         # the auth url then we can ignore the rest of the checks. Typically if

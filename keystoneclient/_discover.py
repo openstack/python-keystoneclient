@@ -114,7 +114,8 @@ def version_match(required, candidate):
     :param tuple required: the version that must be met.
     :param tuple candidate: the version to test against required.
 
-    :returns bool: True if candidate is suitable False otherwise.
+    :returns: True if candidate is suitable False otherwise.
+    :rtype: bool
     """
     # major versions must be the same (e.g. even though v2 is a lower
     # version than v3 we can't use it if v2 was requested)
@@ -151,8 +152,9 @@ class Discover(object):
         :param bool allow_deprecated: Allow deprecated version endpoints.
         :param bool allow_unknown: Allow endpoints with an unrecognised status.
 
-        :returns list: The endpoints returned from the server that match the
-                       criteria.
+        :returns: The endpoints returned from the server that match the
+                  criteria.
+        :rtype: list
         """
         versions = []
         for v in self._data:
@@ -183,13 +185,14 @@ class Discover(object):
 
         Return version data in a structured way.
 
-        :returns list(dict): A list of version data dictionaries sorted by
-                             version number. Each data element in the returned
-                             list is a dictionary consisting of at least:
+        :returns: A list of version data dictionaries sorted by version number.
+                  Each data element in the returned list is a dictionary
+                  consisting of at least:
 
           :version tuple: The normalized version of the endpoint.
           :url str: The url for the endpoint.
           :raw_status str: The status as provided by the server
+        :rtype: list(dict)
         """
         data = self.raw_version_data(**kwargs)
         versions = []
@@ -239,9 +242,10 @@ class Discover(object):
             same major release as there should be no compatibility issues with
             using a version newer than the one asked for.
 
-        :returns dict: the endpoint data for a URL that matches the required
-                       version (the format is described in version_data)
-                       or None if no match.
+        :returns: the endpoint data for a URL that matches the required version
+                  (the format is described in version_data) or None if no
+                  match.
+        :rtype: dict
         """
         version = normalize_version_number(version)
         version_data = self.version_data(**kwargs)
@@ -259,7 +263,8 @@ class Discover(object):
             same major release as there should be no compatibility issues with
             using a version newer than the one asked for.
 
-        :returns str: The url for the specified version or None if no match.
+        :returns: The url for the specified version or None if no match.
+        :rtype: str
         """
         data = self.data_for(version, **kwargs)
         return data['url'] if data else None
