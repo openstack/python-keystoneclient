@@ -13,8 +13,9 @@
 import datetime
 import uuid
 
+from oslo.utils import timeutils
+
 from keystoneclient.fixture import exception
-from keystoneclient.openstack.common import timeutils
 
 
 class _Service(dict):

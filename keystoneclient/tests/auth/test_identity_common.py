@@ -14,6 +14,7 @@ import abc
 import datetime
 import uuid
 
+from oslo.utils import timeutils
 import six
 
 from keystoneclient import access
@@ -21,7 +22,6 @@ from keystoneclient.auth import base
 from keystoneclient.auth.identity import v2
 from keystoneclient.auth.identity import v3
 from keystoneclient import fixture
-from keystoneclient.openstack.common import timeutils
 from keystoneclient import session
 from keystoneclient.tests import utils
 

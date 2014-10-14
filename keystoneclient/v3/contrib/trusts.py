@@ -10,9 +10,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo.utils import timeutils
+
 from keystoneclient import base
 from keystoneclient import exceptions
-from keystoneclient.openstack.common import timeutils
 
 
 class Trust(base.Resource):

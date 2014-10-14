@@ -17,7 +17,8 @@
 
 import datetime
 
-from keystoneclient.openstack.common import timeutils
+from oslo.utils import timeutils
+
 from keystoneclient import service_catalog
 
 

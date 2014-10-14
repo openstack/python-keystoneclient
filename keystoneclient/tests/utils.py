@@ -18,13 +18,12 @@ import uuid
 import fixtures
 import mock
 from mox3 import mox
+from oslo.serialization import jsonutils
 import requests
 from requests_mock.contrib import fixture
 import six
 from six.moves.urllib import parse as urlparse
 import testtools
-
-from keystoneclient.openstack.common import jsonutils
 
 
 class TestCase(testtools.TestCase):

@@ -25,6 +25,8 @@ import uuid
 import fixtures
 import iso8601
 import mock
+from oslo.serialization import jsonutils
+from oslo.utils import timeutils
 from requests_mock.contrib import fixture as mock_fixture
 from six.moves.urllib import parse as urlparse
 import testresources
@@ -37,9 +39,7 @@ from keystoneclient.common import cms
 from keystoneclient import exceptions
 from keystoneclient import fixture
 from keystoneclient.middleware import auth_token
-from keystoneclient.openstack.common import jsonutils
 from keystoneclient.openstack.common import memorycache
-from keystoneclient.openstack.common import timeutils
 from keystoneclient.tests import client_fixtures
 from keystoneclient.tests import utils
 
@@ -1759,7 +1759,7 @@ class TokenExpirationTest(BaseAuthTokenMiddlewareTest):
                           auth_token.confirm_token_not_expired,
                           data)
 
-    @mock.patch('keystoneclient.openstack.common.timeutils.utcnow')
+    @mock.patch('oslo.utils.timeutils.utcnow')
     def test_v2_token_with_timezone_offset_not_expired(self, mock_utcnow):
         current_time = timeutils.parse_isotime('2000-01-01T00:01:10.000123Z')
         current_time = timeutils.normalize_time(current_time)
@@ -1770,7 +1770,7 @@ class TokenExpirationTest(BaseAuthTokenMiddlewareTest):
         actual_expires = auth_token.confirm_token_not_expired(data)
         self.assertEqual(actual_expires, expected_expires)
 
-    @mock.patch('keystoneclient.openstack.common.timeutils.utcnow')
+    @mock.patch('oslo.utils.timeutils.utcnow')
     def test_v2_token_with_timezone_offset_expired(self, mock_utcnow):
         current_time = timeutils.parse_isotime('2000-01-01T00:01:10.000123Z')
         current_time = timeutils.normalize_time(current_time)
@@ -1794,7 +1794,7 @@ class TokenExpirationTest(BaseAuthTokenMiddlewareTest):
                           auth_token.confirm_token_not_expired,
                           data)
 
-    @mock.patch('keystoneclient.openstack.common.timeutils.utcnow')
+    @mock.patch('oslo.utils.timeutils.utcnow')
     def test_v3_token_with_timezone_offset_not_expired(self, mock_utcnow):
         current_time = timeutils.parse_isotime('2000-01-01T00:01:10.000123Z')
         current_time = timeutils.normalize_time(current_time)
@@ -1806,7 +1806,7 @@ class TokenExpirationTest(BaseAuthTokenMiddlewareTest):
         actual_expires = auth_token.confirm_token_not_expired(data)
         self.assertEqual(actual_expires, expected_expires)
 
-    @mock.patch('keystoneclient.openstack.common.timeutils.utcnow')
+    @mock.patch('oslo.utils.timeutils.utcnow')
     def test_v3_token_with_timezone_offset_expired(self, mock_utcnow):
         current_time = timeutils.parse_isotime('2000-01-01T00:01:10.000123Z')
         current_time = timeutils.normalize_time(current_time)

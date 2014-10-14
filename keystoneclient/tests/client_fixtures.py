@@ -15,12 +15,12 @@
 import os
 
 import fixtures
+from oslo.serialization import jsonutils
+from oslo.utils import timeutils
 import six
 import testresources
 
 from keystoneclient.common import cms
-from keystoneclient.openstack.common import jsonutils
-from keystoneclient.openstack.common import timeutils
 from keystoneclient import utils
 
 

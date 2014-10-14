@@ -14,11 +14,11 @@
 import uuid
 
 import mock
+from oslo.utils import timeutils
 import six
 from six.moves.urllib import parse as urlparse
 from testtools import matchers
 
-from keystoneclient.openstack.common import timeutils
 from keystoneclient import session
 from keystoneclient.tests.v3 import client_fixtures
 from keystoneclient.tests.v3 import utils

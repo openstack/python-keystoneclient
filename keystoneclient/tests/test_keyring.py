@@ -13,10 +13,10 @@
 import datetime
 
 import mock
+from oslo.utils import timeutils
 
 from keystoneclient import access
 from keystoneclient import httpclient
-from keystoneclient.openstack.common import timeutils
 from keystoneclient.tests import utils
 from keystoneclient.tests.v2_0 import client_fixtures
 

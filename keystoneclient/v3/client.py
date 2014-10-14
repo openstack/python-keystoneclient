@@ -15,10 +15,11 @@
 
 import logging
 
+from oslo.serialization import jsonutils
+
 from keystoneclient.auth.identity import v3 as v3_auth
 from keystoneclient import exceptions
 from keystoneclient import httpclient
-from keystoneclient.openstack.common import jsonutils
 from keystoneclient.v3.contrib import endpoint_filter
 from keystoneclient.v3.contrib import endpoint_policy
 from keystoneclient.v3.contrib import federation
