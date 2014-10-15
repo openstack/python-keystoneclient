@@ -518,7 +518,7 @@ class ADFSUnscopedToken(_BaseSAMLPlugin):
         and let Python raise the AttributeError.
 
         :param session
-        :return: True if cookie jar is nonempty, False otherwise
+        :returns: True if cookie jar is nonempty, False otherwise
         :raises: AttributeError in case cookies are not find anywhere
 
         """

@@ -83,7 +83,7 @@ class AccessInfo(dict):
     def will_expire_soon(self, stale_duration=None):
         """Determines if expiration is about to occur.
 
-        :return: boolean : true if expiration is within the given duration
+        :returns: boolean : true if expiration is within the given duration
 
         """
         stale_duration = (STALE_TOKEN_DURATION if stale_duration is None
@@ -100,7 +100,7 @@ class AccessInfo(dict):
         """Determines if processing v2 or v3 token given a successful
         auth body or a user-provided dict.
 
-        :return: boolean : true if auth body matches implementing class
+        :returns: boolean : true if auth body matches implementing class
         """
         raise NotImplementedError()
 

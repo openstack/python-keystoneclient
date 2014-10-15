@@ -291,7 +291,8 @@ class _VersionHacks(object):
         :param str service_type: the service_type to look up.
         :param str url: The original url that came from a service_catalog.
 
-        :return: Either the unversioned url or the one from the catalog to try.
+        :returns: Either the unversioned url or the one from the catalog
+                  to try.
         """
         for old, new in self._discovery_data.get(service_type, []):
             new_string, number_of_subs_made = old.subn(new, url)
@@ -313,6 +314,6 @@ def get_catalog_discover_hack(service_type, url):
     :param str service_type: the service_type to look up.
     :param str url: The original url that came from a service_catalog.
 
-    :return: Either the unversioned url or the one from the catalog to try.
+    :returns: Either the unversioned url or the one from the catalog to try.
     """
     return _VERSION_HACKS.get_discover_hack(service_type, url)

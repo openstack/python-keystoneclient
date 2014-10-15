@@ -243,7 +243,7 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
         :raises: DiscoveryFailure if for some reason the lookup fails.
         :raises: HttpError An error from an invalid HTTP response.
 
-        :return: A discovery object with the results of looking up that URL.
+        :returns: A discovery object with the results of looking up that URL.
         """
         # NOTE(jamielennox): we want to cache endpoints on the session as well
         # so that they maintain sharing between auth plugins. Create a cache on
