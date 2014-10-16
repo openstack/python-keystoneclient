@@ -104,6 +104,8 @@ class ShellTests(utils.TestCase):
         self.stub_url('POST', ['users'], json={'user': {}})
 
         with mock.patch('getpass.getpass') as mock_getpass:
+            del(os.environ['OS_PASSWORD'])
+            mock_stdin.isatty = lambda: True
             mock_getpass.return_value = 'newpass'
             self.run_command('user-create --name new-user --pass')
 
