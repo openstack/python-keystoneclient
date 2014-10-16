@@ -13,11 +13,11 @@
 import datetime
 import uuid
 
+from oslo.utils import timeutils
 import testresources
 
 from keystoneclient import access
 from keystoneclient import fixture
-from keystoneclient.openstack.common import timeutils
 from keystoneclient.tests import client_fixtures as token_data
 from keystoneclient.tests.v2_0 import client_fixtures
 from keystoneclient.tests.v2_0 import utils

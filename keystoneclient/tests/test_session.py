@@ -17,6 +17,7 @@ import uuid
 import mock
 from oslo.config import cfg
 from oslo.config import fixture as config
+from oslo.serialization import jsonutils
 import requests
 import six
 from testtools import matchers
@@ -24,7 +25,6 @@ from testtools import matchers
 from keystoneclient import adapter
 from keystoneclient.auth import base
 from keystoneclient import exceptions
-from keystoneclient.openstack.common import jsonutils
 from keystoneclient import session as client_session
 from keystoneclient.tests import utils
 

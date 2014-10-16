@@ -13,9 +13,10 @@
 import copy
 import datetime
 
+from oslo.serialization import jsonutils
+from oslo.utils import timeutils
+
 from keystoneclient import exceptions
-from keystoneclient.openstack.common import jsonutils
-from keystoneclient.openstack.common import timeutils
 from keystoneclient.tests.v2_0 import utils
 from keystoneclient.v2_0 import client
 

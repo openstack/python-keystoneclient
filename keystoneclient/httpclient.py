@@ -21,6 +21,7 @@ OpenStack Client interface. Handles the REST calls and responses.
 
 import logging
 
+from oslo.serialization import jsonutils
 import pkg_resources
 import requests
 from six.moves.urllib import parse as urlparse
@@ -54,7 +55,6 @@ from keystoneclient import access
 from keystoneclient.auth import base
 from keystoneclient import baseclient
 from keystoneclient import exceptions
-from keystoneclient.openstack.common import jsonutils
 from keystoneclient import session as client_session
 from keystoneclient import utils
 

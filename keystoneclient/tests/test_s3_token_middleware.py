@@ -13,13 +13,13 @@
 # under the License.
 
 import mock
+from oslo.serialization import jsonutils
 import requests
 import six
 import testtools
 import webob
 
 from keystoneclient.middleware import s3_token
-from keystoneclient.openstack.common import jsonutils
 from keystoneclient.tests import utils
 
 

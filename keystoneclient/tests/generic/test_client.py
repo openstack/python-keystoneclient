@@ -13,8 +13,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo.serialization import jsonutils
+
 from keystoneclient.generic import client
-from keystoneclient.openstack.common import jsonutils
 from keystoneclient.tests import utils
 
 BASE_HOST = 'http://keystone.example.com'

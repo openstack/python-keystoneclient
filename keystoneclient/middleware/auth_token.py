@@ -155,6 +155,8 @@ import time
 
 import netaddr
 from oslo.config import cfg
+from oslo.serialization import jsonutils
+from oslo.utils import timeutils
 import requests
 import six
 from six.moves import urllib
@@ -163,9 +165,7 @@ from keystoneclient import access
 from keystoneclient.common import cms
 from keystoneclient import exceptions
 from keystoneclient.middleware import memcache_crypt
-from keystoneclient.openstack.common import jsonutils
 from keystoneclient.openstack.common import memorycache
-from keystoneclient.openstack.common import timeutils
 
 
 # alternative middleware configuration in the main application's
