@@ -30,6 +30,18 @@ class CMSTest(utils.TestCase, testresources.ResourcedTestCase):
 
     resources = [('examples', client_fixtures.EXAMPLES_RESOURCE)]
 
+    def __init__(self, *args, **kwargs):
+        super(CMSTest, self).__init__(*args, **kwargs)
+        process = subprocess.Popen(['openssl', 'version'],
+                                   stdout=subprocess.PIPE)
+        out, err = process.communicate()
+        # Example output: 'OpenSSL 0.9.8za 5 Jun 2014'
+        openssl_version = out.split()[1]
+
+        if err or openssl_version.startswith(b'0'):
+            raise Exception('Your version of OpenSSL is not supported. '
+                            'You will need to update it to 1.0 or later.')
+
     def test_cms_verify(self):
         self.assertRaises(exceptions.CertificateConfigError,
                           cms.cms_verify,
