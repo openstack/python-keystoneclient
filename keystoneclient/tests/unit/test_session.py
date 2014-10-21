@@ -25,6 +25,7 @@ from testtools import matchers
 from keystoneclient import adapter
 from keystoneclient.auth import base
 from keystoneclient import exceptions
+from keystoneclient.i18n import _
 from keystoneclient import session as client_session
 from keystoneclient.tests.unit import utils
 
@@ -217,6 +218,23 @@ class SessionTests(utils.TestCase):
         mock_session = mock.Mock()
         client_session.Session(session=mock_session)
         self.assertFalse(mock_session.mount.called)
+
+    def test_ssl_error_message(self):
+        error = uuid.uuid4().hex
+
+        def _ssl_error(request, context):
+            raise requests.exceptions.SSLError(error)
+
+        self.stub_url('GET', text=_ssl_error)
+        session = client_session.Session()
+
+        # The exception should contain the URL and details about the SSL error
+        msg = _('SSL exception connecting to %(url)s: %(error)s') % {
+            'url': self.TEST_URL, 'error': error}
+        self.assertRaisesRegexp(exceptions.SSLError,
+                                msg,
+                                session.get,
+                                self.TEST_URL)
 
 
 class RedirectTests(utils.TestCase):

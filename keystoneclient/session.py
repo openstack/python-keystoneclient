@@ -406,8 +406,9 @@ class Session(object):
         try:
             try:
                 resp = self.session.request(method, url, **kwargs)
-            except requests.exceptions.SSLError:
-                msg = _('SSL exception connecting to %s') % url
+            except requests.exceptions.SSLError as e:
+                msg = _('SSL exception connecting to %(url)s: '
+                        '%(error)s') % {'url': url, 'error': e}
                 raise exceptions.SSLError(msg)
             except requests.exceptions.Timeout:
                 msg = _('Request to %s timed out') % url
