@@ -14,10 +14,10 @@ import logging
 
 from oslo.config import cfg
 
-from keystoneclient import _discover
 from keystoneclient.auth.identity.generic import base
 from keystoneclient.auth.identity import v2
 from keystoneclient.auth.identity import v3
+from keystoneclient import discover
 from keystoneclient import utils
 
 LOG = logging.getLogger(__name__)
@@ -56,7 +56,7 @@ class Password(base.BaseGenericPlugin):
         self._user_domain_name = user_domain_name
 
     def create_plugin(self, session, version, url, raw_status=None):
-        if _discover.version_match((2,), version):
+        if discover.version_match((2,), version):
             if self._user_domain_id or self._user_domain_name:
                 # If you specify any domain parameters it won't work so quit.
                 return None
@@ -67,7 +67,7 @@ class Password(base.BaseGenericPlugin):
                                password=self._password,
                                **self._v2_params)
 
-        elif _discover.version_match((3,), version):
+        elif discover.version_match((3,), version):
             return v3.Password(auth_url=url,
                                user_id=self._user_id,
                                username=self._username,
