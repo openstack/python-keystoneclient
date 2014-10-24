@@ -172,6 +172,16 @@ class SessionTests(utils.TestCase):
             self.assertEqual(v, resp.headers[k])
             self.assertNotIn(v, self.logger.output)
 
+    def test_logging_cacerts(self):
+        path_to_certs = '/path/to/certs'
+        session = client_session.Session(verify=path_to_certs)
+
+        self.stub_url('GET', text='text')
+        session.get(self.TEST_URL)
+
+        self.assertIn('--cacert', self.logger.output)
+        self.assertIn(path_to_certs, self.logger.output)
+
     def test_connect_retries(self):
 
         def _timeout_error(request, context):
