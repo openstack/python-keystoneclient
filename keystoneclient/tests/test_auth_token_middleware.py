@@ -1007,7 +1007,7 @@ class CommonAuthTokenMiddlewareTest(object):
         token = self.token_dict['signed_token_scoped']
         req.headers['X-Auth-Token'] = token
         req.environ.update(extra_environ)
-        timeutils_utcnow = 'keystoneclient.openstack.common.timeutils.utcnow'
+        timeutils_utcnow = 'oslo.utils.timeutils.utcnow'
         now = datetime.datetime.utcnow()
         with mock.patch(timeutils_utcnow) as mock_utcnow:
             mock_utcnow.return_value = now
