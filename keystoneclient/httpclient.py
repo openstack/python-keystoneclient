@@ -312,7 +312,7 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
 
     def has_service_catalog(self):
         """Returns True if this client provides a service catalog."""
-        return self.auth_ref.has_service_catalog()
+        return self.auth_ref and self.auth_ref.has_service_catalog()
 
     @property
     def tenant_id(self):

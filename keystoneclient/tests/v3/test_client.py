@@ -33,6 +33,7 @@ class KeystoneClientTest(utils.TestCase):
         self.assertFalse(c.auth_ref.project_scoped)
         self.assertEqual(c.auth_user_id,
                          'c4da488862bd435c9e6c0275a0d0e49a')
+        self.assertFalse(c.has_service_catalog())
 
     def test_domain_scoped_init(self):
         self.stub_auth(json=client_fixtures.domain_scoped_token())
