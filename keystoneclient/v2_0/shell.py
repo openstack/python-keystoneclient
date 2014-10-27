@@ -14,14 +14,21 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+"""
+This module is pending deprecation in favor of python-openstackclient.
+
+Bug fixes are welcome, but new features should be exposed to the CLI by
+python-openstackclient after being added to the python-keystoneclient library.
+
+"""
 
 import argparse
 import getpass
 import sys
 
+from oslo.utils import strutils
 import six
 
-from keystoneclient.openstack.common import strutils
 from keystoneclient import utils
 from keystoneclient.v2_0 import client
 
@@ -80,7 +87,7 @@ def do_user_get(kc, args):
 @utils.arg('--enabled', metavar='<true|false>', default=True,
            help='Initial user enabled status. Default is true.')
 def do_user_create(kc, args):
-    """Create new user"""
+    """Create new user."""
     if args.tenant:
         tenant_id = utils.find_resource(kc.tenants, args.tenant).id
     elif args.tenant_id:

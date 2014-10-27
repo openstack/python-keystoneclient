@@ -14,8 +14,6 @@
 
 import uuid
 
-import httpretty
-
 from keystoneclient import exceptions
 from keystoneclient.tests.v3 import utils
 from keystoneclient.v3 import users
@@ -38,13 +36,12 @@ class UserTests(utils.TestCase, utils.CrudTests):
         kwargs.setdefault('default_project_id', uuid.uuid4().hex)
         return kwargs
 
-    @httpretty.activate
     def test_add_user_to_group(self):
         group_id = uuid.uuid4().hex
         ref = self.new_ref()
-        self.stub_url(httpretty.PUT,
+        self.stub_url('PUT',
                       ['groups', group_id, self.collection_key, ref['id']],
-                      status=204)
+                      status_code=204)
 
         self.manager.add_to_group(user=ref['id'], group=group_id)
         self.assertRaises(exceptions.ValidationError,
@@ -52,12 +49,11 @@ class UserTests(utils.TestCase, utils.CrudTests):
                           user=ref['id'],
                           group=None)
 
-    @httpretty.activate
     def test_list_users_in_group(self):
         group_id = uuid.uuid4().hex
         ref_list = [self.new_ref(), self.new_ref()]
 
-        self.stub_entity(httpretty.GET,
+        self.stub_entity('GET',
                          ['groups', group_id, self.collection_key],
                          entity=ref_list)
 
@@ -65,14 +61,13 @@ class UserTests(utils.TestCase, utils.CrudTests):
         self.assertEqual(len(ref_list), len(returned_list))
         [self.assertIsInstance(r, self.model) for r in returned_list]
 
-    @httpretty.activate
     def test_check_user_in_group(self):
         group_id = uuid.uuid4().hex
         ref = self.new_ref()
 
-        self.stub_url(httpretty.HEAD,
+        self.stub_url('HEAD',
                       ['groups', group_id, self.collection_key, ref['id']],
-                      status=204)
+                      status_code=204)
 
         self.manager.check_in_group(user=ref['id'], group=group_id)
 
@@ -81,14 +76,13 @@ class UserTests(utils.TestCase, utils.CrudTests):
                           user=ref['id'],
                           group=None)
 
-    @httpretty.activate
     def test_remove_user_from_group(self):
         group_id = uuid.uuid4().hex
         ref = self.new_ref()
 
-        self.stub_url(httpretty.DELETE,
+        self.stub_url('DELETE',
                       ['groups', group_id, self.collection_key, ref['id']],
-                      status=204)
+                      status_code=204)
 
         self.manager.remove_from_group(user=ref['id'], group=group_id)
         self.assertRaises(exceptions.ValidationError,
@@ -96,14 +90,31 @@ class UserTests(utils.TestCase, utils.CrudTests):
                           user=ref['id'],
                           group=None)
 
-    @httpretty.activate
+    def test_create_doesnt_log_password(self):
+        password = uuid.uuid4().hex
+        ref = self.new_ref()
+
+        self.stub_entity('POST', [self.collection_key],
+                         status_code=201, entity=ref)
+
+        req_ref = ref.copy()
+        req_ref.pop('id')
+        param_ref = req_ref.copy()
+
+        param_ref['password'] = password
+        params = utils.parameterize(param_ref)
+
+        self.manager.create(**params)
+
+        self.assertNotIn(password, self.logger.output)
+
     def test_create_with_project(self):
         # Can create a user with the deprecated project option rather than
         # default_project_id.
         ref = self.new_ref()
 
-        self.stub_entity(httpretty.POST, [self.collection_key],
-                         status=201, entity=ref)
+        self.stub_entity('POST', [self.collection_key],
+                         status_code=201, entity=ref)
 
         req_ref = ref.copy()
         req_ref.pop('id')
@@ -121,15 +132,14 @@ class UserTests(utils.TestCase, utils.CrudTests):
                 'Expected different %s' % attr)
         self.assertEntityRequestBodyIs(req_ref)
 
-    @httpretty.activate
     def test_create_with_project_and_default_project(self):
         # Can create a user with the deprecated project and default_project_id.
         # The backend call should only pass the default_project_id.
         ref = self.new_ref()
 
-        self.stub_entity(httpretty.POST,
+        self.stub_entity('POST',
                          [self.collection_key],
-                         status=201, entity=ref)
+                         status_code=201, entity=ref)
 
         req_ref = ref.copy()
         req_ref.pop('id')
@@ -148,7 +158,25 @@ class UserTests(utils.TestCase, utils.CrudTests):
                 'Expected different %s' % attr)
         self.assertEntityRequestBodyIs(req_ref)
 
-    @httpretty.activate
+    def test_update_doesnt_log_password(self):
+        password = uuid.uuid4().hex
+        ref = self.new_ref()
+
+        req_ref = ref.copy()
+        req_ref.pop('id')
+        param_ref = req_ref.copy()
+
+        self.stub_entity('PATCH',
+                         [self.collection_key, ref['id']],
+                         status_code=200, entity=ref)
+
+        param_ref['password'] = password
+        params = utils.parameterize(param_ref)
+
+        self.manager.update(ref['id'], **params)
+
+        self.assertNotIn(password, self.logger.output)
+
     def test_update_with_project(self):
         # Can update a user with the deprecated project option rather than
         # default_project_id.
@@ -157,9 +185,9 @@ class UserTests(utils.TestCase, utils.CrudTests):
         req_ref.pop('id')
         param_ref = req_ref.copy()
 
-        self.stub_entity(httpretty.PATCH,
+        self.stub_entity('PATCH',
                          [self.collection_key, ref['id']],
-                         status=200, entity=ref)
+                         status_code=200, entity=ref)
 
         # Use deprecated project_id rather than new default_project_id.
         param_ref['project_id'] = param_ref.pop('default_project_id')
@@ -174,16 +202,15 @@ class UserTests(utils.TestCase, utils.CrudTests):
                 'Expected different %s' % attr)
         self.assertEntityRequestBodyIs(req_ref)
 
-    @httpretty.activate
     def test_update_with_project_and_default_project(self, ref=None):
         ref = self.new_ref()
         req_ref = ref.copy()
         req_ref.pop('id')
         param_ref = req_ref.copy()
 
-        self.stub_entity(httpretty.PATCH,
+        self.stub_entity('PATCH',
                          [self.collection_key, ref['id']],
-                         status=200, entity=ref)
+                         status_code=200, entity=ref)
 
         # Add the deprecated project_id in the call, the value will be ignored.
         param_ref['project_id'] = 'project'
@@ -198,12 +225,11 @@ class UserTests(utils.TestCase, utils.CrudTests):
                 'Expected different %s' % attr)
         self.assertEntityRequestBodyIs(req_ref)
 
-    @httpretty.activate
     def test_update_password(self):
         old_password = uuid.uuid4().hex
         new_password = uuid.uuid4().hex
 
-        self.stub_url(httpretty.POST,
+        self.stub_url('POST',
                       [self.collection_key, self.TEST_USER, 'password'])
         self.client.user_id = self.TEST_USER
         self.manager.update_password(old_password, new_password)
@@ -214,9 +240,11 @@ class UserTests(utils.TestCase, utils.CrudTests):
             }
         }
 
-        self.assertEqual('/v3/users/test/password',
-                         httpretty.last_request().path)
+        self.assertEqual(self.TEST_URL + '/users/test/password',
+                         self.requests.last_request.url)
         self.assertRequestBodyIs(json=exp_req_body)
+        self.assertNotIn(old_password, self.logger.output)
+        self.assertNotIn(new_password, self.logger.output)
 
     def test_update_password_with_bad_inputs(self):
         old_password = uuid.uuid4().hex

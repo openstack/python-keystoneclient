@@ -10,15 +10,20 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import httpretty
+import re
+import uuid
+
+from oslo.serialization import jsonutils
 import six
 from testtools import matchers
 
 from keystoneclient import _discover
+from keystoneclient.auth import token_endpoint
 from keystoneclient import client
 from keystoneclient import discover
 from keystoneclient import exceptions
-from keystoneclient.openstack.common import jsonutils
+from keystoneclient import fixture
+from keystoneclient import session
 from keystoneclient.tests import utils
 from keystoneclient.v2_0 import client as v2_client
 from keystoneclient.v3 import client as v3_client
@@ -76,20 +81,8 @@ TEST_SERVICE_CATALOG = [{
 }]
 
 V2_URL = "%sv2.0" % BASE_URL
-V2_DESCRIBED_BY_HTML = {'href': 'http://docs.openstack.org/api/'
-                                'openstack-identity-service/2.0/content/',
-                        'rel': 'describedby',
-                        'type': 'text/html'}
-V2_DESCRIBED_BY_PDF = {'href': 'http://docs.openstack.org/api/openstack-ident'
-                               'ity-service/2.0/identity-dev-guide-2.0.pdf',
-                       'rel': 'describedby',
-                       'type': 'application/pdf'}
-
-V2_VERSION = {'id': 'v2.0',
-              'links': [{'href': V2_URL, 'rel': 'self'},
-                        V2_DESCRIBED_BY_HTML, V2_DESCRIBED_BY_PDF],
-              'status': 'stable',
-              'updated': UPDATED}
+V2_VERSION = fixture.V2Discovery(V2_URL)
+V2_VERSION.updated_str = UPDATED
 
 V2_AUTH_RESPONSE = jsonutils.dumps({
     "access": {
@@ -108,18 +101,11 @@ V2_AUTH_RESPONSE = jsonutils.dumps({
 })
 
 V3_URL = "%sv3" % BASE_URL
-V3_MEDIA_TYPES = [{'base': 'application/json',
-                   'type': 'application/vnd.openstack.identity-v3+json'},
-                  {'base': 'application/xml',
-                   'type': 'application/vnd.openstack.identity-v3+xml'}]
+V3_VERSION = fixture.V3Discovery(V3_URL)
+V3_MEDIA_TYPES = V3_VERSION.media_types
+V3_VERSION.updated_str = UPDATED
 
-V3_VERSION = {'id': 'v3.0',
-              'links': [{'href': V3_URL, 'rel': 'self'}],
-              'media-types': V3_MEDIA_TYPES,
-              'status': 'stable',
-              'updated': UPDATED}
-
-V3_TOKEN = u'3e2813b7ba0b4006840c3825860b86ed',
+V3_TOKEN = six.u('3e2813b7ba0b4006840c3825860b86ed'),
 V3_AUTH_RESPONSE = jsonutils.dumps({
     "token": {
         "methods": [
@@ -246,7 +232,6 @@ V3_VERSION_ENTRY = _create_single_version(V3_VERSION)
 V2_VERSION_ENTRY = _create_single_version(V2_VERSION)
 
 
-@httpretty.activate
 class AvailableVersionsTests(utils.TestCase):
 
     def test_available_versions_basics(self):
@@ -254,10 +239,10 @@ class AvailableVersionsTests(utils.TestCase):
                     'cinder': jsonutils.dumps(CINDER_EXAMPLES),
                     'glance': jsonutils.dumps(GLANCE_EXAMPLES)}
 
-        for path, ex in six.iteritems(examples):
+        for path, text in six.iteritems(examples):
             url = "%s%s" % (BASE_URL, path)
 
-            httpretty.register_uri(httpretty.GET, url, status=300, body=ex)
+            self.requests.register_uri('GET', url, status_code=300, text=text)
             versions = discover.available_versions(url)
 
             for v in versions:
@@ -267,8 +252,8 @@ class AvailableVersionsTests(utils.TestCase):
                                                          matchers.Contains(n)))
 
     def test_available_versions_individual(self):
-        httpretty.register_uri(httpretty.GET, V3_URL, status=200,
-                               body=V3_VERSION_ENTRY)
+        self.requests.register_uri('GET', V3_URL, status_code=200,
+                                   text=V3_VERSION_ENTRY)
 
         versions = discover.available_versions(V3_URL)
 
@@ -279,8 +264,8 @@ class AvailableVersionsTests(utils.TestCase):
             self.assertIn('links', v)
 
     def test_available_keystone_data(self):
-        httpretty.register_uri(httpretty.GET, BASE_URL, status=300,
-                               body=V3_VERSION_LIST)
+        self.requests.register_uri('GET', BASE_URL, status_code=300,
+                                   text=V3_VERSION_LIST)
 
         versions = discover.available_versions(BASE_URL)
         self.assertEqual(2, len(versions))
@@ -294,8 +279,8 @@ class AvailableVersionsTests(utils.TestCase):
                 self.assertEqual(v['media-types'], V3_MEDIA_TYPES)
 
     def test_available_cinder_data(self):
-        body = jsonutils.dumps(CINDER_EXAMPLES)
-        httpretty.register_uri(httpretty.GET, BASE_URL, status=300, body=body)
+        text = jsonutils.dumps(CINDER_EXAMPLES)
+        self.requests.register_uri('GET', BASE_URL, status_code=300, text=text)
 
         versions = discover.available_versions(BASE_URL)
         self.assertEqual(2, len(versions))
@@ -310,8 +295,8 @@ class AvailableVersionsTests(utils.TestCase):
                 self.fail("Invalid version found")
 
     def test_available_glance_data(self):
-        body = jsonutils.dumps(GLANCE_EXAMPLES)
-        httpretty.register_uri(httpretty.GET, BASE_URL, status=200, body=body)
+        text = jsonutils.dumps(GLANCE_EXAMPLES)
+        self.requests.register_uri('GET', BASE_URL, status_code=200, text=text)
 
         versions = discover.available_versions(BASE_URL)
         self.assertEqual(5, len(versions))
@@ -325,12 +310,13 @@ class AvailableVersionsTests(utils.TestCase):
                 self.fail("Invalid version found")
 
 
-@httpretty.activate
 class ClientDiscoveryTests(utils.TestCase):
 
     def assertCreatesV3(self, **kwargs):
-        httpretty.register_uri(httpretty.POST, "%s/auth/tokens" % V3_URL,
-                               body=V3_AUTH_RESPONSE, X_Subject_Token=V3_TOKEN)
+        self.requests.register_uri('POST',
+                                   '%s/auth/tokens' % V3_URL,
+                                   text=V3_AUTH_RESPONSE,
+                                   headers={'X-Subject-Token': V3_TOKEN})
 
         kwargs.setdefault('username', 'foo')
         kwargs.setdefault('password', 'bar')
@@ -339,8 +325,8 @@ class ClientDiscoveryTests(utils.TestCase):
         return keystone
 
     def assertCreatesV2(self, **kwargs):
-        httpretty.register_uri(httpretty.POST, "%s/tokens" % V2_URL,
-                               body=V2_AUTH_RESPONSE)
+        self.requests.register_uri('POST', "%s/tokens" % V2_URL,
+                                   text=V2_AUTH_RESPONSE)
 
         kwargs.setdefault('username', 'foo')
         kwargs.setdefault('password', 'bar')
@@ -363,96 +349,94 @@ class ClientDiscoveryTests(utils.TestCase):
                           client.Client, **kwargs)
 
     def test_discover_v3(self):
-        httpretty.register_uri(httpretty.GET, BASE_URL, status=300,
-                               body=V3_VERSION_LIST)
+        self.requests.register_uri('GET', BASE_URL, status_code=300,
+                                   text=V3_VERSION_LIST)
 
         self.assertCreatesV3(auth_url=BASE_URL)
 
     def test_discover_v2(self):
-        httpretty.register_uri(httpretty.GET, BASE_URL, status=300,
-                               body=V2_VERSION_LIST)
-        httpretty.register_uri(httpretty.POST, "%s/tokens" % V2_URL,
-                               body=V2_AUTH_RESPONSE)
+        self.requests.register_uri('GET', BASE_URL, status_code=300,
+                                   text=V2_VERSION_LIST)
+        self.requests.register_uri('POST', "%s/tokens" % V2_URL,
+                                   text=V2_AUTH_RESPONSE)
 
         self.assertCreatesV2(auth_url=BASE_URL)
 
     def test_discover_endpoint_v2(self):
-        httpretty.register_uri(httpretty.GET, BASE_URL, status=300,
-                               body=V2_VERSION_LIST)
+        self.requests.register_uri('GET', BASE_URL, status_code=300,
+                                   text=V2_VERSION_LIST)
         self.assertCreatesV2(endpoint=BASE_URL, token='fake-token')
 
     def test_discover_endpoint_v3(self):
-        httpretty.register_uri(httpretty.GET, BASE_URL, status=300,
-                               body=V3_VERSION_LIST)
+        self.requests.register_uri('GET', BASE_URL, status_code=300,
+                                   text=V3_VERSION_LIST)
         self.assertCreatesV3(endpoint=BASE_URL, token='fake-token')
 
     def test_discover_invalid_major_version(self):
-        httpretty.register_uri(httpretty.GET, BASE_URL, status=300,
-                               body=V3_VERSION_LIST)
+        self.requests.register_uri('GET', BASE_URL, status_code=300,
+                                   text=V3_VERSION_LIST)
 
         self.assertVersionNotAvailable(auth_url=BASE_URL, version=5)
 
     def test_discover_200_response_fails(self):
-        httpretty.register_uri(httpretty.GET, BASE_URL, status=200, body='ok')
+        self.requests.register_uri('GET', BASE_URL,
+                                   status_code=200, text='ok')
         self.assertDiscoveryFailure(auth_url=BASE_URL)
 
     def test_discover_minor_greater_than_available_fails(self):
-        httpretty.register_uri(httpretty.GET, BASE_URL, status=300,
-                               body=V3_VERSION_LIST)
+        self.requests.register_uri('GET', BASE_URL, status_code=300,
+                                   text=V3_VERSION_LIST)
 
         self.assertVersionNotAvailable(endpoint=BASE_URL, version=3.4)
 
     def test_discover_individual_version_v2(self):
-        httpretty.register_uri(httpretty.GET, V2_URL, status=200,
-                               body=V2_VERSION_ENTRY)
+        self.requests.register_uri('GET', V2_URL, status_code=200,
+                                   text=V2_VERSION_ENTRY)
 
         self.assertCreatesV2(auth_url=V2_URL)
 
     def test_discover_individual_version_v3(self):
-        httpretty.register_uri(httpretty.GET, V3_URL, status=200,
-                               body=V3_VERSION_ENTRY)
+        self.requests.register_uri('GET', V3_URL, status_code=200,
+                                   text=V3_VERSION_ENTRY)
 
         self.assertCreatesV3(auth_url=V3_URL)
 
     def test_discover_individual_endpoint_v2(self):
-        httpretty.register_uri(httpretty.GET, V2_URL, status=200,
-                               body=V2_VERSION_ENTRY)
+        self.requests.register_uri('GET', V2_URL, status_code=200,
+                                   text=V2_VERSION_ENTRY)
         self.assertCreatesV2(endpoint=V2_URL, token='fake-token')
 
     def test_discover_individual_endpoint_v3(self):
-        httpretty.register_uri(httpretty.GET, V3_URL, status=200,
-                               body=V3_VERSION_ENTRY)
+        self.requests.register_uri('GET', V3_URL, status_code=200,
+                                   text=V3_VERSION_ENTRY)
         self.assertCreatesV3(endpoint=V3_URL, token='fake-token')
 
     def test_discover_fail_to_create_bad_individual_version(self):
-        httpretty.register_uri(httpretty.GET, V2_URL, status=200,
-                               body=V2_VERSION_ENTRY)
-        httpretty.register_uri(httpretty.GET, V3_URL, status=200,
-                               body=V3_VERSION_ENTRY)
+        self.requests.register_uri('GET', V2_URL, status_code=200,
+                                   text=V2_VERSION_ENTRY)
+        self.requests.register_uri('GET', V3_URL, status_code=200,
+                                   text=V3_VERSION_ENTRY)
 
         self.assertVersionNotAvailable(auth_url=V2_URL, version=3)
         self.assertVersionNotAvailable(auth_url=V3_URL, version=2)
 
     def test_discover_unstable_versions(self):
-        v3_unstable_version = V3_VERSION.copy()
-        v3_unstable_version['status'] = 'beta'
-        version_list = _create_version_list([v3_unstable_version, V2_VERSION])
-
-        httpretty.register_uri(httpretty.GET, BASE_URL, status=300,
-                               body=version_list)
+        version_list = fixture.DiscoveryList(BASE_URL, v3_status='beta')
+        self.requests.register_uri('GET', BASE_URL, status_code=300,
+                                   json=version_list)
 
         self.assertCreatesV2(auth_url=BASE_URL)
         self.assertVersionNotAvailable(auth_url=BASE_URL, version=3)
         self.assertCreatesV3(auth_url=BASE_URL, unstable=True)
 
     def test_discover_forwards_original_ip(self):
-        httpretty.register_uri(httpretty.GET, BASE_URL, status=300,
-                               body=V3_VERSION_LIST)
+        self.requests.register_uri('GET', BASE_URL, status_code=300,
+                                   text=V3_VERSION_LIST)
 
         ip = '192.168.1.1'
         self.assertCreatesV3(auth_url=BASE_URL, original_ip=ip)
 
-        self.assertThat(httpretty.last_request().headers['forwarded'],
+        self.assertThat(self.requests.last_request.headers['forwarded'],
                         matchers.Contains(ip))
 
     def test_discover_bad_args(self):
@@ -460,8 +444,8 @@ class ClientDiscoveryTests(utils.TestCase):
                           client.Client)
 
     def test_discover_bad_response(self):
-        httpretty.register_uri(httpretty.GET, BASE_URL, status=300,
-                               body=jsonutils.dumps({'FOO': 'BAR'}))
+        self.requests.register_uri('GET', BASE_URL, status_code=300,
+                                   json={'FOO': 'BAR'})
         self.assertDiscoveryFailure(auth_url=BASE_URL)
 
     def test_discovery_ignore_invalid(self):
@@ -470,52 +454,44 @@ class ClientDiscoveryTests(utils.TestCase):
                  'media-types': V3_MEDIA_TYPES,
                  'status': 'stable',
                  'updated': UPDATED}]
-        httpretty.register_uri(httpretty.GET, BASE_URL, status=300,
-                               body=_create_version_list(resp))
+        self.requests.register_uri('GET', BASE_URL, status_code=300,
+                                   text=_create_version_list(resp))
         self.assertDiscoveryFailure(auth_url=BASE_URL)
 
     def test_ignore_entry_without_links(self):
         v3 = V3_VERSION.copy()
         v3['links'] = []
-        httpretty.register_uri(httpretty.GET, BASE_URL, status=300,
-                               body=_create_version_list([v3, V2_VERSION]))
+        self.requests.register_uri('GET', BASE_URL, status_code=300,
+                                   text=_create_version_list([v3, V2_VERSION]))
         self.assertCreatesV2(auth_url=BASE_URL)
 
     def test_ignore_entry_without_status(self):
         v3 = V3_VERSION.copy()
         del v3['status']
-        httpretty.register_uri(httpretty.GET, BASE_URL, status=300,
-                               body=_create_version_list([v3, V2_VERSION]))
+        self.requests.register_uri('GET', BASE_URL, status_code=300,
+                                   text=_create_version_list([v3, V2_VERSION]))
         self.assertCreatesV2(auth_url=BASE_URL)
 
     def test_greater_version_than_required(self):
-        resp = [{'id': 'v3.6',
-                 'links': [{'href': V3_URL, 'rel': 'self'}],
-                 'media-types': V3_MEDIA_TYPES,
-                 'status': 'stable',
-                 'updated': UPDATED}]
-        httpretty.register_uri(httpretty.GET, BASE_URL, status=200,
-                               body=_create_version_list(resp))
+        versions = fixture.DiscoveryList(BASE_URL, v3_id='v3.6')
+        self.requests.register_uri('GET', BASE_URL, status_code=200,
+                                   json=versions)
         self.assertCreatesV3(auth_url=BASE_URL, version=(3, 4))
 
     def test_lesser_version_than_required(self):
-        resp = [{'id': 'v3.4',
-                 'links': [{'href': V3_URL, 'rel': 'self'}],
-                 'media-types': V3_MEDIA_TYPES,
-                 'status': 'stable',
-                 'updated': UPDATED}]
-        httpretty.register_uri(httpretty.GET, BASE_URL, status=200,
-                               body=_create_version_list(resp))
+        versions = fixture.DiscoveryList(BASE_URL, v3_id='v3.4')
+        self.requests.register_uri('GET', BASE_URL, status_code=200,
+                                   json=versions)
         self.assertVersionNotAvailable(auth_url=BASE_URL, version=(3, 6))
 
     def test_bad_response(self):
-        httpretty.register_uri(httpretty.GET, BASE_URL, status=300,
-                               body="Ugly Duckling")
+        self.requests.register_uri('GET', BASE_URL, status_code=300,
+                                   text="Ugly Duckling")
         self.assertDiscoveryFailure(auth_url=BASE_URL)
 
     def test_pass_client_arguments(self):
-        httpretty.register_uri(httpretty.GET, BASE_URL, status=300,
-                               body=V2_VERSION_LIST)
+        self.requests.register_uri('GET', BASE_URL, status_code=300,
+                                   text=V2_VERSION_LIST)
         kwargs = {'original_ip': '100', 'use_keyring': False,
                   'stale_duration': 15}
 
@@ -526,11 +502,12 @@ class ClientDiscoveryTests(utils.TestCase):
         self.assertFalse(cl.use_keyring)
 
     def test_overriding_stored_kwargs(self):
-        httpretty.register_uri(httpretty.GET, BASE_URL, status=300,
-                               body=V3_VERSION_LIST)
+        self.requests.register_uri('GET', BASE_URL, status_code=300,
+                                   text=V3_VERSION_LIST)
 
-        httpretty.register_uri(httpretty.POST, "%s/auth/tokens" % V3_URL,
-                               body=V3_AUTH_RESPONSE, X_Subject_Token=V3_TOKEN)
+        self.requests.register_uri('POST', "%s/auth/tokens" % V3_URL,
+                                   text=V3_AUTH_RESPONSE,
+                                   headers={'X-Subject-Token': V3_TOKEN})
 
         disc = discover.Discover(auth_url=BASE_URL, debug=False,
                                  username='foo')
@@ -543,8 +520,8 @@ class ClientDiscoveryTests(utils.TestCase):
         self.assertEqual(client.password, 'bar')
 
     def test_available_versions(self):
-        httpretty.register_uri(httpretty.GET, BASE_URL, status=300,
-                               body=V3_VERSION_ENTRY)
+        self.requests.register_uri('GET', BASE_URL, status_code=300,
+                                   text=V3_VERSION_ENTRY)
         disc = discover.Discover(auth_url=BASE_URL)
 
         versions = disc.available_versions()
@@ -557,20 +534,55 @@ class ClientDiscoveryTests(utils.TestCase):
                       'media-types': V3_MEDIA_TYPES,
                       'status': 'stable',
                       'updated': UPDATED}
-        body = _create_version_list([V4_VERSION, V3_VERSION, V2_VERSION])
-        httpretty.register_uri(httpretty.GET, BASE_URL, status=300, body=body)
+        versions = fixture.DiscoveryList()
+        versions.add_version(V4_VERSION)
+        self.requests.register_uri('GET', BASE_URL, status_code=300,
+                                   json=versions)
 
         disc = discover.Discover(auth_url=BASE_URL)
         self.assertRaises(exceptions.DiscoveryFailure,
                           disc.create_client, version=4)
 
+    def test_discovery_fail_for_missing_v3(self):
+        versions = fixture.DiscoveryList(v2=True, v3=False)
+        self.requests.register_uri('GET', BASE_URL, status_code=300,
+                                   json=versions)
 
-@httpretty.activate
+        disc = discover.Discover(auth_url=BASE_URL)
+        self.assertRaises(exceptions.DiscoveryFailure,
+                          disc.create_client, version=(3, 0))
+
+    def _do_discovery_call(self, token=None, **kwargs):
+        self.requests.register_uri('GET', BASE_URL, status_code=300,
+                                   text=V3_VERSION_LIST)
+
+        if not token:
+            token = uuid.uuid4().hex
+
+        url = 'http://testurl'
+        a = token_endpoint.Token(url, token)
+        s = session.Session(auth=a)
+
+        # will default to true as there is a plugin on the session
+        discover.Discover(s, auth_url=BASE_URL, **kwargs)
+
+        self.assertEqual(BASE_URL, self.requests.last_request.url)
+
+    def test_setting_authenticated_true(self):
+        token = uuid.uuid4().hex
+        self._do_discovery_call(token)
+        self.assertRequestHeaderEqual('X-Auth-Token', token)
+
+    def test_setting_authenticated_false(self):
+        self._do_discovery_call(authenticated=False)
+        self.assertNotIn('X-Auth-Token', self.requests.last_request.headers)
+
+
 class DiscoverQueryTests(utils.TestCase):
 
     def test_available_keystone_data(self):
-        httpretty.register_uri(httpretty.GET, BASE_URL, status=300,
-                               body=V3_VERSION_LIST)
+        self.requests.register_uri('GET', BASE_URL, status_code=300,
+                                   text=V3_VERSION_LIST)
 
         disc = discover.Discover(auth_url=BASE_URL)
         versions = disc.version_data()
@@ -597,8 +609,8 @@ class DiscoverQueryTests(utils.TestCase):
         self.assertEqual(V2_URL, disc.url_for('v2'))
 
     def test_available_cinder_data(self):
-        body = jsonutils.dumps(CINDER_EXAMPLES)
-        httpretty.register_uri(httpretty.GET, BASE_URL, status=300, body=body)
+        text = jsonutils.dumps(CINDER_EXAMPLES)
+        self.requests.register_uri('GET', BASE_URL, status_code=300, text=text)
 
         v1_url = "%sv1/" % BASE_URL
         v2_url = "%sv2/" % BASE_URL
@@ -628,8 +640,8 @@ class DiscoverQueryTests(utils.TestCase):
         self.assertEqual(v1_url, disc.url_for('v1'))
 
     def test_available_glance_data(self):
-        body = jsonutils.dumps(GLANCE_EXAMPLES)
-        httpretty.register_uri(httpretty.GET, BASE_URL, status=200, body=body)
+        text = jsonutils.dumps(GLANCE_EXAMPLES)
+        self.requests.register_uri('GET', BASE_URL, status_code=200, text=text)
 
         v1_url = "%sv1/" % BASE_URL
         v2_url = "%sv2/" % BASE_URL
@@ -677,8 +689,8 @@ class DiscoverQueryTests(utils.TestCase):
                          'media-types': V3_MEDIA_TYPES,
                          'status': status,
                          'updated': UPDATED}]
-        body = jsonutils.dumps({'versions': version_list})
-        httpretty.register_uri(httpretty.GET, BASE_URL, status=200, body=body)
+        text = jsonutils.dumps({'versions': version_list})
+        self.requests.register_uri('GET', BASE_URL, status_code=200, text=text)
 
         disc = discover.Discover(auth_url=BASE_URL)
 
@@ -699,8 +711,8 @@ class DiscoverQueryTests(utils.TestCase):
                          'media-types': V3_MEDIA_TYPES,
                          'status': status,
                          'updated': UPDATED}]
-        body = jsonutils.dumps({'versions': version_list})
-        httpretty.register_uri(httpretty.GET, BASE_URL, status=200, body=body)
+        text = jsonutils.dumps({'versions': version_list})
+        self.requests.register_uri('GET', BASE_URL, status_code=200, text=text)
 
         disc = discover.Discover(auth_url=BASE_URL)
 
@@ -715,14 +727,10 @@ class DiscoverQueryTests(utils.TestCase):
 
     def test_allow_unknown(self):
         status = 'abcdef'
-        version_list = [{'id': 'v3.0',
-                         'links': [{'href': V3_URL, 'rel': 'self'}],
-                         'media-types': V3_MEDIA_TYPES,
-                         'status': status,
-                         'updated': UPDATED}]
-        body = jsonutils.dumps({'versions': version_list})
-        httpretty.register_uri(httpretty.GET, BASE_URL, status=200, body=body)
-
+        version_list = fixture.DiscoveryList(BASE_URL, v2=False,
+                                             v3_status=status)
+        self.requests.register_uri('GET', BASE_URL, status_code=200,
+                                   json=version_list)
         disc = discover.Discover(auth_url=BASE_URL)
 
         versions = disc.version_data()
@@ -750,8 +758,9 @@ class DiscoverQueryTests(utils.TestCase):
                          'links': [{'href': V3_URL, 'rel': 'self'}],
                          }]
 
-        body = jsonutils.dumps({'versions': version_list})
-        httpretty.register_uri(httpretty.GET, BASE_URL, status=200, body=body)
+        text = jsonutils.dumps({'versions': version_list})
+        self.requests.register_uri('GET', BASE_URL, status_code=200,
+                                   text=text)
 
         disc = discover.Discover(auth_url=BASE_URL)
 
@@ -762,6 +771,42 @@ class DiscoverQueryTests(utils.TestCase):
         # only the version with both id and links will be actually returned
         versions = disc.version_data()
         self.assertEqual(1, len(versions))
+
+
+class CatalogHackTests(utils.TestCase):
+
+    TEST_URL = 'http://keystone.server:5000/v2.0'
+    OTHER_URL = 'http://other.server:5000/path'
+
+    IDENTITY = 'identity'
+
+    BASE_URL = 'http://keystone.server:5000/'
+    V2_URL = BASE_URL + 'v2.0'
+    V3_URL = BASE_URL + 'v3'
+
+    def setUp(self):
+        super(CatalogHackTests, self).setUp()
+        self.hacks = _discover._VersionHacks()
+        self.hacks.add_discover_hack(self.IDENTITY,
+                                     re.compile('/v2.0/?$'),
+                                     '/')
+
+    def test_version_hacks(self):
+        self.assertEqual(self.BASE_URL,
+                         self.hacks.get_discover_hack(self.IDENTITY,
+                                                      self.V2_URL))
+
+        self.assertEqual(self.BASE_URL,
+                         self.hacks.get_discover_hack(self.IDENTITY,
+                                                      self.V2_URL + '/'))
+
+        self.assertEqual(self.OTHER_URL,
+                         self.hacks.get_discover_hack(self.IDENTITY,
+                                                      self.OTHER_URL))
+
+    def test_ignored_non_service_type(self):
+        self.assertEqual(self.V2_URL,
+                         self.hacks.get_discover_hack('other', self.V2_URL))
 
 
 class DiscoverUtils(utils.TestCase):

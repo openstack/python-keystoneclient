@@ -12,11 +12,9 @@
 
 import uuid
 
-import httpretty
 import six
 from six.moves.urllib import parse as urlparse
 
-from keystoneclient.openstack.common import jsonutils
 from keystoneclient.tests import utils
 from keystoneclient.v3 import client
 
@@ -141,8 +139,17 @@ class TestCase(UnauthenticatedTestCase):
         if not subject_token:
             subject_token = self.TEST_TOKEN
 
-        self.stub_url(httpretty.POST, ['auth', 'tokens'],
-                      X_Subject_Token=subject_token, **kwargs)
+        try:
+            response_list = kwargs['response_list']
+        except KeyError:
+            headers = kwargs.setdefault('headers', {})
+            headers['X-Subject-Token'] = subject_token
+        else:
+            for resp in response_list:
+                headers = resp.setdefault('headers', {})
+                headers['X-Subject-Token'] = subject_token
+
+        self.stub_url('POST', ['auth', 'tokens'], **kwargs)
 
 
 class CrudTests(object):
@@ -186,7 +193,6 @@ class CrudTests(object):
     def assertEntityRequestBodyIs(self, entity):
         self.assertRequestBodyIs(json=self.encode(entity))
 
-    @httpretty.activate
     def test_create(self, ref=None, req_ref=None):
         ref = ref or self.new_ref()
         manager_ref = ref.copy()
@@ -199,7 +205,7 @@ class CrudTests(object):
         req_ref = (req_ref or ref).copy()
         req_ref.pop('id')
 
-        self.stub_entity(httpretty.POST, entity=req_ref, status=201)
+        self.stub_entity('POST', entity=req_ref, status_code=201)
 
         returned = self.manager.create(**parameterize(manager_ref))
         self.assertIsInstance(returned, self.model)
@@ -210,11 +216,10 @@ class CrudTests(object):
                 'Expected different %s' % attr)
         self.assertEntityRequestBodyIs(req_ref)
 
-    @httpretty.activate
     def test_get(self, ref=None):
         ref = ref or self.new_ref()
 
-        self.stub_entity(httpretty.GET, id=ref['id'], entity=ref)
+        self.stub_entity('GET', id=ref['id'], entity=ref)
 
         returned = self.manager.get(ref['id'])
         self.assertIsInstance(returned, self.model)
@@ -234,15 +239,15 @@ class CrudTests(object):
 
         return expected_path
 
-    @httpretty.activate
     def test_list(self, ref_list=None, expected_path=None,
                   expected_query=None, **filter_kwargs):
         ref_list = ref_list or [self.new_ref(), self.new_ref()]
         expected_path = self._get_expected_path(expected_path)
 
-        httpretty.register_uri(httpretty.GET,
-                               urlparse.urljoin(self.TEST_URL, expected_path),
-                               body=jsonutils.dumps(self.encode(ref_list)))
+        self.requests.register_uri('GET',
+                                   urlparse.urljoin(self.TEST_URL,
+                                                    expected_path),
+                                   json=self.encode(ref_list))
 
         returned_list = self.manager.list(**filter_kwargs)
         self.assertEqual(len(ref_list), len(returned_list))
@@ -250,7 +255,8 @@ class CrudTests(object):
 
         # register_uri doesn't match the querystring component, so we have to
         # explicitly test the querystring component passed by the manager
-        qs_args = httpretty.last_request().querystring
+        parts = urlparse.urlparse(self.requests.last_request.url)
+        qs_args = urlparse.parse_qs(parts.query)
         qs_args_expected = expected_query or filter_kwargs
         for key, value in six.iteritems(qs_args_expected):
             self.assertIn(key, qs_args)
@@ -264,25 +270,24 @@ class CrudTests(object):
         for key in qs_args:
             self.assertIn(key, qs_args_expected)
 
-    @httpretty.activate
     def test_list_params(self):
         ref_list = [self.new_ref()]
         filter_kwargs = {uuid.uuid4().hex: uuid.uuid4().hex}
         expected_path = self._get_expected_path()
 
-        httpretty.register_uri(httpretty.GET,
-                               urlparse.urljoin(self.TEST_URL, expected_path),
-                               body=jsonutils.dumps(self.encode(ref_list)))
+        self.requests.register_uri('GET',
+                                   urlparse.urljoin(self.TEST_URL,
+                                                    expected_path),
+                                   json=self.encode(ref_list))
 
         self.manager.list(**filter_kwargs)
         self.assertQueryStringContains(**filter_kwargs)
 
-    @httpretty.activate
     def test_find(self, ref=None):
         ref = ref or self.new_ref()
         ref_list = [ref]
 
-        self.stub_entity(httpretty.GET, entity=ref_list)
+        self.stub_entity('GET', entity=ref_list)
 
         returned = self.manager.find(name=getattr(ref, 'name', None))
         self.assertIsInstance(returned, self.model)
@@ -297,11 +302,10 @@ class CrudTests(object):
         else:
             self.assertQueryStringIs('')
 
-    @httpretty.activate
     def test_update(self, ref=None, req_ref=None):
         ref = ref or self.new_ref()
 
-        self.stub_entity(httpretty.PATCH, id=ref['id'], entity=ref)
+        self.stub_entity('PATCH', id=ref['id'], entity=ref)
 
         # req_ref argument allows you to specify a different
         # signature for the request when the manager does some
@@ -319,9 +323,8 @@ class CrudTests(object):
                 'Expected different %s' % attr)
         self.assertEntityRequestBodyIs(req_ref)
 
-    @httpretty.activate
     def test_delete(self, ref=None):
         ref = ref or self.new_ref()
 
-        self.stub_entity(httpretty.DELETE, id=ref['id'], status=204)
+        self.stub_entity('DELETE', id=ref['id'], status_code=204)
         self.manager.delete(ref['id'])

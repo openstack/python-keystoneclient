@@ -1,5 +1,3 @@
-# vim: tabstop=4 shiftwidth=4 softtabstop=4
-
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
 # a copy of the License at
@@ -13,13 +11,13 @@
 # under the License.
 
 import copy
-
-import httpretty
-from six.moves import urllib
+import uuid
 
 from keystoneclient import access
 from keystoneclient.auth.identity import v3
+from keystoneclient import client
 from keystoneclient import exceptions
+from keystoneclient import fixture
 from keystoneclient import session
 from keystoneclient.tests import utils
 
@@ -62,7 +60,8 @@ class V3IdentityPlugin(utils.TestCase):
             "region": "RegionOne",
             "interface": "admin"
         }],
-        "type": "compute"
+        "type": "compute",
+        "name": "nova",
     }, {
         "endpoints": [{
             "url": "http://glance/glanceapi/public",
@@ -113,6 +112,11 @@ class V3IdentityPlugin(utils.TestCase):
 
     def setUp(self):
         super(V3IdentityPlugin, self).setUp()
+
+        V3_URL = "%sv3" % self.TEST_URL
+        self.TEST_DISCOVERY_RESPONSE = {
+            'versions': {'values': [fixture.V3Discovery(V3_URL)]}}
+
         self.TEST_RESPONSE_DICT = {
             "token": {
                 "methods": [
@@ -141,15 +145,39 @@ class V3IdentityPlugin(utils.TestCase):
                 "catalog": self.TEST_SERVICE_CATALOG
             },
         }
+        self.TEST_PROJECTS_RESPONSE = {
+            "projects": [
+                {
+                    "domain_id": "1789d1",
+                    "enabled": "True",
+                    "id": "263fd9",
+                    "links": {
+                        "self": "https://identity:5000/v3/projects/263fd9"
+                    },
+                    "name": "Dev Group A"
+                },
+                {
+                    "domain_id": "1789d1",
+                    "enabled": "True",
+                    "id": "e56ad3",
+                    "links": {
+                        "self": "https://identity:5000/v3/projects/e56ad3"
+                    },
+                    "name": "Dev Group B"
+                }
+            ],
+            "links": {
+                "self": "https://identity:5000/v3/projects",
+            }
+        }
 
     def stub_auth(self, subject_token=None, **kwargs):
         if not subject_token:
             subject_token = self.TEST_TOKEN
 
-        self.stub_url(httpretty.POST, ['auth', 'tokens'],
-                      X_Subject_Token=subject_token, **kwargs)
+        self.stub_url('POST', ['auth', 'tokens'],
+                      headers={'X-Subject-Token': subject_token}, **kwargs)
 
-    @httpretty.activate
     def test_authenticate_with_username_password(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
         a = v3.Password(self.TEST_URL,
@@ -169,7 +197,29 @@ class V3IdentityPlugin(utils.TestCase):
         self.assertRequestHeaderEqual('Accept', 'application/json')
         self.assertEqual(s.auth.auth_ref.auth_token, self.TEST_TOKEN)
 
-    @httpretty.activate
+    def test_authenticate_with_username_password_unscoped(self):
+        del self.TEST_RESPONSE_DICT['token']['catalog']
+        del self.TEST_RESPONSE_DICT['token']['project']
+
+        self.stub_auth(json=self.TEST_RESPONSE_DICT)
+        self.stub_url(method="GET", json=self.TEST_DISCOVERY_RESPONSE)
+        test_user_id = self.TEST_RESPONSE_DICT['token']['user']['id']
+        self.stub_url(method="GET",
+                      json=self.TEST_PROJECTS_RESPONSE,
+                      parts=['users', test_user_id, 'projects'])
+
+        a = v3.Password(self.TEST_URL,
+                        username=self.TEST_USER,
+                        password=self.TEST_PASS)
+        s = session.Session(auth=a)
+        cs = client.Client(session=s, auth_url=self.TEST_URL)
+
+        # As a sanity check on the auth_ref, make sure client has the
+        # proper user id, that it fetches the right project response
+        self.assertEqual(test_user_id, a.auth_ref.user_id)
+        t = cs.projects.list(user=a.auth_ref.user_id)
+        self.assertEqual(2, len(t))
+
     def test_authenticate_with_username_password_domain_scoped(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
         a = v3.Password(self.TEST_URL, username=self.TEST_USER,
@@ -185,7 +235,6 @@ class V3IdentityPlugin(utils.TestCase):
         self.assertRequestBodyIs(json=req)
         self.assertEqual(s.auth.auth_ref.auth_token, self.TEST_TOKEN)
 
-    @httpretty.activate
     def test_authenticate_with_username_password_project_scoped(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
         a = v3.Password(self.TEST_URL, username=self.TEST_USER,
@@ -203,7 +252,6 @@ class V3IdentityPlugin(utils.TestCase):
         self.assertEqual(s.auth.auth_ref.auth_token, self.TEST_TOKEN)
         self.assertEqual(s.auth.auth_ref.project_id, self.TEST_DOMAIN_ID)
 
-    @httpretty.activate
     def test_authenticate_with_token(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
         a = v3.Token(self.TEST_URL, self.TEST_TOKEN)
@@ -220,11 +268,6 @@ class V3IdentityPlugin(utils.TestCase):
         self.assertRequestHeaderEqual('Accept', 'application/json')
         self.assertEqual(s.auth.auth_ref.auth_token, self.TEST_TOKEN)
 
-    def test_missing_auth_params(self):
-        self.assertRaises(exceptions.AuthorizationFailure, v3.Auth._factory,
-                          self.TEST_URL)
-
-    @httpretty.activate
     def test_with_expired(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
 
@@ -248,7 +291,6 @@ class V3IdentityPlugin(utils.TestCase):
         self.assertRaises(exceptions.AuthorizationFailure,
                           a.get_token, None)
 
-    @httpretty.activate
     def test_with_trust_id(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
         a = v3.Password(self.TEST_URL, username=self.TEST_USER,
@@ -264,7 +306,6 @@ class V3IdentityPlugin(utils.TestCase):
         self.assertRequestBodyIs(json=req)
         self.assertEqual(s.auth.auth_ref.auth_token, self.TEST_TOKEN)
 
-    @httpretty.activate
     def test_with_multiple_mechanisms_factory(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
         p = v3.PasswordMethod(username=self.TEST_USER, password=self.TEST_PASS)
@@ -282,7 +323,6 @@ class V3IdentityPlugin(utils.TestCase):
         self.assertRequestBodyIs(json=req)
         self.assertEqual(s.auth.auth_ref.auth_token, self.TEST_TOKEN)
 
-    @httpretty.activate
     def test_with_multiple_mechanisms(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
         p = v3.PasswordMethod(username=self.TEST_USER,
@@ -315,12 +355,11 @@ class V3IdentityPlugin(utils.TestCase):
                         domain_id='x', trust_id='x')
         self.assertRaises(exceptions.AuthorizationFailure, a.get_auth_ref, s)
 
-    @httpretty.activate
     def _do_service_url_test(self, base_url, endpoint_filter):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
-        self.stub_url(httpretty.GET, ['path'],
+        self.stub_url('GET', ['path'],
                       base_url=base_url,
-                      body='SUCCESS', status=200)
+                      text='SUCCESS', status_code=200)
 
         a = v3.Password(self.TEST_URL, username=self.TEST_USER,
                         password=self.TEST_PASS)
@@ -329,18 +368,18 @@ class V3IdentityPlugin(utils.TestCase):
         resp = s.get('/path', endpoint_filter=endpoint_filter)
 
         self.assertEqual(resp.status_code, 200)
-        path = "%s/%s" % (urllib.parse.urlparse(base_url).path, 'path')
-        self.assertEqual(httpretty.last_request().path, path)
+        self.assertEqual(self.requests.last_request.url, base_url + '/path')
 
     def test_service_url(self):
-        endpoint_filter = {'service_type': 'compute', 'interface': 'admin'}
+        endpoint_filter = {'service_type': 'compute',
+                           'interface': 'admin',
+                           'service_name': 'nova'}
         self._do_service_url_test('http://nova/novapi/admin', endpoint_filter)
 
     def test_service_url_defaults_to_public(self):
         endpoint_filter = {'service_type': 'compute'}
         self._do_service_url_test('http://nova/novapi/public', endpoint_filter)
 
-    @httpretty.activate
     def test_endpoint_filter_without_service_type_fails(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
 
@@ -351,12 +390,11 @@ class V3IdentityPlugin(utils.TestCase):
         self.assertRaises(exceptions.EndpointNotFound, s.get, '/path',
                           endpoint_filter={'interface': 'admin'})
 
-    @httpretty.activate
     def test_full_url_overrides_endpoint_filter(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
-        self.stub_url(httpretty.GET, [],
+        self.stub_url('GET', [],
                       base_url='http://testurl/',
-                      body='SUCCESS', status=200)
+                      text='SUCCESS', status_code=200)
 
         a = v3.Password(self.TEST_URL, username=self.TEST_USER,
                         password=self.TEST_PASS)
@@ -367,7 +405,6 @@ class V3IdentityPlugin(utils.TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.text, 'SUCCESS')
 
-    @httpretty.activate
     def test_invalid_auth_response_dict(self):
         self.stub_auth(json={'hello': 'world'})
 
@@ -378,9 +415,8 @@ class V3IdentityPlugin(utils.TestCase):
         self.assertRaises(exceptions.InvalidResponse, s.get, 'http://any',
                           authenticated=True)
 
-    @httpretty.activate
     def test_invalid_auth_response_type(self):
-        self.stub_url(httpretty.POST, ['auth', 'tokens'], body='testdata')
+        self.stub_url('POST', ['auth', 'tokens'], text='testdata')
 
         a = v3.Password(self.TEST_URL, username=self.TEST_USER,
                         password=self.TEST_PASS)
@@ -388,3 +424,31 @@ class V3IdentityPlugin(utils.TestCase):
 
         self.assertRaises(exceptions.InvalidResponse, s.get, 'http://any',
                           authenticated=True)
+
+    def test_invalidate_response(self):
+        auth_responses = [{'status_code': 200, 'json': self.TEST_RESPONSE_DICT,
+                           'headers': {'X-Subject-Token': 'token1'}},
+                          {'status_code': 200, 'json': self.TEST_RESPONSE_DICT,
+                           'headers': {'X-Subject-Token': 'token2'}}]
+
+        self.requests.register_uri('POST', '%s/auth/tokens' % self.TEST_URL,
+                                   auth_responses)
+
+        a = v3.Password(self.TEST_URL, username=self.TEST_USER,
+                        password=self.TEST_PASS)
+        s = session.Session(auth=a)
+
+        self.assertEqual('token1', s.get_token())
+        a.invalidate()
+        self.assertEqual('token2', s.get_token())
+
+    def test_doesnt_log_password(self):
+        self.stub_auth(json=self.TEST_RESPONSE_DICT)
+
+        password = uuid.uuid4().hex
+        a = v3.Password(self.TEST_URL, username=self.TEST_USER,
+                        password=password)
+        s = session.Session(a)
+        self.assertEqual(self.TEST_TOKEN, s.get_token())
+
+        self.assertNotIn(password, self.logger.output)

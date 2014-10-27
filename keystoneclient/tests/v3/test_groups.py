@@ -14,8 +14,6 @@
 
 import uuid
 
-import httpretty
-
 from keystoneclient.tests.v3 import utils
 from keystoneclient.v3 import groups
 
@@ -33,31 +31,28 @@ class GroupTests(utils.TestCase, utils.CrudTests):
         kwargs.setdefault('name', uuid.uuid4().hex)
         return kwargs
 
-    @httpretty.activate
     def test_list_groups_for_user(self):
         user_id = uuid.uuid4().hex
         ref_list = [self.new_ref(), self.new_ref()]
 
-        self.stub_entity(httpretty.GET,
+        self.stub_entity('GET',
                          ['users', user_id, self.collection_key],
-                         status=200, entity=ref_list)
+                         status_code=200, entity=ref_list)
 
         returned_list = self.manager.list(user=user_id)
         self.assertEqual(len(ref_list), len(returned_list))
         [self.assertIsInstance(r, self.model) for r in returned_list]
 
-    @httpretty.activate
     def test_list_groups_for_domain(self):
         ref_list = [self.new_ref(), self.new_ref()]
         domain_id = uuid.uuid4().hex
 
-        self.stub_entity(httpretty.GET,
+        self.stub_entity('GET',
                          [self.collection_key],
-                         status=200, entity=ref_list)
+                         status_code=200, entity=ref_list)
 
         returned_list = self.manager.list(domain=domain_id)
         self.assertTrue(len(ref_list), len(returned_list))
         [self.assertIsInstance(r, self.model) for r in returned_list]
 
-        self.assertEqual(httpretty.last_request().querystring,
-                         {'domain_id': [domain_id]})
+        self.assertQueryStringIs('domain_id=%s' % domain_id)

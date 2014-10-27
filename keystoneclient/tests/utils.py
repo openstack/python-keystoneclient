@@ -13,27 +13,31 @@
 import logging
 import sys
 import time
+import uuid
 
 import fixtures
-import httpretty
 import mock
 from mox3 import mox
+from oslo.serialization import jsonutils
 import requests
+from requests_mock.contrib import fixture
 import six
 from six.moves.urllib import parse as urlparse
 import testtools
 
-from keystoneclient.openstack.common import jsonutils
-
 
 class TestCase(testtools.TestCase):
+
     TEST_DOMAIN_ID = '1'
     TEST_DOMAIN_NAME = 'aDomain'
+    TEST_GROUP_ID = uuid.uuid4().hex
+    TEST_ROLE_ID = uuid.uuid4().hex
     TEST_TENANT_ID = '1'
     TEST_TENANT_NAME = 'aTenant'
     TEST_TOKEN = 'aToken'
     TEST_TRUST_ID = 'aTrust'
     TEST_USER = 'test'
+    TEST_USER_ID = uuid.uuid4().hex
 
     TEST_ROOT_URL = 'http://127.0.0.1:5000/'
 
@@ -43,6 +47,8 @@ class TestCase(testtools.TestCase):
         self.logger = self.useFixture(fixtures.FakeLogger(level=logging.DEBUG))
         self.time_patcher = mock.patch.object(time, 'time', lambda: 1234)
         self.time_patcher.start()
+
+        self.requests = self.useFixture(fixture.Fixture())
 
     def tearDown(self):
         self.time_patcher.stop()
@@ -55,21 +61,20 @@ class TestCase(testtools.TestCase):
             base_url = self.TEST_URL
 
         if json:
-            kwargs['body'] = jsonutils.dumps(json)
-            kwargs['content_type'] = 'application/json'
+            kwargs['text'] = jsonutils.dumps(json)
+            headers = kwargs.setdefault('headers', {})
+            headers['Content-Type'] = 'application/json'
 
         if parts:
             url = '/'.join([p.strip('/') for p in [base_url] + parts])
         else:
             url = base_url
 
-        httpretty.register_uri(method, url, **kwargs)
+        url = url.replace("/?", "?")
+        self.requests.register_uri(method, url, **kwargs)
 
     def assertRequestBodyIs(self, body=None, json=None):
-        last_request_body = httpretty.last_request().body
-        if six.PY3:
-            last_request_body = last_request_body.decode('utf-8')
-
+        last_request_body = self.requests.last_request.body
         if json:
             val = jsonutils.loads(last_request_body)
             self.assertEqual(json, val)
@@ -82,10 +87,13 @@ class TestCase(testtools.TestCase):
         The qs parameter should be of the format \'foo=bar&abc=xyz\'
         """
         expected = urlparse.parse_qs(qs)
-        self.assertEqual(expected, httpretty.last_request().querystring)
+        parts = urlparse.urlparse(self.requests.last_request.url)
+        querystring = urlparse.parse_qs(parts.query)
+        self.assertEqual(expected, querystring)
 
     def assertQueryStringContains(self, **kwargs):
-        qs = httpretty.last_request().querystring
+        parts = urlparse.urlparse(self.requests.last_request.url)
+        qs = urlparse.parse_qs(parts.query)
 
         for k, v in six.iteritems(kwargs):
             self.assertIn(k, qs)
@@ -94,10 +102,9 @@ class TestCase(testtools.TestCase):
     def assertRequestHeaderEqual(self, name, val):
         """Verify that the last request made contains a header and its value
 
-        The request must have already been made and httpretty must have been
-        activated for the request.
+        The request must have already been made.
         """
-        headers = httpretty.last_request().headers
+        headers = self.requests.last_request.headers
         self.assertEqual(headers.get(name), val)
 
 
@@ -144,3 +151,50 @@ class TestResponse(requests.Response):
     @property
     def text(self):
         return self.content
+
+
+class DisableModuleFixture(fixtures.Fixture):
+    """A fixture to provide support for unloading/disabling modules."""
+
+    def __init__(self, module, *args, **kw):
+        super(DisableModuleFixture, self).__init__(*args, **kw)
+        self.module = module
+        self._finders = []
+        self._cleared_modules = {}
+
+    def tearDown(self):
+        super(DisableModuleFixture, self).tearDown()
+        for finder in self._finders:
+            sys.meta_path.remove(finder)
+        sys.modules.update(self._cleared_modules)
+
+    def clear_module(self):
+        cleared_modules = {}
+        for fullname in sys.modules.keys():
+            if (fullname == self.module or
+                    fullname.startswith(self.module + '.')):
+                cleared_modules[fullname] = sys.modules.pop(fullname)
+        return cleared_modules
+
+    def setUp(self):
+        """Ensure ImportError for the specified module."""
+
+        super(DisableModuleFixture, self).setUp()
+
+        # Clear 'module' references in sys.modules
+        self._cleared_modules.update(self.clear_module())
+
+        finder = NoModuleFinder(self.module)
+        self._finders.append(finder)
+        sys.meta_path.insert(0, finder)
+
+
+class NoModuleFinder(object):
+    """Disallow further imports of 'module'."""
+
+    def __init__(self, module):
+        self.module = module
+
+    def find_module(self, fullname, path):
+        if fullname == self.module or fullname.startswith(self.module + '.'):
+            raise ImportError

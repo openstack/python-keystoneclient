@@ -13,8 +13,9 @@
 
 import uuid
 
+from oslo.utils import timeutils
+
 from keystoneclient import exceptions
-from keystoneclient.openstack.common import timeutils
 from keystoneclient.tests.v3 import utils
 from keystoneclient.v3.contrib import trusts
 
@@ -105,4 +106,4 @@ class TrustTests(utils.TestCase, utils.CrudTests):
 
     def test_update(self):
         # Update not supported for the OS-TRUST API
-        self.assertRaises(exceptions.HttpNotImplemented, self.manager.update)
+        self.assertRaises(exceptions.MethodNotImplemented, self.manager.update)

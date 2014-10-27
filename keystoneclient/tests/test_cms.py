@@ -10,6 +10,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import errno
 import os
 import subprocess
 
@@ -28,6 +29,18 @@ class CMSTest(utils.TestCase, testresources.ResourcedTestCase):
     """Unit tests for the keystoneclient.common.cms module."""
 
     resources = [('examples', client_fixtures.EXAMPLES_RESOURCE)]
+
+    def __init__(self, *args, **kwargs):
+        super(CMSTest, self).__init__(*args, **kwargs)
+        process = subprocess.Popen(['openssl', 'version'],
+                                   stdout=subprocess.PIPE)
+        out, err = process.communicate()
+        # Example output: 'OpenSSL 0.9.8za 5 Jun 2014'
+        openssl_version = out.split()[1]
+
+        if err or openssl_version.startswith(b'0'):
+            raise Exception('Your version of OpenSSL is not supported. '
+                            'You will need to update it to 1.0 or later.')
 
     def test_cms_verify(self):
         self.assertRaises(exceptions.CertificateConfigError,
@@ -77,8 +90,6 @@ class CMSTest(utils.TestCase, testresources.ResourcedTestCase):
                           '/no/such/file', '/no/such/key')
 
     def test_cms_verify_token_no_oserror(self):
-        import errno
-
         def raise_OSError(*args):
             e = OSError()
             e.errno = errno.EPIPE
@@ -87,11 +98,11 @@ class CMSTest(utils.TestCase, testresources.ResourcedTestCase):
         with mock.patch('subprocess.Popen.communicate', new=raise_OSError):
             try:
                 cms.cms_verify("x", '/no/such/file', '/no/such/key')
-            except subprocess.CalledProcessError as e:
+            except exceptions.CertificateConfigError as e:
                 self.assertIn('/no/such/file', e.output)
                 self.assertIn('Hit OSError ', e.output)
             else:
-                self.fail('Expected subprocess.CalledProcessError')
+                self.fail('Expected exceptions.CertificateConfigError')
 
     def test_cms_verify_token_scoped(self):
         cms_content = cms.token_to_cms(self.examples.SIGNED_TOKEN_SCOPED)

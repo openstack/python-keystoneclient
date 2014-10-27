@@ -10,11 +10,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import httpretty
-import six
+from oslo.serialization import jsonutils
 
 from keystoneclient import exceptions
-from keystoneclient.openstack.common import jsonutils
 from keystoneclient.tests.v3 import utils
 from keystoneclient.v3 import client
 
@@ -79,7 +77,6 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
             'X-Subject-Token': self.TEST_TOKEN
         }
 
-    @httpretty.activate
     def test_authenticate_success(self):
         TEST_TOKEN = "abcdef"
         ident = self.TEST_REQUEST_BODY['auth']['identity']
@@ -96,14 +93,13 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         self.assertEqual(cs.auth_token, TEST_TOKEN)
         self.assertRequestBodyIs(json=self.TEST_REQUEST_BODY)
 
-    @httpretty.activate
     def test_authenticate_failure(self):
         ident = self.TEST_REQUEST_BODY['auth']['identity']
         ident['password']['user']['password'] = 'bad_key'
         error = {"unauthorized": {"message": "Unauthorized",
                                   "code": "401"}}
 
-        self.stub_auth(status=401, json=error)
+        self.stub_auth(status_code=401, json=error)
 
         # Workaround for issue with assertRaises on python2.6
         # where with assertRaises(exceptions.Unauthorized): doesn't work
@@ -118,10 +114,9 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         self.assertRaises(exceptions.Unauthorized, client_create_wrapper)
         self.assertRequestBodyIs(json=self.TEST_REQUEST_BODY)
 
-    @httpretty.activate
     def test_auth_redirect(self):
-        self.stub_auth(status=305, body='Use proxy',
-                       location=self.TEST_ADMIN_URL + '/auth/tokens')
+        headers = {'Location': self.TEST_ADMIN_URL + '/auth/tokens'}
+        self.stub_auth(status_code=305, text='Use proxy', headers=headers)
 
         self.stub_auth(json=self.TEST_RESPONSE_DICT,
                        base_url=self.TEST_ADMIN_URL)
@@ -138,7 +133,6 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         self.assertEqual(cs.auth_token,
                          self.TEST_RESPONSE_HEADERS["X-Subject-Token"])
 
-    @httpretty.activate
     def test_authenticate_success_domain_username_password_scoped(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
 
@@ -153,7 +147,6 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         self.assertEqual(cs.auth_token,
                          self.TEST_RESPONSE_HEADERS["X-Subject-Token"])
 
-    @httpretty.activate
     def test_authenticate_success_userid_password_domain_scoped(self):
         ident = self.TEST_REQUEST_BODY['auth']['identity']
         del ident['password']['user']['domain']
@@ -186,7 +179,6 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
                          self.TEST_RESPONSE_HEADERS["X-Subject-Token"])
         self.assertRequestBodyIs(json=self.TEST_REQUEST_BODY)
 
-    @httpretty.activate
     def test_authenticate_success_userid_password_project_scoped(self):
         ident = self.TEST_REQUEST_BODY['auth']['identity']
         del ident['password']['user']['domain']
@@ -208,7 +200,6 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
                          self.TEST_RESPONSE_HEADERS["X-Subject-Token"])
         self.assertRequestBodyIs(json=self.TEST_REQUEST_BODY)
 
-    @httpretty.activate
     def test_authenticate_success_password_unscoped(self):
         del self.TEST_RESPONSE_DICT['token']['catalog']
         del self.TEST_REQUEST_BODY['auth']['scope']
@@ -224,7 +215,6 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         self.assertFalse('catalog' in cs.service_catalog.catalog)
         self.assertRequestBodyIs(json=self.TEST_REQUEST_BODY)
 
-    @httpretty.activate
     def test_auth_url_token_authentication(self):
         fake_token = 'fake_token'
         fake_url = '/fake-url'
@@ -236,19 +226,15 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
 
         cl = client.Client(auth_url=self.TEST_URL,
                            token=fake_token)
-        body = httpretty.last_request().body
-        if six.PY3:
-            body = body.decode('utf-8')
-        body = jsonutils.loads(body)
+        body = jsonutils.loads(self.requests.last_request.body)
         self.assertEqual(body['auth']['identity']['token']['id'], fake_token)
 
         resp, body = cl.get(fake_url)
         self.assertEqual(fake_resp, body)
 
-        self.assertEqual(httpretty.last_request().headers.get('X-Auth-Token'),
-                         self.TEST_TOKEN)
+        token = self.requests.last_request.headers.get('X-Auth-Token')
+        self.assertEqual(self.TEST_TOKEN, token)
 
-    @httpretty.activate
     def test_authenticate_success_token_domain_scoped(self):
         ident = self.TEST_REQUEST_BODY['auth']['identity']
         del ident['password']
@@ -283,7 +269,6 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
                          self.TEST_RESPONSE_HEADERS["X-Subject-Token"])
         self.assertRequestBodyIs(json=self.TEST_REQUEST_BODY)
 
-    @httpretty.activate
     def test_authenticate_success_token_project_scoped(self):
         ident = self.TEST_REQUEST_BODY['auth']['identity']
         del ident['password']
@@ -306,7 +291,6 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
                          self.TEST_RESPONSE_HEADERS["X-Subject-Token"])
         self.assertRequestBodyIs(json=self.TEST_REQUEST_BODY)
 
-    @httpretty.activate
     def test_authenticate_success_token_unscoped(self):
         ident = self.TEST_REQUEST_BODY['auth']['identity']
         del ident['password']
@@ -326,7 +310,6 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         self.assertFalse('catalog' in cs.service_catalog.catalog)
         self.assertRequestBodyIs(json=self.TEST_REQUEST_BODY)
 
-    @httpretty.activate
     def test_allow_override_of_auth_token(self):
         fake_url = '/fake-url'
         fake_token = 'fake_token'
@@ -347,8 +330,8 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         resp, body = cl.get(fake_url)
         self.assertEqual(fake_resp, body)
 
-        self.assertEqual(httpretty.last_request().headers.get('X-Auth-Token'),
-                         self.TEST_TOKEN)
+        token = self.requests.last_request.headers.get('X-Auth-Token')
+        self.assertEqual(self.TEST_TOKEN, token)
 
         # then override that token and the new token shall be used
         cl.auth_token = fake_token
@@ -356,8 +339,8 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         resp, body = cl.get(fake_url)
         self.assertEqual(fake_resp, body)
 
-        self.assertEqual(httpretty.last_request().headers.get('X-Auth-Token'),
-                         fake_token)
+        token = self.requests.last_request.headers.get('X-Auth-Token')
+        self.assertEqual(fake_token, token)
 
         # if we clear that overridden token then we fall back to the original
         del cl.auth_token
@@ -365,5 +348,5 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         resp, body = cl.get(fake_url)
         self.assertEqual(fake_resp, body)
 
-        self.assertEqual(httpretty.last_request().headers.get('X-Auth-Token'),
-                         self.TEST_TOKEN)
+        token = self.requests.last_request.headers.get('X-Auth-Token')
+        self.assertEqual(self.TEST_TOKEN, token)

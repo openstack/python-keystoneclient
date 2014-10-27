@@ -17,7 +17,7 @@ The client v2 API lets you query and make changes through
 managers. For example, to manipulate tenants, you interact with a
 ``keystoneclient.v2_0.tenants.TenantManager`` object.
 
-You obtain access to managers through via attributes of the
+You obtain access to managers via attributes of the
 ``keystoneclient.v2_0.client.Client`` object. For example, the ``tenants``
 attribute of the ``Client`` class is a tenant manager::
 

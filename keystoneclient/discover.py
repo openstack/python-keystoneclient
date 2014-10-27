@@ -17,6 +17,7 @@ import six
 from keystoneclient import _discover
 from keystoneclient import exceptions
 from keystoneclient import session as client_session
+from keystoneclient import utils
 from keystoneclient.v2_0 import client as v2_client
 from keystoneclient.v3 import client as v3_client
 
@@ -44,7 +45,8 @@ class Discover(_discover.Discover):
     operates upon the data that was retrieved.
     """
 
-    def __init__(self, session=None, **kwargs):
+    @utils.positional(2)
+    def __init__(self, session=None, authenticated=None, **kwargs):
         """Construct a new discovery object.
 
         The connection parameters associated with this method are the same
@@ -98,6 +100,10 @@ class Discover(_discover.Discover):
                                  service. default: False (optional)
                                  DEPRECATED: use the session object. This is
                                  ignored if a session is provided.
+        :param bool authenticated: Should a token be used to perform the
+                                   initial discovery operations.
+                                   default: None (attach a token if an auth
+                                   plugin is available).
         """
 
         if not session:
@@ -121,7 +127,8 @@ class Discover(_discover.Discover):
                                               'auth_url or endpoint')
 
         self._client_kwargs = kwargs
-        super(Discover, self).__init__(session, url)
+        super(Discover, self).__init__(session, url,
+                                       authenticated=authenticated)
 
     def available_versions(self, **kwargs):
         """Return a list of identity APIs available on the server and the data
@@ -259,3 +266,34 @@ class Discover(_discover.Discover):
         """
         version_data = self._calculate_version(version, unstable)
         return self._create_client(version_data, **kwargs)
+
+
+def add_catalog_discover_hack(service_type, old, new):
+    """Adds a version removal rule for a particular service.
+
+    Originally deployments of OpenStack would contain a versioned endpoint in
+    the catalog for different services. E.g. an identity service might look
+    like ``http://localhost:5000/v2.0``. This is a problem when we want to use
+    a different version like v3.0 as there is no way to tell where it is
+    located. We cannot simply change all service catalogs either so there must
+    be a way to handle the older style of catalog.
+
+    This function adds a rule for a given service type that if part of the URL
+    matches a given regular expression in *old* then it will be replaced with
+    the *new* value. This will replace all instances of old with new. It should
+    therefore contain a regex anchor.
+
+    For example the included rule states::
+
+        add_catalog_version_hack('identity', re.compile('/v2.0/?$'), '/')
+
+    so if the catalog retrieves an *identity* URL that ends with /v2.0 or
+    /v2.0/ then it should replace it simply with / to fix the user's catalog.
+
+    :param str service_type: The service type as defined in the catalog that
+                             the rule will apply to.
+    :param re.RegexObject old: The regular expression to search for and replace
+                               if found.
+    :param str new: The new string to replace the pattern with.
+    """
+    _discover._VERSION_HACKS.add_discover_hack(service_type, old, new)

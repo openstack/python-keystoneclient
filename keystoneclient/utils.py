@@ -17,11 +17,11 @@ import inspect
 import logging
 import sys
 
+from oslo.utils import encodeutils
 import prettytable
 import six
 
 from keystoneclient import exceptions
-from keystoneclient.openstack.common import strutils
 
 
 logger = logging.getLogger(__name__)
@@ -61,7 +61,10 @@ def print_list(objs, fields, formatters={}, order_by=None):
 
     if order_by is None:
         order_by = fields[0]
-    print(strutils.safe_encode(pt.get_string(sortby=order_by)))
+    encoded = encodeutils.safe_encode(pt.get_string(sortby=order_by))
+    if six.PY3:
+        encoded = encoded.decode()
+    print(encoded)
 
 
 def _word_wrap(string, max_length=0):
@@ -85,19 +88,16 @@ def print_dict(d, wrap=0):
             value = ''
         value = _word_wrap(value, max_length=wrap)
         pt.add_row([prop, value])
-    print(strutils.safe_encode(pt.get_string(sortby='Property')))
+    encoded = encodeutils.safe_encode(pt.get_string(sortby='Property'))
+    if six.PY3:
+        encoded = encoded.decode()
+    print(encoded)
 
 
 def find_resource(manager, name_or_id):
     """Helper for the _find_* methods."""
-    # first try to get entity as integer id
-    try:
-        if isinstance(name_or_id, int) or name_or_id.isdigit():
-            return manager.get(int(name_or_id))
-    except exceptions.NotFound:
-        pass
 
-    # now try the entity as a string
+    # first try the entity as a string
     try:
         return manager.get(name_or_id)
     except (exceptions.NotFound):

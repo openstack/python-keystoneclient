@@ -48,7 +48,7 @@ class DoDiscoverTest(utils.TestCase):
     def _execute_discover(self):
         """Call do_discover function and capture output
 
-        :return: captured output is returned
+        :returns: captured output is returned
         """
         with mock.patch('sys.stdout',
                         new_callable=moves.StringIO) as mock_stdout:

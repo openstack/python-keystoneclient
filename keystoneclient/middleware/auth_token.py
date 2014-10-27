@@ -108,6 +108,8 @@ HTTP_X_ROLES
 
 HTTP_X_SERVICE_CATALOG
     json encoded keystone service catalog (optional).
+    For compatibility reasons this catalog will always be in the V2 catalog
+    format even if it is a v3 token.
 
 HTTP_X_TENANT_ID
     *Deprecated* in favor of HTTP_X_PROJECT_ID
@@ -147,13 +149,15 @@ import contextlib
 import datetime
 import logging
 import os
-import requests
 import stat
 import tempfile
 import time
 
 import netaddr
 from oslo.config import cfg
+from oslo.serialization import jsonutils
+from oslo.utils import timeutils
+import requests
 import six
 from six.moves import urllib
 
@@ -161,10 +165,7 @@ from keystoneclient import access
 from keystoneclient.common import cms
 from keystoneclient import exceptions
 from keystoneclient.middleware import memcache_crypt
-from keystoneclient.openstack.common import jsonutils
 from keystoneclient.openstack.common import memorycache
-from keystoneclient.openstack.common import timeutils
-from keystoneclient import utils
 
 
 # alternative middleware configuration in the main application's
@@ -319,6 +320,16 @@ opts = [
                 help='If true, the revocation list will be checked for cached'
                 ' tokens. This requires that PKI tokens are configured on the'
                 ' Keystone server.'),
+    cfg.ListOpt('hash_algorithms', default=['md5'],
+                help='Hash algorithms to use for hashing PKI tokens. This may'
+                ' be a single algorithm or multiple. The algorithms are those'
+                ' supported by Python standard hashlib.new(). The hashes will'
+                ' be tried in the order given, so put the preferred one first'
+                ' for performance. The result of the first hash will be stored'
+                ' in the cache. This will typically be set to multiple values'
+                ' only while migrating from a less secure algorithm to a more'
+                ' secure one. Once all the old tokens are expired this option'
+                ' should be set to a single value for better performance.'),
 ]
 
 CONF = cfg.CONF
@@ -371,9 +382,66 @@ def confirm_token_not_expired(data):
     return timeutils.isotime(at=expires, subsecond=True)
 
 
+def _v3_to_v2_catalog(catalog):
+    """Convert a catalog to v2 format.
+
+    X_SERVICE_CATALOG must be specified in v2 format. If you get a token
+    that is in v3 convert it.
+    """
+    v2_services = []
+    for v3_service in catalog:
+        # first copy over the entries we allow for the service
+        v2_service = {'type': v3_service['type']}
+        try:
+            v2_service['name'] = v3_service['name']
+        except KeyError:
+            pass
+
+        # now convert the endpoints. Because in v3 we specify region per
+        # URL not per group we have to collect all the entries of the same
+        # region together before adding it to the new service.
+        regions = {}
+        for v3_endpoint in v3_service.get('endpoints', []):
+            region_name = v3_endpoint.get('region')
+            try:
+                region = regions[region_name]
+            except KeyError:
+                region = {'region': region_name} if region_name else {}
+                regions[region_name] = region
+
+            interface_name = v3_endpoint['interface'].lower() + 'URL'
+            region[interface_name] = v3_endpoint['url']
+
+        v2_service['endpoints'] = list(regions.values())
+        v2_services.append(v2_service)
+
+    return v2_services
+
+
 def safe_quote(s):
     """URL-encode strings that are not already URL-encoded."""
     return urllib.parse.quote(s) if s == urllib.parse.unquote(s) else s
+
+
+def _conf_values_type_convert(conf):
+    """Convert conf values into correct type."""
+    if not conf:
+        return {}
+    _opts = {}
+    opt_types = dict((o.dest, getattr(o, 'type', str)) for o in opts)
+    for k, v in six.iteritems(conf):
+        try:
+            if v is None:
+                _opts[k] = v
+            else:
+                _opts[k] = opt_types[k](v)
+        except KeyError:
+            _opts[k] = v
+        except ValueError as e:
+            raise ConfigurationError(
+                'Unable to convert the value of %s option into correct '
+                'type: %s' % (k, e))
+    return _opts
 
 
 class InvalidUserToken(Exception):
@@ -411,7 +479,14 @@ class AuthProtocol(object):
     def __init__(self, app, conf):
         self.LOG = logging.getLogger(conf.get('log_name', __name__))
         self.LOG.info('Starting keystone auth_token middleware')
-        self.conf = conf
+        self.LOG.warning(
+            'This middleware module is deprecated as of v0.10.0 in favor of '
+            'keystonemiddleware.auth_token - please update your WSGI pipeline '
+            'to reference the new middleware package.')
+        # NOTE(wanghong): If options are set in paste file, all the option
+        # values passed into conf are string type. So, we should convert the
+        # conf value into correct type.
+        self.conf = _conf_values_type_convert(conf)
         self.app = app
 
         # delay_auth_decision means we still allow unauthenticated requests
@@ -498,20 +573,18 @@ class AuthProtocol(object):
         self.admin_password = self._conf_get('admin_password')
         self.admin_tenant_name = self._conf_get('admin_tenant_name')
 
-        # Token caching
-        self._cache_pool = None
-        self._cache_initialized = False
-        # memcache value treatment, ENCRYPT or MAC
-        self._memcache_security_strategy = (
+        memcache_security_strategy = (
             self._conf_get('memcache_security_strategy'))
-        if self._memcache_security_strategy is not None:
-            self._memcache_security_strategy = (
-                self._memcache_security_strategy.upper())
-        self._memcache_secret_key = (
-            self._conf_get('memcache_secret_key'))
-        self._assert_valid_memcache_protection_config()
-        # By default the token will be cached for 5 minutes
-        self.token_cache_time = int(self._conf_get('token_cache_time'))
+
+        self._token_cache = TokenCache(
+            self.LOG,
+            cache_time=int(self._conf_get('token_cache_time')),
+            hash_algorithms=self._conf_get('hash_algorithms'),
+            env_cache_name=self._conf_get('cache'),
+            memcached_servers=self._conf_get('memcached_servers'),
+            memcache_security_strategy=memcache_security_strategy,
+            memcache_secret_key=self._conf_get('memcache_secret_key'))
+
         self._token_revocation_list = None
         self._token_revocation_list_fetched_time = None
         self.token_revocation_list_cache_timeout = datetime.timedelta(
@@ -528,22 +601,6 @@ class AuthProtocol(object):
 
         self.check_revocations_for_cached = self._conf_get(
             'check_revocations_for_cached')
-
-    def _assert_valid_memcache_protection_config(self):
-        if self._memcache_security_strategy:
-            if self._memcache_security_strategy not in ('MAC', 'ENCRYPT'):
-                raise ConfigurationError('memcache_security_strategy must be '
-                                         'ENCRYPT or MAC')
-            if not self._memcache_secret_key:
-                raise ConfigurationError('memcache_secret_key must be defined '
-                                         'when a memcache_security_strategy '
-                                         'is defined')
-
-    def _init_cache(self, env):
-        self._cache_pool = CachePool(
-            env.get(self._conf_get('cache')),
-            self._conf_get('memcached_servers'))
-        self._cache_initialized = True
 
     def _conf_get(self, name):
         # try config from paste-deploy first
@@ -618,9 +675,7 @@ class AuthProtocol(object):
         """
         self.LOG.debug('Authenticating user token')
 
-        # initialize memcache if we haven't done so
-        if not self._cache_initialized:
-            self._init_cache(env)
+        self._token_cache.initialize(env)
 
         try:
             self._remove_auth_headers(env)
@@ -860,8 +915,8 @@ class AuthProtocol(object):
         token_id = None
 
         try:
-            token_id = cms.cms_hash_token(user_token)
-            cached = self._cache_get(token_id)
+            token_ids, cached = self._token_cache.get(user_token)
+            token_id = token_ids[0]
             if cached:
                 data = cached
 
@@ -869,23 +924,24 @@ class AuthProtocol(object):
                     # A token stored in Memcached might have been revoked
                     # regardless of initial mechanism used to validate it,
                     # and needs to be checked.
-                    is_revoked = self._is_token_id_in_revoked_list(token_id)
-                    if is_revoked:
-                        self.LOG.debug(
-                            'Token is marked as having been revoked')
-                        raise InvalidUserToken(
-                            'Token authorization failed')
+                    for tid in token_ids:
+                        is_revoked = self._is_token_id_in_revoked_list(tid)
+                        if is_revoked:
+                            self.LOG.debug(
+                                'Token is marked as having been revoked')
+                            raise InvalidUserToken(
+                                'Token authorization failed')
             elif cms.is_pkiz(user_token):
-                verified = self.verify_pkiz_token(user_token)
+                verified = self.verify_pkiz_token(user_token, token_ids)
                 data = jsonutils.loads(verified)
             elif cms.is_asn1_token(user_token):
-                verified = self.verify_signed_token(user_token)
+                verified = self.verify_signed_token(user_token, token_ids)
                 data = jsonutils.loads(verified)
             else:
                 data = self.verify_uuid_token(user_token, retry)
             expires = confirm_token_not_expired(data)
             self._confirm_token_bind(data, env)
-            self._cache_put(token_id, data, expires)
+            self._token_cache.store(token_id, data, expires)
             return data
         except NetworkError:
             self.LOG.debug('Token validation failure.', exc_info=True)
@@ -894,7 +950,7 @@ class AuthProtocol(object):
         except Exception:
             self.LOG.debug('Token validation failure.', exc_info=True)
             if token_id:
-                self._cache_store_invalid(token_id)
+                self._token_cache.store_invalid(token_id)
             self.LOG.warn('Authorization failed for token')
             raise InvalidUserToken('Token authorization failed')
 
@@ -941,6 +997,8 @@ class AuthProtocol(object):
 
         if self.include_service_catalog and auth_ref.has_service_catalog():
             catalog = auth_ref.service_catalog.get_data()
+            if _token_is_v3(token_info):
+                catalog = _v3_to_v2_catalog(catalog)
             rval['X-Service-Catalog'] = jsonutils.dumps(catalog)
 
         return rval
@@ -973,102 +1031,6 @@ class AuthProtocol(object):
         """Get http header from environment."""
         env_key = self._header_to_env_var(key)
         return env.get(env_key, default)
-
-    def _cache_get(self, token_id, ignore_expires=False):
-        """Return token information from cache.
-
-        If token is invalid raise InvalidUserToken
-        return token only if fresh (not expired).
-        """
-
-        if token_id:
-            if self._memcache_security_strategy is None:
-                key = CACHE_KEY_TEMPLATE % token_id
-                with self._cache_pool.reserve() as cache:
-                    serialized = cache.get(key)
-            else:
-                secret_key = self._memcache_secret_key
-                if isinstance(secret_key, six.string_types):
-                    secret_key = secret_key.encode('utf-8')
-                security_strategy = self._memcache_security_strategy
-                if isinstance(security_strategy, six.string_types):
-                    security_strategy = security_strategy.encode('utf-8')
-                keys = memcache_crypt.derive_keys(
-                    token_id,
-                    secret_key,
-                    security_strategy)
-                cache_key = CACHE_KEY_TEMPLATE % (
-                    memcache_crypt.get_cache_key(keys))
-                with self._cache_pool.reserve() as cache:
-                    raw_cached = cache.get(cache_key)
-                try:
-                    # unprotect_data will return None if raw_cached is None
-                    serialized = memcache_crypt.unprotect_data(keys,
-                                                               raw_cached)
-                except Exception:
-                    msg = 'Failed to decrypt/verify cache data'
-                    self.LOG.exception(msg)
-                    # this should have the same effect as data not
-                    # found in cache
-                    serialized = None
-
-            if serialized is None:
-                return None
-
-            # Note that 'invalid' and (data, expires) are the only
-            # valid types of serialized cache entries, so there is not
-            # a collision with jsonutils.loads(serialized) == None.
-            if not isinstance(serialized, six.string_types):
-                serialized = serialized.decode('utf-8')
-            cached = jsonutils.loads(serialized)
-            if cached == 'invalid':
-                self.LOG.debug('Cached Token is marked unauthorized')
-                raise InvalidUserToken('Token authorization failed')
-
-            data, expires = cached
-
-            try:
-                expires = timeutils.parse_isotime(expires)
-            except ValueError:
-                # Gracefully handle upgrade of expiration times from *nix
-                # timestamps to ISO 8601 formatted dates by ignoring old cached
-                # values.
-                return
-
-            expires = timeutils.normalize_time(expires)
-            utcnow = timeutils.utcnow()
-            if ignore_expires or utcnow < expires:
-                self.LOG.debug('Returning cached token')
-                return data
-            else:
-                self.LOG.debug('Cached Token seems expired')
-
-    def _cache_store(self, token_id, data):
-        """Store value into memcache.
-
-        data may be the string 'invalid' or a tuple like (data, expires)
-
-        """
-        serialized_data = jsonutils.dumps(data)
-        if isinstance(serialized_data, six.text_type):
-            serialized_data = serialized_data.encode('utf-8')
-        if self._memcache_security_strategy is None:
-            cache_key = CACHE_KEY_TEMPLATE % token_id
-            data_to_store = serialized_data
-        else:
-            secret_key = self._memcache_secret_key
-            if isinstance(secret_key, six.string_types):
-                secret_key = secret_key.encode('utf-8')
-            security_strategy = self._memcache_security_strategy
-            if isinstance(security_strategy, six.string_types):
-                security_strategy = security_strategy.encode('utf-8')
-            keys = memcache_crypt.derive_keys(
-                token_id, secret_key, security_strategy)
-            cache_key = CACHE_KEY_TEMPLATE % memcache_crypt.get_cache_key(keys)
-            data_to_store = memcache_crypt.protect_data(keys, serialized_data)
-
-        with self._cache_pool.reserve() as cache:
-            cache.set(cache_key, data_to_store, time=self.token_cache_time)
 
     def _invalid_user_token(self, msg=False):
         # NOTE(jamielennox): use False as the default so that None is valid
@@ -1141,21 +1103,6 @@ class AuthProtocol(object):
                                'identifier': identifier})
                 self._invalid_user_token()
 
-    def _cache_put(self, token_id, data, expires):
-        """Put token data into the cache.
-
-        Stores the parsed expire date in cache allowing
-        quick check of token freshness on retrieval.
-
-        """
-        self.LOG.debug('Storing token in cache')
-        self._cache_store(token_id, (data, expires))
-
-    def _cache_store_invalid(self, token_id):
-        """Store invalid token in cache."""
-        self.LOG.debug('Marking token as unauthorized in cache')
-        self._cache_store(token_id, 'invalid')
-
     def verify_uuid_token(self, user_token, retry=True):
         """Authenticate user token with keystone.
 
@@ -1163,7 +1110,7 @@ class AuthProtocol(object):
         :param retry: flag that forces the middleware to retry
                       user authentication when an indeterminate
                       response is received. Optional.
-        :return: token object received from keystone on success
+        :returns: token object received from keystone on success
         :raise InvalidUserToken: if token is rejected
         :raise ServiceError: if unable to authenticate token
 
@@ -1210,15 +1157,13 @@ class AuthProtocol(object):
 
             raise InvalidUserToken()
 
-    def is_signed_token_revoked(self, signed_text):
+    def is_signed_token_revoked(self, token_ids):
         """Indicate whether the token appears in the revocation list."""
-        if isinstance(signed_text, six.text_type):
-            signed_text = signed_text.encode('utf-8')
-        token_id = utils.hash_signed_token(signed_text)
-        is_revoked = self._is_token_id_in_revoked_list(token_id)
-        if is_revoked:
-            self.LOG.debug('Token is marked as having been revoked')
-        return is_revoked
+        for token_id in token_ids:
+            if self._is_token_id_in_revoked_list(token_id):
+                self.LOG.debug('Token is marked as having been revoked')
+                return True
+        return False
 
     def _is_token_id_in_revoked_list(self, token_id):
         """Indicate whether the token_id appears in the revocation list."""
@@ -1261,17 +1206,17 @@ class AuthProtocol(object):
                 self.LOG.error('CMS Verify output: %s', err.output)
                 raise
 
-    def verify_signed_token(self, signed_text):
+    def verify_signed_token(self, signed_text, token_ids):
         """Check that the token is unrevoked and has a valid signature."""
-        if self.is_signed_token_revoked(signed_text):
+        if self.is_signed_token_revoked(token_ids):
             raise InvalidUserToken('Token has been revoked')
 
         formatted = cms.token_to_cms(signed_text)
         verified = self.cms_verify(formatted)
         return verified
 
-    def verify_pkiz_token(self, signed_text):
-        if self.is_signed_token_revoked(signed_text):
+    def verify_pkiz_token(self, signed_text, token_ids):
+        if self.is_signed_token_revoked(token_ids):
             raise InvalidUserToken('Token has been revoked')
         try:
             uncompressed = cms.pkiz_uncompress(signed_text)
@@ -1424,6 +1369,211 @@ class CachePool(list):
             yield c
         finally:
             self.append(c)
+
+
+class TokenCache(object):
+    """Encapsulates the auth_token token cache functionality.
+
+    auth_token caches tokens that it's seen so that when a token is re-used the
+    middleware doesn't have to do a more expensive operation (like going to the
+    identity server) to validate the token.
+
+    initialize() must be called before calling the other methods.
+
+    Store a valid token in the cache using store(); mark a token as invalid in
+    the cache using store_invalid().
+
+    Check if a token is in the cache and retrieve it using get().
+
+    """
+
+    _INVALID_INDICATOR = 'invalid'
+
+    def __init__(self, log, cache_time=None, hash_algorithms=None,
+                 env_cache_name=None, memcached_servers=None,
+                 memcache_security_strategy=None, memcache_secret_key=None):
+        self.LOG = log
+        self._cache_time = cache_time
+        self._hash_algorithms = hash_algorithms
+        self._env_cache_name = env_cache_name
+        self._memcached_servers = memcached_servers
+
+        # memcache value treatment, ENCRYPT or MAC
+        self._memcache_security_strategy = memcache_security_strategy
+        if self._memcache_security_strategy is not None:
+            self._memcache_security_strategy = (
+                self._memcache_security_strategy.upper())
+        self._memcache_secret_key = memcache_secret_key
+
+        self._cache_pool = None
+        self._initialized = False
+
+        self._assert_valid_memcache_protection_config()
+
+    def initialize(self, env):
+        if self._initialized:
+            return
+
+        self._cache_pool = CachePool(env.get(self._env_cache_name),
+                                     self._memcached_servers)
+        self._initialized = True
+
+    def get(self, user_token):
+        """Check if the token is cached already.
+
+        Returns a tuple. The first element is a list of token IDs, where the
+        first one is the preferred hash.
+
+        The second element is the token data from the cache if the token was
+        cached, otherwise ``None``.
+
+        :raises InvalidUserToken: if the token is invalid
+
+        """
+
+        if cms.is_asn1_token(user_token) or cms.is_pkiz(user_token):
+            # user_token is a PKI token that's not hashed.
+
+            token_hashes = list(cms.cms_hash_token(user_token, mode=algo)
+                                for algo in self._hash_algorithms)
+
+            for token_hash in token_hashes:
+                cached = self._cache_get(token_hash)
+                if cached:
+                    return (token_hashes, cached)
+
+            # The token wasn't found using any hash algorithm.
+            return (token_hashes, None)
+
+        # user_token is either a UUID token or a hashed PKI token.
+        token_id = user_token
+        cached = self._cache_get(token_id)
+        return ([token_id], cached)
+
+    def store(self, token_id, data, expires):
+        """Put token data into the cache.
+
+        Stores the parsed expire date in cache allowing
+        quick check of token freshness on retrieval.
+
+        """
+        self.LOG.debug('Storing token in cache')
+        self._cache_store(token_id, (data, expires))
+
+    def store_invalid(self, token_id):
+        """Store invalid token in cache."""
+        self.LOG.debug('Marking token as unauthorized in cache')
+        self._cache_store(token_id, self._INVALID_INDICATOR)
+
+    def _assert_valid_memcache_protection_config(self):
+        if self._memcache_security_strategy:
+            if self._memcache_security_strategy not in ('MAC', 'ENCRYPT'):
+                raise ConfigurationError('memcache_security_strategy must be '
+                                         'ENCRYPT or MAC')
+            if not self._memcache_secret_key:
+                raise ConfigurationError('memcache_secret_key must be defined '
+                                         'when a memcache_security_strategy '
+                                         'is defined')
+
+    def _cache_get(self, token_id):
+        """Return token information from cache.
+
+        If token is invalid raise InvalidUserToken
+        return token only if fresh (not expired).
+        """
+
+        if not token_id:
+            # Nothing to do
+            return
+
+        if self._memcache_security_strategy is None:
+            key = CACHE_KEY_TEMPLATE % token_id
+            with self._cache_pool.reserve() as cache:
+                serialized = cache.get(key)
+        else:
+            secret_key = self._memcache_secret_key
+            if isinstance(secret_key, six.string_types):
+                secret_key = secret_key.encode('utf-8')
+            security_strategy = self._memcache_security_strategy
+            if isinstance(security_strategy, six.string_types):
+                security_strategy = security_strategy.encode('utf-8')
+            keys = memcache_crypt.derive_keys(
+                token_id,
+                secret_key,
+                security_strategy)
+            cache_key = CACHE_KEY_TEMPLATE % (
+                memcache_crypt.get_cache_key(keys))
+            with self._cache_pool.reserve() as cache:
+                raw_cached = cache.get(cache_key)
+            try:
+                # unprotect_data will return None if raw_cached is None
+                serialized = memcache_crypt.unprotect_data(keys,
+                                                           raw_cached)
+            except Exception:
+                msg = 'Failed to decrypt/verify cache data'
+                self.LOG.exception(msg)
+                # this should have the same effect as data not
+                # found in cache
+                serialized = None
+
+        if serialized is None:
+            return None
+
+        # Note that _INVALID_INDICATOR and (data, expires) are the only
+        # valid types of serialized cache entries, so there is not
+        # a collision with jsonutils.loads(serialized) == None.
+        if not isinstance(serialized, six.string_types):
+            serialized = serialized.decode('utf-8')
+        cached = jsonutils.loads(serialized)
+        if cached == self._INVALID_INDICATOR:
+            self.LOG.debug('Cached Token is marked unauthorized')
+            raise InvalidUserToken('Token authorization failed')
+
+        data, expires = cached
+
+        try:
+            expires = timeutils.parse_isotime(expires)
+        except ValueError:
+            # Gracefully handle upgrade of expiration times from *nix
+            # timestamps to ISO 8601 formatted dates by ignoring old cached
+            # values.
+            return
+
+        expires = timeutils.normalize_time(expires)
+        utcnow = timeutils.utcnow()
+        if utcnow < expires:
+            self.LOG.debug('Returning cached token')
+            return data
+        else:
+            self.LOG.debug('Cached Token seems expired')
+            raise InvalidUserToken('Token authorization failed')
+
+    def _cache_store(self, token_id, data):
+        """Store value into memcache.
+
+        data may be _INVALID_INDICATOR or a tuple like (data, expires)
+
+        """
+        serialized_data = jsonutils.dumps(data)
+        if isinstance(serialized_data, six.text_type):
+            serialized_data = serialized_data.encode('utf-8')
+        if self._memcache_security_strategy is None:
+            cache_key = CACHE_KEY_TEMPLATE % token_id
+            data_to_store = serialized_data
+        else:
+            secret_key = self._memcache_secret_key
+            if isinstance(secret_key, six.string_types):
+                secret_key = secret_key.encode('utf-8')
+            security_strategy = self._memcache_security_strategy
+            if isinstance(security_strategy, six.string_types):
+                security_strategy = security_strategy.encode('utf-8')
+            keys = memcache_crypt.derive_keys(
+                token_id, secret_key, security_strategy)
+            cache_key = CACHE_KEY_TEMPLATE % memcache_crypt.get_cache_key(keys)
+            data_to_store = memcache_crypt.protect_data(keys, serialized_data)
+
+        with self._cache_pool.reserve() as cache:
+            cache.set(cache_key, data_to_store, time=self._cache_time)
 
 
 def filter_factory(global_conf, **local_conf):

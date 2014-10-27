@@ -15,7 +15,7 @@
 
 import six
 
-from keystoneclient.apiclient import exceptions
+from keystoneclient import exceptions
 from keystoneclient.tests import utils
 
 

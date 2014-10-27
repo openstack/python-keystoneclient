@@ -61,15 +61,17 @@ class UserManager(base.CrudManager):
             LOG.warning("The project argument is deprecated, "
                         "use default_project instead.")
         default_project_id = base.getid(default_project) or base.getid(project)
-        return super(UserManager, self).create(
-            name=name,
-            domain_id=base.getid(domain),
-            default_project_id=default_project_id,
-            password=password,
-            email=email,
-            description=description,
-            enabled=enabled,
-            **kwargs)
+        user_data = base.filter_none(name=name,
+                                     domain_id=base.getid(domain),
+                                     default_project_id=default_project_id,
+                                     password=password,
+                                     email=email,
+                                     description=description,
+                                     enabled=enabled,
+                                     **kwargs)
+
+        return self._create('/users', {'user': user_data}, 'user',
+                            log=not bool(password))
 
     @utils.positional(enforcement=utils.positional.WARN)
     def list(self, project=None, domain=None, group=None, default_project=None,
@@ -125,16 +127,20 @@ class UserManager(base.CrudManager):
             LOG.warning("The project argument is deprecated, "
                         "use default_project instead.")
         default_project_id = base.getid(default_project) or base.getid(project)
-        return super(UserManager, self).update(
-            user_id=base.getid(user),
-            name=name,
-            domain_id=base.getid(domain),
-            default_project_id=default_project_id,
-            password=password,
-            email=email,
-            description=description,
-            enabled=enabled,
-            **kwargs)
+        user_data = base.filter_none(name=name,
+                                     domain_id=base.getid(domain),
+                                     default_project_id=default_project_id,
+                                     password=password,
+                                     email=email,
+                                     description=description,
+                                     enabled=enabled,
+                                     **kwargs)
+
+        return self._update('/users/%s' % base.getid(user),
+                            {'user': user_data},
+                            'user',
+                            method='PATCH',
+                            log=False)
 
     def update_password(self, old_password, new_password):
         """Update the password for the user the token belongs to."""
@@ -151,7 +157,8 @@ class UserManager(base.CrudManager):
 
         base_url = '/users/%s/password' % self.api.user_id
 
-        return self._update(base_url, params, method='POST', management=False)
+        return self._update(base_url, params, method='POST', management=False,
+                            log=False)
 
     def add_to_group(self, user, group):
         self._require_user_and_group(user, group)

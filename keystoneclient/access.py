@@ -17,7 +17,8 @@
 
 import datetime
 
-from keystoneclient.openstack.common import timeutils
+from oslo.utils import timeutils
+
 from keystoneclient import service_catalog
 
 
@@ -33,35 +34,43 @@ class AccessInfo(dict):
     """
 
     @classmethod
-    def factory(cls, resp=None, body=None, region_name=None, **kwargs):
+    def factory(cls, resp=None, body=None, region_name=None, auth_token=None,
+                **kwargs):
         """Create AccessInfo object given a successful auth response & body
            or a user-provided dict.
         """
         # FIXME(jamielennox): Passing region_name is deprecated. Provide an
         # appropriate warning.
+        auth_ref = None
 
         if body is not None or len(kwargs):
             if AccessInfoV3.is_valid(body, **kwargs):
-                token = None
-                if resp:
-                    token = resp.headers['X-Subject-Token']
+                if resp and not auth_token:
+                    auth_token = resp.headers['X-Subject-Token']
+                # NOTE(jamielennox): these return AccessInfo because they
+                # already have auth_token installed on them.
                 if body:
                     if region_name:
                         body['token']['region_name'] = region_name
-                    return AccessInfoV3(token, **body['token'])
+                    return AccessInfoV3(auth_token, **body['token'])
                 else:
-                    return AccessInfoV3(token, **kwargs)
+                    return AccessInfoV3(auth_token, **kwargs)
             elif AccessInfoV2.is_valid(body, **kwargs):
                 if body:
                     if region_name:
                         body['access']['region_name'] = region_name
-                    return AccessInfoV2(**body['access'])
+                    auth_ref = AccessInfoV2(**body['access'])
                 else:
-                    return AccessInfoV2(**kwargs)
+                    auth_ref = AccessInfoV2(**kwargs)
             else:
                 raise NotImplementedError('Unrecognized auth response')
         else:
-            return AccessInfoV2(**kwargs)
+            auth_ref = AccessInfoV2(**kwargs)
+
+        if auth_token:
+            auth_ref.auth_token = auth_token
+
+        return auth_ref
 
     def __init__(self, *args, **kwargs):
         super(AccessInfo, self).__init__(*args, **kwargs)
@@ -75,7 +84,7 @@ class AccessInfo(dict):
     def will_expire_soon(self, stale_duration=None):
         """Determines if expiration is about to occur.
 
-        :return: boolean : true if expiration is within the given duration
+        :returns: boolean : true if expiration is within the given duration
 
         """
         stale_duration = (STALE_TOKEN_DURATION if stale_duration is None
@@ -92,7 +101,7 @@ class AccessInfo(dict):
         """Determines if processing v2 or v3 token given a successful
         auth body or a user-provided dict.
 
-        :return: boolean : true if auth body matches implementing class
+        :returns: boolean : true if auth body matches implementing class
         """
         raise NotImplementedError()
 
@@ -110,11 +119,30 @@ class AccessInfo(dict):
 
         :returns: str
         """
-        raise NotImplementedError()
+        return self['auth_token']
+
+    @auth_token.setter
+    def auth_token(self, value):
+        self['auth_token'] = value
+
+    @auth_token.deleter
+    def auth_token(self):
+        try:
+            del self['auth_token']
+        except KeyError:
+            pass
 
     @property
     def expires(self):
         """Returns the token expiration (as datetime object)
+
+        :returns: datetime
+        """
+        raise NotImplementedError()
+
+    @property
+    def issued(self):
+        """Returns the token issue time (as datetime object)
 
         :returns: datetime
         """
@@ -160,6 +188,15 @@ class AccessInfo(dict):
         Keystone configuration.
 
         :returns: str
+        """
+        raise NotImplementedError()
+
+    @property
+    def role_ids(self):
+        """Returns a list of role ids of the user associated with the
+        authentication request.
+
+        :returns: a list of strings of role ids
         """
         raise NotImplementedError()
 
@@ -247,6 +284,22 @@ class AccessInfo(dict):
         raise NotImplementedError()
 
     @property
+    def trustee_user_id(self):
+        """Returns the trustee user id associated with a trust.
+
+        :returns: str or None (if no trust associated with the token)
+        """
+        raise NotImplementedError()
+
+    @property
+    def trustor_user_id(self):
+        """Returns the trustor user id associated with a trust.
+
+        :returns: str or None (if no trust associated with the token)
+        """
+        raise NotImplementedError()
+
+    @property
     def project_id(self):
         """Returns the project ID associated with the authentication
         request, or None if the authentication request wasn't scoped to a
@@ -320,6 +373,30 @@ class AccessInfo(dict):
         """
         return self.get('version')
 
+    @property
+    def oauth_access_token_id(self):
+        """Return the access token ID if OAuth authentication used.
+
+        :returns: str or None.
+        """
+        raise NotImplementedError()
+
+    @property
+    def oauth_consumer_id(self):
+        """Return the consumer ID if OAuth authentication used.
+
+        :returns: str or None.
+        """
+        raise NotImplementedError()
+
+    @property
+    def is_federated(self):
+        """Returns true if federation was used to get the token.
+
+        :returns: boolean
+        """
+        raise NotImplementedError()
+
 
 class AccessInfoV2(AccessInfo):
     """An object for encapsulating a raw v2 auth token from identity
@@ -346,13 +423,20 @@ class AccessInfoV2(AccessInfo):
     def has_service_catalog(self):
         return 'serviceCatalog' in self
 
-    @property
+    @AccessInfo.auth_token.getter
     def auth_token(self):
-        return self['token']['id']
+        try:
+            return super(AccessInfoV2, self).auth_token
+        except KeyError:
+            return self['token']['id']
 
     @property
     def expires(self):
         return timeutils.parse_isotime(self['token']['expires'])
+
+    @property
+    def issued(self):
+        return timeutils.parse_isotime(self['token']['issued_at'])
 
     @property
     def username(self):
@@ -369,6 +453,10 @@ class AccessInfoV2(AccessInfo):
     @property
     def user_domain_name(self):
         return 'Default'
+
+    @property
+    def role_ids(self):
+        return self.get('metadata', {}).get('roles', [])
 
     @property
     def role_names(self):
@@ -428,6 +516,15 @@ class AccessInfoV2(AccessInfo):
         return 'trust' in self
 
     @property
+    def trustee_user_id(self):
+        return self.get('trust', {}).get('trustee_user_id')
+
+    @property
+    def trustor_user_id(self):
+        # this information is not available in the v2 token bug: #1331882
+        return None
+
+    @property
     def project_id(self):
         try:
             tenant_dict = self['token']['tenant']
@@ -480,6 +577,18 @@ class AccessInfoV2(AccessInfo):
         else:
             return None
 
+    @property
+    def oauth_access_token_id(self):
+        return None
+
+    @property
+    def oauth_consumer_id(self):
+        return None
+
+    @property
+    def is_federated(self):
+        return False
+
 
 class AccessInfoV3(AccessInfo):
     """An object for encapsulating a raw v3 auth token from identity
@@ -494,7 +603,7 @@ class AccessInfoV3(AccessInfo):
             token=token,
             region_name=self._region_name)
         if token:
-            self.update(auth_token=token)
+            self.auth_token = token
 
     @classmethod
     def is_valid(cls, body, **kwargs):
@@ -509,12 +618,16 @@ class AccessInfoV3(AccessInfo):
         return 'catalog' in self
 
     @property
-    def auth_token(self):
-        return self['auth_token']
+    def is_federated(self):
+        return 'OS-FEDERATION' in self['user']
 
     @property
     def expires(self):
         return timeutils.parse_isotime(self['expires_at'])
+
+    @property
+    def issued(self):
+        return timeutils.parse_isotime(self['issued_at'])
 
     @property
     def user_id(self):
@@ -522,11 +635,25 @@ class AccessInfoV3(AccessInfo):
 
     @property
     def user_domain_id(self):
-        return self['user']['domain']['id']
+        try:
+            return self['user']['domain']['id']
+        except KeyError:
+            if self.is_federated:
+                return None
+            raise
 
     @property
     def user_domain_name(self):
-        return self['user']['domain']['name']
+        try:
+            return self['user']['domain']['name']
+        except KeyError:
+            if self.is_federated:
+                return None
+            raise
+
+    @property
+    def role_ids(self):
+        return [r['id'] for r in self.get('roles', [])]
 
     @property
     def role_names(self):
@@ -593,6 +720,14 @@ class AccessInfoV3(AccessInfo):
         return 'OS-TRUST:trust' in self
 
     @property
+    def trustee_user_id(self):
+        return self.get('OS-TRUST:trust', {}).get('trustee_user', {}).get('id')
+
+    @property
+    def trustor_user_id(self):
+        return self.get('OS-TRUST:trust', {}).get('trustor_user', {}).get('id')
+
+    @property
     def auth_url(self):
         # FIXME(jamielennox): this is deprecated in favour of retrieving it
         # from the service catalog. Provide a warning.
@@ -614,3 +749,11 @@ class AccessInfoV3(AccessInfo):
 
         else:
             return None
+
+    @property
+    def oauth_access_token_id(self):
+        return self.get('OS-OAUTH1', {}).get('access_token_id')
+
+    @property
+    def oauth_consumer_id(self):
+        return self.get('OS-OAUTH1', {}).get('consumer_id')

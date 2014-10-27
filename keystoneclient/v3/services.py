@@ -38,10 +38,11 @@ class ServiceManager(base.CrudManager):
     key = 'service'
 
     @utils.positional(1, enforcement=utils.positional.WARN)
-    def create(self, name, type, enabled=True, **kwargs):
+    def create(self, name, type, enabled=True, description=None, **kwargs):
         return super(ServiceManager, self).create(
             name=name,
             type=type,
+            description=description,
             enabled=enabled,
             **kwargs)
 
@@ -50,11 +51,13 @@ class ServiceManager(base.CrudManager):
             service_id=base.getid(service))
 
     @utils.positional(enforcement=utils.positional.WARN)
-    def update(self, service, name=None, type=None, enabled=None, **kwargs):
+    def update(self, service, name=None, type=None, enabled=None,
+               description=None, **kwargs):
         return super(ServiceManager, self).update(
             service_id=base.getid(service),
             name=name,
             type=type,
+            description=description,
             enabled=enabled,
             **kwargs)
 

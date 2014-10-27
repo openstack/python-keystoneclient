@@ -12,15 +12,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import httpretty
 import mock
+from oslo.serialization import jsonutils
 import requests
 import six
 import testtools
 import webob
 
 from keystoneclient.middleware import s3_token
-from keystoneclient.openstack.common import jsonutils
 from keystoneclient.tests import utils
 
 
@@ -54,10 +53,6 @@ class S3TokenMiddlewareTestBase(utils.TestCase):
             'auth_protocol': self.TEST_PROTOCOL,
         }
 
-        httpretty.reset()
-        httpretty.enable()
-        self.addCleanup(httpretty.disable)
-
     def start_fake_response(self, status, headers):
         self.response_status = int(status.split(' ', 1)[0])
         self.response_headers = dict(headers)
@@ -69,8 +64,8 @@ class S3TokenMiddlewareTestGood(S3TokenMiddlewareTestBase):
         super(S3TokenMiddlewareTestGood, self).setUp()
         self.middleware = s3_token.S3Token(FakeApp(), self.conf)
 
-        httpretty.register_uri(httpretty.POST, self.TEST_URL,
-                               status=201, body=jsonutils.dumps(GOOD_RESPONSE))
+        self.requests.register_uri('POST', self.TEST_URL,
+                                   status_code=201, json=GOOD_RESPONSE)
 
     # Ignore the request and pass to the next middleware in the
     # pipeline if no path has been specified.
@@ -101,6 +96,12 @@ class S3TokenMiddlewareTestGood(S3TokenMiddlewareTestBase):
         self.assertEqual(req.headers['X-Auth-Token'], 'TOKEN_ID')
 
     def test_authorized_http(self):
+        TEST_URL = 'http://%s:%d/v2.0/s3tokens' % (self.TEST_HOST,
+                                                   self.TEST_PORT)
+
+        self.requests.register_uri('POST', TEST_URL,
+                                   status_code=201, json=GOOD_RESPONSE)
+
         self.middleware = (
             s3_token.filter_factory({'auth_protocol': 'http',
                                      'auth_host': self.TEST_HOST,
@@ -152,8 +153,8 @@ class S3TokenMiddlewareTestBad(S3TokenMiddlewareTestBase):
                {"message": "EC2 access key not found.",
                 "code": 401,
                 "title": "Unauthorized"}}
-        httpretty.register_uri(httpretty.POST, self.TEST_URL,
-                               status=403, body=jsonutils.dumps(ret))
+        self.requests.register_uri('POST', self.TEST_URL,
+                                   status_code=403, json=ret)
         req = webob.Request.blank('/v1/AUTH_cfa/c/o')
         req.headers['Authorization'] = 'access:signature'
         req.headers['X-Storage-Token'] = 'token'
@@ -185,8 +186,8 @@ class S3TokenMiddlewareTestBad(S3TokenMiddlewareTestBase):
             self.assertEqual(resp.status_int, s3_invalid_req.status_int)
 
     def test_bad_reply(self):
-        httpretty.register_uri(httpretty.POST, self.TEST_URL,
-                               status=201, body="<badreply>")
+        self.requests.register_uri('POST', self.TEST_URL,
+                                   status_code=201, text="<badreply>")
 
         req = webob.Request.blank('/v1/AUTH_cfa/c/o')
         req.headers['Authorization'] = 'access:signature'

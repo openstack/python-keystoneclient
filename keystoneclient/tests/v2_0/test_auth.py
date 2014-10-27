@@ -10,15 +10,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import copy
 import datetime
-import json
 
-import httpretty
-import six
+from oslo.serialization import jsonutils
+from oslo.utils import timeutils
 
 from keystoneclient import exceptions
-from keystoneclient.openstack.common import jsonutils
-from keystoneclient.openstack.common import timeutils
 from keystoneclient.tests.v2_0 import utils
 from keystoneclient.v2_0 import client
 
@@ -51,26 +49,23 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
             },
         }
 
-    @httpretty.activate
     def test_authenticate_success_expired(self):
-        # Build an expired token
-        self.TEST_RESPONSE_DICT['access']['token']['expires'] = (
-            (timeutils.utcnow() - datetime.timedelta(1)).isoformat())
+        resp_a = copy.deepcopy(self.TEST_RESPONSE_DICT)
+        resp_b = copy.deepcopy(self.TEST_RESPONSE_DICT)
+        headers = {'Content-Type': 'application/json'}
 
-        exp_resp = httpretty.Response(body=json.dumps(self.TEST_RESPONSE_DICT),
-                                      content_type='application/json')
+        # Build an expired token
+        resp_a['access']['token']['expires'] = (
+            (timeutils.utcnow() - datetime.timedelta(1)).isoformat())
 
         # Build a new response
         TEST_TOKEN = "abcdef"
-        self.TEST_RESPONSE_DICT['access']['token']['expires'] = (
-            '2020-01-01T00:00:10.000123Z')
-        self.TEST_RESPONSE_DICT['access']['token']['id'] = TEST_TOKEN
-
-        new_resp = httpretty.Response(body=json.dumps(self.TEST_RESPONSE_DICT),
-                                      content_type='application/json')
+        resp_b['access']['token']['expires'] = '2020-01-01T00:00:10.000123Z'
+        resp_b['access']['token']['id'] = TEST_TOKEN
 
         # return expired first, and then the new response
-        self.stub_auth(responses=[exp_resp, new_resp])
+        self.stub_auth(response_list=[{'json': resp_a, 'headers': headers},
+                                      {'json': resp_b, 'headers': headers}])
 
         cs = client.Client(tenant_id=self.TEST_TENANT_ID,
                            auth_url=self.TEST_URL,
@@ -84,7 +79,6 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         self.assertEqual(cs.auth_token, TEST_TOKEN)
         self.assertRequestBodyIs(json=self.TEST_REQUEST_BODY)
 
-    @httpretty.activate
     def test_authenticate_failure(self):
         _auth = 'auth'
         _cred = 'passwordCredentials'
@@ -93,7 +87,7 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         error = {"unauthorized": {"message": "Unauthorized",
                                   "code": "401"}}
 
-        self.stub_auth(status=401, json=error)
+        self.stub_auth(status_code=401, json=error)
 
         # Workaround for issue with assertRaises on python2.6
         # where with assertRaises(exceptions.Unauthorized): doesn't work
@@ -107,10 +101,9 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         self.assertRaises(exceptions.Unauthorized, client_create_wrapper)
         self.assertRequestBodyIs(json=self.TEST_REQUEST_BODY)
 
-    @httpretty.activate
     def test_auth_redirect(self):
-        self.stub_auth(status=305, body='Use Proxy',
-                       location=self.TEST_ADMIN_URL + "/tokens")
+        self.stub_auth(status_code=305, text='Use Proxy',
+                       headers={'Location': self.TEST_ADMIN_URL + "/tokens"})
 
         self.stub_auth(base_url=self.TEST_ADMIN_URL,
                        json=self.TEST_RESPONSE_DICT)
@@ -127,7 +120,6 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
                          self.TEST_RESPONSE_DICT["access"]["token"]["id"])
         self.assertRequestBodyIs(json=self.TEST_REQUEST_BODY)
 
-    @httpretty.activate
     def test_authenticate_success_password_scoped(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
 
@@ -142,7 +134,6 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
                          self.TEST_RESPONSE_DICT["access"]["token"]["id"])
         self.assertRequestBodyIs(json=self.TEST_REQUEST_BODY)
 
-    @httpretty.activate
     def test_authenticate_success_password_unscoped(self):
         del self.TEST_RESPONSE_DICT['access']['serviceCatalog']
         del self.TEST_REQUEST_BODY['auth']['tenantId']
@@ -157,7 +148,6 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         self.assertFalse('serviceCatalog' in cs.service_catalog.catalog)
         self.assertRequestBodyIs(json=self.TEST_REQUEST_BODY)
 
-    @httpretty.activate
     def test_auth_url_token_authentication(self):
         fake_token = 'fake_token'
         fake_url = '/fake-url'
@@ -169,19 +159,15 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
 
         cl = client.Client(auth_url=self.TEST_URL,
                            token=fake_token)
-        body = httpretty.last_request().body
-        if six.PY3:
-            body = body.decode('utf-8')
-        body = jsonutils.loads(body)
-        self.assertEqual(body['auth']['token']['id'], fake_token)
+        json_body = jsonutils.loads(self.requests.last_request.body)
+        self.assertEqual(json_body['auth']['token']['id'], fake_token)
 
         resp, body = cl.get(fake_url)
         self.assertEqual(fake_resp, body)
 
-        self.assertEqual(httpretty.last_request().headers.get('X-Auth-Token'),
-                         self.TEST_TOKEN)
+        token = self.requests.last_request.headers.get('X-Auth-Token')
+        self.assertEqual(self.TEST_TOKEN, token)
 
-    @httpretty.activate
     def test_authenticate_success_token_scoped(self):
         del self.TEST_REQUEST_BODY['auth']['passwordCredentials']
         self.TEST_REQUEST_BODY['auth']['token'] = {'id': self.TEST_TOKEN}
@@ -197,7 +183,6 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
                          self.TEST_RESPONSE_DICT["access"]["token"]["id"])
         self.assertRequestBodyIs(json=self.TEST_REQUEST_BODY)
 
-    @httpretty.activate
     def test_authenticate_success_token_scoped_trust(self):
         del self.TEST_REQUEST_BODY['auth']['passwordCredentials']
         self.TEST_REQUEST_BODY['auth']['token'] = {'id': self.TEST_TOKEN}
@@ -213,9 +198,9 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
                            auth_url=self.TEST_URL)
         self.assertTrue(cs.auth_ref.trust_scoped)
         self.assertEqual(cs.auth_ref.trust_id, self.TEST_TRUST_ID)
+        self.assertEqual(cs.auth_ref.trustee_user_id, self.TEST_USER)
         self.assertRequestBodyIs(json=self.TEST_REQUEST_BODY)
 
-    @httpretty.activate
     def test_authenticate_success_token_unscoped(self):
         del self.TEST_REQUEST_BODY['auth']['passwordCredentials']
         del self.TEST_REQUEST_BODY['auth']['tenantId']
@@ -231,7 +216,6 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         self.assertFalse('serviceCatalog' in cs.service_catalog.catalog)
         self.assertRequestBodyIs(json=self.TEST_REQUEST_BODY)
 
-    @httpretty.activate
     def test_allow_override_of_auth_token(self):
         fake_url = '/fake-url'
         fake_token = 'fake_token'
@@ -252,8 +236,8 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         resp, body = cl.get(fake_url)
         self.assertEqual(fake_resp, body)
 
-        self.assertEqual(httpretty.last_request().headers.get('X-Auth-Token'),
-                         self.TEST_TOKEN)
+        token = self.requests.last_request.headers.get('X-Auth-Token')
+        self.assertEqual(self.TEST_TOKEN, token)
 
         # then override that token and the new token shall be used
         cl.auth_token = fake_token
@@ -261,8 +245,8 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         resp, body = cl.get(fake_url)
         self.assertEqual(fake_resp, body)
 
-        self.assertEqual(httpretty.last_request().headers.get('X-Auth-Token'),
-                         fake_token)
+        token = self.requests.last_request.headers.get('X-Auth-Token')
+        self.assertEqual(fake_token, token)
 
         # if we clear that overridden token then we fall back to the original
         del cl.auth_token
@@ -270,5 +254,5 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         resp, body = cl.get(fake_url)
         self.assertEqual(fake_resp, body)
 
-        self.assertEqual(httpretty.last_request().headers.get('X-Auth-Token'),
-                         self.TEST_TOKEN)
+        token = self.requests.last_request.headers.get('X-Auth-Token')
+        self.assertEqual(self.TEST_TOKEN, token)

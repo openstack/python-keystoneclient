@@ -13,8 +13,9 @@
 import datetime
 import uuid
 
+from oslo.utils import timeutils
+
 from keystoneclient.fixture import exception
-from keystoneclient.openstack.common import timeutils
 
 
 class _Service(dict):
@@ -54,12 +55,13 @@ class Token(dict):
     that matter to them and not copy and paste sample.
     """
 
-    def __init__(self, expires=None, user_id=None, user_name=None,
+    def __init__(self, expires=None, issued=None, user_id=None, user_name=None,
                  user_domain_id=None, user_domain_name=None, methods=None,
                  project_id=None, project_name=None, project_domain_id=None,
                  project_domain_name=None, domain_id=None, domain_name=None,
                  trust_id=None, trust_impersonation=None, trustee_user_id=None,
-                 trustor_user_id=None):
+                 trustor_user_id=None, oauth_access_token_id=None,
+                 oauth_consumer_id=None):
         super(Token, self).__init__()
 
         self.user_id = user_id or uuid.uuid4().hex
@@ -71,8 +73,17 @@ class Token(dict):
             methods = ['password']
         self.methods.extend(methods)
 
+        if not issued:
+            issued = timeutils.utcnow() - datetime.timedelta(minutes=2)
+
+        try:
+            self.issued = issued
+        except (TypeError, AttributeError):
+            # issued should be able to be passed as a string so ignore
+            self.issued_str = issued
+
         if not expires:
-            expires = timeutils.utcnow() + datetime.timedelta(hours=1)
+            expires = self.issued + datetime.timedelta(hours=1)
 
         try:
             self.expires = expires
@@ -97,6 +108,10 @@ class Token(dict):
                                  trustee_user_id=trustee_user_id,
                                  trustor_user_id=trustor_user_id)
 
+        if oauth_access_token_id or oauth_consumer_id:
+            self.set_oauth(access_token_id=oauth_access_token_id,
+                           consumer_id=oauth_consumer_id)
+
     @property
     def root(self):
         return self.setdefault('token', {})
@@ -115,7 +130,23 @@ class Token(dict):
 
     @expires.setter
     def expires(self, value):
-        self.expires_str = timeutils.isotime(value)
+        self.expires_str = timeutils.isotime(value, subsecond=True)
+
+    @property
+    def issued_str(self):
+        return self.root.get('issued_at')
+
+    @issued_str.setter
+    def issued_str(self, value):
+        self.root['issued_at'] = value
+
+    @property
+    def issued(self):
+        return timeutils.parse_isotime(self.issued_str)
+
+    @issued.setter
+    def issued(self, value):
+        self.issued_str = timeutils.isotime(value, subsecond=True)
 
     @property
     def _user(self):
@@ -188,7 +219,7 @@ class Token(dict):
 
     @property
     def project_domain_name(self):
-        return self.root.get('project', {}).get('project', {}).get('name')
+        return self.root.get('project', {}).get('domain', {}).get('name')
 
     @project_domain_name.setter
     def project_domain_name(self, value):
@@ -247,6 +278,22 @@ class Token(dict):
         trust = self.root.setdefault('OS-TRUST:trust', {})
         trust.setdefault('trustor_user', {})['id'] = value
 
+    @property
+    def oauth_access_token_id(self):
+        return self.root.get('OS-OAUTH1', {}).get('access_token_id')
+
+    @oauth_access_token_id.setter
+    def oauth_access_token_id(self, value):
+        self.root.setdefault('OS-OAUTH1', {})['access_token_id'] = value
+
+    @property
+    def oauth_consumer_id(self):
+        return self.root.get('OS-OAUTH1', {}).get('consumer_id')
+
+    @oauth_consumer_id.setter
+    def oauth_consumer_id(self, value):
+        self.root.setdefault('OS-OAUTH1', {})['consumer_id'] = value
+
     def validate(self):
         project = self.root.get('project')
         domain = self.root.get('domain')
@@ -302,3 +349,35 @@ class Token(dict):
         self.trust_impersonation = impersonation
         self.trustee_user_id = trustee_user_id or uuid.uuid4().hex
         self.trustor_user_id = trustor_user_id or uuid.uuid4().hex
+
+    def set_oauth(self, access_token_id=None, consumer_id=None):
+        self.oauth_access_token_id = access_token_id or uuid.uuid4().hex
+        self.oauth_consumer_id = consumer_id or uuid.uuid4().hex
+
+
+class V3FederationToken(Token):
+    """A V3 Keystone Federation token that can be used for testing.
+
+    Similar to V3Token, this object is designed to allow clients to generate
+    a correct V3 federation token for use in test code.
+    """
+
+    def __init__(self, methods=None, identity_provider=None, protocol=None,
+                 groups=None):
+        methods = methods or ['saml2']
+        super(V3FederationToken, self).__init__(methods=methods)
+        # NOTE(stevemar): Federated tokens do not have a domain for the user
+        del self._user['domain']
+        self.add_federation_info_to_user(identity_provider, protocol, groups)
+
+    def add_federation_info_to_user(self, identity_provider=None,
+                                    protocol=None, groups=None):
+        data = {
+            "OS-FEDERATION": {
+                "identity_provider": identity_provider or uuid.uuid4().hex,
+                "protocol": protocol or uuid.uuid4().hex,
+                "groups": groups or [{"id": uuid.uuid4().hex}]
+            }
+        }
+        self._user.update(data)
+        return data

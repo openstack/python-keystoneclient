@@ -10,10 +10,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import json
-
-import httpretty
-
 from keystoneclient.generic import client
 from keystoneclient.tests.v3 import utils
 
@@ -64,11 +60,10 @@ class DiscoverKeystoneTests(utils.UnauthenticatedTestCase):
             'Accept': 'application/json',
         }
 
-    @httpretty.activate
     def test_get_version_local(self):
-        httpretty.register_uri(httpretty.GET, "http://localhost:35357/",
-                               status=300,
-                               body=json.dumps(self.TEST_RESPONSE_DICT))
+        self.requests.register_uri('GET', "http://localhost:35357/",
+                                   status_code=300,
+                                   json=self.TEST_RESPONSE_DICT)
 
         cs = client.Client()
         versions = cs.discover()

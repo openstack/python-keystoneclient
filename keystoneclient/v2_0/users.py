@@ -20,7 +20,7 @@ from keystoneclient import base
 
 
 class User(base.Resource):
-    """Represents a Keystone user"""
+    """Represents a Keystone user."""
     def __repr__(self):
         return "<User %s>" % self._info
 
@@ -34,6 +34,10 @@ class User(base.Resource):
 class UserManager(base.ManagerWithFind):
     """Manager class for manipulating Keystone users."""
     resource_class = User
+
+    def __init__(self, client, role_manager):
+        super(UserManager, self).__init__(client)
+        self.role_manager = role_manager
 
     def get(self, user):
         return self._get("/users/%s" % base.getid(user), "user")
@@ -64,7 +68,7 @@ class UserManager(base.ManagerWithFind):
                            "password": password}}
 
         return self._update("/users/%s/OS-KSADM/password" % base.getid(user),
-                            params, "user")
+                            params, "user", log=False)
 
     def update_own_password(self, origpasswd, passwd):
         """Update password."""
@@ -74,7 +78,8 @@ class UserManager(base.ManagerWithFind):
         return self._update("/OS-KSCRUD/users/%s" % self.api.user_id, params,
                             response_key="access",
                             method="PATCH",
-                            management=False)
+                            management=False,
+                            log=False)
 
     def update_tenant(self, user, tenant):
         """Update default tenant."""
@@ -86,14 +91,15 @@ class UserManager(base.ManagerWithFind):
         return self._update("/users/%s/OS-KSADM/tenant" % base.getid(user),
                             params, "user")
 
-    def create(self, name, password, email=None, tenant_id=None, enabled=True):
+    def create(self, name, password=None, email=None,
+               tenant_id=None, enabled=True):
         """Create a user."""
         params = {"user": {"name": name,
                            "password": password,
                            "tenantId": tenant_id,
                            "email": email,
                            "enabled": enabled}}
-        return self._create('/users', params, "user")
+        return self._create('/users', params, "user", log=not bool(password))
 
     def delete(self, user):
         """Delete a user."""
@@ -122,5 +128,5 @@ class UserManager(base.ManagerWithFind):
                               "users")
 
     def list_roles(self, user, tenant=None):
-        return self.api.roles.roles_for_user(base.getid(user),
-                                             base.getid(tenant))
+        return self.role_manager.roles_for_user(base.getid(user),
+                                                base.getid(tenant))

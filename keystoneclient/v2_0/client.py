@@ -20,6 +20,7 @@ from keystoneclient import exceptions
 from keystoneclient import httpclient
 from keystoneclient.v2_0 import ec2
 from keystoneclient.v2_0 import endpoints
+from keystoneclient.v2_0 import extensions
 from keystoneclient.v2_0 import roles
 from keystoneclient.v2_0 import services
 from keystoneclient.v2_0 import tenants
@@ -119,7 +120,7 @@ class Client(httpclient.HTTPClient):
         >>> admin_client = client.Client(
         ...     token='12345secret7890',
         ...     endpoint='http://localhost:35357/v2.0')
-        >>> keystone.tenants.list()
+        >>> admin_client.tenants.list()
 
     """
 
@@ -129,11 +130,13 @@ class Client(httpclient.HTTPClient):
         """Initialize a new client for the Keystone v2.0 API."""
         super(Client, self).__init__(**kwargs)
         self.endpoints = endpoints.EndpointManager(self)
+        self.extensions = extensions.ExtensionManager(self)
         self.roles = roles.RoleManager(self)
         self.services = services.ServiceManager(self)
-        self.tenants = tenants.TenantManager(self)
         self.tokens = tokens.TokenManager(self)
-        self.users = users.UserManager(self)
+        self.users = users.UserManager(self, self.roles)
+
+        self.tenants = tenants.TenantManager(self, self.roles, self.users)
 
         # extensions
         self.ec2 = ec2.CredentialsManager(self)
@@ -151,6 +154,9 @@ class Client(httpclient.HTTPClient):
                                             **kwargs):
         """Authenticate against the v2 Identity API.
 
+        If a token is provided it will be used in preference over username and
+        password.
+
         :returns: access.AccessInfo if authentication was successful.
         :raises: AuthorizationFailure if unable to authenticate or validate
                  the existing authorization token
@@ -159,15 +165,20 @@ class Client(httpclient.HTTPClient):
             if auth_url is None:
                 raise ValueError("Cannot authenticate without an auth_url")
 
-            a = v2_auth.Auth._factory(auth_url,
-                                      username=username,
-                                      password=password,
-                                      token=token,
-                                      trust_id=trust_id,
-                                      tenant_id=project_id or tenant_id,
-                                      tenant_name=project_name or tenant_name)
+            new_kwargs = {'trust_id': trust_id,
+                          'tenant_id': project_id or tenant_id,
+                          'tenant_name': project_name or tenant_name}
 
-            return a.get_auth_ref(self.session)
+            if token:
+                plugin = v2_auth.Token(auth_url, token, **new_kwargs)
+            elif username and password:
+                plugin = v2_auth.Password(auth_url, username, password,
+                                          **new_kwargs)
+            else:
+                msg = 'A username and password or token is required.'
+                raise exceptions.AuthorizationFailure(msg)
+
+            return plugin.get_auth_ref(self.session)
         except (exceptions.AuthorizationFailure, exceptions.Unauthorized):
             _logger.debug("Authorization Failed.")
             raise

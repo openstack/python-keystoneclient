@@ -13,8 +13,9 @@
 import datetime
 import uuid
 
+from oslo.utils import timeutils
+
 from keystoneclient.fixture import exception
-from keystoneclient.openstack.common import timeutils
 
 
 class _Service(dict):
@@ -40,17 +41,25 @@ class Token(dict):
     that matter to them and not copy and paste sample.
     """
 
-    def __init__(self, token_id=None,
-                 expires=None, tenant_id=None, tenant_name=None, user_id=None,
-                 user_name=None):
+    def __init__(self, token_id=None, expires=None, issued=None,
+                 tenant_id=None, tenant_name=None, user_id=None,
+                 user_name=None, trust_id=None, trustee_user_id=None):
         super(Token, self).__init__()
 
         self.token_id = token_id or uuid.uuid4().hex
         self.user_id = user_id or uuid.uuid4().hex
         self.user_name = user_name or uuid.uuid4().hex
 
+        if not issued:
+            issued = timeutils.utcnow() - datetime.timedelta(minutes=2)
         if not expires:
-            expires = timeutils.utcnow() + datetime.timedelta(hours=1)
+            expires = issued + datetime.timedelta(hours=1)
+
+        try:
+            self.issued = issued
+        except (TypeError, AttributeError):
+            # issued should be able to be passed as a string so ignore
+            self.issued_str = issued
 
         try:
             self.expires = expires
@@ -60,6 +69,12 @@ class Token(dict):
 
         if tenant_id or tenant_name:
             self.set_scope(tenant_id, tenant_name)
+
+        if trust_id or trustee_user_id:
+            # the trustee_user_id will generally be the same as the user_id as
+            # the token is being issued to the trustee
+            self.set_trust(id=trust_id,
+                           trustee_user_id=trustee_user_id or user_id)
 
     @property
     def root(self):
@@ -92,6 +107,22 @@ class Token(dict):
     @expires.setter
     def expires(self, value):
         self.expires_str = timeutils.isotime(value)
+
+    @property
+    def issued_str(self):
+        return self._token['issued_at']
+
+    @issued_str.setter
+    def issued_str(self, value):
+        self._token['issued_at'] = value
+
+    @property
+    def issued(self):
+        return timeutils.parse_isotime(self.issued_str)
+
+    @issued.setter
+    def issued(self, value):
+        self.issued_str = timeutils.isotime(value)
 
     @property
     def _user(self):
@@ -129,6 +160,26 @@ class Token(dict):
     def tenant_name(self, value):
         self._token.setdefault('tenant', {})['name'] = value
 
+    @property
+    def _metadata(self):
+        return self.root.setdefault('metadata', {})
+
+    @property
+    def trust_id(self):
+        return self.root.setdefault('trust', {})['id']
+
+    @trust_id.setter
+    def trust_id(self, value):
+        self.root.setdefault('trust', {})['id'] = value
+
+    @property
+    def trustee_user_id(self):
+        return self.root.setdefault('trust', {}).get('trustee_user_id')
+
+    @trustee_user_id.setter
+    def trustee_user_id(self, value):
+        self.root.setdefault('trust', {})['trustee_user_id'] = value
+
     def validate(self):
         scoped = 'tenant' in self.token
         catalog = self.root.get('serviceCatalog')
@@ -142,11 +193,12 @@ class Token(dict):
             raise exception.FixtureValidationError(msg)
 
     def add_role(self, name=None, id=None):
+        id = id or uuid.uuid4().hex
+        name = name or uuid.uuid4().hex
         roles = self._user.setdefault('roles', [])
-        data = {'id': id or uuid.uuid4().hex,
-                'name': name or uuid.uuid4().hex}
-        roles.append(data)
-        return data
+        roles.append({'name': name})
+        self._metadata.setdefault('roles', []).append(id)
+        return {'id': id, 'name': name}
 
     def add_service(self, type, name=None):
         name = name or uuid.uuid4().hex
@@ -157,3 +209,7 @@ class Token(dict):
     def set_scope(self, id=None, name=None):
         self.tenant_id = id or uuid.uuid4().hex
         self.tenant_name = name or uuid.uuid4().hex
+
+    def set_trust(self, id=None, trustee_user_id=None):
+        self.trust_id = id or uuid.uuid4().hex
+        self.trustee_user_id = trustee_user_id or uuid.uuid4().hex

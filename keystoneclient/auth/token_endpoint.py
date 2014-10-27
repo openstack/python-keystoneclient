@@ -29,3 +29,24 @@ class Token(base.BaseAuthPlugin):
 
     def get_token(self, session):
         return self.token
+
+    def get_endpoint(self, session, **kwargs):
+        """Return the supplied endpoint.
+
+        Using this plugin the same endpoint is returned regardless of the
+        parameters passed to the plugin.
+        """
+        return self.endpoint
+
+    def get_options(self):
+        options = super(Token, self).get_options()
+
+        options.extend([
+            cfg.StrOpt('endpoint',
+                       help='The endpoint that will always be used'),
+            cfg.StrOpt('token',
+                       secret=True,
+                       help='The token that will always be used'),
+        ])
+
+        return options

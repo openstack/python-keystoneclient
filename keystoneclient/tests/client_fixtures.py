@@ -15,12 +15,12 @@
 import os
 
 import fixtures
+from oslo.serialization import jsonutils
+from oslo.utils import timeutils
 import six
 import testresources
 
 from keystoneclient.common import cms
-from keystoneclient.openstack.common import jsonutils
-from keystoneclient.openstack.common import timeutils
 from keystoneclient import utils
 
 
@@ -29,6 +29,12 @@ ROOTDIR = os.path.normpath(os.path.join(TESTDIR, '..', '..'))
 CERTDIR = os.path.join(ROOTDIR, 'examples', 'pki', 'certs')
 CMSDIR = os.path.join(ROOTDIR, 'examples', 'pki', 'cms')
 KEYDIR = os.path.join(ROOTDIR, 'examples', 'pki', 'private')
+
+
+def _hash_signed_token_safe(signed_text, **kwargs):
+    if isinstance(signed_text, six.text_type):
+        signed_text = signed_text.encode('utf-8')
+    return utils.hash_signed_token(signed_text, **kwargs)
 
 
 class Examples(fixtures.Fixture):
@@ -58,10 +64,18 @@ class Examples(fixtures.Fixture):
 
         with open(os.path.join(CMSDIR, 'auth_token_scoped.pem')) as f:
             self.SIGNED_TOKEN_SCOPED = cms.cms_to_token(f.read())
+        self.SIGNED_TOKEN_SCOPED_HASH = _hash_signed_token_safe(
+            self.SIGNED_TOKEN_SCOPED)
+        self.SIGNED_TOKEN_SCOPED_HASH_SHA256 = _hash_signed_token_safe(
+            self.SIGNED_TOKEN_SCOPED, mode='sha256')
         with open(os.path.join(CMSDIR, 'auth_token_unscoped.pem')) as f:
             self.SIGNED_TOKEN_UNSCOPED = cms.cms_to_token(f.read())
         with open(os.path.join(CMSDIR, 'auth_v3_token_scoped.pem')) as f:
             self.SIGNED_v3_TOKEN_SCOPED = cms.cms_to_token(f.read())
+        self.SIGNED_v3_TOKEN_SCOPED_HASH = _hash_signed_token_safe(
+            self.SIGNED_v3_TOKEN_SCOPED)
+        self.SIGNED_v3_TOKEN_SCOPED_HASH_SHA256 = _hash_signed_token_safe(
+            self.SIGNED_v3_TOKEN_SCOPED, mode='sha256')
         with open(os.path.join(CMSDIR, 'auth_token_revoked.pem')) as f:
             self.REVOKED_TOKEN = cms.cms_to_token(f.read())
         with open(os.path.join(CMSDIR, 'auth_token_scoped_expired.pem')) as f:
@@ -116,6 +130,8 @@ class Examples(fixtures.Fixture):
         if isinstance(revoked_token, six.text_type):
             revoked_token = revoked_token.encode('utf-8')
         self.REVOKED_TOKEN_HASH = utils.hash_signed_token(revoked_token)
+        self.REVOKED_TOKEN_HASH_SHA256 = utils.hash_signed_token(revoked_token,
+                                                                 mode='sha256')
         self.REVOKED_TOKEN_LIST = (
             {'revoked': [{'id': self.REVOKED_TOKEN_HASH,
                           'expires': timeutils.utcnow()}]})
@@ -125,6 +141,8 @@ class Examples(fixtures.Fixture):
         if isinstance(revoked_v3_token, six.text_type):
             revoked_v3_token = revoked_v3_token.encode('utf-8')
         self.REVOKED_v3_TOKEN_HASH = utils.hash_signed_token(revoked_v3_token)
+        hash = utils.hash_signed_token(revoked_v3_token, mode='sha256')
+        self.REVOKED_v3_TOKEN_HASH_SHA256 = hash
         self.REVOKED_v3_TOKEN_LIST = (
             {'revoked': [{'id': self.REVOKED_v3_TOKEN_HASH,
                           'expires': timeutils.utcnow()}]})

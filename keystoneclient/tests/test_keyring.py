@@ -13,10 +13,10 @@
 import datetime
 
 import mock
+from oslo.utils import timeutils
 
 from keystoneclient import access
 from keystoneclient import httpclient
-from keystoneclient.openstack.common import timeutils
 from keystoneclient.tests import utils
 from keystoneclient.tests.v2_0 import client_fixtures
 
@@ -90,13 +90,13 @@ class KeyringTest(utils.TestCase):
                                    tenant_id=TENANT_ID, auth_url=AUTH_URL)
 
         # stub and check that a new token is received
-        with mock.patch.object(cl, 'get_raw_token_from_identity_service') \
-                as meth:
+        method = 'get_raw_token_from_identity_service'
+        with mock.patch.object(cl, method) as meth:
             meth.return_value = (True, PROJECT_SCOPED_TOKEN)
 
             self.assertTrue(cl.authenticate())
 
-            meth.assert_called_once()
+            self.assertEqual(1, meth.call_count)
 
         # make sure that we never touched the keyring
         self.assertFalse(self.memory_keyring.get_password_called)
@@ -128,13 +128,13 @@ class KeyringTest(utils.TestCase):
         self.memory_keyring.password = pickle.dumps(auth_ref)
 
         # stub and check that a new token is received, so not using expired
-        with mock.patch.object(cl, 'get_raw_token_from_identity_service') \
-                as meth:
+        method = 'get_raw_token_from_identity_service'
+        with mock.patch.object(cl, method) as meth:
             meth.return_value = (True, PROJECT_SCOPED_TOKEN)
 
             self.assertTrue(cl.authenticate())
 
-            meth.assert_called_once()
+            self.assertEqual(1, meth.call_count)
 
         # check that a value was returned from the keyring
         self.assertTrue(self.memory_keyring.fetched)
@@ -166,13 +166,13 @@ class KeyringTest(utils.TestCase):
                                    use_keyring=True)
 
         # stub and check that a new token is received
-        with mock.patch.object(cl, 'get_raw_token_from_identity_service') \
-                as meth:
+        method = 'get_raw_token_from_identity_service'
+        with mock.patch.object(cl, method) as meth:
             meth.return_value = (True, PROJECT_SCOPED_TOKEN)
 
             self.assertTrue(cl.authenticate())
 
-            meth.assert_called_once()
+            self.assertEqual(1, meth.call_count)
 
         # we checked the keyring, but we didn't find anything
         self.assertTrue(self.memory_keyring.get_password_called)

@@ -10,8 +10,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from keystoneclient.v3.contrib.federation import domains
 from keystoneclient.v3.contrib.federation import identity_providers
 from keystoneclient.v3.contrib.federation import mappings
+from keystoneclient.v3.contrib.federation import projects
+from keystoneclient.v3.contrib.federation import protocols
 
 
 class FederationManager(object):
@@ -19,3 +22,6 @@ class FederationManager(object):
         self.identity_providers = identity_providers.IdentityProviderManager(
             api)
         self.mappings = mappings.MappingManager(api)
+        self.protocols = protocols.ProtocolManager(api)
+        self.projects = projects.ProjectManager(api)
+        self.domains = domains.DomainManager(api)

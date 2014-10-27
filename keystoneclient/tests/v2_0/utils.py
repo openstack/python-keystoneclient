@@ -10,11 +10,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import httpretty
-
 from keystoneclient.tests import utils
 from keystoneclient.v2_0 import client
-
 
 TestResponse = utils.TestResponse
 
@@ -88,4 +85,4 @@ class TestCase(UnauthenticatedTestCase):
                                     endpoint=self.TEST_URL)
 
     def stub_auth(self, **kwargs):
-        self.stub_url(httpretty.POST, ['tokens'], **kwargs)
+        self.stub_url('POST', ['tokens'], **kwargs)

@@ -10,9 +10,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo.utils import timeutils
+
 from keystoneclient import base
 from keystoneclient import exceptions
-from keystoneclient.openstack.common import timeutils
 
 
 class Trust(base.Resource):
@@ -74,7 +75,8 @@ class TrustManager(base.CrudManager):
             **kwargs)
 
     def update(self):
-        raise exceptions.HttpNotImplemented("Update not supported for trusts")
+        raise exceptions.MethodNotImplemented('Update not supported'
+                                              ' for trusts')
 
     def list(self, trustee_user=None, trustor_user=None, **kwargs):
         """List Trusts."""

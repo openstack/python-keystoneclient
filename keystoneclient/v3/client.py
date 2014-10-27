@@ -15,11 +15,13 @@
 
 import logging
 
+from oslo.serialization import jsonutils
+
 from keystoneclient.auth.identity import v3 as v3_auth
 from keystoneclient import exceptions
 from keystoneclient import httpclient
-from keystoneclient.openstack.common import jsonutils
 from keystoneclient.v3.contrib import endpoint_filter
+from keystoneclient.v3.contrib import endpoint_policy
 from keystoneclient.v3.contrib import federation
 from keystoneclient.v3.contrib import oauth1
 from keystoneclient.v3.contrib import trusts
@@ -30,8 +32,10 @@ from keystoneclient.v3 import groups
 from keystoneclient.v3 import policies
 from keystoneclient.v3 import projects
 from keystoneclient.v3 import regions
+from keystoneclient.v3 import role_assignments
 from keystoneclient.v3 import roles
 from keystoneclient.v3 import services
+from keystoneclient.v3 import tokens
 from keystoneclient.v3 import users
 
 
@@ -88,6 +92,74 @@ class Client(httpclient.HTTPClient):
         >>> user = keystone.users.get(USER_ID)
         >>> user.delete()
 
+    Instances of this class have the following managers:
+
+    .. py:attribute:: credentials
+
+        :py:class:`keystoneclient.v3.credentials.CredentialManager`
+
+    .. py:attribute:: endpoint_filter
+
+        :py:class:`keystoneclient.v3.contrib.endpoint_filter.\
+EndpointFilterManager`
+
+    .. py:attribute:: endpoint_policy
+
+        :py:class:`keystoneclient.v3.contrib.endpoint_policy.\
+EndpointPolicyManager`
+
+    .. py:attribute:: endpoints
+
+        :py:class:`keystoneclient.v3.endpoints.EndpointManager`
+
+    .. py:attribute:: domains
+
+        :py:class:`keystoneclient.v3.domains.DomainManager`
+
+    .. py:attribute:: federation
+
+        :py:class:`keystoneclient.v3.contrib.federation.core.FederationManager`
+
+    .. py:attribute:: groups
+
+        :py:class:`keystoneclient.v3.groups.GroupManager`
+
+    .. py:attribute:: oauth1
+
+        :py:class:`keystoneclient.v3.contrib.oauth1.core.OAuthManager`
+
+    .. py:attribute:: policies
+
+        :py:class:`keystoneclient.v3.policies.PolicyManager`
+
+    .. py:attribute:: regions
+
+        :py:class:`keystoneclient.v3.regions.RegionManager`
+
+    .. py:attribute:: role_assignments
+
+        :py:class:`keystoneclient.v3.role_assignments.RoleAssignmentManager`
+
+    .. py:attribute:: roles
+
+        :py:class:`keystoneclient.v3.roles.RoleManager`
+
+    .. py:attribute:: services
+
+        :py:class:`keystoneclient.v3.services.ServiceManager`
+
+    .. py:attribute:: tokens
+
+        :py:class:`keystoneclient.v3.tokens.TokenManager`
+
+    .. py:attribute:: trusts
+
+        :py:class:`keystoneclient.v3.contrib.trusts.TrustManager`
+
+    .. py:attribute:: users
+
+        :py:class:`keystoneclient.v3.users.UserManager`
+
     """
 
     version = 'v3'
@@ -97,6 +169,8 @@ class Client(httpclient.HTTPClient):
         super(Client, self).__init__(**kwargs)
 
         self.credentials = credentials.CredentialManager(self)
+        self.endpoint_filter = endpoint_filter.EndpointFilterManager(self)
+        self.endpoint_policy = endpoint_policy.EndpointPolicyManager(self)
         self.endpoints = endpoints.EndpointManager(self)
         self.domains = domains.DomainManager(self)
         self.federation = federation.FederationManager(self)
@@ -105,11 +179,12 @@ class Client(httpclient.HTTPClient):
         self.policies = policies.PolicyManager(self)
         self.projects = projects.ProjectManager(self)
         self.regions = regions.RegionManager(self)
+        self.role_assignments = role_assignments.RoleAssignmentManager(self)
         self.roles = roles.RoleManager(self)
         self.services = services.ServiceManager(self)
-        self.users = users.UserManager(self)
+        self.tokens = tokens.TokenManager(self)
         self.trusts = trusts.TrustManager(self)
-        self.endpoint_filter = endpoint_filter.EndpointFilterManager(self)
+        self.users = users.UserManager(self)
 
         # DEPRECATED: if session is passed then we go to the new behaviour of
         # authenticating on the first required call.
@@ -149,6 +224,9 @@ class Client(httpclient.HTTPClient):
                                             **kwargs):
         """Authenticate against the v3 Identity API.
 
+        If password and token methods are both provided then both methods will
+        be used in the request.
+
         :returns: access.AccessInfo if authentication was successful.
         :raises: AuthorizationFailure if unable to authenticate or validate
                  the existing authorization token
@@ -159,22 +237,33 @@ class Client(httpclient.HTTPClient):
             if auth_url is None:
                 raise ValueError("Cannot authenticate without an auth_url")
 
-            a = v3_auth.Auth._factory(auth_url,
-                                      username=username,
-                                      password=password,
-                                      token=token,
-                                      trust_id=trust_id,
-                                      user_id=user_id,
-                                      domain_id=domain_id,
-                                      domain_name=domain_name,
-                                      user_domain_id=user_domain_id,
-                                      user_domain_name=user_domain_name,
-                                      project_id=project_id,
-                                      project_name=project_name,
-                                      project_domain_id=project_domain_id,
-                                      project_domain_name=project_domain_name)
+            auth_methods = []
 
-            return a.get_auth_ref(self.session)
+            if token:
+                auth_methods.append(v3_auth.TokenMethod(token=token))
+
+            if password:
+                m = v3_auth.PasswordMethod(user_id=user_id,
+                                           username=username,
+                                           user_domain_id=user_domain_id,
+                                           user_domain_name=user_domain_name,
+                                           password=password)
+                auth_methods.append(m)
+
+            if not auth_methods:
+                msg = 'A user and password or token is required.'
+                raise exceptions.AuthorizationFailure(msg)
+
+            plugin = v3_auth.Auth(auth_url, auth_methods,
+                                  trust_id=trust_id,
+                                  domain_id=domain_id,
+                                  domain_name=domain_name,
+                                  project_id=project_id,
+                                  project_name=project_name,
+                                  project_domain_id=project_domain_id,
+                                  project_domain_name=project_domain_name)
+
+            return plugin.get_auth_ref(self.session)
         except (exceptions.AuthorizationFailure, exceptions.Unauthorized):
             _logger.debug('Authorization failed.')
             raise

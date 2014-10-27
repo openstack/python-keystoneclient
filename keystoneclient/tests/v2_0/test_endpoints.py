@@ -10,7 +10,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import httpretty
+import uuid
 
 from keystoneclient.tests.v2_0 import utils
 from keystoneclient.v2_0 import endpoints
@@ -38,15 +38,14 @@ class EndpointTests(utils.TestCase):
             ]
         }
 
-    @httpretty.activate
-    def test_create(self):
+    def test_create_with_optional_params(self):
         req_body = {
             "endpoint": {
                 "region": "RegionOne",
                 "publicurl": "http://host-3:8774/v1.1/$(tenant_id)s",
                 "internalurl": "http://host-3:8774/v1.1/$(tenant_id)s",
                 "adminurl": "http://host-3:8774/v1.1/$(tenant_id)s",
-                "service_id": "e044e21",
+                "service_id": uuid.uuid4().hex,
             }
         }
 
@@ -54,13 +53,13 @@ class EndpointTests(utils.TestCase):
             "endpoint": {
                 "adminurl": "http://host-3:8774/v1.1/$(tenant_id)s",
                 "region": "RegionOne",
-                "id": "1fd485b2ffd54f409a5ecd42cba11401",
+                "id": uuid.uuid4().hex,
                 "internalurl": "http://host-3:8774/v1.1/$(tenant_id)s",
                 "publicurl": "http://host-3:8774/v1.1/$(tenant_id)s",
             }
         }
 
-        self.stub_url(httpretty.POST, ['endpoints'], json=resp_body)
+        self.stub_url('POST', ['endpoints'], json=resp_body)
 
         endpoint = self.client.endpoints.create(
             region=req_body['endpoint']['region'],
@@ -72,14 +71,76 @@ class EndpointTests(utils.TestCase):
         self.assertIsInstance(endpoint, endpoints.Endpoint)
         self.assertRequestBodyIs(json=req_body)
 
-    @httpretty.activate
+    def test_create_with_optional_params_as_none(self):
+        req_body_without_defaults = {
+            "endpoint": {
+                "region": "RegionOne",
+                "service_id": uuid.uuid4().hex,
+                "publicurl": "http://host-3:8774/v1.1/$(tenant_id)s",
+                "adminurl": None,
+                "internalurl": None,
+            }
+        }
+
+        resp_body = {
+            "endpoint": {
+                "region": "RegionOne",
+                "id": uuid.uuid4().hex,
+                "publicurl": "http://host-3:8774/v1.1/$(tenant_id)s",
+                "adminurl": None,
+                "internalurl": None,
+            }
+        }
+
+        self.stub_url('POST', ['endpoints'], json=resp_body)
+
+        endpoint_without_defaults = self.client.endpoints.create(
+            region=req_body_without_defaults['endpoint']['region'],
+            publicurl=req_body_without_defaults['endpoint']['publicurl'],
+            service_id=req_body_without_defaults['endpoint']['service_id'],
+            adminurl=None,
+            internalurl=None
+        )
+        self.assertIsInstance(endpoint_without_defaults, endpoints.Endpoint)
+        self.assertRequestBodyIs(json=req_body_without_defaults)
+
+    def test_create_without_optional_params(self):
+        req_body_without_defaults = {
+            "endpoint": {
+                "region": "RegionOne",
+                "service_id": uuid.uuid4().hex,
+                "publicurl": "http://host-3:8774/v1.1/$(tenant_id)s",
+                "adminurl": None,
+                "internalurl": None,
+            }
+        }
+
+        resp_body = {
+            "endpoint": {
+                "region": "RegionOne",
+                "id": uuid.uuid4().hex,
+                "publicurl": "http://host-3:8774/v1.1/$(tenant_id)s",
+                "adminurl": None,
+                "internalurl": None,
+            }
+        }
+
+        self.stub_url('POST', ['endpoints'], json=resp_body)
+
+        endpoint_without_defaults = self.client.endpoints.create(
+            region=req_body_without_defaults['endpoint']['region'],
+            publicurl=req_body_without_defaults['endpoint']['publicurl'],
+            service_id=req_body_without_defaults['endpoint']['service_id']
+        )
+        self.assertIsInstance(endpoint_without_defaults, endpoints.Endpoint)
+        self.assertRequestBodyIs(json=req_body_without_defaults)
+
     def test_delete(self):
-        self.stub_url(httpretty.DELETE, ['endpoints', '8f953'], status=204)
+        self.stub_url('DELETE', ['endpoints', '8f953'], status_code=204)
         self.client.endpoints.delete('8f953')
 
-    @httpretty.activate
     def test_list(self):
-        self.stub_url(httpretty.GET, ['endpoints'], json=self.TEST_ENDPOINTS)
+        self.stub_url('GET', ['endpoints'], json=self.TEST_ENDPOINTS)
 
         endpoint_list = self.client.endpoints.list()
         [self.assertIsInstance(r, endpoints.Endpoint)

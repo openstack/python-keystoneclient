@@ -12,9 +12,11 @@ Contents:
    :maxdepth: 1
 
    man/keystone
+   using-sessions
    using-api-v2
    using-api-v3
 
+   authentication-plugins
    middlewarearchitecture
 
    api/modules

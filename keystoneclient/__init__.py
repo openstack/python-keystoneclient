@@ -13,7 +13,25 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+"""The python bindings for the OpenStack Identity (Keystone) project.
+
+See :py:class:`keystoneclient.v3.client.Client` for the Identity V3 client.
+
+See :py:class:`keystoneclient.v2_0.client.Client` for the Identity V2.0 client.
+
+"""
+
+
 import pbr.version
+
+from keystoneclient import access
+from keystoneclient import client
+from keystoneclient import exceptions
+from keystoneclient import generic
+from keystoneclient import httpclient
+from keystoneclient import service_catalog
+from keystoneclient import v2_0
+from keystoneclient import v3
 
 
 __version__ = pbr.version.VersionInfo('python-keystoneclient').version_string()

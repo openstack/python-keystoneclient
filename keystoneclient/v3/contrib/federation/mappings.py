@@ -48,35 +48,30 @@ class MappingManager(base.CrudManager):
 
         :param mapping_id: user defined string identifier of the federation
             mapping.
-        :param rules: a JSON dictionary with list a list
-            of mapping rules.
+        :param rules: a list of mapping rules.
 
-        Example of the ``rules``::
+        Example of the ``rules`` parameter::
 
-            {
-                "mapping": {
-                    "rules": [
-                        {
-                            "local": [
-                                {
-                                    "group": {
-                                        "id": "0cd5e9"
-                                    }
-                                }
-                            ],
-                            "remote": [
-                                {
-                                    "type": "orgPersonType",
-                                    "not_any_of": [
-                                        "Contractor",
-                                        "Guest"
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                }
-            }
+             [
+                 {
+                     "local": [
+                         {
+                             "group": {
+                                 "id": "0cd5e9"
+                             }
+                         }
+                     ],
+                     "remote": [
+                         {
+                             "type": "orgPersonType",
+                             "not_any_of": [
+                                 "Contractor",
+                                 "Guest"
+                             ]
+                         }
+                     ]
+                 }
+             ]
 
         """
         return self._build_url_and_put(
@@ -112,35 +107,31 @@ class MappingManager(base.CrudManager):
 
         :param mapping: a Mapping type object with mapping id
             stored inside.
-        :param rules: a JSON dictionary with list a list
-            of mapping rules.
+        :param rules: a list of mapping rules.
 
-        Example of the ``rules``::
+        Example of the ``rules`` parameter::
 
-            {
-                "mapping": {
-                    "rules": [
-                        {
-                            "local": [
-                                {
-                                    "group": {
-                                        "id": "0cd5e9"
-                                    }
-                                }
-                            ],
-                            "remote": [
-                                {
-                                    "type": "orgPersonType",
-                                    "not_any_of": [
-                                        "Contractor",
-                                        "Guest"
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                }
-            }
+
+             [
+                 {
+                     "local": [
+                         {
+                             "group": {
+                                 "id": "0cd5e9"
+                             }
+                         }
+                     ],
+                     "remote": [
+                         {
+                             "type": "orgPersonType",
+                             "not_any_of": [
+                                 "Contractor",
+                                 "Guest"
+                             ]
+                         }
+                     ]
+                 }
+             ]
 
         """
         return super(MappingManager, self).update(

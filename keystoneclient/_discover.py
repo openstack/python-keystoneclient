@@ -22,18 +22,21 @@ raw data specified in version discovery responses.
 """
 
 import logging
+import re
 
 from keystoneclient import exceptions
+from keystoneclient import utils
 
 
 _LOGGER = logging.getLogger(__name__)
 
 
-def get_version_data(session, url):
+@utils.positional()
+def get_version_data(session, url, authenticated=None):
     """Retrieve raw version data from a url."""
     headers = {'Accept': 'application/json'}
 
-    resp = session.get(url, headers=headers)
+    resp = session.get(url, headers=headers, authenticated=authenticated)
 
     try:
         body_resp = resp.json()
@@ -131,8 +134,10 @@ class Discover(object):
     DEPRECATED_STATUSES = ('deprecated',)
     EXPERIMENTAL_STATUSES = ('experimental',)
 
-    def __init__(self, session, url):
-        self._data = get_version_data(session, url)
+    @utils.positional()
+    def __init__(self, session, url, authenticated=None):
+        self._data = get_version_data(session, url,
+                                      authenticated=authenticated)
 
     def raw_version_data(self, allow_experimental=False,
                          allow_deprecated=True, allow_unknown=False):
@@ -228,7 +233,11 @@ class Discover(object):
         return versions
 
     def data_for(self, version, **kwargs):
-        """Return endpoint data for a specific version.
+        """Return endpoint data for a version.
+
+        :param tuple version: The version is always a minimum version in the
+            same major release as there should be no compatibility issues with
+            using a version newer than the one asked for.
 
         :returns dict: the endpoint data for a URL that matches the required
                        version (the format is described in version_data)
@@ -244,9 +253,67 @@ class Discover(object):
         return None
 
     def url_for(self, version, **kwargs):
-        """Get the endpoint url for a required version.
+        """Get the endpoint url for a version.
+
+        :param tuple version: The version is always a minimum version in the
+            same major release as there should be no compatibility issues with
+            using a version newer than the one asked for.
 
         :returns str: The url for the specified version or None if no match.
         """
         data = self.data_for(version, **kwargs)
         return data['url'] if data else None
+
+
+class _VersionHacks(object):
+    """A container to abstract the list of version hacks.
+
+    This could be done as simply a dictionary but is abstracted like this to
+    make for easier testing.
+    """
+
+    def __init__(self):
+        self._discovery_data = {}
+
+    def add_discover_hack(self, service_type, old, new=''):
+        """Add a new hack for a service type.
+
+        :param str service_type: The service_type in the catalog.
+        :param re.RegexObject old: The pattern to use.
+        :param str new: What to replace the pattern with.
+        """
+        hacks = self._discovery_data.setdefault(service_type, [])
+        hacks.append((old, new))
+
+    def get_discover_hack(self, service_type, url):
+        """Apply the catalog hacks and figure out an unversioned endpoint.
+
+        :param str service_type: the service_type to look up.
+        :param str url: The original url that came from a service_catalog.
+
+        :returns: Either the unversioned url or the one from the catalog
+                  to try.
+        """
+        for old, new in self._discovery_data.get(service_type, []):
+            new_string, number_of_subs_made = old.subn(new, url)
+            if number_of_subs_made > 0:
+                return new_string
+
+        return url
+
+
+_VERSION_HACKS = _VersionHacks()
+_VERSION_HACKS.add_discover_hack('identity', re.compile('/v2.0/?$'), '/')
+
+
+def get_catalog_discover_hack(service_type, url):
+    """Apply the catalog hacks and figure out an unversioned endpoint.
+
+    This function is internal to keystoneclient.
+
+    :param str service_type: the service_type to look up.
+    :param str url: The original url that came from a service_catalog.
+
+    :returns: Either the unversioned url or the one from the catalog to try.
+    """
+    return _VERSION_HACKS.get_discover_hack(service_type, url)

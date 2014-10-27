@@ -12,11 +12,22 @@
 
 import abc
 import logging
+
+from oslo.config import cfg
 import six
 
+from keystoneclient import _discover
 from keystoneclient.auth import base
+from keystoneclient import exceptions
+from keystoneclient import utils
 
 LOG = logging.getLogger(__name__)
+
+
+def get_options():
+    return [
+        cfg.StrOpt('auth-url', help='Authentication URL'),
+    ]
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -30,12 +41,16 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
                  username=None,
                  password=None,
                  token=None,
-                 trust_id=None):
+                 trust_id=None,
+                 reauthenticate=True):
 
         super(BaseIdentityPlugin, self).__init__()
 
         self.auth_url = auth_url
         self.auth_ref = None
+        self.reauthenticate = reauthenticate
+
+        self._endpoint_cache = {}
 
         # NOTE(jamielennox): DEPRECATED. The following should not really be set
         # here but handled by the individual auth plugin.
@@ -75,6 +90,28 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
         """
         return self.get_access(session).auth_token
 
+    def _needs_reauthenticate(self):
+        """Return if the existing token needs to be re-authenticated.
+
+        The token should be refreshed if it is about to expire.
+
+        :returns: True if the plugin should fetch a new token. False otherwise.
+        """
+        if not self.auth_ref:
+            # authentication was never fetched.
+            return True
+
+        if not self.reauthenticate:
+            # don't re-authenticate if it has been disallowed.
+            return False
+
+        if self.auth_ref.will_expire_soon(self.MIN_TOKEN_LIFE_SECONDS):
+            # if it's about to expire we should re-authenticate now.
+            return True
+
+        # otherwise it's fine and use the existing one.
+        return False
+
     def get_access(self, session, **kwargs):
         """Fetch or return a current AccessInfo object.
 
@@ -85,14 +122,33 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
 
         :returns AccessInfo: Valid AccessInfo
         """
-        if (not self.auth_ref or
-                self.auth_ref.will_expire_soon(self.MIN_TOKEN_LIFE_SECONDS)):
+        if self._needs_reauthenticate():
             self.auth_ref = self.get_auth_ref(session)
 
         return self.auth_ref
 
+    def invalidate(self):
+        """Invalidate the current authentication data.
+
+        This should result in fetching a new token on next call.
+
+        A plugin may be invalidated if an Unauthorized HTTP response is
+        returned to indicate that the token may have been revoked or is
+        otherwise now invalid.
+
+        :returns bool: True if there was something that the plugin did to
+                       invalidate. This means that it makes sense to try again.
+                       If nothing happens returns False to indicate give up.
+        """
+        if self.auth_ref:
+            self.auth_ref = None
+            return True
+
+        return False
+
     def get_endpoint(self, session, service_type=None, interface=None,
-                     region_name=None, **kwargs):
+                     region_name=None, service_name=None, version=None,
+                     **kwargs):
         """Return a valid endpoint for a service.
 
         If a valid token is not present then a new one will be fetched using
@@ -102,15 +158,28 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
                                     for. This plugin will return None (failure)
                                     if service_type is not provided.
         :param string interface: The exposure of the endpoint. Should be
-                                 `public`, `internal` or `admin`.
-                                 Defaults to `public`.
+                                 `public`, `internal`, `admin`, or `auth`.
+                                 `auth` is special here to use the `auth_url`
+                                 rather than a URL extracted from the service
+                                 catalog. Defaults to `public`.
         :param string region_name: The region the endpoint should exist in.
                                    (optional)
+        :param string service_name: The name of the service in the catalog.
+                                   (optional)
+        :param tuple version: The minimum version number required for this
+                              endpoint. (optional)
 
         :raises HttpError: An error from an invalid HTTP response.
 
         :return string or None: A valid endpoint URL or None if not available.
         """
+        # NOTE(jamielennox): if you specifically ask for requests to be sent to
+        # the auth url then we can ignore the rest of the checks. Typically if
+        # you are asking for the auth endpoint it means that there is no
+        # catalog to query anyway.
+        if interface is base.AUTH_INTERFACE:
+            return self.auth_url
+
         if not service_type:
             LOG.warn('Plugin cannot return an endpoint without knowing the '
                      'service type that is required. Add service_type to '
@@ -121,6 +190,87 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
             interface = 'public'
 
         service_catalog = self.get_access(session).service_catalog
-        return service_catalog.url_for(service_type=service_type,
-                                       endpoint_type=interface,
-                                       region_name=region_name)
+        url = service_catalog.url_for(service_type=service_type,
+                                      endpoint_type=interface,
+                                      region_name=region_name,
+                                      service_name=service_name)
+
+        if not version:
+            # NOTE(jamielennox): This may not be the best thing to default to
+            # but is here for backwards compatibility. It may be worth
+            # defaulting to the most recent version.
+            return url
+
+        # NOTE(jamielennox): For backwards compatibility people might have a
+        # versioned endpoint in their catalog even though they want to use
+        # other endpoint versions. So we support a list of client defined
+        # situations where we can strip the version component from a URL before
+        # doing discovery.
+        hacked_url = _discover.get_catalog_discover_hack(service_type, url)
+
+        try:
+            disc = self.get_discovery(session, hacked_url, authenticated=False)
+        except (exceptions.DiscoveryFailure,
+                exceptions.HTTPError,
+                exceptions.ConnectionError):
+            # NOTE(jamielennox): Again if we can't contact the server we fall
+            # back to just returning the URL from the catalog. This may not be
+            # the best default but we need it for now.
+            LOG.warn('Failed to contact the endpoint at %s for discovery. '
+                     'Fallback to using that endpoint as the base url.', url)
+        else:
+            url = disc.url_for(version)
+
+        return url
+
+    @utils.positional()
+    def get_discovery(self, session, url, authenticated=None):
+        """Return the discovery object for a URL.
+
+        Check the session and the plugin cache to see if we have already
+        performed discovery on the URL and if so return it, otherwise create
+        a new discovery object, cache it and return it.
+
+        This function is expected to be used by subclasses and should not
+        be needed by users.
+
+        :param Session session: A session object to discover with.
+        :param str url: The url to lookup.
+        :param bool authenticated: Include a token in the discovery call.
+                                   (optional) Defaults to None (use a token
+                                   if a plugin is installed).
+
+        :raises: DiscoveryFailure if for some reason the lookup fails.
+        :raises: HttpError An error from an invalid HTTP response.
+
+        :returns: A discovery object with the results of looking up that URL.
+        """
+        # NOTE(jamielennox): we want to cache endpoints on the session as well
+        # so that they maintain sharing between auth plugins. Create a cache on
+        # the session if it doesn't exist already.
+        try:
+            session_endpoint_cache = session._identity_endpoint_cache
+        except AttributeError:
+            session_endpoint_cache = session._identity_endpoint_cache = {}
+
+        # NOTE(jamielennox): There is a cache located on both the session
+        # object and the auth plugin object so that they can be shared and the
+        # cache is still usable
+        for cache in (self._endpoint_cache, session_endpoint_cache):
+            disc = cache.get(url)
+
+            if disc:
+                break
+        else:
+            disc = _discover.Discover(session, url,
+                                      authenticated=authenticated)
+            self._endpoint_cache[url] = disc
+            session_endpoint_cache[url] = disc
+
+        return disc
+
+    @classmethod
+    def get_options(cls):
+        options = super(BaseIdentityPlugin, cls).get_options()
+        options.extend(get_options())
+        return options

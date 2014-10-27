@@ -1,1 +1,20 @@
-{"revoked": [{"expires": "2112-08-14T17:58:48Z", "id": "dc57ea171d2f93e4ff5fa01fe5711f2a"}, {"expires": "2112-08-14T17:58:48Z", "id": "4948fb46f88c41af90b65213a48baef7"}, {"expires": "2112-08-14T17:58:48Z", "id": "dc57ea171d2f93e4ff5fa01fe5711f2a"}, {"expires": "2112-08-14T17:58:48Z", "id": "4948fb46f88c41af90b65213a48baef7"}]}
+{
+    "revoked": [
+        {
+            "expires": "2112-08-14T17:58:48Z",
+            "id": "dc57ea171d2f93e4ff5fa01fe5711f2a"
+        },
+        {
+            "expires": "2112-08-14T17:58:48Z",
+            "id": "4948fb46f88c41af90b65213a48baef7"
+        },
+        {
+            "expires": "2112-08-14T17:58:48Z",
+            "id": "dc57ea171d2f93e4ff5fa01fe5711f2a"
+        },
+        {
+            "expires": "2112-08-14T17:58:48Z",
+            "id": "4948fb46f88c41af90b65213a48baef7"
+        }
+    ]
+}

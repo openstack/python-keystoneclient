@@ -122,7 +122,7 @@ def project_scoped_token():
 AUTH_SUBJECT_TOKEN = '3e2813b7ba0b4006840c3825860b86ed'
 
 AUTH_RESPONSE_HEADERS = {
-    'X-Subject-Token': AUTH_SUBJECT_TOKEN
+    'X-Subject-Token': AUTH_SUBJECT_TOKEN,
 }
 
 

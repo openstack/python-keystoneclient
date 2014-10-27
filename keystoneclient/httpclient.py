@@ -21,12 +21,27 @@ OpenStack Client interface. Handles the REST calls and responses.
 
 import logging
 
+from oslo.serialization import jsonutils
+import pkg_resources
+import requests
 from six.moves.urllib import parse as urlparse
 
 try:
-    import keyring
     import pickle
-except ImportError:
+
+    # NOTE(sdague): The conditional keyring import needs to only
+    # trigger if it's a version of keyring that's supported in global
+    # requirements. Update _min and _bad when that changes.
+    keyring_v = pkg_resources.parse_version(
+        pkg_resources.get_distribution("keyring").version)
+    keyring_min = pkg_resources.parse_version('2.1')
+    keyring_bad = (pkg_resources.parse_version('3.3'),)
+
+    if keyring_v >= keyring_min and keyring_v not in keyring_bad:
+        import keyring
+    else:
+        keyring = None
+except (ImportError, pkg_resources.DistributionNotFound):
     keyring = None
     pickle = None
 
@@ -40,7 +55,6 @@ from keystoneclient import access
 from keystoneclient.auth import base
 from keystoneclient import baseclient
 from keystoneclient import exceptions
-from keystoneclient.openstack.common import jsonutils
 from keystoneclient import session as client_session
 from keystoneclient import utils
 
@@ -53,7 +67,25 @@ USER_AGENT = client_session.USER_AGENT
 request = client_session.request
 
 
+class _FakeRequestSession(object):
+    """This object is a temporary hack that should be removed later.
+
+    Keystoneclient has a cyclical dependency with its managers which is
+    preventing it from being cleaned up correctly. This is always bad but when
+    we switched to doing connection pooling this object wasn't getting cleaned
+    either and so we had left over TCP connections hanging around.
+
+    Until we can fix the client cleanup we rollback the use of a requests
+    session and do individual connections like we used to.
+    """
+
+    def request(self, *args, **kwargs):
+        return requests.request(*args, **kwargs)
+
+
 class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
+
+    version = None
 
     @utils.positional(enforcement=utils.positional.WARN)
     def __init__(self, username=None, tenant_id=None, tenant_name=None,
@@ -223,6 +255,7 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         self._auth_token = None
 
         if not session:
+            kwargs['session'] = _FakeRequestSession()
             session = client_session.Session.construct(kwargs)
             session.auth = self
 
@@ -253,7 +286,7 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
             return self.auth_token_from_user
 
     def get_endpoint(self, session, interface=None, **kwargs):
-        if interface == 'public':
+        if interface == 'public' or interface is base.AUTH_INTERFACE:
             return self.auth_url
         else:
             return self.management_url
@@ -279,7 +312,7 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
 
     def has_service_catalog(self):
         """Returns True if this client provides a service catalog."""
-        return self.auth_ref.has_service_catalog()
+        return self.auth_ref and self.auth_ref.has_service_catalog()
 
     @property
     def tenant_id(self):
@@ -443,8 +476,7 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
                         auth_ref = None
             except Exception as e:
                 auth_ref = None
-                _logger.warning('Unable to retrieve token from keyring %s' % (
-                    e))
+                _logger.warning('Unable to retrieve token from keyring %s', e)
         return (keyring_key, auth_ref)
 
     def store_auth_ref_into_keyring(self, keyring_key):
@@ -457,7 +489,7 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
                                      keyring_key,
                                      pickle.dumps(self.auth_ref))
             except Exception as e:
-                _logger.warning("Failed to store token into keyring %s" % (e))
+                _logger.warning("Failed to store token into keyring %s", e)
 
     def _process_management_url(self, region_name):
         try:
@@ -466,7 +498,7 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
                 endpoint_type='admin',
                 region_name=region_name)
         except exceptions.EndpointNotFound:
-            _logger.warning("Failed to retrieve management_url from token")
+            pass
 
     def process_token(self, region_name=None):
         """Extract and process information from the new auth_ref.
@@ -540,8 +572,8 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
                 body_resp = jsonutils.loads(resp.text)
             except (ValueError, TypeError):
                 body_resp = None
-                _logger.debug("Could not decode JSON from body: %s"
-                              % resp.text)
+                _logger.debug("Could not decode JSON from body: %s",
+                              resp.text)
         else:
             _logger.debug("No body was returned.")
             body_resp = None
@@ -569,10 +601,17 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         concatenating self.management_url and url and passing in method and
         any associated kwargs.
         """
+        # NOTE(jamielennox): remember that if you use the legacy client mode
+        # (you create a client without a session) then this HTTPClient object
+        # is the auth plugin you are using. Values in the endpoint_filter may
+        # be ignored and you should look at get_endpoint to figure out what.
         interface = 'admin' if management else 'public'
         endpoint_filter = kwargs.setdefault('endpoint_filter', {})
         endpoint_filter.setdefault('service_type', 'identity')
         endpoint_filter.setdefault('interface', interface)
+
+        if self.version:
+            endpoint_filter.setdefault('version', self.version)
 
         if self.region_name:
             endpoint_filter.setdefault('region_name', self.region_name)
