@@ -13,7 +13,7 @@ The main concepts in the Identity v2 API are:
  * services
  * endpoints
 
-The client v2 API lets you query and make changes through
+The V2 client API lets you query and make changes through
 managers. For example, to manipulate tenants, you interact with a
 ``keystoneclient.v2_0.tenants.TenantManager`` object.
 
