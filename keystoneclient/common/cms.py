@@ -347,7 +347,6 @@ def cms_sign_data(data_to_sign, signing_cert_file_name, signing_key_file_name,
         process, data, (signing_cert_file_name, signing_key_file_name))
 
     if retcode or ('Error' in err):
-        LOG.error(_LE('Signing error: %s'), err)
         if retcode == 3:
             LOG.error(_LE('Signing error: Unable to load certificate - '
                           'ensure you have configured PKI with '
