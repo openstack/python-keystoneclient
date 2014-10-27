@@ -10,4 +10,4 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from keystoneclient.v3.contrib.federation.core import *  # flake8: noqa
+from keystoneclient.v3.contrib.federation.core import *  # noqa

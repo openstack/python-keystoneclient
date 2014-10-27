@@ -1,5 +1,4 @@
-# flake8: noqa
-from keystoneclient.v2_0.client import Client
+from keystoneclient.v2_0.client import Client  # noqa
 
 
 __all__ = [
