@@ -27,6 +27,7 @@ from six.moves import urllib
 
 from keystoneclient import auth
 from keystoneclient import exceptions
+from keystoneclient.i18n import _
 from keystoneclient.openstack.common.apiclient import base
 
 
@@ -219,7 +220,7 @@ class Manager(object):
                                          management=management,
                                          **kwargs)
         except KeyError:
-            raise exceptions.ClientException("Invalid update method: %s"
+            raise exceptions.ClientException(_("Invalid update method: %s")
                                              % method)
         # PUT requests may not return a body
         if body:
@@ -244,7 +245,8 @@ class ManagerWithFind(Manager):
         num = len(rl)
 
         if num == 0:
-            msg = "No %s matching %s." % (self.resource_class.__name__, kwargs)
+            msg = _("No %(name)s matching %(kwargs)s.") % {
+                'name': self.resource_class.__name__, 'kwargs': kwargs}
             raise exceptions.NotFound(404, msg)
         elif num > 1:
             raise exceptions.NoUniqueMatch
@@ -395,7 +397,8 @@ class CrudManager(Manager):
         num = len(rl)
 
         if num == 0:
-            msg = "No %s matching %s." % (self.resource_class.__name__, kwargs)
+            msg = _("No %(name)s matching %(kwargs)s.") % {
+                'name': self.resource_class.__name__, 'kwargs': kwargs}
             raise exceptions.NotFound(404, msg)
         elif num > 1:
             raise exceptions.NoUniqueMatch

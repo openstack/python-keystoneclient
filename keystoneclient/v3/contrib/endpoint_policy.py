@@ -13,6 +13,7 @@
 #    under the License.
 
 from keystoneclient import base
+from keystoneclient.i18n import _
 from keystoneclient.v3 import policies
 
 
@@ -24,7 +25,7 @@ class EndpointPolicyManager(base.Manager):
     def _act_on_policy_association_for_endpoint(
             self, policy, endpoint, action):
         if not (policy and endpoint):
-            raise ValueError('policy and endpoint are required')
+            raise ValueError(_('policy and endpoint are required'))
 
         policy_id = base.getid(policy)
         endpoint_id = base.getid(endpoint)
@@ -52,7 +53,7 @@ class EndpointPolicyManager(base.Manager):
 
     def _act_on_policy_association_for_service(self, policy, service, action):
         if not (policy and service):
-            raise ValueError('policy and service are required')
+            raise ValueError(_('policy and service are required'))
 
         policy_id = base.getid(policy)
         service_id = base.getid(service)
@@ -81,7 +82,7 @@ class EndpointPolicyManager(base.Manager):
     def _act_on_policy_association_for_region_and_service(
             self, policy, region, service, action):
         if not (policy and region and service):
-            raise ValueError('policy, region and service are required')
+            raise ValueError(_('policy, region and service are required'))
 
         policy_id = base.getid(policy)
         region_id = base.getid(region)
@@ -121,7 +122,7 @@ class EndpointPolicyManager(base.Manager):
 
         """
         if not endpoint:
-            raise ValueError('endpoint is required')
+            raise ValueError(_('endpoint is required'))
 
         endpoint_id = base.getid(endpoint)
         url = ('/endpoints/%(endpoint_id)s/%(ext_name)s/policy') % {
@@ -141,7 +142,7 @@ class EndpointPolicyManager(base.Manager):
 
         """
         if not policy:
-            raise ValueError('policy is required')
+            raise ValueError(_('policy is required'))
 
         policy_id = base.getid(policy)
         url = ('/policies/%(policy_id)s/%(ext_name)s/endpoints') % {

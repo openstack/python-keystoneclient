@@ -18,6 +18,7 @@ import logging
 
 from keystoneclient import base
 from keystoneclient import exceptions
+from keystoneclient.i18n import _, _LW
 from keystoneclient import utils
 
 LOG = logging.getLogger(__name__)
@@ -41,7 +42,7 @@ class UserManager(base.CrudManager):
 
     def _require_user_and_group(self, user, group):
         if not (user and group):
-            msg = 'Specify both a user and a group'
+            msg = _('Specify both a user and a group')
             raise exceptions.ValidationError(msg)
 
     @utils.positional(1, enforcement=utils.positional.WARN)
@@ -58,8 +59,8 @@ class UserManager(base.CrudManager):
         will be used.
         """
         if project:
-            LOG.warning("The project argument is deprecated, "
-                        "use default_project instead.")
+            LOG.warning(_LW("The project argument is deprecated, "
+                            "use default_project instead."))
         default_project_id = base.getid(default_project) or base.getid(project)
         user_data = base.filter_none(name=name,
                                      domain_id=base.getid(domain),
@@ -92,8 +93,8 @@ class UserManager(base.CrudManager):
         will be used.
         """
         if project:
-            LOG.warning("The project argument is deprecated, "
-                        "use default_project instead.")
+            LOG.warning(_LW("The project argument is deprecated, "
+                            "use default_project instead."))
         default_project_id = base.getid(default_project) or base.getid(project)
         if group:
             base_url = '/groups/%s' % base.getid(group)
@@ -124,8 +125,8 @@ class UserManager(base.CrudManager):
         will be used.
         """
         if project:
-            LOG.warning("The project argument is deprecated, "
-                        "use default_project instead.")
+            LOG.warning(_LW("The project argument is deprecated, "
+                            "use default_project instead."))
         default_project_id = base.getid(default_project) or base.getid(project)
         user_data = base.filter_none(name=name,
                                      domain_id=base.getid(domain),
@@ -145,11 +146,11 @@ class UserManager(base.CrudManager):
     def update_password(self, old_password, new_password):
         """Update the password for the user the token belongs to."""
         if not (old_password and new_password):
-            msg = 'Specify both the current password and a new password'
+            msg = _('Specify both the current password and a new password')
             raise exceptions.ValidationError(msg)
 
         if old_password == new_password:
-            msg = 'Old password and new password must be different.'
+            msg = _('Old password and new password must be different.')
             raise exceptions.ValidationError(msg)
 
         params = {'user': {'password': new_password,

@@ -29,6 +29,7 @@ import sys
 from oslo.utils import strutils
 import six
 
+from keystoneclient.i18n import _
 from keystoneclient import utils
 from keystoneclient.v2_0 import client
 
@@ -38,9 +39,9 @@ ASK_FOR_PASSWORD = object()
 
 
 def require_service_catalog(f):
-    msg = ('Configuration error: Client configured to run without a service '
-           'catalog. Run the client using --os-auth-url or OS_AUTH_URL, '
-           'instead of --os-endpoint or OS_SERVICE_ENDPOINT, for example.')
+    msg = _('Configuration error: Client configured to run without a service '
+            'catalog. Run the client using --os-auth-url or OS_AUTH_URL, '
+            'instead of --os-endpoint or OS_SERVICE_ENDPOINT, for example.')
 
     def wrapped(kc, args):
         if not kc.has_service_catalog():
@@ -121,15 +122,15 @@ def do_user_update(kc, args):
         kwargs['enabled'] = strutils.bool_from_string(args.enabled)
 
     if not len(kwargs):
-        print("User not updated, no arguments present.")
+        print(_("User not updated, no arguments present."))
         return
 
     user = utils.find_resource(kc.users, args.user)
     try:
         kc.users.update(user, **kwargs)
-        print('User has been updated.')
+        print(_('User has been updated.'))
     except Exception as e:
-        print('Unable to update user: %s' % e)
+        print(_('Unable to update user: %s') % e)
 
 
 @utils.arg('--pass', metavar='<password>', dest='passwd', required=False,
@@ -141,8 +142,8 @@ def do_user_password_update(kc, args):
     user = utils.find_resource(kc.users, args.user)
     new_passwd = args.passwd or utils.prompt_for_password()
     if new_passwd is None:
-        msg = ("\nPlease specify password using the --pass option "
-               "or using the prompt")
+        msg = (_("\nPlease specify password using the --pass option "
+                 "or using the prompt"))
         sys.exit(msg)
     kc.users.update_password(user, new_passwd)
 
@@ -163,20 +164,20 @@ def do_password_update(kc, args):
     if args.currentpasswd is not None:
         currentpasswd = args.currentpasswd
     if currentpasswd is None:
-        currentpasswd = getpass.getpass('Current Password: ')
+        currentpasswd = getpass.getpass(_('Current Password: '))
 
     newpasswd = args.newpasswd
     while newpasswd is None:
-        passwd1 = getpass.getpass('New Password: ')
-        passwd2 = getpass.getpass('Repeat New Password: ')
+        passwd1 = getpass.getpass(_('New Password: '))
+        passwd2 = getpass.getpass(_('Repeat New Password: '))
         if passwd1 == passwd2:
             newpasswd = passwd1
 
     kc.users.update_own_password(currentpasswd, newpasswd)
 
     if args.os_password != newpasswd:
-        print("You should update the password you are using to authenticate "
-              "to match your new password")
+        print(_("You should update the password you are using to authenticate "
+                "to match your new password"))
 
 
 @utils.arg('user', metavar='<user>', help='Name or ID of user to delete.')
@@ -234,7 +235,7 @@ def do_tenant_update(kc, args):
         kwargs.update({'enabled': strutils.bool_from_string(args.enabled)})
 
     if kwargs == {}:
-        print("Tenant not updated, no arguments present.")
+        print(_("Tenant not updated, no arguments present."))
         return
     tenant.update(**kwargs)
 
@@ -450,9 +451,9 @@ def do_ec2_credentials_delete(kc, args):
         args.user_id = kc.auth_user_id
     try:
         kc.ec2.delete(args.user_id, args.access)
-        print('Credential has been deleted.')
+        print(_('Credential has been deleted.'))
     except Exception as e:
-        print('Unable to delete credential: %s' % e)
+        print(_('Unable to delete credential: %s') % e)
 
 
 @utils.arg('--service', metavar='<service-type>', default=None,
@@ -463,7 +464,7 @@ def do_catalog(kc, args):
     endpoints = kc.service_catalog.get_endpoints(service_type=args.service)
     for (service, service_endpoints) in six.iteritems(endpoints):
         if len(service_endpoints) > 0:
-            print("Service: %s" % service)
+            print(_("Service: %s") % service)
             for ep in service_endpoints:
                 utils.print_dict(ep)
 
@@ -489,7 +490,7 @@ def do_endpoint_get(kc, args):
     if args.attr and args.value:
         kwargs.update({'attr': args.attr, 'filter_value': args.value})
     elif args.attr or args.value:
-        print('Both --attr and --value required.')
+        print(_('Both --attr and --value required.'))
         return
 
     url = kc.service_catalog.url_for(**kwargs)
@@ -531,9 +532,9 @@ def do_endpoint_delete(kc, args):
     """Delete a service endpoint."""
     try:
         kc.endpoints.delete(args.id)
-        print('Endpoint has been deleted.')
+        print(_('Endpoint has been deleted.'))
     except Exception:
-        print('Unable to delete endpoint.')
+        print(_('Unable to delete endpoint.'))
 
 
 @utils.arg('--wrap', metavar='<integer>', default=0,

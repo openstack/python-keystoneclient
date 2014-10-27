@@ -16,6 +16,7 @@
 
 from keystoneclient import base
 from keystoneclient import exceptions
+from keystoneclient.i18n import _
 from keystoneclient import utils
 
 
@@ -59,18 +60,18 @@ class RoleManager(base.CrudManager):
 
     def _require_domain_xor_project(self, domain, project):
         if domain and project:
-            msg = 'Specify either a domain or project, not both'
+            msg = _('Specify either a domain or project, not both')
             raise exceptions.ValidationError(msg)
         elif not (domain or project):
-            msg = 'Must specify either a domain or project'
+            msg = _('Must specify either a domain or project')
             raise exceptions.ValidationError(msg)
 
     def _require_user_xor_group(self, user, group):
         if user and group:
-            msg = 'Specify either a user or group, not both'
+            msg = _('Specify either a user or group, not both')
             raise exceptions.ValidationError(msg)
         elif not (user or group):
-            msg = 'Must specify either a user or group'
+            msg = _('Must specify either a user or group')
             raise exceptions.ValidationError(msg)
 
     @utils.positional(1, enforcement=utils.positional.WARN)

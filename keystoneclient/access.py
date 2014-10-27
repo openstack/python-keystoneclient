@@ -19,6 +19,7 @@ import datetime
 
 from oslo.utils import timeutils
 
+from keystoneclient.i18n import _
 from keystoneclient import service_catalog
 
 
@@ -63,7 +64,7 @@ class AccessInfo(dict):
                 else:
                     auth_ref = AccessInfoV2(**kwargs)
             else:
-                raise NotImplementedError('Unrecognized auth response')
+                raise NotImplementedError(_('Unrecognized auth response'))
         else:
             auth_ref = AccessInfoV2(**kwargs)
 

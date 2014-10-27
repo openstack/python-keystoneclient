@@ -18,6 +18,7 @@ import logging
 from keystoneclient.auth.identity import v2 as v2_auth
 from keystoneclient import exceptions
 from keystoneclient import httpclient
+from keystoneclient.i18n import _
 from keystoneclient.v2_0 import ec2
 from keystoneclient.v2_0 import endpoints
 from keystoneclient.v2_0 import extensions
@@ -163,7 +164,7 @@ class Client(httpclient.HTTPClient):
         """
         try:
             if auth_url is None:
-                raise ValueError("Cannot authenticate without an auth_url")
+                raise ValueError(_("Cannot authenticate without an auth_url"))
 
             new_kwargs = {'trust_id': trust_id,
                           'tenant_id': project_id or tenant_id,
@@ -175,7 +176,7 @@ class Client(httpclient.HTTPClient):
                 plugin = v2_auth.Password(auth_url, username, password,
                                           **new_kwargs)
             else:
-                msg = 'A username and password or token is required.'
+                msg = _('A username and password or token is required.')
                 raise exceptions.AuthorizationFailure(msg)
 
             return plugin.get_auth_ref(self.session)
@@ -183,8 +184,9 @@ class Client(httpclient.HTTPClient):
             _logger.debug("Authorization Failed.")
             raise
         except exceptions.EndpointNotFound:
-            msg = 'There was no suitable authentication url for this request'
+            msg = (
+                _('There was no suitable authentication url for this request'))
             raise exceptions.AuthorizationFailure(msg)
         except Exception as e:
-            raise exceptions.AuthorizationFailure("Authorization Failed: "
-                                                  "%s" % e)
+            raise exceptions.AuthorizationFailure(
+                _("Authorization Failed: %s") % e)

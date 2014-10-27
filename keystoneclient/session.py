@@ -25,6 +25,7 @@ import six
 from six.moves import urllib
 
 from keystoneclient import exceptions
+from keystoneclient.i18n import _, _LI, _LW
 from keystoneclient import utils
 
 osprofiler_web = importutils.try_import("osprofiler.web")
@@ -40,10 +41,10 @@ def _positive_non_zero_float(argument_value):
     try:
         value = float(argument_value)
     except ValueError:
-        msg = "%s must be a float" % argument_value
+        msg = _("%s must be a float") % argument_value
         raise argparse.ArgumentTypeError(msg)
     if value <= 0:
-        msg = "%s must be greater than 0" % argument_value
+        msg = _("%s must be greater than 0") % argument_value
         raise argparse.ArgumentTypeError(msg)
     return value
 
@@ -274,7 +275,7 @@ class Session(object):
             token = self.get_token(auth)
 
             if not token:
-                raise exceptions.AuthorizationFailure("No token Available")
+                raise exceptions.AuthorizationFailure(_("No token Available"))
 
             headers['X-Auth-Token'] = token
 
@@ -372,20 +373,20 @@ class Session(object):
             try:
                 resp = self.session.request(method, url, **kwargs)
             except requests.exceptions.SSLError:
-                msg = 'SSL exception connecting to %s' % url
+                msg = _('SSL exception connecting to %s') % url
                 raise exceptions.SSLError(msg)
             except requests.exceptions.Timeout:
-                msg = 'Request to %s timed out' % url
+                msg = _('Request to %s timed out') % url
                 raise exceptions.RequestTimeout(msg)
             except requests.exceptions.ConnectionError:
-                msg = 'Unable to establish connection to %s' % url
+                msg = _('Unable to establish connection to %s') % url
                 raise exceptions.ConnectionRefused(msg)
         except (exceptions.RequestTimeout, exceptions.ConnectionRefused) as e:
             if connect_retries <= 0:
                 raise
 
-            _logger.info('Failure: %s. Retrying in %.1fs.',
-                         e, connect_retry_delay)
+            _logger.info(_LI('Failure: %(e)s. Retrying in %(delay).1fs.'),
+                         {'e': e, 'delay': connect_retry_delay})
             time.sleep(connect_retry_delay)
 
             return self._send_request(
@@ -411,8 +412,8 @@ class Session(object):
             try:
                 location = resp.headers['location']
             except KeyError:
-                _logger.warn("Failed to redirect request to %s as new "
-                             "location was not provided.", resp.url)
+                _logger.warn(_LW("Failed to redirect request to %s as new "
+                                 "location was not provided."), resp.url)
             else:
                 # NOTE(jamielennox): We don't pass through connect_retry_delay.
                 # This request actually worked so we can reset the delay count.
@@ -508,13 +509,13 @@ class Session(object):
             auth = self.auth
 
         if not auth:
-            raise exceptions.MissingAuthPlugin("Token Required")
+            raise exceptions.MissingAuthPlugin(_("Token Required"))
 
         try:
             return auth.get_token(self)
         except exceptions.HttpError as exc:
-            raise exceptions.AuthorizationFailure("Authentication failure: "
-                                                  "%s" % exc)
+            raise exceptions.AuthorizationFailure(
+                _("Authentication failure: %s") % exc)
 
     def get_endpoint(self, auth=None, **kwargs):
         """Get an endpoint as provided by the auth plugin.
@@ -531,8 +532,9 @@ class Session(object):
             auth = self.auth
 
         if not auth:
-            raise exceptions.MissingAuthPlugin('An auth plugin is required to '
-                                               'determine the endpoint URL.')
+            raise exceptions.MissingAuthPlugin(
+                _('An auth plugin is required to determine the endpoint '
+                  'URL.'))
 
         return auth.get_endpoint(self, **kwargs)
 
@@ -543,7 +545,7 @@ class Session(object):
             auth = self.auth
 
         if not auth:
-            msg = 'Auth plugin not available to invalidate'
+            msg = _('Auth plugin not available to invalidate')
             raise exceptions.MissingAuthPlugin(msg)
 
         return auth.invalidate()

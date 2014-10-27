@@ -55,6 +55,7 @@ from keystoneclient import access
 from keystoneclient.auth import base
 from keystoneclient import baseclient
 from keystoneclient import exceptions
+from keystoneclient.i18n import _, _LI, _LW
 from keystoneclient import session as client_session
 from keystoneclient import utils
 
@@ -265,7 +266,7 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
 
         # keyring setup
         if use_keyring and keyring is None:
-            _logger.warning('Failed to load keyring modules.')
+            _logger.warning(_LW('Failed to load keyring modules.'))
         self.use_keyring = use_keyring and keyring is not None
         self.force_new_token = force_new_token
         self.stale_duration = stale_duration or access.STALE_TOKEN_DURATION
@@ -476,7 +477,8 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
                         auth_ref = None
             except Exception as e:
                 auth_ref = None
-                _logger.warning('Unable to retrieve token from keyring %s', e)
+                _logger.warning(
+                    _LW('Unable to retrieve token from keyring %s'), e)
         return (keyring_key, auth_ref)
 
     def store_auth_ref_into_keyring(self, keyring_key):
@@ -489,7 +491,8 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
                                      keyring_key,
                                      pickle.dumps(self.auth_ref))
             except Exception as e:
-                _logger.warning("Failed to store token into keyring %s", e)
+                _logger.warning(
+                    _LW("Failed to store token into keyring %s"), e)
 
     def _process_management_url(self, region_name):
         try:
@@ -511,14 +514,14 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         if self.auth_ref.project_scoped:
             if not self.auth_ref.tenant_id:
                 raise exceptions.AuthorizationFailure(
-                    "Token didn't provide tenant_id")
+                    _("Token didn't provide tenant_id"))
             self._process_management_url(region_name)
             self.project_name = self.auth_ref.tenant_name
             self.project_id = self.auth_ref.tenant_id
 
         if not self.auth_ref.user_id:
             raise exceptions.AuthorizationFailure(
-                "Token didn't provide user_id")
+                _("Token didn't provide user_id"))
 
         self.user_id = self.auth_ref.user_id
 
@@ -620,10 +623,11 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         try:
             return self.request(url, method, **kwargs)
         except exceptions.MissingAuthPlugin:
-            _logger.info('Cannot get authenticated endpoint without an '
-                         'auth plugin')
+            _logger.info(_LI('Cannot get authenticated endpoint without an '
+                             'auth plugin'))
             raise exceptions.AuthorizationFailure(
-                'Current authorization does not have a known management url')
+                _('Current authorization does not have a known management '
+                  'url'))
 
     def get(self, url, **kwargs):
         return self._cs_request(url, 'GET', **kwargs)
@@ -656,7 +660,7 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         try:
             var_name = self.deprecated_session_variables[name]
         except KeyError:
-            raise AttributeError("Unknown Attribute: %s" % name)
+            raise AttributeError(_("Unknown Attribute: %s") % name)
 
         return getattr(self.session, var_name or name)
 

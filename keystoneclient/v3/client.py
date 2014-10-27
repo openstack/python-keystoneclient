@@ -20,6 +20,7 @@ from oslo.serialization import jsonutils
 from keystoneclient.auth.identity import v3 as v3_auth
 from keystoneclient import exceptions
 from keystoneclient import httpclient
+from keystoneclient.i18n import _
 from keystoneclient.v3.contrib import endpoint_filter
 from keystoneclient.v3.contrib import endpoint_policy
 from keystoneclient.v3.contrib import federation
@@ -203,7 +204,7 @@ EndpointPolicyManager`
         if self.auth_ref.domain_scoped:
             if not self.auth_ref.domain_id:
                 raise exceptions.AuthorizationFailure(
-                    "Token didn't provide domain_id")
+                    _("Token didn't provide domain_id"))
             self._process_management_url(kwargs.get('region_name'))
             self.domain_name = self.auth_ref.domain_name
             self.domain_id = self.auth_ref.domain_id
@@ -235,7 +236,7 @@ EndpointPolicyManager`
         """
         try:
             if auth_url is None:
-                raise ValueError("Cannot authenticate without an auth_url")
+                raise ValueError(_("Cannot authenticate without an auth_url"))
 
             auth_methods = []
 
@@ -251,7 +252,7 @@ EndpointPolicyManager`
                 auth_methods.append(m)
 
             if not auth_methods:
-                msg = 'A user and password or token is required.'
+                msg = _('A user and password or token is required.')
                 raise exceptions.AuthorizationFailure(msg)
 
             plugin = v3_auth.Auth(auth_url, auth_methods,
@@ -268,8 +269,9 @@ EndpointPolicyManager`
             _logger.debug('Authorization failed.')
             raise
         except exceptions.EndpointNotFound:
-            msg = 'There was no suitable authentication url for this request'
+            msg = _('There was no suitable authentication url for this'
+                    ' request')
             raise exceptions.AuthorizationFailure(msg)
         except Exception as e:
-            raise exceptions.AuthorizationFailure('Authorization failed: '
-                                                  '%s' % e)
+            raise exceptions.AuthorizationFailure(
+                _('Authorization failed: %s') % e)

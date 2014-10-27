@@ -17,6 +17,8 @@ import six
 import stevedore
 
 from keystoneclient import exceptions
+from keystoneclient.i18n import _
+
 
 # NOTE(jamielennox): The AUTH_INTERFACE is a special value that can be
 # requested from get_endpoint. If a plugin receives this as the value of
@@ -40,7 +42,7 @@ def get_plugin_class(name):
                                       name=name,
                                       invoke_on_load=False)
     except RuntimeError:
-        msg = 'The plugin %s could not be found' % name
+        msg = _('The plugin %s could not be found') % name
         raise exceptions.NoMatchingPlugin(msg)
 
     return mgr.driver

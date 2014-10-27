@@ -24,6 +24,8 @@ import re
 import six
 from six.moves import urllib
 
+from keystoneclient.i18n import _
+
 
 class Ec2Signer(object):
     """Utility class which adds allows a request to be signed with an AWS style
@@ -91,10 +93,10 @@ class Ec2Signer(object):
                                           credentials['body_hash'])
 
         if signature_version is not None:
-            raise Exception('Unknown signature version: %s' %
+            raise Exception(_('Unknown signature version: %s') %
                             signature_version)
         else:
-            raise Exception('Unexpected signature format')
+            raise Exception(_('Unexpected signature format'))
 
     @staticmethod
     def _get_utf8_value(value):
@@ -257,7 +259,7 @@ class Ec2Signer(object):
         credential_date = credential_split[1]
         param_date = date_param()
         if not param_date.startswith(credential_date):
-            raise Exception('Request date mismatch error')
+            raise Exception(_('Request date mismatch error'))
 
         # Create the string to sign
         # http://docs.aws.amazon.com/general/latest/gr/

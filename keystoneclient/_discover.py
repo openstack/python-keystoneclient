@@ -25,6 +25,7 @@ import logging
 import re
 
 from keystoneclient import exceptions
+from keystoneclient.i18n import _, _LI, _LW
 from keystoneclient import utils
 
 
@@ -65,7 +66,7 @@ def get_version_data(session, url, authenticated=None):
             pass
 
     err_text = resp.text[:50] + '...' if len(resp.text) > 50 else resp.text
-    msg = 'Invalid Response - Bad version data returned: %s' % err_text
+    msg = _('Invalid Response - Bad version data returned: %s') % err_text
     raise exceptions.DiscoveryFailure(msg)
 
 
@@ -99,7 +100,7 @@ def normalize_version_number(version):
     except Exception:
         pass
 
-    raise TypeError('Invalid version specified: %s' % version)
+    raise TypeError(_('Invalid version specified: %s') % version)
 
 
 def version_match(required, candidate):
@@ -159,8 +160,8 @@ class Discover(object):
             try:
                 status = v['status']
             except KeyError:
-                _LOGGER.warning('Skipping over invalid version data. '
-                                'No stability status in version.')
+                _LOGGER.warning(_LW('Skipping over invalid version data. '
+                                    'No stability status in version.'))
                 continue
 
             status = status.lower()
@@ -198,13 +199,14 @@ class Discover(object):
             try:
                 version_str = v['id']
             except KeyError:
-                _LOGGER.info('Skipping invalid version data. Missing ID.')
+                _LOGGER.info(_LI('Skipping invalid version data. Missing ID.'))
                 continue
 
             try:
                 links = v['links']
             except KeyError:
-                _LOGGER.info('Skipping invalid version data. Missing links')
+                _LOGGER.info(
+                    _LI('Skipping invalid version data. Missing links'))
                 continue
 
             version_number = normalize_version_number(version_str)
@@ -214,15 +216,15 @@ class Discover(object):
                     rel = link['rel']
                     url = link['href']
                 except (KeyError, TypeError):
-                    _LOGGER.info('Skipping invalid version link. '
-                                 'Missing link URL or relationship.')
+                    _LOGGER.info(_LI('Skipping invalid version link. '
+                                     'Missing link URL or relationship.'))
                     continue
 
                 if rel.lower() == 'self':
                     break
             else:
-                _LOGGER.info('Skipping invalid version data. '
-                             'Missing link to endpoint.')
+                _LOGGER.info(_LI('Skipping invalid version data. '
+                                 'Missing link to endpoint.'))
                 continue
 
             versions.append({'version': version_number,
