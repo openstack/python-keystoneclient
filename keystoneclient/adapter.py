@@ -116,6 +116,9 @@ class Adapter(object):
         :returns: An endpoint if available or None.
         :rtype: string
         """
+        if self.endpoint_override:
+            return self.endpoint_override
+
         self._set_endpoint_filter_kwargs(kwargs)
         return self.session.get_endpoint(auth or self.auth, **kwargs)
 
