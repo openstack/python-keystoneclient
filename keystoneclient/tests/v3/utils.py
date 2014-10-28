@@ -244,27 +244,22 @@ class CrudTests(object):
         ref_list = ref_list or [self.new_ref(), self.new_ref()]
         expected_path = self._get_expected_path(expected_path)
 
-        self.requests.register_uri('GET',
-                                   urlparse.urljoin(self.TEST_URL,
-                                                    expected_path),
-                                   json=self.encode(ref_list))
+        self.requests.get(urlparse.urljoin(self.TEST_URL, expected_path),
+                          json=self.encode(ref_list))
 
         returned_list = self.manager.list(**filter_kwargs)
         self.assertEqual(len(ref_list), len(returned_list))
         [self.assertIsInstance(r, self.model) for r in returned_list]
 
-        # register_uri doesn't match the querystring component, so we have to
-        # explicitly test the querystring component passed by the manager
-        parts = urlparse.urlparse(self.requests.last_request.url)
-        qs_args = urlparse.parse_qs(parts.query)
+        qs_args = self.requests.last_request.qs
         qs_args_expected = expected_query or filter_kwargs
         for key, value in six.iteritems(qs_args_expected):
             self.assertIn(key, qs_args)
-            # The httppretty.querystring value is a list
-            # Note we convert the value to a string, as the query string
-            # is always a string and the filter_kwargs may contain non-string
-            # values, for example a boolean, causing the comaprison to fail.
-            self.assertIn(str(value), qs_args[key])
+            # The querystring value is a list. Note we convert the value to a
+            # string and lower, as the query string is always a string and the
+            # filter_kwargs may contain non-string values, for example a
+            # boolean, causing the comaprison to fail.
+            self.assertIn(str(value).lower(), qs_args[key])
 
         # Also check that no query string args exist which are not expected
         for key in qs_args:
@@ -275,10 +270,8 @@ class CrudTests(object):
         filter_kwargs = {uuid.uuid4().hex: uuid.uuid4().hex}
         expected_path = self._get_expected_path()
 
-        self.requests.register_uri('GET',
-                                   urlparse.urljoin(self.TEST_URL,
-                                                    expected_path),
-                                   json=self.encode(ref_list))
+        self.requests.get(urlparse.urljoin(self.TEST_URL, expected_path),
+                          json=self.encode(ref_list))
 
         self.manager.list(**filter_kwargs)
         self.assertQueryStringContains(**filter_kwargs)

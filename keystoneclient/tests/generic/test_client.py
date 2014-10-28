@@ -56,8 +56,7 @@ EXTENSION_LIST = _create_extension_list([EXTENSION_FOO, EXTENSION_BAR])
 class ClientDiscoveryTests(utils.TestCase):
 
     def test_discover_extensions_v2(self):
-        self.requests.register_uri('GET', "%s/extensions" % V2_URL,
-                                   text=EXTENSION_LIST)
+        self.requests.get("%s/extensions" % V2_URL, text=EXTENSION_LIST)
         extensions = client.Client().discover_extensions(url=V2_URL)
         self.assertIn(EXTENSION_ALIAS_FOO, extensions)
         self.assertEqual(extensions[EXTENSION_ALIAS_FOO], EXTENSION_NAME_FOO)

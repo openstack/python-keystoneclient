@@ -128,8 +128,7 @@ class AuthenticateviaSAML2Tests(utils.TestCase):
 
     def test_initial_sp_call(self):
         """Test initial call, expect SOAP message."""
-        self.requests.register_uri(
-            'GET',
+        self.requests.get(
             self.FEDERATION_AUTH_URL,
             content=make_oneline(saml2_fixtures.SP_SOAP_RESPONSE))
         a = self.saml2plugin._send_service_provider_request(self.session)
@@ -154,8 +153,7 @@ class AuthenticateviaSAML2Tests(utils.TestCase):
                 str(self.saml2plugin.sp_response_consumer_url)))
 
     def test_initial_sp_call_when_saml_authenticated(self):
-        self.requests.register_uri(
-            'GET',
+        self.requests.get(
             self.FEDERATION_AUTH_URL,
             json=saml2_fixtures.UNSCOPED_TOKEN,
             headers={'X-Subject-Token': saml2_fixtures.UNSCOPED_TOKEN_HEADER})
@@ -170,8 +168,7 @@ class AuthenticateviaSAML2Tests(utils.TestCase):
             self.saml2plugin.authenticated_response.headers['X-Subject-Token'])
 
     def test_get_unscoped_token_when_authenticated(self):
-        self.requests.register_uri(
-            'GET',
+        self.requests.get(
             self.FEDERATION_AUTH_URL,
             json=saml2_fixtures.UNSCOPED_TOKEN,
             headers={'X-Subject-Token': saml2_fixtures.UNSCOPED_TOKEN_HEADER,
@@ -184,9 +181,8 @@ class AuthenticateviaSAML2Tests(utils.TestCase):
 
     def test_initial_sp_call_invalid_response(self):
         """Send initial SP HTTP request and receive wrong server response."""
-        self.requests.register_uri('GET',
-                                   self.FEDERATION_AUTH_URL,
-                                   text='NON XML RESPONSE')
+        self.requests.get(self.FEDERATION_AUTH_URL,
+                          text='NON XML RESPONSE')
 
         self.assertRaises(
             exceptions.AuthorizationFailure,
@@ -194,9 +190,8 @@ class AuthenticateviaSAML2Tests(utils.TestCase):
             self.session)
 
     def test_send_authn_req_to_idp(self):
-        self.requests.register_uri('POST',
-                                   self.IDENTITY_PROVIDER_URL,
-                                   content=saml2_fixtures.SAML2_ASSERTION)
+        self.requests.post(self.IDENTITY_PROVIDER_URL,
+                           content=saml2_fixtures.SAML2_ASSERTION)
 
         self.saml2plugin.sp_response_consumer_url = self.SHIB_CONSUMER_URL
         self.saml2plugin.saml2_authn_request = etree.XML(
@@ -213,9 +208,7 @@ class AuthenticateviaSAML2Tests(utils.TestCase):
         self.assertEqual(idp_response, saml2_assertion_oneline, error)
 
     def test_fail_basicauth_idp_authentication(self):
-        self.requests.register_uri('POST',
-                                   self.IDENTITY_PROVIDER_URL,
-                                   status_code=401)
+        self.requests.post(self.IDENTITY_PROVIDER_URL, status_code=401)
 
         self.saml2plugin.sp_response_consumer_url = self.SHIB_CONSUMER_URL
         self.saml2plugin.saml2_authn_request = etree.XML(
@@ -232,8 +225,7 @@ class AuthenticateviaSAML2Tests(utils.TestCase):
                           self.IDENTITY_PROVIDER_URL)
 
     def test_send_authn_response_to_sp(self):
-        self.requests.register_uri(
-            'POST',
+        self.requests.post(
             self.SHIB_CONSUMER_URL,
             json=saml2_fixtures.UNSCOPED_TOKEN,
             headers={'X-Subject-Token': saml2_fixtures.UNSCOPED_TOKEN_HEADER})
@@ -263,7 +255,7 @@ class AuthenticateviaSAML2Tests(utils.TestCase):
             self.SHIB_CONSUMER_URL)
 
     def test_consumer_url_mismatch(self):
-        self.requests.register_uri('POST', self.SHIB_CONSUMER_URL)
+        self.requests.post(self.SHIB_CONSUMER_URL)
         invalid_consumer_url = uuid.uuid4().hex
         self.assertRaises(
             exceptions.ValidationError,
@@ -272,15 +264,13 @@ class AuthenticateviaSAML2Tests(utils.TestCase):
             invalid_consumer_url)
 
     def test_custom_302_redirection(self):
-        self.requests.register_uri(
-            'POST',
+        self.requests.post(
             self.SHIB_CONSUMER_URL,
             text='BODY',
             headers={'location': self.FEDERATION_AUTH_URL},
             status_code=302)
 
-        self.requests.register_uri(
-            'GET',
+        self.requests.get(
             self.FEDERATION_AUTH_URL,
             json=saml2_fixtures.UNSCOPED_TOKEN,
             headers={'X-Subject-Token': saml2_fixtures.UNSCOPED_TOKEN_HEADER})
@@ -299,17 +289,14 @@ class AuthenticateviaSAML2Tests(utils.TestCase):
         self.assertEqual('GET', response.request.method)
 
     def test_end_to_end_workflow(self):
-        self.requests.register_uri(
-            'GET',
+        self.requests.get(
             self.FEDERATION_AUTH_URL,
             content=make_oneline(saml2_fixtures.SP_SOAP_RESPONSE))
 
-        self.requests.register_uri('POST',
-                                   self.IDENTITY_PROVIDER_URL,
-                                   content=saml2_fixtures.SAML2_ASSERTION)
+        self.requests.post(self.IDENTITY_PROVIDER_URL,
+                           content=saml2_fixtures.SAML2_ASSERTION)
 
-        self.requests.register_uri(
-            'POST',
+        self.requests.post(
             self.SHIB_CONSUMER_URL,
             json=saml2_fixtures.UNSCOPED_TOKEN,
             headers={'X-Subject-Token': saml2_fixtures.UNSCOPED_TOKEN_HEADER,
@@ -476,8 +463,8 @@ class AuthenticateviaADFSTests(utils.TestCase):
     def test_get_adfs_security_token(self):
         """Test ADFSUnscopedToken._get_adfs_security_token()."""
 
-        self.requests.register_uri(
-            'POST', self.IDENTITY_PROVIDER_URL,
+        self.requests.post(
+            self.IDENTITY_PROVIDER_URL,
             content=make_oneline(self.ADFS_SECURITY_TOKEN_RESPONSE),
             status_code=200)
 
@@ -539,9 +526,9 @@ class AuthenticateviaADFSTests(utils.TestCase):
         An exceptions.AuthorizationFailure should be raised including
         error message from the XML message indicating where was the problem.
         """
-        self.requests.register_uri(
-        'POST', self.IDENTITY_PROVIDER_URL,
-        content=make_oneline(self.ADFS_FAULT), status_code=500)
+        self.requests.post(self.IDENTITY_PROVIDER_URL,
+                           content=make_oneline(self.ADFS_FAULT),
+                           status_code=500)
 
         self.adfsplugin._prepare_adfs_request()
         self.assertRaises(exceptions.AuthorizationFailure,
@@ -558,10 +545,9 @@ class AuthenticateviaADFSTests(utils.TestCase):
         and correctly raise exceptions.InternalServerError once it cannot
         parse XML fault message
         """
-        self.requests.register_uri(
-        'POST', self.IDENTITY_PROVIDER_URL,
-        content=b'NOT XML',
-        status_code=500)
+        self.requests.post(self.IDENTITY_PROVIDER_URL,
+                           content=b'NOT XML',
+                           status_code=500)
         self.adfsplugin._prepare_adfs_request()
         self.assertRaises(exceptions.InternalServerError,
                           self.adfsplugin._get_adfs_security_token,
@@ -573,9 +559,9 @@ class AuthenticateviaADFSTests(utils.TestCase):
         """Test whether SP issues a cookie."""
         cookie = uuid.uuid4().hex
 
-        self.requests.register_uri('POST', self.SP_ENDPOINT,
-                                   headers={"set-cookie": cookie},
-                                   status_code=302)
+        self.requests.post(self.SP_ENDPOINT,
+                           headers={"set-cookie": cookie},
+                           status_code=302)
 
         self.adfsplugin.adfs_token = self._build_adfs_request()
         self.adfsplugin._prepare_sp_request()
@@ -584,8 +570,7 @@ class AuthenticateviaADFSTests(utils.TestCase):
         self.assertEqual(1, len(self.session.session.cookies))
 
     def test_send_assertion_to_service_provider_bad_status(self):
-        self.requests.register_uri('POST', self.SP_ENDPOINT,
-                                   status_code=500)
+        self.requests.post(self.SP_ENDPOINT, status_code=500)
 
         self.adfsplugin.adfs_token = etree.XML(
             self.ADFS_SECURITY_TOKEN_RESPONSE)
@@ -605,10 +590,9 @@ class AuthenticateviaADFSTests(utils.TestCase):
                           self.session)
 
     def test_check_valid_token_when_authenticated(self):
-        self.requests.register_uri(
-            'GET', self.FEDERATION_AUTH_URL,
-            json=saml2_fixtures.UNSCOPED_TOKEN,
-            headers=client_fixtures.AUTH_RESPONSE_HEADERS)
+        self.requests.get(self.FEDERATION_AUTH_URL,
+                          json=saml2_fixtures.UNSCOPED_TOKEN,
+                          headers=client_fixtures.AUTH_RESPONSE_HEADERS)
 
         self.session.session.cookies = [object()]
         self.adfsplugin._access_service_provider(self.session)
@@ -621,18 +605,15 @@ class AuthenticateviaADFSTests(utils.TestCase):
                          response.json()['token'])
 
     def test_end_to_end_workflow(self):
-        self.requests.register_uri(
-            'POST', self.IDENTITY_PROVIDER_URL,
-            content=self.ADFS_SECURITY_TOKEN_RESPONSE,
-            status_code=200)
-        self.requests.register_uri(
-            'POST', self.SP_ENDPOINT,
-            headers={"set-cookie": 'x'},
-            status_code=302)
-        self.requests.register_uri(
-            'GET', self.FEDERATION_AUTH_URL,
-            json=saml2_fixtures.UNSCOPED_TOKEN,
-            headers=client_fixtures.AUTH_RESPONSE_HEADERS)
+        self.requests.post(self.IDENTITY_PROVIDER_URL,
+                           content=self.ADFS_SECURITY_TOKEN_RESPONSE,
+                           status_code=200)
+        self.requests.post(self.SP_ENDPOINT,
+                           headers={"set-cookie": 'x'},
+                           status_code=302)
+        self.requests.get(self.FEDERATION_AUTH_URL,
+                          json=saml2_fixtures.UNSCOPED_TOKEN,
+                          headers=client_fixtures.AUTH_RESPONSE_HEADERS)
 
         # NOTE(marek-denis): We need to mimic this until self.requests can
         # issue cookies properly.

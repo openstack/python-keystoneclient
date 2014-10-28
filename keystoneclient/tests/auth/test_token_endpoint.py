@@ -23,7 +23,7 @@ class TokenEndpointTest(utils.TestCase):
     TEST_URL = 'http://server/prefix'
 
     def test_basic_case(self):
-        self.requests.register_uri('GET', self.TEST_URL, text='body')
+        self.requests.get(self.TEST_URL, text='body')
 
         a = token_endpoint.Token(self.TEST_URL, self.TEST_TOKEN)
         s = session.Session(auth=a)
