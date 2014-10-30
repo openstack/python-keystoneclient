@@ -126,6 +126,40 @@ class Adapter(object):
         """Invalidate an authentication plugin."""
         return self.session.invalidate(auth or self.auth)
 
+    def get_user_id(self, auth=None):
+        """Return the authenticated user_id as provided by the auth plugin.
+
+        :param auth: The auth plugin to use for token. Overrides the plugin
+                     on the session. (optional)
+        :type auth: keystoneclient.auth.base.BaseAuthPlugin
+
+        :raises keystoneclient.exceptions.AuthorizationFailure:
+            if a new token fetch fails.
+        :raises keystoneclient.exceptions.MissingAuthPlugin:
+            if a plugin is not available.
+
+        :returns: Current `user_id` or None if not supported by plugin.
+        :rtype: string
+        """
+        return self.session.get_user_id(auth or self.auth)
+
+    def get_project_id(self, auth=None):
+        """Return the authenticated project_id as provided by the auth plugin.
+
+        :param auth: The auth plugin to use for token. Overrides the plugin
+                     on the session. (optional)
+        :type auth: keystoneclient.auth.base.BaseAuthPlugin
+
+        :raises keystoneclient.exceptions.AuthorizationFailure:
+            if a new token fetch fails.
+        :raises keystoneclient.exceptions.MissingAuthPlugin:
+            if a plugin is not available.
+
+        :returns: Current `project_id` or None if not supported by plugin.
+        :rtype: string
+        """
+        return self.session.get_project_id(auth or self.auth)
+
     def get(self, url, **kwargs):
         return self.request(url, 'GET', **kwargs)
 

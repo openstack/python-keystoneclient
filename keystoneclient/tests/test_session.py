@@ -321,6 +321,8 @@ class AuthPlugin(base.BaseAuthPlugin):
     """
 
     TEST_TOKEN = 'aToken'
+    TEST_USER_ID = 'aUser'
+    TEST_PROJECT_ID = 'aProject'
 
     SERVICE_URLS = {
         'identity': {'public': 'http://identity-public:1111/v2.0',
@@ -347,6 +349,12 @@ class AuthPlugin(base.BaseAuthPlugin):
 
     def invalidate(self):
         return self._invalidate
+
+    def get_user_id(self, session):
+        return self.TEST_USER_ID
+
+    def get_project_id(self, session):
+        return self.TEST_PROJECT_ID
 
 
 class CalledAuthPlugin(base.BaseAuthPlugin):
@@ -582,6 +590,13 @@ class SessionAuthTests(utils.TestCase):
         self.assertTrue(auth.get_token_called)
         self.assertFalse(auth.get_endpoint_called)
 
+    def test_user_and_project_id(self):
+        auth = AuthPlugin()
+        sess = client_session.Session(auth=auth)
+
+        self.assertEqual(auth.TEST_USER_ID, sess.get_user_id())
+        self.assertEqual(auth.TEST_PROJECT_ID, sess.get_project_id())
+
 
 class AdapterTest(utils.TestCase):
 
@@ -736,6 +751,14 @@ class AdapterTest(utils.TestCase):
         # we count retries so there will be one initial request + 2 retries
         self.assertThat(self.requests.request_history,
                         matchers.HasLength(retries + 1))
+
+    def test_user_and_project_id(self):
+        auth = AuthPlugin()
+        sess = client_session.Session()
+        adpt = adapter.Adapter(sess, auth=auth)
+
+        self.assertEqual(auth.TEST_USER_ID, adpt.get_user_id())
+        self.assertEqual(auth.TEST_PROJECT_ID, adpt.get_project_id())
 
 
 class ConfLoadingTests(utils.TestCase):
