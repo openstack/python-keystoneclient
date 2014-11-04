@@ -45,6 +45,7 @@ class PasswordTests(utils.GenericPluginTestCase):
         allowed_opts = ['user-name',
                         'user-domain-id',
                         'user-domain-name',
+                        'user-id',
                         'password',
 
                         'domain-id',

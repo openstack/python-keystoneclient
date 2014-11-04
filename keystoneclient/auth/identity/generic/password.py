@@ -25,6 +25,7 @@ LOG = logging.getLogger(__name__)
 
 def get_options():
     return [
+        cfg.StrOpt('user-id', help='User id'),
         cfg.StrOpt('user-name', dest='username', help='Username',
                    deprecated_name='username'),
         cfg.StrOpt('user-domain-id', help="User's domain id"),
