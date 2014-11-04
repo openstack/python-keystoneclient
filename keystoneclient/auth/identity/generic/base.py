@@ -27,7 +27,7 @@ LOG = logging.getLogger(__name__)
 
 
 def get_options():
-    return base.get_options() + [
+    return [
         cfg.StrOpt('domain-id', help='Domain ID to scope to'),
         cfg.StrOpt('domain-name', help='Domain name to scope to'),
         cfg.StrOpt('tenant-id', help='Tenant ID to scope to'),

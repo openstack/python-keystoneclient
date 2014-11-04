@@ -38,3 +38,25 @@ class PasswordTests(utils.GenericPluginTestCase):
     def test_v3_user_params_v2_url(self):
         self.stub_discovery(v3=False)
         self.assertDiscoveryFailure(user_domain_id=uuid.uuid4().hex)
+
+    def test_options(self):
+        opts = [o.name for o in self.PLUGIN_CLASS.get_options()]
+
+        allowed_opts = ['user-name',
+                        'user-domain-id',
+                        'user-domain-name',
+                        'password',
+
+                        'domain-id',
+                        'domain-name',
+                        'tenant-id',
+                        'tenant-name',
+                        'project-id',
+                        'project-name',
+                        'project-domain-id',
+                        'project-domain-name',
+                        'trust-id',
+                        'auth-url']
+
+        self.assertEqual(set(allowed_opts), set(opts))
+        self.assertEqual(len(allowed_opts), len(opts))
