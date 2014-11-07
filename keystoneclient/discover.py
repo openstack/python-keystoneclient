@@ -16,6 +16,7 @@ import six
 
 from keystoneclient import _discover
 from keystoneclient import exceptions
+from keystoneclient.i18n import _
 from keystoneclient import session as client_session
 from keystoneclient import utils
 from keystoneclient.v2_0 import client as v2_client
@@ -122,9 +123,9 @@ class Discover(_discover.Discover):
             url = auth_url
 
         if not url:
-            raise exceptions.DiscoveryFailure('Not enough information to '
-                                              'determine URL. Provide either '
-                                              'auth_url or endpoint')
+            raise exceptions.DiscoveryFailure(
+                _('Not enough information to determine URL. Provide either '
+                  'auth_url or endpoint'))
 
         self._client_kwargs = kwargs
         super(Discover, self).__init__(session, url,
@@ -213,10 +214,11 @@ class Discover(_discover.Discover):
                 version_data = all_versions[-1]
 
         if not version_data:
-            msg = 'Could not find a suitable endpoint'
+            msg = _('Could not find a suitable endpoint')
 
             if version:
-                msg += ' for client version: %s' % str(version)
+                msg = _('Could not find a suitable endpoint for client '
+                        'version: %s') % str(version)
 
             raise exceptions.VersionNotAvailable(msg)
 
@@ -228,7 +230,7 @@ class Discover(_discover.Discover):
             client_class = _CLIENT_VERSIONS[version_data['version'][0]]
         except KeyError:
             version = '.'.join(str(v) for v in version_data['version'])
-            msg = 'No client available for version: %s' % version
+            msg = _('No client available for version: %s') % version
             raise exceptions.DiscoveryFailure(msg)
 
         # kwargs should take priority over stored kwargs.

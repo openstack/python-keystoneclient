@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from keystoneclient.i18n import _
 from keystoneclient.v3.contrib.oauth1 import access_tokens
 from keystoneclient.v3.contrib.oauth1 import consumers
 from keystoneclient.v3.contrib.oauth1 import request_tokens
@@ -59,6 +60,6 @@ class OAuthManagerOptionalImportProxy(object):
     def __getattribute__(self, name):
         if name in ('access_tokens', 'consumers', 'request_tokens'):
             raise NotImplementedError(
-                'To use %r oauthlib must be installed' % name)
+                _('To use %r oauthlib must be installed') % name)
         return super(OAuthManagerOptionalImportProxy,
                      self).__getattribute__(name)

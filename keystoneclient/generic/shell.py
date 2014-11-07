@@ -16,6 +16,7 @@
 import six
 
 from keystoneclient.generic import client
+from keystoneclient.i18n import _
 from keystoneclient import utils
 
 
@@ -37,13 +38,14 @@ def do_discover(cs, args):
             print(versions['message'])
         for key, version in six.iteritems(versions):
             if key != 'message':
-                print("    - supports version %s (%s) here %s" %
-                      (version['id'], version['status'], version['url']))
+                print(_("    - supports version %(id)s (%(status)s) here "
+                        "%(url)s") %
+                      version)
                 extensions = cs.discover_extensions(version['url'])
                 if extensions:
                     for key, extension in six.iteritems(extensions):
                         if key != 'message':
-                            print("        - and %s: %s" %
-                                  (key, extension))
+                            print(_("        - and %(key)s: %(extension)s") %
+                                  {'key': key, 'extension': extension})
     else:
-        print("No Keystone-compatible endpoint found")
+        print(_("No Keystone-compatible endpoint found"))

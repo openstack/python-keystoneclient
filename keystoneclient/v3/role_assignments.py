@@ -12,6 +12,7 @@
 
 from keystoneclient import base
 from keystoneclient import exceptions
+from keystoneclient.i18n import _
 
 
 class RoleAssignment(base.Resource):
@@ -37,12 +38,12 @@ class RoleAssignmentManager(base.CrudManager):
 
     def _check_not_user_and_group(self, user, group):
         if user and group:
-            msg = 'Specify either a user or group, not both'
+            msg = _('Specify either a user or group, not both')
             raise exceptions.ValidationError(msg)
 
     def _check_not_domain_and_project(self, domain, project):
         if domain and project:
-            msg = 'Specify either a domain or project, not both'
+            msg = _('Specify either a domain or project, not both')
             raise exceptions.ValidationError(msg)
 
     def list(self, user=None, group=None, project=None, domain=None, role=None,
@@ -87,25 +88,25 @@ class RoleAssignmentManager(base.CrudManager):
         return super(RoleAssignmentManager, self).list(**query_params)
 
     def create(self, **kwargs):
-        raise exceptions.MethodNotImplemented('Create not supported for'
-                                              ' role assignments')
+        raise exceptions.MethodNotImplemented(
+            _('Create not supported for role assignments'))
 
     def update(self, **kwargs):
-        raise exceptions.MethodNotImplemented('Update not supported for'
-                                              ' role assignments')
+        raise exceptions.MethodNotImplemented(
+            _('Update not supported for role assignments'))
 
     def get(self, **kwargs):
-        raise exceptions.MethodNotImplemented('Get not supported for'
-                                              ' role assignments')
+        raise exceptions.MethodNotImplemented(
+            _('Get not supported for role assignments'))
 
     def find(self, **kwargs):
-        raise exceptions.MethodNotImplemented('Find not supported for'
-                                              ' role assignments')
+        raise exceptions.MethodNotImplemented(
+            _('Find not supported for role assignments'))
 
     def put(self, **kwargs):
-        raise exceptions.MethodNotImplemented('Put not supported for'
-                                              ' role assignments')
+        raise exceptions.MethodNotImplemented(
+            _('Put not supported for role assignments'))
 
     def delete(self, **kwargs):
-        raise exceptions.MethodNotImplemented('Delete not supported for'
-                                              ' role assignments')
+        raise exceptions.MethodNotImplemented(
+            _('Delete not supported for role assignments'))

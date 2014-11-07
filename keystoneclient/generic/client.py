@@ -19,6 +19,7 @@ from six.moves.urllib import parse as urlparse
 
 from keystoneclient import exceptions
 from keystoneclient import httpclient
+from keystoneclient.i18n import _
 
 
 _logger = logging.getLogger(__name__)
@@ -94,7 +95,7 @@ class Client(httpclient.HTTPClient):
                 try:
                     results = {}
                     if 'version' in body:
-                        results['message'] = "Keystone found at %s" % url
+                        results['message'] = _("Keystone found at %s") % url
                         version = body['version']
                         # Stable/diablo incorrect format
                         id, status, version_url = (
@@ -105,7 +106,7 @@ class Client(httpclient.HTTPClient):
                         return results
                     elif 'versions' in body:
                         # Correct format
-                        results['message'] = "Keystone found at %s" % url
+                        results['message'] = _("Keystone found at %s") % url
                         for version in body['versions']['values']:
                             id, status, version_url = (
                                 self._get_version_info(version, url))
@@ -114,8 +115,8 @@ class Client(httpclient.HTTPClient):
                                                 "url": version_url}
                         return results
                     else:
-                        results['message'] = ("Unrecognized response from %s"
-                                              % url)
+                        results['message'] = (
+                            _("Unrecognized response from %s") % url)
                     return results
                 except KeyError:
                     raise exceptions.AuthorizationFailure()
@@ -159,7 +160,7 @@ class Client(httpclient.HTTPClient):
                     extensions = body['extensions']
                 else:
                     return dict(message=(
-                        'Unrecognized extensions response from %s' % url))
+                        _('Unrecognized extensions response from %s') % url))
 
                 return dict(self._get_extension_info(e) for e in extensions)
             elif resp.status_code == 305:

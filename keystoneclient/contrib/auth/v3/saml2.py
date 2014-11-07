@@ -20,6 +20,7 @@ from six.moves import urllib
 from keystoneclient import access
 from keystoneclient.auth.identity import v3
 from keystoneclient import exceptions
+from keystoneclient.i18n import _
 
 
 class _BaseSAMLPlugin(v3.AuthConstructor):
@@ -30,7 +31,7 @@ class _BaseSAMLPlugin(v3.AuthConstructor):
     @staticmethod
     def _first(_list):
         if len(_list) != 1:
-            raise IndexError("Only single element list is acceptable")
+            raise IndexError(_("Only single element list is acceptable"))
         return _list[0]
 
     @staticmethod
@@ -80,8 +81,8 @@ class Saml2UnscopedTokenAuthMethod(v3.AuthMethod):
     _method_parameters = []
 
     def get_auth_data(self, session, auth, headers, **kwargs):
-        raise exceptions.MethodNotImplemented(('This method should never '
-                                              'be called'))
+        raise exceptions.MethodNotImplemented(_('This method should never '
+                                                'be called'))
 
 
 class Saml2UnscopedToken(_BaseSAMLPlugin):
@@ -211,9 +212,9 @@ class Saml2UnscopedToken(_BaseSAMLPlugin):
                          authenticated=False)
 
             # prepare error message and raise an exception.
-            msg = ("Consumer URLs from Service Provider %(service_provider)s "
-                   "%(sp_consumer_url)s and Identity Provider "
-                   "%(identity_provider)s %(idp_consumer_url)s are not equal")
+            msg = _("Consumer URLs from Service Provider %(service_provider)s "
+                    "%(sp_consumer_url)s and Identity Provider "
+                    "%(identity_provider)s %(idp_consumer_url)s are not equal")
             msg = msg % {
                 'service_provider': self.token_url,
                 'sp_consumer_url': sp_response_consumer_url,
@@ -257,8 +258,8 @@ class Saml2UnscopedToken(_BaseSAMLPlugin):
         try:
             self.saml2_authn_request = etree.XML(sp_response.content)
         except etree.XMLSyntaxError as e:
-            msg = ("SAML2: Error parsing XML returned "
-                   "from Service Provider, reason: %s" % e)
+            msg = _("SAML2: Error parsing XML returned "
+                    "from Service Provider, reason: %s") % e
             raise exceptions.AuthorizationFailure(msg)
 
         relay_state = self.saml2_authn_request.xpath(
@@ -288,8 +289,8 @@ class Saml2UnscopedToken(_BaseSAMLPlugin):
         try:
             self.saml2_idp_authn_response = etree.XML(idp_response.content)
         except etree.XMLSyntaxError as e:
-            msg = ("SAML2: Error parsing XML returned "
-                   "from Identity Provider, reason: %s" % e)
+            msg = _("SAML2: Error parsing XML returned "
+                    "from Identity Provider, reason: %s") % e
             raise exceptions.AuthorizationFailure(msg)
 
         idp_response_consumer_url = self.saml2_idp_authn_response.xpath(
@@ -736,8 +737,8 @@ class ADFSUnscopedToken(_BaseSAMLPlugin):
         except exceptions.InternalServerError as e:
             reason = _get_failure(e)
             raise exceptions.AuthorizationFailure(reason)
-        msg = ("Error parsing XML returned from "
-               "the ADFS Identity Provider, reason: %s")
+        msg = _("Error parsing XML returned from "
+                "the ADFS Identity Provider, reason: %s")
         self.adfs_token = self.str_to_xml(response.content, msg)
 
     def _prepare_sp_request(self):
@@ -803,8 +804,9 @@ class ADFSUnscopedToken(_BaseSAMLPlugin):
         """
         if self._cookies(session) is False:
             raise exceptions.AuthorizationFailure(
-                "Session object doesn't contain a cookie, therefore you are "
-                "not allowed to enter the Identity Provider's protected area.")
+                _("Session object doesn't contain a cookie, therefore you are "
+                  "not allowed to enter the Identity Provider's protected "
+                  "area."))
         self.authenticated_response = session.get(self.token_url,
                                                   authenticated=False)
 
@@ -883,4 +885,4 @@ class Saml2ScopedToken(v3.Token):
         super(Saml2ScopedToken, self).__init__(auth_url, token, **kwargs)
         if not (self.project_id or self.domain_id):
             raise exceptions.ValidationError(
-                'Neither project nor domain specified')
+                _('Neither project nor domain specified'))

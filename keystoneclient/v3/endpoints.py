@@ -16,6 +16,7 @@
 
 from keystoneclient import base
 from keystoneclient import exceptions
+from keystoneclient.i18n import _
 from keystoneclient import utils
 
 
@@ -45,7 +46,7 @@ class EndpointManager(base.CrudManager):
 
     def _validate_interface(self, interface):
         if interface is not None and interface not in VALID_INTERFACES:
-            msg = '"interface" must be one of: %s'
+            msg = _('"interface" must be one of: %s')
             msg = msg % ', '.join(VALID_INTERFACES)
             raise exceptions.ValidationError(msg)
 

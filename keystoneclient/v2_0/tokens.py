@@ -13,6 +13,7 @@
 from keystoneclient import auth
 from keystoneclient import base
 from keystoneclient import exceptions
+from keystoneclient.i18n import _
 from keystoneclient import utils
 
 
@@ -45,7 +46,8 @@ class TokenManager(base.Manager):
             params = {"auth": {"passwordCredentials": {"username": username,
                                                        "password": password}}}
         else:
-            raise ValueError('A username and password or token is required.')
+            raise ValueError(
+                _('A username and password or token is required.'))
         if tenant_id:
             params['auth']['tenantId'] = tenant_id
         elif tenant_name:

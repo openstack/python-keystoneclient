@@ -16,6 +16,7 @@
 Exception definitions.
 """
 
+from keystoneclient.i18n import _
 from keystoneclient.openstack.common.apiclient.exceptions import *  # noqa
 
 # NOTE(akurilin): This alias should be left here to support backwards
@@ -31,7 +32,7 @@ class CertificateConfigError(Exception):
     """Error reading the certificate."""
     def __init__(self, output):
         self.output = output
-        msg = 'Unable to load certificate.'
+        msg = _('Unable to load certificate.')
         super(CertificateConfigError, self).__init__(msg)
 
 
@@ -39,7 +40,7 @@ class CMSError(Exception):
     """Error reading the certificate."""
     def __init__(self, output):
         self.output = output
-        msg = 'Unable to sign or verify data.'
+        msg = _('Unable to sign or verify data.')
         super(CMSError, self).__init__(msg)
 
 

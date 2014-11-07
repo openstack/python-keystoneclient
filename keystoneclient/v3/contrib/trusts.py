@@ -14,6 +14,7 @@ from oslo.utils import timeutils
 
 from keystoneclient import base
 from keystoneclient import exceptions
+from keystoneclient.i18n import _
 
 
 class Trust(base.Resource):
@@ -75,8 +76,8 @@ class TrustManager(base.CrudManager):
             **kwargs)
 
     def update(self):
-        raise exceptions.MethodNotImplemented('Update not supported'
-                                              ' for trusts')
+        raise exceptions.MethodNotImplemented(
+            _('Update not supported for trusts'))
 
     def list(self, trustee_user=None, trustor_user=None, **kwargs):
         """List Trusts."""
