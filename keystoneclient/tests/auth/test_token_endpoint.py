@@ -10,6 +10,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from testtools import matchers
+
 from keystoneclient.auth import token_endpoint
 from keystoneclient import session
 from keystoneclient.tests import utils
@@ -43,3 +45,11 @@ class TokenEndpointTest(utils.TestCase):
         self.assertEqual(self.TEST_URL, a.get_endpoint(s))
         self.assertEqual('body', data.text)
         self.assertRequestHeaderEqual('X-Auth-Token', self.TEST_TOKEN)
+
+    def test_token_endpoint_options(self):
+        opt_names = [opt.name for opt in token_endpoint.Token.get_options()]
+
+        self.assertThat(opt_names, matchers.HasLength(2))
+
+        self.assertIn('token', opt_names)
+        self.assertIn('endpoint', opt_names)
