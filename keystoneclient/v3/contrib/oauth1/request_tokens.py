@@ -58,7 +58,7 @@ class RequestTokenManager(base.CrudManager):
 
     def create(self, consumer_key, consumer_secret, project):
         endpoint = utils.OAUTH_PATH + '/request_token'
-        headers = {'requested_project_id': base.getid(project)}
+        headers = {'requested-project-id': base.getid(project)}
         oauth_client = oauth1.Client(consumer_key,
                                      client_secret=consumer_secret,
                                      signature_method=oauth1.SIGNATURE_HMAC,
