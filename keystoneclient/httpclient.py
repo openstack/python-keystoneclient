@@ -365,9 +365,10 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         self.management_url from the details provided in the token.
 
         :returns: ``True`` if authentication was successful.
-        :raises: AuthorizationFailure if unable to authenticate or validate
-                 the existing authorization token
-        :raises: ValueError if insufficient parameters are used.
+        :raises keystoneclient.exceptions.AuthorizationFailure: if unable to
+            authenticate or validate the existing authorization token
+        :raises keystoneclient.exceptions.ValueError: if insufficient
+                                                      parameters are used.
 
         If keyring is used, token is retrieved from keyring instead.
         Authentication will only be necessary if any of the following

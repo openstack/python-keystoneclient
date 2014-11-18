@@ -35,7 +35,8 @@ def get_plugin_class(name):
 
     :returns: An auth plugin class.
 
-    :raises exceptions.NoMatchingPlugin: if a plugin cannot be created.
+    :raises keystoneclient.exceptions.NoMatchingPlugin: if a plugin cannot be
+                                                        created.
     """
     try:
         mgr = stevedore.DriverManager(namespace=PLUGIN_NAMESPACE,

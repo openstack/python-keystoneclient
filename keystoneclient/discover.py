@@ -263,8 +263,10 @@ class Discover(_discover.Discover):
 
         :returns: An instantiated identity client object.
 
-        :raises: DiscoveryFailure if the server response is invalid
-        :raises: VersionNotAvailable if a suitable client cannot be found.
+        :raises keystoneclient.exceptions.DiscoveryFailure: if the server
+                                                            response is invalid
+        :raises keystoneclient.exceptions.VersionNotAvailable: if a suitable
+            client cannot be found.
         """
         version_data = self._calculate_version(version, unstable)
         return self._create_client(version_data, **kwargs)

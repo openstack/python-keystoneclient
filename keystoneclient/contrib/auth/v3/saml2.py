@@ -520,7 +520,7 @@ class ADFSUnscopedToken(_BaseSAMLPlugin):
 
         :param session
         :returns: True if cookie jar is nonempty, False otherwise
-        :raises: AttributeError in case cookies are not find anywhere
+        :raises AttributeError: in case cookies are not find anywhere
 
         """
         try:
@@ -705,11 +705,12 @@ class ADFSUnscopedToken(_BaseSAMLPlugin):
         :param session : a session object to send out HTTP requests.
         :type session: keystoneclient.session.Session
 
-        :raises: exceptions.AuthorizationFailure when HTTP response from the
-                 ADFS server is not a valid XML ADFS security token.
-        :raises: exceptions.InternalServerError: If response status code is
-                 HTTP 500 and the response XML cannot be recognized.
-
+        :raises keystoneclient.exceptions.AuthorizationFailure: when HTTP
+                 response from the ADFS server is not a valid XML ADFS security
+                 token.
+        :raises keystoneclient.exceptions.InternalServerError: If response
+                 status code is HTTP 500 and the response XML cannot be
+                 recognized.
 
         """
         def _get_failure(e):
@@ -798,8 +799,8 @@ class ADFSUnscopedToken(_BaseSAMLPlugin):
         :param session : a session object to send out HTTP requests.
         :type session: keystoneclient.session.Session
 
-        :raises: exceptions.AuthorizationFailure: in case session object
-        has empty cookie jar.
+        :raises keystoneclient.exceptions.AuthorizationFailure: in case session
+        object has empty cookie jar.
 
         """
         if self._cookies(session) is False:

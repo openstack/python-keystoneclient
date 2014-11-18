@@ -74,8 +74,11 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
         when invoked. If you are looking to just retrieve the current auth
         data then you should use get_access.
 
-        :raises InvalidResponse: The response returned wasn't appropriate.
-        :raises HttpError: An error from an invalid HTTP response.
+        :raises keystoneclient.exceptions.InvalidResponse: The response
+                                                           returned wasn't
+                                                           appropriate.
+        :raises keystoneclient.exceptions.HttpError: An error from an invalid
+                                                     HTTP response.
 
         :returns AccessInfo: Token access information.
         """
@@ -85,7 +88,8 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
 
         If a valid token is not present then a new one will be fetched.
 
-        :raises HttpError: An error from an invalid HTTP response.
+        :raises keystoneclient.exceptions.HttpError: An error from an invalid
+                                                     HTTP response.
 
         :return string: A valid token.
         """
@@ -119,7 +123,8 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
         If a valid AccessInfo is present then it is returned otherwise a new
         one will be fetched.
 
-        :raises HttpError: An error from an invalid HTTP response.
+        :raises keystoneclient.exceptions.HttpError: An error from an invalid
+                                                     HTTP response.
 
         :returns AccessInfo: Valid AccessInfo
         """
@@ -170,7 +175,8 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
         :param tuple version: The minimum version number required for this
                               endpoint. (optional)
 
-        :raises HttpError: An error from an invalid HTTP response.
+        :raises keystoneclient.exceptions.HttpError: An error from an invalid
+                                                     HTTP response.
 
         :return string or None: A valid endpoint URL or None if not available.
         """
@@ -242,8 +248,10 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
                                    (optional) Defaults to None (use a token
                                    if a plugin is installed).
 
-        :raises: DiscoveryFailure if for some reason the lookup fails.
-        :raises: HttpError An error from an invalid HTTP response.
+        :raises keystoneclient.exceptions.DiscoveryFailure: if for some reason
+                                                            the lookup fails.
+        :raises keystoneclient.exceptions.HttpError: An error from an invalid
+                                                     HTTP response.
 
         :returns: A discovery object with the results of looking up that URL.
         """
