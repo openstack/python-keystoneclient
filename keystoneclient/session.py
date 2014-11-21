@@ -139,7 +139,7 @@ class Session(object):
             # debug log.
             return
 
-        string_parts = ['REQ: curl -i']
+        string_parts = ['REQ: curl -g -i']
 
         # NOTE(jamielennox): None means let requests do its default validation
         # so we need to actually check that this is False.
