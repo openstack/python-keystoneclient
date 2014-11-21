@@ -49,6 +49,9 @@ class ServiceCatalog(object):
         # to calls made to the service_catalog. Provide appropriate warning.
         return self._region_name
 
+    def _get_endpoint_region(self, endpoint):
+        return endpoint.get('region_id') or endpoint.get('region')
+
     @abc.abstractmethod
     def get_token(self):
         """Fetch token details from service catalog.
@@ -130,7 +133,8 @@ class ServiceCatalog(object):
                 if (endpoint_type and not
                         self._is_endpoint_type_match(endpoint, endpoint_type)):
                     continue
-                if region_name and region_name != endpoint.get('region'):
+                if (region_name and
+                        region_name != self._get_endpoint_region(endpoint)):
                     continue
                 sc[st].append(endpoint)
 

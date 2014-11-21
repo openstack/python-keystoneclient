@@ -233,5 +233,6 @@ class V3TokenTests(utils.TestCase):
         self.assertEqual(service_type, service['type'])
 
         for interface, url in six.iteritems(endpoints):
-            endpoint = {'interface': interface, 'url': url, 'region': region}
+            endpoint = {'interface': interface, 'url': url,
+                        'region': region, 'region_id': region}
             self.assertIn(endpoint, service['endpoints'])
