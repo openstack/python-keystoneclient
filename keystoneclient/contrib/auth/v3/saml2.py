@@ -506,10 +506,6 @@ class ADFSUnscopedToken(_BaseSAMLPlugin):
         ])
         return options
 
-    @property
-    def _uuid4(self):
-        return str(uuid.uuid4())
-
     def _cookies(self, session):
         """Check if cookie jar is not empty.
 
@@ -591,7 +587,7 @@ class ADFSUnscopedToken(_BaseSAMLPlugin):
 
         messageID = etree.SubElement(
             header, '{http://www.w3.org/2005/08/addressing}MessageID')
-        messageID.text = 'urn:uuid:' + self._uuid4
+        messageID.text = 'urn:uuid:' + uuid.uuid4().hex
         replyID = etree.SubElement(
             header, '{http://www.w3.org/2005/08/addressing}ReplyTo')
         address = etree.SubElement(
@@ -632,7 +628,7 @@ class ADFSUnscopedToken(_BaseSAMLPlugin):
                       'wss-wssecurity-secext-1.0.xsd}UsernameToken')
         usernametoken.set(
             ('{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-'
-             'wssecurity-utility-1.0.xsd}u'), "uuid-%s-1" % self._uuid4)
+             'wssecurity-utility-1.0.xsd}u'), "uuid-%s-1" % uuid.uuid4().hex)
 
         username = etree.SubElement(
             usernametoken, ('{http://docs.oasis-open.org/wss/2004/01/oasis-'
