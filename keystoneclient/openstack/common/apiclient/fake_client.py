@@ -168,6 +168,8 @@ class FakeHTTPClient(client.HTTPClient):
         else:
             status, body = resp
             headers = {}
+        self.last_request_id = headers.get('x-openstack-request-id',
+                                           'req-test')
         return TestResponse({
             "status_code": status,
             "text": body,

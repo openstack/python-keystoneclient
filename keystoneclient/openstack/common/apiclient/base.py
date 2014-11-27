@@ -26,12 +26,12 @@ Base utilities to build API operation managers and objects on top of.
 import abc
 import copy
 
+from oslo.utils import strutils
 import six
 from six.moves.urllib import parse
 
+from keystoneclient.openstack.common._i18n import _
 from keystoneclient.openstack.common.apiclient import exceptions
-from keystoneclient.openstack.common.gettextutils import _
-from keystoneclient.openstack.common import strutils
 
 
 def getid(obj):
@@ -495,6 +495,8 @@ class Resource(object):
         new = self.manager.get(self.id)
         if new:
             self._add_details(new._info)
+            self._add_details(
+                {'x_request_id': self.manager.client.last_request_id})
 
     def __eq__(self, other):
         if not isinstance(other, Resource):
