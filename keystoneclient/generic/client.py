@@ -19,7 +19,7 @@ from six.moves.urllib import parse as urlparse
 
 from keystoneclient import exceptions
 from keystoneclient import httpclient
-from keystoneclient.i18n import _
+from keystoneclient.i18n import _, _LE
 
 
 _logger = logging.getLogger(__name__)
@@ -124,8 +124,8 @@ class Client(httpclient.HTTPClient):
                 return self._check_keystone_versions(resp['location'])
             else:
                 raise exceptions.from_response(resp, "GET", url)
-        except Exception as e:
-            _logger.exception(e)
+        except Exception:
+            _logger.exception(_LE('Failed to detect available versions.'))
 
     def discover_extensions(self, url=None):
         """Discover Keystone extensions supported.
@@ -168,8 +168,8 @@ class Client(httpclient.HTTPClient):
             else:
                 raise exceptions.from_response(
                     resp, "GET", "%sextensions" % url)
-        except Exception as e:
-            _logger.exception(e)
+        except Exception:
+            _logger.exception(_LE('Failed to check keystone extensions.'))
 
     @staticmethod
     def _get_version_info(version, root_url):
