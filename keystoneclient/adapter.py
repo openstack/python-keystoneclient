@@ -47,6 +47,8 @@ class Adapter(object):
                  interface=None, region_name=None, endpoint_override=None,
                  version=None, auth=None, user_agent=None,
                  connect_retries=None):
+        # NOTE(jamielennox): when adding new parameters to adapter please also
+        # add them to the adapter call in httpclient.HTTPClient.__init__
         self.session = session
         self.service_type = service_type
         self.service_name = service_name

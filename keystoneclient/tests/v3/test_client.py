@@ -12,8 +12,13 @@
 
 import copy
 import json
+import uuid
 
+import six
+
+from keystoneclient.auth import token_endpoint
 from keystoneclient import exceptions
+from keystoneclient import session
 from keystoneclient.tests.v3 import client_fixtures
 from keystoneclient.tests.v3 import utils
 from keystoneclient.v3 import client
@@ -196,3 +201,22 @@ class KeystoneClientTest(utils.TestCase):
                           client.Client,
                           project_name='exampleproject',
                           auth_url=self.TEST_URL)
+
+    def test_client_params(self):
+        opts = {'auth': token_endpoint.Token('a', 'b'),
+                'connect_retries': 50,
+                'endpoint_override': uuid.uuid4().hex,
+                'interface': uuid.uuid4().hex,
+                'region_name': uuid.uuid4().hex,
+                'service_name': uuid.uuid4().hex,
+                'user_agent': uuid.uuid4().hex,
+                }
+
+        sess = session.Session()
+        cl = client.Client(session=sess, **opts)
+
+        for k, v in six.iteritems(opts):
+            self.assertEqual(v, getattr(cl._adapter, k))
+
+        self.assertEqual('identity', cl._adapter.service_type)
+        self.assertEqual('v3', cl._adapter.version)

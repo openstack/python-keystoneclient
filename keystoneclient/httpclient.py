@@ -185,7 +185,20 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
     :param object session: A Session object to be used for
                            communicating with the identity service.
     :type session: keystoneclient.session.Session
-
+    :param string service_name: The default service_name for URL discovery.
+                                default: None (optional)
+    :param string interface: The default interface for URL discovery.
+                             default: admin (optional)
+    :param string endpoint_override: Always use this endpoint URL for requests
+                                     for this client. (optional)
+    :param auth: An auth plugin to use instead of the session one. (optional)
+    :type auth: keystoneclient.auth.base.BaseAuthPlugin
+    :param string user_agent: The User-Agent string to set.
+                              default: python-keystoneclient (optional)
+    :param int connect_retries: the maximum number of retries that should
+                                be attempted for connection errors.
+                                Default None - use session default which
+                                is don't retry. (optional)
     """
 
     version = None
@@ -198,7 +211,9 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
                  user_domain_id=None, user_domain_name=None, domain_id=None,
                  domain_name=None, project_id=None, project_name=None,
                  project_domain_id=None, project_domain_name=None,
-                 trust_id=None, session=None, **kwargs):
+                 trust_id=None, session=None, service_name=None,
+                 interface='admin', endpoint_override=None, auth=None,
+                 user_agent=USER_AGENT, connect_retries=None, **kwargs):
         # set baseline defaults
         self.user_id = None
         self.username = None
@@ -305,11 +320,19 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         self.domain = ''
         self.debug_log = debug
 
+        # NOTE(jamielennox): unfortunately we can't just use **kwargs here as
+        # it would incompatibly limit the kwargs that can be passed to __init__
+        # try and keep this list in sync with adapter.Adapter.__init__
         self._adapter = _KeystoneAdapter(session,
                                          service_type='identity',
-                                         interface='admin',
+                                         service_name=service_name,
+                                         interface=interface,
                                          region_name=region_name,
-                                         version=self.version)
+                                         endpoint_override=endpoint_override,
+                                         version=self.version,
+                                         auth=auth,
+                                         user_agent=user_agent,
+                                         connect_retries=connect_retries)
 
         # keyring setup
         if use_keyring and keyring is None:
