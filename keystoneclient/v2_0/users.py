@@ -78,7 +78,7 @@ class UserManager(base.ManagerWithFind):
         return self._update("/OS-KSCRUD/users/%s" % self.api.user_id, params,
                             response_key="access",
                             method="PATCH",
-                            management=False,
+                            endpoint_filter={'interface': 'public'},
                             log=False)
 
     def update_tenant(self, user, tenant):

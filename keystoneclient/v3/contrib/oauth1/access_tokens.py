@@ -13,6 +13,7 @@
 
 from __future__ import unicode_literals
 
+from keystoneclient import auth
 from keystoneclient import base
 from keystoneclient.v3.contrib.oauth1 import utils
 
@@ -39,8 +40,9 @@ class AccessTokenManager(base.CrudManager):
                                      resource_owner_secret=request_secret,
                                      signature_method=oauth1.SIGNATURE_HMAC,
                                      verifier=verifier)
-        url = self.client.auth_url.rstrip("/") + endpoint
-        url, headers, body = oauth_client.sign(url, http_method='POST')
+        url = self.api.get_endpoint(interface=auth.AUTH_INTERFACE).rstrip('/')
+        url, headers, body = oauth_client.sign(url + endpoint,
+                                               http_method='POST')
         resp, body = self.client.post(endpoint, headers=headers)
         token = utils.get_oauth_token_from_body(resp.content)
         return self.resource_class(self, token)

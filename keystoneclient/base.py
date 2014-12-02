@@ -211,13 +211,12 @@ class Manager(object):
         return self.client.delete(url, **kwargs)
 
     def _update(self, url, body=None, response_key=None, method="PUT",
-                management=True, **kwargs):
+                **kwargs):
         methods = {"PUT": self.client.put,
                    "POST": self.client.post,
                    "PATCH": self.client.patch}
         try:
             resp, body = methods[method](url, body=body,
-                                         management=management,
                                          **kwargs)
         except KeyError:
             raise exceptions.ClientException(_("Invalid update method: %s")
