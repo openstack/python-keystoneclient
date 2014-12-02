@@ -427,8 +427,9 @@ class Saml2UnscopedToken(_BaseSAMLPlugin):
         :param session : a session object to send out HTTP requests.
         :type session: keystoneclient.session.Session
 
-        :return access.AccessInfoV3: an object with scoped token's id and
-                                     unscoped token json included.
+        :return: an object with scoped token's id and unscoped token json
+                 included.
+        :rtype: :py:class:`keystoneclient.access.AccessInfoV3`
 
         """
         token, token_json = self._get_unscoped_token(session)
@@ -840,7 +841,7 @@ class ADFSUnscopedToken(_BaseSAMLPlugin):
         :param session : a session object to send out HTTP requests.
         :type session: keystoneclient.session.Session
 
-        :returns (Unscoped federated token, token JSON body)
+        :returns: (Unscoped federated token, token JSON body)
 
         """
         self._prepare_adfs_request()

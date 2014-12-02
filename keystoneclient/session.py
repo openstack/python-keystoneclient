@@ -504,7 +504,8 @@ class Session(object):
         :raises keystoneclient.exceptions.AuthorizationFailure: if a new token
                                                                 fetch fails.
 
-        :returns string: A valid token.
+        :returns: A valid token.
+        :rtype: string
         """
         if not auth:
             auth = self.auth
@@ -528,7 +529,8 @@ class Session(object):
         :raises keystoneclient.exceptions.MissingAuthPlugin: if a plugin is not
                                                              available.
 
-        :returns string: An endpoint if available or None.
+        :returns: An endpoint if available or None.
+        :rtype: string
         """
         if not auth:
             auth = self.auth

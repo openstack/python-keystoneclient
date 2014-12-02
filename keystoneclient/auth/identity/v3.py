@@ -182,8 +182,9 @@ class AuthMethod(object):
         :param Auth auth: The auth plugin calling the method.
         :param dict headers: The headers that will be sent with the auth
                              request if a plugin needs to add to them.
-        :return tuple(string, dict): The identifier of this plugin and a dict
-                                     of authentication data for the auth type.
+        :return: The identifier of this plugin and a dict of authentication
+                 data for the auth type.
+        :rtype: tuple(string, dict)
         """
 
 

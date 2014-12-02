@@ -91,7 +91,8 @@ class Auth(base.BaseIdentityPlugin):
 
         :param dict headers: The headers that will be sent with the auth
                              request if a plugin needs to add to them.
-        :return dict: A dict of authentication data for the auth type.
+        :return: A dict of authentication data for the auth type.
+        :rtype: dict
         """
 
 

@@ -97,7 +97,8 @@ class Adapter(object):
         :raises keystoneclient.exceptions.AuthorizationFailure: if a new token
             fetch fails.
 
-        :returns string: A valid token.
+        :returns: A valid token.
+        :rtype: string
         """
         return self.session.get_token(auth or self.auth)
 
@@ -111,7 +112,8 @@ class Adapter(object):
         :raises keystoneclient.exceptions.MissingAuthPlugin: if a plugin is not
                                                              available.
 
-        :returns string: An endpoint if available or None.
+        :returns: An endpoint if available or None.
+        :rtype: string
         """
         self._set_endpoint_filter_kwargs(kwargs)
         return self.session.get_endpoint(auth or self.auth, **kwargs)

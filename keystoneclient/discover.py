@@ -164,8 +164,9 @@ class Discover(_discover.Discover):
         :param bool allow_deprecated: Allow deprecated version endpoints.
         :param bool allow_unknown: Allow endpoints with an unrecognised status.
 
-        :returns list: The endpoints returned from the server that match the
-                       criteria.
+        :returns: The endpoints returned from the server that match the
+                  criteria.
+        :rtype: list
 
         Example::
 
