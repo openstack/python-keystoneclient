@@ -1,6 +1,6 @@
-========================================
-:program:`keystone` command line utility
-========================================
+==============================================================
+:program:`keystone` command line utility (pending deprecation)
+==============================================================
 
 .. program:: keystone
 .. highlight:: bash
@@ -17,6 +17,14 @@ SYNOPSIS
 
 DESCRIPTION
 ===========
+
+.. WARNING::
+
+    The :program:`keystone` command line utility is pending deprecation. The
+    `OpenStackClient unified command line utility
+    <http://docs.openstack.org/developer/python-openstackclient/>`_ should be
+    used instead. The :program:`keystone` command line utility only supports V2
+    of the Identity API whereas the OSC program supports both V2 and V3.
 
 The :program:`keystone` command line utility interacts with services providing
 OpenStack Identity API (e.g. Keystone).
