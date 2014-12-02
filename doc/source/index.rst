@@ -16,7 +16,6 @@ Contents:
    using-sessions
    authentication-plugins
    using-api-v2
-   middlewarearchitecture
    api/modules
 
 Contributing
