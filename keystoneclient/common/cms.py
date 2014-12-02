@@ -39,6 +39,14 @@ PKIZ_CMS_FORM = 'DER'
 PKI_ASN1_FORM = 'PEM'
 
 
+# The openssl cms command exits with these status codes.
+# See https://www.openssl.org/docs/apps/cms.html#EXIT_CODES
+class OpensslCmsExitStatus:
+    SUCCESS = 0
+    INPUT_FILE_READ_ERROR = 2
+    CREATE_CMS_READ_MIME_ERROR = 3
+
+
 def _ensure_subprocess():
     # NOTE(vish): late loading subprocess so we can
     #             use the green version if we are in
@@ -78,16 +86,8 @@ def _check_files_accessible(files):
                 'Likely due to %(file)s: %(error)s') % {'file': try_file,
                                                         'error': e.strerror}
         # Emulate openssl behavior, which returns with code 2 when
-        # access to a file failed:
-
-        # You can get more from
-        # http://www.openssl.org/docs/apps/cms.html#EXIT_CODES
-        #
-        # $ openssl cms -verify -certfile not_exist_file -CAfile \
-        #       not_exist_file -inform PEM -nosmimecap -nodetach \
-        #       -nocerts -noattr
-        # Error opening certificate file not_exist_file
-        retcode = 2
+        # access to a file failed.
+        retcode = OpensslCmsExitStatus.INPUT_FILE_READ_ERROR
 
     return retcode, err
 
@@ -171,12 +171,12 @@ def cms_verify(formatted, signing_cert_file_name, ca_file_name,
     #       -nocerts -noattr
     # Error opening certificate file not_exist_file
     #
-    if retcode == 2:
+    if retcode == OpensslCmsExitStatus.INPUT_FILE_READ_ERROR:
         if err.startswith('Error reading S/MIME message'):
             raise exceptions.CMSError(err)
         else:
             raise exceptions.CertificateConfigError(err)
-    elif retcode:
+    elif retcode != OpensslCmsExitStatus.SUCCESS:
         # NOTE(dmllr): Python 2.6 compatibility:
         # CalledProcessError did not have output keyword argument
         e = subprocess.CalledProcessError(retcode, 'openssl')
@@ -348,8 +348,8 @@ def cms_sign_data(data_to_sign, signing_cert_file_name, signing_key_file_name,
     output, err, retcode = _process_communicate_handle_oserror(
         process, data, (signing_cert_file_name, signing_key_file_name))
 
-    if retcode or ('Error' in err):
-        if retcode == 3:
+    if retcode != OpensslCmsExitStatus.SUCCESS or ('Error' in err):
+        if retcode == OpensslCmsExitStatus.CREATE_CMS_READ_MIME_ERROR:
             LOG.error(_LE('Signing error: Unable to load certificate - '
                           'ensure you have configured PKI with '
                           '"keystone-manage pki_setup"'))
