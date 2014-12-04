@@ -10,6 +10,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from oslo.config import cfg
 
 from keystoneclient.auth import base
 
@@ -38,8 +39,9 @@ class Token(base.BaseAuthPlugin):
         """
         return self.endpoint
 
-    def get_options(self):
-        options = super(Token, self).get_options()
+    @classmethod
+    def get_options(cls):
+        options = super(Token, cls).get_options()
 
         options.extend([
             cfg.StrOpt('endpoint',
