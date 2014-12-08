@@ -92,13 +92,16 @@ class ConfTests(utils.TestCase):
         self.assertEqual(project_domain_name, a.project_domain_name)
 
     def test_loading_invalid_plugin(self):
-        self.conf_fixture.config(auth_plugin=uuid.uuid4().hex,
+        auth_plugin = uuid.uuid4().hex
+        self.conf_fixture.config(auth_plugin=auth_plugin,
                                  group=self.GROUP)
 
-        self.assertRaises(exceptions.NoMatchingPlugin,
-                          conf.load_from_conf_options,
-                          self.conf_fixture.conf,
-                          self.GROUP)
+        e = self.assertRaises(exceptions.NoMatchingPlugin,
+                              conf.load_from_conf_options,
+                              self.conf_fixture.conf,
+                              self.GROUP)
+
+        self.assertEqual(auth_plugin, e.name)
 
     def test_loading_with_no_data(self):
         self.assertIsNone(conf.load_from_conf_options(self.conf_fixture.conf,
