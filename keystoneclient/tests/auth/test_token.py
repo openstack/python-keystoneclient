@@ -27,3 +27,21 @@ class TokenTests(utils.GenericPluginTestCase):
     def new_plugin(self, **kwargs):
         kwargs.setdefault('token', uuid.uuid4().hex)
         return super(TokenTests, self).new_plugin(**kwargs)
+
+    def test_options(self):
+        opts = [o.name for o in self.PLUGIN_CLASS.get_options()]
+
+        allowed_opts = ['token',
+                        'domain-id',
+                        'domain-name',
+                        'tenant-id',
+                        'tenant-name',
+                        'project-id',
+                        'project-name',
+                        'project-domain-id',
+                        'project-domain-name',
+                        'trust-id',
+                        'auth-url']
+
+        self.assertEqual(set(allowed_opts), set(opts))
+        self.assertEqual(len(allowed_opts), len(opts))
