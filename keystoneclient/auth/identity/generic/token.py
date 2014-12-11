@@ -14,10 +14,10 @@ import logging
 
 from oslo.config import cfg
 
-from keystoneclient import _discover
 from keystoneclient.auth.identity.generic import base
 from keystoneclient.auth.identity import v2
 from keystoneclient.auth.identity import v3
+from keystoneclient import discover
 
 LOG = logging.getLogger(__name__)
 
@@ -39,10 +39,10 @@ class Token(base.BaseGenericPlugin):
         self._token = token
 
     def create_plugin(self, session, version, url, raw_status=None):
-        if _discover.version_match((2,), version):
+        if discover.version_match((2,), version):
             return v2.Token(url, self._token, **self._v2_params)
 
-        elif _discover.version_match((3,), version):
+        elif discover.version_match((3,), version):
             return v3.Token(url, self._token, **self._v3_params)
 
     @classmethod

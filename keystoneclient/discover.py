@@ -30,6 +30,46 @@ _CLIENT_VERSIONS = {2: v2_client.Client,
                     3: v3_client.Client}
 
 
+# functions needed from the private file that can be made public
+
+def normalize_version_number(version):
+    """Turn a version representation into a tuple.
+
+    Takes a string, tuple or float which represent version formats we can
+    handle and converts them into a (major, minor) version tuple that we can
+    actually use for discovery.
+
+    e.g. 'v3.3' gives (3, 3)
+         3.1 gives (3, 1)
+
+    :param version: Inputted version number to try and convert.
+
+    :returns: A usable version tuple
+    :rtype: tuple
+
+    :raises TypeError: if the inputted version cannot be converted to tuple.
+    """
+    return _discover.normalize_version_number(version)
+
+
+def version_match(required, candidate):
+    """Test that an available version is a suitable match for a required
+    version.
+
+    To be suitable a version must be of the same major version as required
+    and be at least a match in minor/patch level.
+
+    eg. 3.3 is a match for a required 3.1 but 4.1 is not.
+
+    :param tuple required: the version that must be met.
+    :param tuple candidate: the version to test against required.
+
+    :returns: True if candidate is suitable False otherwise.
+    :rtype: bool
+    """
+    return _discover.version_match(required, candidate)
+
+
 def available_versions(url, session=None, **kwargs):
     """Retrieve raw version data from a url."""
     if not session:
