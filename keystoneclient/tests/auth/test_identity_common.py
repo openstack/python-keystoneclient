@@ -221,7 +221,7 @@ class CommonIdentityTests(object):
         s = session.Session(auth=a)
 
         # trigger token fetching
-        s.get_token()
+        s.get_auth_headers()
 
         self.assertTrue(a.auth_ref)
         self.assertTrue(a.invalidate())
@@ -368,3 +368,56 @@ class CatalogHackTests(utils.TestCase):
                                      version=(3, 0))
 
         self.assertEqual(self.V2_URL, endpoint)
+
+
+class GenericPlugin(base.BaseAuthPlugin):
+
+    BAD_TOKEN = uuid.uuid4().hex
+
+    def __init__(self):
+        super(GenericPlugin, self).__init__()
+
+        self.endpoint = 'http://keystone.host:5000'
+
+        self.headers = {'headerA': 'valueA',
+                        'headerB': 'valueB'}
+
+    def url(self, prefix):
+        return '%s/%s' % (self.endpoint, prefix)
+
+    def get_token(self, session, **kwargs):
+        # NOTE(jamielennox): by specifying get_headers this should not be used
+        return self.BAD_TOKEN
+
+    def get_headers(self, session, **kwargs):
+        return self.headers
+
+    def get_endpoint(self, session, **kwargs):
+        return self.endpoint
+
+
+class GenericAuthPluginTests(utils.TestCase):
+
+    # filter doesn't matter to GenericPlugin, but we have to specify one
+    ENDPOINT_FILTER = {uuid.uuid4().hex: uuid.uuid4().hex}
+
+    def setUp(self):
+        super(GenericAuthPluginTests, self).setUp()
+        self.auth = GenericPlugin()
+        self.session = session.Session(auth=self.auth)
+
+    def test_setting_headers(self):
+        text = uuid.uuid4().hex
+        self.stub_url('GET', base_url=self.auth.url('prefix'), text=text)
+
+        resp = self.session.get('prefix', endpoint_filter=self.ENDPOINT_FILTER)
+
+        self.assertEqual(text, resp.text)
+
+        for k, v in six.iteritems(self.auth.headers):
+            self.assertRequestHeaderEqual(k, v)
+
+        self.assertIsNone(self.session.get_token())
+        self.assertEqual(self.auth.headers,
+                         self.session.get_auth_headers())
+        self.assertNotIn('X-Auth-Token', self.requests.last_request.headers)

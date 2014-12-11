@@ -10,7 +10,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import abc
 import os
 
 import six
@@ -26,6 +25,7 @@ from keystoneclient.i18n import _
 AUTH_INTERFACE = object()
 
 PLUGIN_NAMESPACE = 'keystoneclient.auth.plugin'
+IDENTITY_AUTH_HEADER_NAME = 'X-Auth-Token'
 
 
 def get_plugin_class(name):
@@ -50,11 +50,9 @@ def get_plugin_class(name):
     return mgr.driver
 
 
-@six.add_metaclass(abc.ABCMeta)
 class BaseAuthPlugin(object):
     """The basic structure of an authentication plugin."""
 
-    @abc.abstractmethod
     def get_token(self, session, **kwargs):
         """Obtain a token.
 
@@ -67,12 +65,59 @@ class BaseAuthPlugin(object):
 
         Returning None will indicate that no token was able to be retrieved.
 
+        This function is misplaced as it should only be required for auth
+        plugins that use the 'X-Auth-Token' header. However due to the way
+        plugins evolved this method is required and often called to trigger an
+        authentication request on a new plugin.
+
+        When implementing a new plugin it is advised that you implement this
+        method, however if you don't require the 'X-Auth-Token' header override
+        the `get_headers` method instead.
+
         :param session: A session object so the plugin can make HTTP calls.
         :type session: keystoneclient.session.Session
 
         :return: A token to use.
         :rtype: string
         """
+
+    def get_headers(self, session, **kwargs):
+        """Fetch authentication headers for message.
+
+        This is a more generalized replacement of the older get_token to allow
+        plugins to specify different or additional authentication headers to
+        the OpenStack standard 'X-Auth-Token' header.
+
+        How the authentication headers are obtained is up to the plugin. If the
+        headers are still valid they may be re-used, retrieved from cache or
+        the plugin may invoke an authentication request against a server.
+
+        The default implementation of get_headers calls the `get_token` method
+        to enable older style plugins to continue functioning unchanged.
+        Subclasses should feel free to completely override this function to
+        provide the headers that they want.
+
+        There are no required kwargs. They are passed directly to the auth
+        plugin and they are implementation specific.
+
+        Returning None will indicate that no token was able to be retrieved and
+        that authorization was a failure. Adding no authentication data can be
+        achieved by returning an empty dictionary.
+
+        :param session: The session object that the auth_plugin belongs to.
+        :type session: keystoneclient.session.Session
+
+        :returns: Headers that are set to authenticate a message or None for
+                  failure. Note that when checking this value that the empty
+                  dict is a valid, non-failure response.
+        :rtype: dict
+        """
+        token = self.get_token(session)
+
+        if not token:
+            return None
+
+        return {IDENTITY_AUTH_HEADER_NAME: token}
 
     def get_endpoint(self, session, **kwargs):
         """Return an endpoint for the client.

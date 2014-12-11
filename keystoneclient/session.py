@@ -295,12 +295,13 @@ class Session(object):
             authenticated = bool(auth or self.auth)
 
         if authenticated:
-            token = self.get_token(auth)
+            auth_headers = self.get_auth_headers(auth)
 
-            if not token:
-                raise exceptions.AuthorizationFailure(_("No token Available"))
+            if auth_headers is None:
+                msg = _('No valid authentication is available')
+                raise exceptions.AuthorizationFailure(msg)
 
-            headers['X-Auth-Token'] = token
+            headers.update(auth_headers)
 
         if osprofiler_web:
             headers.update(osprofiler_web.get_trace_id_headers())
@@ -367,9 +368,10 @@ class Session(object):
         # and then retrying the request. This is only tried once.
         if resp.status_code == 401 and authenticated and allow_reauth:
             if self.invalidate(auth):
-                token = self.get_token(auth)
-                if token:
-                    headers['X-Auth-Token'] = token
+                auth_headers = self.get_auth_headers(auth)
+
+                if auth_headers is not None:
+                    headers.update(auth_headers)
                     resp = send(**kwargs)
 
         if raise_exc and resp.status_code >= 400:
@@ -559,6 +561,24 @@ class Session(object):
 
         return auth
 
+    def get_auth_headers(self, auth=None, **kwargs):
+        """Return auth headers as provided by the auth plugin.
+
+        :param auth: The auth plugin to use for token. Overrides the plugin
+                     on the session. (optional)
+        :type auth: :py:class:`keystoneclient.auth.base.BaseAuthPlugin`
+
+        :raises keystoneclient.exceptions.AuthorizationFailure: if a new token
+                                                                fetch fails.
+        :raises keystoneclient.exceptions.MissingAuthPlugin: if a plugin is not
+                                                             available.
+
+        :returns: Authentication headers or None for failure.
+        :rtype: dict
+        """
+        auth = self._auth_required(auth, 'fetch a token')
+        return auth.get_headers(self, **kwargs)
+
     def get_token(self, auth=None):
         """Return a token as provided by the auth plugin.
 
@@ -571,16 +591,14 @@ class Session(object):
         :raises keystoneclient.exceptions.MissingAuthPlugin: if a plugin is not
                                                              available.
 
+        *DEPRECATED*: This assumes that the only header that is used to
+                      authenticate a message is 'X-Auth-Token'. This may not be
+                      correct. Use get_auth_headers instead.
+
         :returns: A valid token.
         :rtype: string
         """
-        auth = self._auth_required(auth, 'fetch a token')
-
-        try:
-            return auth.get_token(self)
-        except exceptions.HttpError as exc:
-            raise exceptions.AuthorizationFailure(
-                _("Authentication failure: %s") % exc)
+        return (self.get_auth_headers(auth) or {}).get('X-Auth-Token')
 
     def get_endpoint(self, auth=None, **kwargs):
         """Get an endpoint as provided by the auth plugin.

@@ -102,7 +102,8 @@ class V2IdentityPlugin(utils.TestCase):
                         password=self.TEST_PASS)
         self.assertIsNone(a.user_id)
         s = session.Session(a)
-        s.get_token()
+        self.assertEqual({'X-Auth-Token': self.TEST_TOKEN},
+                         s.get_auth_headers())
 
         req = {'auth': {'passwordCredentials': {'username': self.TEST_USER,
                                                 'password': self.TEST_PASS}}}
@@ -117,7 +118,8 @@ class V2IdentityPlugin(utils.TestCase):
                         password=self.TEST_PASS)
         self.assertIsNone(a.username)
         s = session.Session(a)
-        s.get_token()
+        self.assertEqual({'X-Auth-Token': self.TEST_TOKEN},
+                         s.get_auth_headers())
 
         req = {'auth': {'passwordCredentials': {'userId': self.TEST_USER,
                                                 'password': self.TEST_PASS}}}
@@ -132,7 +134,8 @@ class V2IdentityPlugin(utils.TestCase):
                         password=self.TEST_PASS, tenant_id=self.TEST_TENANT_ID)
         self.assertIsNone(a.user_id)
         s = session.Session(a)
-        s.get_token()
+        self.assertEqual({'X-Auth-Token': self.TEST_TOKEN},
+                         s.get_auth_headers())
 
         req = {'auth': {'passwordCredentials': {'username': self.TEST_USER,
                                                 'password': self.TEST_PASS},
@@ -146,7 +149,8 @@ class V2IdentityPlugin(utils.TestCase):
                         password=self.TEST_PASS, tenant_id=self.TEST_TENANT_ID)
         self.assertIsNone(a.username)
         s = session.Session(a)
-        s.get_token()
+        self.assertEqual({'X-Auth-Token': self.TEST_TOKEN},
+                         s.get_auth_headers())
 
         req = {'auth': {'passwordCredentials': {'userId': self.TEST_USER,
                                                 'password': self.TEST_PASS},
@@ -158,7 +162,8 @@ class V2IdentityPlugin(utils.TestCase):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
         a = v2.Token(self.TEST_URL, 'foo')
         s = session.Session(a)
-        s.get_token()
+        self.assertEqual({'X-Auth-Token': self.TEST_TOKEN},
+                         s.get_auth_headers())
 
         req = {'auth': {'token': {'id': 'foo'}}}
         self.assertRequestBodyIs(json=req)
@@ -172,7 +177,8 @@ class V2IdentityPlugin(utils.TestCase):
         a = v2.Password(self.TEST_URL, username=self.TEST_USER,
                         password=self.TEST_PASS, trust_id='trust')
         s = session.Session(a)
-        s.get_token()
+        self.assertEqual({'X-Auth-Token': self.TEST_TOKEN},
+                         s.get_auth_headers())
 
         req = {'auth': {'passwordCredentials': {'username': self.TEST_USER,
                                                 'password': self.TEST_PASS},
@@ -266,8 +272,11 @@ class V2IdentityPlugin(utils.TestCase):
         s = session.Session(auth=a)
 
         self.assertEqual('token1', s.get_token())
+        self.assertEqual({'X-Auth-Token': 'token1'}, s.get_auth_headers())
+
         a.invalidate()
         self.assertEqual('token2', s.get_token())
+        self.assertEqual({'X-Auth-Token': 'token2'}, s.get_auth_headers())
 
     def test_doesnt_log_password(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
@@ -277,6 +286,8 @@ class V2IdentityPlugin(utils.TestCase):
                         password=password)
         s = session.Session(auth=a)
         self.assertEqual(self.TEST_TOKEN, s.get_token())
+        self.assertEqual({'X-Auth-Token': self.TEST_TOKEN},
+                         s.get_auth_headers())
         self.assertNotIn(password, self.logger.output)
 
     def test_password_with_no_user_id_or_name(self):

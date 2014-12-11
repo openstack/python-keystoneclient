@@ -21,6 +21,7 @@ __all__ = [
     'AUTH_INTERFACE',
     'BaseAuthPlugin',
     'get_plugin_class',
+    'IDENTITY_AUTH_HEADER_NAME',
     'PLUGIN_NAMESPACE',
 
     # auth.cli
