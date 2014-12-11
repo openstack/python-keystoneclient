@@ -151,6 +151,8 @@ class Session(object):
         # so we need to actually check that this is False.
         if self.verify is False:
             string_parts.append('--insecure')
+        elif isinstance(self.verify, six.string_types):
+            string_parts.append('--cacert "%s"' % self.verify)
 
         if method:
             string_parts.extend(['-X', method])
