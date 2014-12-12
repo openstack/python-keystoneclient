@@ -14,12 +14,14 @@ import abc
 import datetime
 import uuid
 
+import mock
 from oslo_utils import timeutils
 import six
 
 from keystoneclient import access
 from keystoneclient.auth import base
 from keystoneclient.auth import identity
+from keystoneclient import exceptions
 from keystoneclient import fixture
 from keystoneclient import session
 from keystoneclient.tests.unit import utils
@@ -411,6 +413,9 @@ class GenericPlugin(base.BaseAuthPlugin):
         self.headers = {'headerA': 'valueA',
                         'headerB': 'valueB'}
 
+        self.cert = '/path/to/cert'
+        self.connection_params = {'cert': self.cert, 'verify': False}
+
     def url(self, prefix):
         return '%s/%s' % (self.endpoint, prefix)
 
@@ -423,6 +428,9 @@ class GenericPlugin(base.BaseAuthPlugin):
 
     def get_endpoint(self, session, **kwargs):
         return self.endpoint
+
+    def get_connection_params(self, session, **kwargs):
+        return self.connection_params
 
 
 class GenericAuthPluginTests(utils.TestCase):
@@ -451,3 +459,37 @@ class GenericAuthPluginTests(utils.TestCase):
                          self.session.get_auth_headers())
         self.assertNotIn('X-Auth-Token',
                          self.requests_mock.last_request.headers)
+
+    def test_setting_connection_params(self):
+        text = uuid.uuid4().hex
+
+        with mock.patch.object(self.session.session, 'request') as mocked:
+            mocked.return_value = utils.TestResponse({'status_code': 200,
+                                                      'text': text})
+            resp = self.session.get('prefix',
+                                    endpoint_filter=self.ENDPOINT_FILTER)
+
+            self.assertEqual(text, resp.text)
+
+            # the cert and verify values passed to request are those that were
+            # returned from the auth plugin as connection params.
+
+            mocked.assert_called_once_with('GET',
+                                           self.auth.url('prefix'),
+                                           headers=mock.ANY,
+                                           allow_redirects=False,
+                                           cert=self.auth.cert,
+                                           verify=False)
+
+    def test_setting_bad_connection_params(self):
+        # The uuid name parameter here is unknown and not in the allowed params
+        # to be returned to the session and so an error will be raised.
+        name = uuid.uuid4().hex
+        self.auth.connection_params[name] = uuid.uuid4().hex
+
+        e = self.assertRaises(exceptions.UnsupportedParameters,
+                              self.session.get,
+                              'prefix',
+                              endpoint_filter=self.ENDPOINT_FILTER)
+
+        self.assertIn(name, str(e))

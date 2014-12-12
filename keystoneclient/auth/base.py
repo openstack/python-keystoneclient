@@ -168,6 +168,19 @@ class BaseAuthPlugin(object):
         """
         return None
 
+    def get_connection_params(self, session, **kwargs):
+        """Return any additional connection parameters required for the plugin.
+
+        :param session: The session object that the auth_plugin belongs to.
+        :type session: keystoneclient.session.Session
+
+        :returns: Headers that are set to authenticate a message or None for
+                  failure. Note that when checking this value that the empty
+                  dict is a valid, non-failure response.
+        :rtype: dict
+        """
+        return {}
+
     def invalidate(self):
         """Invalidate the current authentication data.
 
