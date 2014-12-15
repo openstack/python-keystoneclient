@@ -160,3 +160,10 @@ class TokenTests(utils.TestCase):
         self.assertIsInstance(token_ref, tokens.Token)
         self.assertEqual(token_fixture.token_id, token_ref.id)
         self.assertEqual(token_fixture.expires_str, token_ref.expires)
+
+    def test_get_revoked(self):
+        sample_revoked_response = {'signed': '-----BEGIN CMS-----\nMIIB...'}
+        self.stub_url('GET', ['tokens', 'revoked'],
+                      json=sample_revoked_response)
+        resp = self.client.tokens.get_revoked()
+        self.assertEqual(sample_revoked_response, resp)

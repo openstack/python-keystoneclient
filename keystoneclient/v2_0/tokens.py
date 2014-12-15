@@ -72,3 +72,13 @@ class TokenManager(base.Manager):
 
     def endpoints(self, token):
         return self._get("/tokens/%s/endpoints" % base.getid(token), "token")
+
+    def get_revoked(self):
+        """Returns the revoked tokens response.
+
+        The response will be a dict containing 'signed' which is a CMS-encoded
+        document.
+
+        """
+        resp, body = self.client.get('/tokens/revoked')
+        return body
