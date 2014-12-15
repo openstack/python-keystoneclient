@@ -119,6 +119,22 @@ access token's key and secret. For example::
     >>> s = session.Session(auth=a)
 
 
+Loading Plugins by Name
+=======================
+
+In auth_token middleware and for some service to service communication it is
+possible to specify a plugin to load via name. The authentication options that
+are available are then specific to the plugin that you specified. Currently the
+authentication plugins that are available in `keystoneclient` are:
+
+- password: :py:class:`keystoneclient.auth.identity.generic.Password`
+- token: :py:class:`keystoneclient.auth.identity.generic.Token`
+- v2password: :py:class:`keystoneclient.auth.identity.v2.Password`
+- v2token: :py:class:`keystoneclient.auth.identity.v2.Token`
+- v3password: :py:class:`keystoneclient.auth.identity.v3.Password`
+- v3token: :py:class:`keystoneclient.auth.identity.v3.Token`
+
+
 Creating Authentication Plugins
 ===============================
 
