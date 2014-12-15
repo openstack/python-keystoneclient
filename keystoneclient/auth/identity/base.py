@@ -74,6 +74,9 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
         when invoked. If you are looking to just retrieve the current auth
         data then you should use get_access.
 
+        :param session: A session object that can be used for communication.
+        :type session: keystoneclient.session.Session
+
         :raises keystoneclient.exceptions.InvalidResponse: The response
                                                            returned wasn't
                                                            appropriate.
@@ -88,6 +91,9 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
         """Return a valid auth token.
 
         If a valid token is not present then a new one will be fetched.
+
+        :param session: A session object that can be used for communication.
+        :type session: keystoneclient.session.Session
 
         :raises keystoneclient.exceptions.HttpError: An error from an invalid
                                                      HTTP response.
@@ -124,6 +130,9 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
 
         If a valid AccessInfo is present then it is returned otherwise a new
         one will be fetched.
+
+        :param session: A session object that can be used for communication.
+        :type session: keystoneclient.session.Session
 
         :raises keystoneclient.exceptions.HttpError: An error from an invalid
                                                      HTTP response.
@@ -164,6 +173,8 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
         If a valid token is not present then a new one will be fetched using
         the session and kwargs.
 
+        :param session: A session object that can be used for communication.
+        :type session: keystoneclient.session.Session
         :param string service_type: The type of service to lookup the endpoint
                                     for. This plugin will return None (failure)
                                     if service_type is not provided.
@@ -247,7 +258,8 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
         This function is expected to be used by subclasses and should not
         be needed by users.
 
-        :param Session session: A session object to discover with.
+        :param session: A session object to discover with.
+        :type session: keystoneclient.session.Session
         :param str url: The url to lookup.
         :param bool authenticated: Include a token in the discovery call.
                                    (optional) Defaults to None (use a token

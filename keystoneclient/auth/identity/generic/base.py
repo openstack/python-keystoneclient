@@ -81,7 +81,8 @@ class BaseGenericPlugin(base.BaseIdentityPlugin):
         params then it should return it. If not return None and then another
         call will be made with other available URLs.
 
-        :param Session session: A session object.
+        :param session: A session object.
+        :type session: keystoneclient.session.Session
         :param tuple version: A tuple of the API version at the URL.
         :param string url: The base URL for this version.
         :param string raw_status: The status that was in the discovery field.

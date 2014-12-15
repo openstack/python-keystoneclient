@@ -60,7 +60,8 @@ def register_conf_options(conf, group):
          taken. If section is not provided then the auth plugin options will be
          taken from the same group as provided in the parameters.
 
-    :param oslo.config.Cfg conf: config object to register with.
+    :param conf: config object to register with.
+    :type conf: oslo.config.cfg.ConfigOpts
     :param string group: The ini group to register options in.
     """
     conf.register_opt(_AUTH_SECTION_OPT, group=group)
@@ -85,11 +86,12 @@ def load_from_conf_options(conf, group, **kwargs):
     The base options should have been registered with register_conf_options
     before this function is called.
 
-    :param conf: An oslo.config conf object.
+    :param conf: A conf object.
+    :type conf: oslo.config.cfg.ConfigOpts
     :param string group: The group name that options should be read from.
 
     :returns: An authentication Plugin or None if a name is not provided
-    :rtype: plugin
+    :rtype: :py:class:`keystoneclient.auth.BaseAuthPlugin`
 
     :raises keystoneclient.exceptions.NoMatchingPlugin: if a plugin cannot be
                                                         created.

@@ -28,9 +28,10 @@ def Client(version=None, unstable=False, session=None, **kwargs):
                           at least the specified minor version. For example to
                           specify the 3.1 API use (3, 1).
     :param bool unstable: Accept endpoints not marked as 'stable'. (optional)
-    :param Session session: A session object to be used for communication. If
-                            one is not provided it will be constructed from the
-                            provided kwargs. (optional)
+    :param session: A session object to be used for communication. If one is
+                    not provided it will be constructed from the provided
+                    kwargs. (optional)
+    :type session: keystoneclient.session.Session
     :param kwargs: Additional arguments are passed through to the client
                    that is being created.
     :returns: New keystone client object

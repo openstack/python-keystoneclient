@@ -30,6 +30,7 @@ def register_argparse_arguments(parser, argv, default=None):
                               if one isn't specified by the CLI. default: None.
 
     :returns: The plugin class that will be loaded or None if not provided.
+    :rtype: :py:class:`keystoneclient.auth.BaseAuthPlugin`
 
     :raises keystoneclient.exceptions.NoMatchingPlugin: if a plugin cannot be
                                                         created.
@@ -68,6 +69,7 @@ def load_from_argparse_arguments(namespace, **kwargs):
     :param Namespace namespace: The result from CLI parsing.
 
     :returns: An auth plugin, or None if a name is not provided.
+    :rtype: :py:class:`keystoneclient.auth.BaseAuthPlugin`
 
     :raises keystoneclient.exceptions.NoMatchingPlugin: if a plugin cannot be
                                                         created.

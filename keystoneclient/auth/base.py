@@ -34,6 +34,7 @@ def get_plugin_class(name):
     :param str name: The name of the object to get.
 
     :returns: An auth plugin class.
+    :rtype: :py:class:`keystoneclient.auth.BaseAuthPlugin`
 
     :raises keystoneclient.exceptions.NoMatchingPlugin: if a plugin cannot be
                                                         created.
@@ -67,6 +68,8 @@ class BaseAuthPlugin(object):
         Returning None will indicate that no token was able to be retrieved.
 
         :param session: A session object so the plugin can make HTTP calls.
+        :type session: keystoneclient.session.Session
+
         :return: A token to use.
         :rtype: string
         """
@@ -84,8 +87,8 @@ class BaseAuthPlugin(object):
         - ``interface``: what visibility the endpoint should have.
         - ``region_name``: the region the endpoint exists in.
 
-        :param Session session: The session object that the auth_plugin
-                                belongs to.
+        :param session: The session object that the auth_plugin belongs to.
+        :type session: keystoneclient.session.Session
 
         :returns: The base URL that will be used to talk to the required
                   service or None if not available.
@@ -137,8 +140,8 @@ class BaseAuthPlugin(object):
         Given a plugin class convert it's options into argparse arguments and
         add them to a parser.
 
-        :param AuthPlugin plugin: an auth plugin class.
-        :param argparse.ArgumentParser: the parser to attach argparse options.
+        :param parser: the parser to attach argparse options.
+        :type parser: argparse.ArgumentParser
         """
 
         # NOTE(jamielennox): ideally oslo.config would be smart enough to
@@ -173,10 +176,11 @@ class BaseAuthPlugin(object):
 
         Convert the results of a parse into the specified plugin.
 
-        :param AuthPlugin plugin: an auth plugin class.
-        :param Namespace namespace: The result from CLI parsing.
+        :param namespace: The result from CLI parsing.
+        :type namespace: argparse.Namespace
 
         :returns: An auth plugin, or None if a name is not provided.
+        :rtype: :py:class:`keystoneclient.auth.BaseAuthPlugin`
         """
         for opt in cls.get_options():
             val = getattr(namespace, 'os_%s' % opt.dest)
@@ -190,7 +194,8 @@ class BaseAuthPlugin(object):
     def register_conf_options(cls, conf, group):
         """Register the oslo.config options that are needed for a plugin.
 
-        :param conf: An oslo.config conf object.
+        :param conf: A config object.
+        :type conf: oslo.config.cfg.ConfigOpts
         :param string group: The group name that options should be read from.
         """
         plugin_opts = cls.get_options()
@@ -202,11 +207,12 @@ class BaseAuthPlugin(object):
 
         Convert the options already registered into a real plugin.
 
-        :param conf: An oslo.config conf object.
+        :param conf: A config object.
+        :type conf: oslo.config.cfg.ConfigOpts
         :param string group: The group name that options should be read from.
 
         :returns: An authentication Plugin.
-        :rtype: plugin:
+        :rtype: :py:class:`keystoneclient.auth.BaseAuthPlugin`
         """
         plugin_opts = cls.get_options()
 
