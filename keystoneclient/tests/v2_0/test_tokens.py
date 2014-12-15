@@ -12,6 +12,8 @@
 
 import uuid
 
+from keystoneclient import access
+from keystoneclient import exceptions
 from keystoneclient import fixture
 from keystoneclient.tests.v2_0 import utils
 from keystoneclient.v2_0 import client
@@ -160,6 +162,43 @@ class TokenTests(utils.TestCase):
         self.assertIsInstance(token_ref, tokens.Token)
         self.assertEqual(token_fixture.token_id, token_ref.id)
         self.assertEqual(token_fixture.expires_str, token_ref.expires)
+
+    def test_validate_token(self):
+        id_ = uuid.uuid4().hex
+        token_fixture = fixture.V2Token(token_id=id_)
+        self.stub_url('GET', ['tokens', id_], json=token_fixture)
+
+        token_ref = self.client.tokens.validate(id_)
+        self.assertIsInstance(token_ref, tokens.Token)
+        self.assertEqual(id_, token_ref.id)
+
+    def test_validate_token_invalid_token(self):
+        # If the token is invalid, typically a NotFound is raised.
+
+        id_ = uuid.uuid4().hex
+        # The server is expected to return 404 if the token is invalid.
+        self.stub_url('GET', ['tokens', id_], status_code=404)
+        self.assertRaises(exceptions.NotFound,
+                          self.client.tokens.validate, id_)
+
+    def test_validate_token_access_info_with_token_id(self):
+        # Can validate a token passing a string token ID.
+        token_id = uuid.uuid4().hex
+        token_fixture = fixture.V2Token(token_id=token_id)
+        self.stub_url('GET', ['tokens', token_id], json=token_fixture)
+        access_info = self.client.tokens.validate_access_info(token_id)
+        self.assertIsInstance(access_info, access.AccessInfoV2)
+        self.assertEqual(token_id, access_info.auth_token)
+
+    def test_validate_token_access_info_with_access_info(self):
+        # Can validate a token passing an access info.
+        token_id = uuid.uuid4().hex
+        token_fixture = fixture.V2Token(token_id=token_id)
+        self.stub_url('GET', ['tokens', token_id], json=token_fixture)
+        token = access.AccessInfo.factory(body=token_fixture)
+        access_info = self.client.tokens.validate_access_info(token)
+        self.assertIsInstance(access_info, access.AccessInfoV2)
+        self.assertEqual(token_id, access_info.auth_token)
 
     def test_get_revoked(self):
         sample_revoked_response = {'signed': '-----BEGIN CMS-----\nMIIB...'}
