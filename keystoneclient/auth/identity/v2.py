@@ -107,6 +107,11 @@ class Password(Auth):
     :param string username: Username for authentication.
     :param string password: Password for authentication.
     :param string user_id: User ID for authentication.
+    :param string trust_id: Trust ID for trust scoping.
+    :param string tenant_id: Tenant ID for tenant scoping.
+    :param string tenant_name: Tenant name for tenant scoping.
+    :param bool reauthenticate: Allow fetching a new token if the current one
+                                is going to expire. (optional) default True
 
     :raises TypeError: if a user_id or username is not provided.
     """
@@ -160,6 +165,11 @@ class Token(Auth):
 
     :param string auth_url: Identity service endpoint for authorization.
     :param string token: Existing token for authentication.
+    :param string tenant_id: Tenant ID for tenant scoping.
+    :param string tenant_name: Tenant name for tenant scoping.
+    :param string trust_id: Trust ID for trust scoping.
+    :param bool reauthenticate: Allow fetching a new token if the current one
+                                is going to expire. (optional) default True
     """
 
     def __init__(self, auth_url, token, **kwargs):
