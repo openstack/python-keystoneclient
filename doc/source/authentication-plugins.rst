@@ -37,6 +37,9 @@ They include:
 - :py:class:`~keystoneclient.auth.identity.v2.Token`: Authenticate against a
   V2 identity service using an existing token.
 
+V2 identity plugins must use an auth_url that points to the root of a V2
+identity server URL, i.e.: `http://hostname:5000/v2.0`.
+
 V3 Identity Plugins
 -------------------
 
@@ -87,6 +90,31 @@ like the V2 plugins:
 This will have exactly the same effect as using the single
 :py:class:`~keystoneclient.auth.identity.v3.PasswordMethod` above.
 
+V3 identity plugins must use an auth_url that points to the root of a V3
+identity server URL, i.e.: `http://hostname:5000/v3`.
+
+Version Independent Identity Plugins
+------------------------------------
+
+Standard version independent identity plugins are defined in the module
+:py:mod:`keystoneclient.auth.identity.generic`.
+
+For the cases of plugins that exist under both the identity V2 and V3 APIs
+there is an abstraction to allow the plugin to determine which of the V2 and V3
+APIs are supported by the server and use the most appropriate API.
+
+These plugins are:
+
+- :py:class:`~keystoneclient.auth.identity.generic.Password`: Authenticate
+  using a user/password against either v2 or v3 API.
+- :py:class:`~keystoneclient.auth.identity.generic.Token`: Authenticate using
+  an existing token against either v2 or v3 API.
+
+These plugins work by first querying the identity server to determine available
+versions and so the `auth_url` used with the plugins should point to the base
+URL of the identity server to use. If the `auth_url` points to either a V2 or
+V3 endpoint it will restrict the plugin to only working with that version of
+the API.
 
 Simple Plugins
 --------------
