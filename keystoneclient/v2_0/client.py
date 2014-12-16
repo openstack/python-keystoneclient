@@ -19,6 +19,7 @@ from keystoneclient.auth.identity import v2 as v2_auth
 from keystoneclient import exceptions
 from keystoneclient import httpclient
 from keystoneclient.i18n import _
+from keystoneclient.v2_0 import certificates
 from keystoneclient.v2_0 import ec2
 from keystoneclient.v2_0 import endpoints
 from keystoneclient.v2_0 import extensions
@@ -131,6 +132,7 @@ class Client(httpclient.HTTPClient):
         """Initialize a new client for the Keystone v2.0 API."""
         super(Client, self).__init__(**kwargs)
 
+        self.certificates = certificates.CertificatesManager(self._adapter)
         self.endpoints = endpoints.EndpointManager(self._adapter)
         self.extensions = extensions.ExtensionManager(self._adapter)
         self.roles = roles.RoleManager(self._adapter)
