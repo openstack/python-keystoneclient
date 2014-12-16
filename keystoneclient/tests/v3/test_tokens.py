@@ -33,3 +33,10 @@ class TokenTests(utils.TestCase):
         self.stub_url('DELETE', ['/auth/tokens'], status_code=204)
         self.client.tokens.revoke_token(token)
         self.assertRequestHeaderEqual('X-Subject-Token', token_id)
+
+    def test_get_revoked(self):
+        sample_revoked_response = {'signed': '-----BEGIN CMS-----\nMIIB...'}
+        self.stub_url('GET', ['auth', 'tokens', 'OS-PKI', 'revoked'],
+                      json=sample_revoked_response)
+        resp = self.client.tokens.get_revoked()
+        self.assertEqual(sample_revoked_response, resp)
