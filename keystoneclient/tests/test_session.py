@@ -699,6 +699,8 @@ class AdapterTest(utils.TestCase):
         self.assertEqual(response, resp.text)
         self.assertEqual(endpoint_url, self.requests.last_request.url)
 
+        self.assertEqual(endpoint_override, adpt.get_endpoint())
+
     def test_adapter_invalidate(self):
         auth = CalledAuthPlugin()
         sess = client_session.Session()
