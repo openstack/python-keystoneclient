@@ -30,6 +30,8 @@ class MockPlugin(base.BaseAuthPlugin):
     INT_DESC = 'test int'
     FLOAT_DESC = 'test float'
     BOOL_DESC = 'test bool'
+    STR_DESC = 'test str'
+    STR_DEFAULT = uuid.uuid4().hex
 
     def __init__(self, **kwargs):
         self._data = kwargs
@@ -49,6 +51,7 @@ class MockPlugin(base.BaseAuthPlugin):
             cfg.IntOpt('a-int', default='3', help=cls.INT_DESC),
             cfg.BoolOpt('a-bool', help=cls.BOOL_DESC),
             cfg.FloatOpt('a-float', help=cls.FLOAT_DESC),
+            cfg.StrOpt('a-str', help=cls.STR_DESC, default=cls.STR_DEFAULT),
         ]
 
 

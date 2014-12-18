@@ -155,14 +155,12 @@ class BaseAuthPlugin(object):
                 args.append('--os-%s' % o.name)
                 envs.append('OS_%s' % o.name.replace('-', '_').upper())
 
-            default = opt.default
-            if default is None:
-                # select the first ENV that is not false-y or return None
-                env_vars = (os.environ.get(e) for e in envs)
-                default = six.next(six.moves.filter(None, env_vars), None)
+            # select the first ENV that is not false-y or return None
+            env_vars = (os.environ.get(e) for e in envs)
+            default = six.next(six.moves.filter(None, env_vars), None)
 
             parser.add_argument(*args,
-                                default=default,
+                                default=default or opt.default,
                                 metavar=opt.metavar,
                                 help=opt.help,
                                 dest='os_%s' % opt.dest)

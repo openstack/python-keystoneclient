@@ -13,6 +13,7 @@
 import argparse
 import uuid
 
+import fixtures
 import mock
 from oslo.config import cfg
 
@@ -42,6 +43,13 @@ class CliTests(utils.TestCase):
     def setUp(self):
         super(CliTests, self).setUp()
         self.p = argparse.ArgumentParser()
+
+    def env(self, name, value=None):
+        if value is not None:
+            # environment variables are always strings
+            value = str(value)
+
+        return self.useFixture(fixtures.EnvironmentVariable(name, value))
 
     def test_creating_with_no_args(self):
         ret = cli.register_argparse_arguments(self.p, [])
@@ -139,6 +147,18 @@ class CliTests(utils.TestCase):
                                                 default=TestPlugin)
         self.assertIs(utils.MockPlugin, klass)
         m.assert_called_once_with(name)
+
+    @utils.mock_plugin
+    def test_env_overrides_default_opt(self, m):
+        name = uuid.uuid4().hex
+        val = uuid.uuid4().hex
+        self.env('OS_A_STR', val)
+
+        klass = cli.register_argparse_arguments(self.p, [], default=name)
+        opts = self.p.parse_args([])
+        a = klass.load_from_argparse_arguments(opts)
+
+        self.assertEqual(val, a['a_str'])
 
     def test_deprecated_cli_options(self):
         TesterPlugin.register_argparse_arguments(self.p)
