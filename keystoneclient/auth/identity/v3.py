@@ -39,6 +39,8 @@ class Auth(base.BaseIdentityPlugin):
     :param string project_domain_name: Project's domain name for project.
     :param bool reauthenticate: Allow fetching a new token if the current one
                                 is going to expire. (optional) default True
+    :param bool include_catalog: Include the service catalog in the returned
+                                 token. (optional) default True.
     """
 
     @utils.positional()
@@ -50,7 +52,8 @@ class Auth(base.BaseIdentityPlugin):
                  project_name=None,
                  project_domain_id=None,
                  project_domain_name=None,
-                 reauthenticate=True):
+                 reauthenticate=True,
+                 include_catalog=True):
         super(Auth, self).__init__(auth_url=auth_url,
                                    reauthenticate=reauthenticate)
 
@@ -62,6 +65,7 @@ class Auth(base.BaseIdentityPlugin):
         self.project_name = project_name
         self.project_domain_id = project_domain_id
         self.project_domain_name = project_domain_name
+        self.include_catalog = include_catalog
 
     @property
     def token_url(self):
@@ -112,8 +116,14 @@ class Auth(base.BaseIdentityPlugin):
         elif self.trust_id:
             body['auth']['scope'] = {'OS-TRUST:trust': {'id': self.trust_id}}
 
-        _logger.debug('Making authentication request to %s', self.token_url)
-        resp = session.post(self.token_url, json=body, headers=headers,
+        # NOTE(jamielennox): we add nocatalog here rather than in token_url
+        # directly as some federation plugins require the base token_url
+        token_url = self.token_url
+        if not self.include_catalog:
+            token_url += '?nocatalog'
+
+        _logger.debug('Making authentication request to %s', token_url)
+        resp = session.post(token_url, json=body, headers=headers,
                             authenticated=False, log=False, **rkwargs)
 
         try:
