@@ -31,3 +31,8 @@ class RegionTests(utils.TestCase, utils.CrudTests):
         kwargs.setdefault('enabled', True)
         kwargs.setdefault('id', uuid.uuid4().hex)
         return kwargs
+
+    def test_update_enabled_defaults_to_none(self):
+        req_ref = self.new_ref()
+        del req_ref['enabled']
+        super(RegionTests, self).test_update(req_ref=req_ref)

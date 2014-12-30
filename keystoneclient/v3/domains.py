@@ -60,7 +60,7 @@ class DomainManager(base.CrudManager):
 
     @utils.positional(enforcement=utils.positional.WARN)
     def update(self, domain, name=None,
-               description=None, enabled=True, **kwargs):
+               description=None, enabled=None, **kwargs):
         return super(DomainManager, self).update(
             domain_id=base.getid(domain),
             name=name,
