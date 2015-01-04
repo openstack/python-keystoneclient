@@ -291,7 +291,7 @@ def is_asn1_token(token):
       Checking for just M is insufficient
 
     But we will only check for MII:
-    Max length of the content using 2 octets is 7FFF or 32767.
+    Max length of the content using 2 octets is 3FFF or 16383.
 
     It's not practical to support a token of this length or greater in http
     therefore, we will check for MII only and ignore the case of larger tokens
