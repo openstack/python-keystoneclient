@@ -30,3 +30,15 @@ class ServiceTests(utils.TestCase, utils.CrudTests):
         kwargs.setdefault('type', uuid.uuid4().hex)
         kwargs.setdefault('enabled', True)
         return kwargs
+
+    def test_list_filter_name(self):
+        filter_name = uuid.uuid4().hex
+        expected_query = {'name': filter_name}
+        super(ServiceTests, self).test_list(expected_query=expected_query,
+                                            name=filter_name)
+
+    def test_list_filter_type(self):
+        filter_type = uuid.uuid4().hex
+        expected_query = {'type': filter_type}
+        super(ServiceTests, self).test_list(expected_query=expected_query,
+                                            type=filter_type)

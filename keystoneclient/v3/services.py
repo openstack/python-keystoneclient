@@ -51,6 +51,13 @@ class ServiceManager(base.CrudManager):
             service_id=base.getid(service))
 
     @utils.positional(enforcement=utils.positional.WARN)
+    def list(self, name=None, type=None, **kwargs):
+        return super(ServiceManager, self).list(
+            name=name,
+            type=type,
+            **kwargs)
+
+    @utils.positional(enforcement=utils.positional.WARN)
     def update(self, service, name=None, type=None, enabled=None,
                description=None, **kwargs):
         return super(ServiceManager, self).update(
