@@ -23,6 +23,7 @@ import base64
 import errno
 import hashlib
 import logging
+import textwrap
 import zlib
 
 import six
@@ -227,20 +228,10 @@ def pkiz_verify(signed_text, signing_cert_file_name, ca_file_name):
 def token_to_cms(signed_text):
     copy_of_text = signed_text.replace('-', '/')
 
-    formatted = '-----BEGIN CMS-----\n'
-    line_length = 64
-    while len(copy_of_text) > 0:
-        if (len(copy_of_text) > line_length):
-            formatted += copy_of_text[:line_length]
-            copy_of_text = copy_of_text[line_length:]
-        else:
-            formatted += copy_of_text
-            copy_of_text = ''
-        formatted += '\n'
-
-    formatted += '-----END CMS-----\n'
-
-    return formatted
+    lines = ['-----BEGIN CMS-----']
+    lines += textwrap.wrap(copy_of_text, 64)
+    lines.append('-----END CMS-----\n')
+    return '\n'.join(lines)
 
 
 def verify_token(token, signing_cert_file_name, ca_file_name):
