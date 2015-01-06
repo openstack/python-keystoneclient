@@ -14,7 +14,7 @@ import os
 import uuid
 
 from lxml import etree
-from oslo.config import fixture as config
+from oslo_config import fixture as config
 import requests
 from six.moves import urllib
 

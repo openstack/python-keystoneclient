@@ -14,7 +14,7 @@ import functools
 import uuid
 
 import mock
-from oslo.config import cfg
+from oslo_config import cfg
 import six
 
 from keystoneclient import access

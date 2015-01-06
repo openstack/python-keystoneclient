@@ -15,7 +15,7 @@ import uuid
 
 import fixtures
 import mock
-from oslo.config import cfg
+from oslo_config import cfg
 
 from keystoneclient.auth import base
 from keystoneclient.auth import cli

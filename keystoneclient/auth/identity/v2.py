@@ -13,7 +13,7 @@
 import abc
 import logging
 
-from oslo.config import cfg
+from oslo_config import cfg
 import six
 
 from keystoneclient import access
