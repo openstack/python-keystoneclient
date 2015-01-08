@@ -13,7 +13,7 @@
 import datetime
 import uuid
 
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 
 from keystoneclient import access
 from keystoneclient import fixture

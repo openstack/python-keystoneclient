@@ -14,7 +14,7 @@ import copy
 import datetime
 
 from oslo.serialization import jsonutils
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 
 from keystoneclient import exceptions
 from keystoneclient.tests.v2_0 import utils

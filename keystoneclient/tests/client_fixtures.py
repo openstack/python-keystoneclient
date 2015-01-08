@@ -16,7 +16,7 @@ import os
 
 import fixtures
 from oslo.serialization import jsonutils
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 import six
 import testresources
 
@@ -535,3 +535,27 @@ class Examples(fixtures.Fixture):
 
 
 EXAMPLES_RESOURCE = testresources.FixtureResource(Examples())
+
+
+class HackingCode(fixtures.Fixture):
+    """A fixture to house the various code examples for the keystoneclient
+    hacking style checks.
+    """
+
+    oslo_namespace_imports = {
+        'code': """
+            import oslo.utils
+            import oslo_utils
+            import oslo.utils.encodeutils
+            import oslo_utils.encodeutils
+            from oslo import utils
+            from oslo.utils import encodeutils
+            from oslo_utils import encodeutils
+        """,
+        'expected_errors': [
+            (1, 0, 'K333'),
+            (3, 0, 'K333'),
+            (5, 0, 'K333'),
+            (6, 0, 'K333'),
+        ],
+    }
