@@ -53,6 +53,21 @@ def request(url, method='GET', **kwargs):
     return Session().request(url, method=method, **kwargs)
 
 
+def remove_service_catalog(body):
+    try:
+        data = jsonutils.loads(body)
+    except ValueError:
+        return body
+    try:
+        if 'catalog' in data['token']:
+            data['token']['catalog'] = '<removed>'
+            return jsonutils.dumps(data)
+        else:
+            return body
+    except KeyError:
+        return body
+
+
 class Session(object):
     """Maintains client communication state and common functionality.
 
@@ -182,7 +197,7 @@ class Session(object):
             if not headers:
                 headers = response.headers
             if not text:
-                text = response.text
+                text = remove_service_catalog(response.text)
         if json:
             text = jsonutils.dumps(json)
 
