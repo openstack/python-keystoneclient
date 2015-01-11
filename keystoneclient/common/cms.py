@@ -42,7 +42,7 @@ PKI_ASN1_FORM = 'PEM'
 
 # The openssl cms command exits with these status codes.
 # See https://www.openssl.org/docs/apps/cms.html#EXIT_CODES
-class OpensslCmsExitStatus:
+class OpensslCmsExitStatus(object):
     SUCCESS = 0
     INPUT_FILE_READ_ERROR = 2
     CREATE_CMS_READ_MIME_ERROR = 3
