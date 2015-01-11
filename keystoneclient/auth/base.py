@@ -108,6 +108,36 @@ class BaseAuthPlugin(object):
         """
         return False
 
+    def get_user_id(self, session, **kwargs):
+        """Return a unique user identifier of the plugin.
+
+        Wherever possible the user id should be inferred from the token however
+        there are certain URLs and other places that require access to the
+        currently authenticated user id.
+
+        :param session: A session object so the plugin can make HTTP calls.
+        :type session: keystoneclient.session.Session
+
+        :returns: A user identifier or None if one is not available.
+        :rtype: str
+        """
+        return None
+
+    def get_project_id(self, session, **kwargs):
+        """Return the project id that we are authenticated to.
+
+        Wherever possible the project id should be inferred from the token
+        however there are certain URLs and other places that require access to
+        the currently authenticated project id.
+
+        :param session: A session object so the plugin can make HTTP calls.
+        :type session: keystoneclient.session.Session
+
+        :returns: A project identifier or None if one is not available.
+        :rtype: str
+        """
+        return None
+
     @classmethod
     def get_options(cls):
         """Return the list of parameters associated with the auth plugin.

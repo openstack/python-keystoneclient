@@ -65,6 +65,13 @@ class CommonIdentityTests(object):
 
     def stub_auth_data(self, **kwargs):
         token = self.get_auth_data(**kwargs)
+        self.user_id = token.user_id
+
+        try:
+            self.project_id = token.project_id
+        except AttributeError:
+            self.project_id = token.tenant_id
+
         self.stub_auth(json=token)
 
     @abc.abstractproperty
@@ -220,6 +227,13 @@ class CommonIdentityTests(object):
         self.assertTrue(a.invalidate())
         self.assertIsNone(a.auth_ref)
         self.assertFalse(a.invalidate())
+
+    def test_get_auth_properties(self):
+        a = self.create_auth_plugin()
+        s = session.Session()
+
+        self.assertEqual(self.user_id, a.get_user_id(s))
+        self.assertEqual(self.project_id, a.get_project_id(s))
 
 
 class V3(CommonIdentityTests, utils.TestCase):

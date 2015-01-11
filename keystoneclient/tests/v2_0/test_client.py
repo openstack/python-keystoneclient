@@ -27,7 +27,8 @@ from keystoneclient.v2_0 import client
 class KeystoneClientTest(utils.TestCase):
 
     def test_unscoped_init(self):
-        self.stub_auth(json=client_fixtures.unscoped_token())
+        token = client_fixtures.unscoped_token()
+        self.stub_auth(json=token)
 
         c = client.Client(username='exampleuser',
                           password='password',
@@ -38,9 +39,12 @@ class KeystoneClientTest(utils.TestCase):
         self.assertFalse(c.auth_ref.project_scoped)
         self.assertIsNone(c.auth_ref.trust_id)
         self.assertFalse(c.auth_ref.trust_scoped)
+        self.assertIsNone(c.get_project_id(session=None))
+        self.assertEqual(token.user_id, c.get_user_id(session=None))
 
     def test_scoped_init(self):
-        self.stub_auth(json=client_fixtures.project_scoped_token())
+        token = client_fixtures.project_scoped_token()
+        self.stub_auth(json=token)
 
         c = client.Client(username='exampleuser',
                           password='password',
@@ -52,6 +56,9 @@ class KeystoneClientTest(utils.TestCase):
         self.assertFalse(c.auth_ref.domain_scoped)
         self.assertIsNone(c.auth_ref.trust_id)
         self.assertFalse(c.auth_ref.trust_scoped)
+
+        self.assertEqual(token.tenant_id, c.get_project_id(session=None))
+        self.assertEqual(token.user_id, c.get_user_id(session=None))
 
     def test_auth_ref_load(self):
         self.stub_auth(json=client_fixtures.project_scoped_token())

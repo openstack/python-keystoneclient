@@ -362,6 +362,12 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         else:
             return self.management_url
 
+    def get_user_id(self, session, **kwargs):
+        return self.auth_ref.user_id
+
+    def get_project_id(self, session, **kwargs):
+        return self.auth_ref.project_id
+
     @auth_token.setter
     def auth_token(self, value):
         """Override the auth_token.

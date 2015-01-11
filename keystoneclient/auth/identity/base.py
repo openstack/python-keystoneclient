@@ -236,6 +236,12 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
 
         return url
 
+    def get_user_id(self, session, **kwargs):
+        return self.get_access(session).user_id
+
+    def get_project_id(self, session, **kwargs):
+        return self.get_access(session).project_id
+
     @utils.positional()
     def get_discovery(self, session, url, authenticated=None):
         """Return the discovery object for a URL.
