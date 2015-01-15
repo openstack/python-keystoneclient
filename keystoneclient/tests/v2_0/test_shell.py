@@ -14,6 +14,7 @@ import os
 import sys
 
 import mock
+from oslo.serialization import jsonutils
 import six
 from testtools import matchers
 
@@ -381,22 +382,21 @@ class ShellTests(utils.TestCase):
                          ' --tenant-name new-tenant')
 
         def called_anytime(method, path, json=None):
+            test_url = self.TEST_URL.strip('/')
             for r in self.requests.request_history:
                 if not r.method == method:
                     continue
-                if not r.url == self.TEST_URL + path:
+                if not r.url == test_url + path:
                     continue
 
                 if json:
-                    last_request_body = r.body.decode('utf-8')
-                    json_body = jsonutils.loads(last_request_body)
-
+                    json_body = jsonutils.loads(r.body)
                     if not json_body == json:
                         continue
 
                 return True
 
-            return False
+            raise AssertionError('URL never called')
 
         called_anytime('POST', '/users', {'user': {'email': None,
                                                    'password': '1',
@@ -409,7 +409,7 @@ class ShellTests(utils.TestCase):
                                                        "description": None}})
 
         called_anytime('POST', '/OS-KSADM/roles',
-                       {"role": {"name": "new-role"}})
+                       {"role": {"name": "admin"}})
 
         called_anytime('PUT', '/tenants/1/users/1/roles/OS-KSADM/1')
 
