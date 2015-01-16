@@ -205,6 +205,19 @@ class SessionTests(utils.TestCase):
         self.assertThat(self.requests.request_history,
                         matchers.HasLength(retries + 1))
 
+    def test_uses_tcp_keepalive_by_default(self):
+        session = client_session.Session()
+        requests_session = session.session
+        self.assertIsInstance(requests_session.adapters['http://'],
+                              client_session.TCPKeepAliveAdapter)
+        self.assertIsInstance(requests_session.adapters['https://'],
+                              client_session.TCPKeepAliveAdapter)
+
+    def test_does_not_set_tcp_keepalive_on_custom_sessions(self):
+        mock_session = mock.Mock()
+        client_session.Session(session=mock_session)
+        self.assertFalse(mock_session.mount.called)
+
 
 class RedirectTests(utils.TestCase):
 

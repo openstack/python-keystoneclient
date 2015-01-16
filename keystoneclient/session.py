@@ -15,6 +15,7 @@ import functools
 import hashlib
 import logging
 import os
+import socket
 import time
 
 from oslo.config import cfg
@@ -123,6 +124,9 @@ class Session(object):
                  redirect=_DEFAULT_REDIRECT_LIMIT):
         if not session:
             session = requests.Session()
+            # Use TCPKeepAliveAdapter to fix bug 1323862
+            for scheme in session.adapters.keys():
+                session.mount(scheme, TCPKeepAliveAdapter())
 
         self.auth = auth
         self.session = session
@@ -778,3 +782,14 @@ class Session(object):
         kwargs['timeout'] = args.timeout
 
         return cls._make(**kwargs)
+
+
+class TCPKeepAliveAdapter(requests.adapters.HTTPAdapter):
+    """The custom adapter used to set TCP Keep-Alive on all connections."""
+    def init_poolmanager(self, *args, **kwargs):
+        if requests.__version__ >= '2.4.1':
+            kwargs.setdefault('socket_options', [
+                (socket.IPPROTO_TCP, socket.TCP_NODELAY, 1),
+                (socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1),
+            ])
+        super(TCPKeepAliveAdapter, self).init_poolmanager(*args, **kwargs)
