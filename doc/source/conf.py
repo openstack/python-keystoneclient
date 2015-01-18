@@ -42,6 +42,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__),
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.todo',
               'sphinx.ext.coverage',
+              'sphinx.ext.intersphinx',
               'oslosphinx',
               # NOTE(blk-u): Uncomment the [pbr] section in setup.cfg and
               # remove this Sphinx extension when
@@ -232,3 +233,8 @@ latex_documents = [
 
 # If false, no module index is generated.
 #latex_use_modindex = True
+
+intersphinx_mapping = {
+    'python': ('http://docs.python.org/', None),
+    'osloconfig': ('http://docs.openstack.org/developer/oslo.config/', None),
+}
