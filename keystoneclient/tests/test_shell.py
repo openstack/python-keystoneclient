@@ -37,6 +37,11 @@ DEFAULT_TENANT_NAME = 'tenant_name'
 DEFAULT_AUTH_URL = 'http://127.0.0.1:5000/v2.0/'
 
 
+# Make a fake shell object, a helping wrapper to call it
+def shell(cmd):
+    openstack_shell.OpenStackIdentityShell().main(cmd.split())
+
+
 class NoExitArgumentParser(argparse.ArgumentParser):
     def error(self, message):
         raise exceptions.CommandError(message)
@@ -67,12 +72,6 @@ class ShellTest(utils.TestCase):
         for var in self.FAKE_ENV:
             self.useFixture(fixtures.EnvironmentVariable(var,
                             self.FAKE_ENV[var]))
-
-        # Make a fake shell object, a helping wrapper to call it, and a quick
-        # way of asserting that certain API calls were made.
-        global shell, _shell, assert_called, assert_called_anytime
-        _shell = openstack_shell.OpenStackIdentityShell()
-        shell = lambda cmd: _shell.main(cmd.split())
 
     def test_help_unknown_command(self):
         self.assertRaises(exceptions.CommandError, shell, 'help %s'
