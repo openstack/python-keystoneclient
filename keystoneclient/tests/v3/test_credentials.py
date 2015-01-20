@@ -44,6 +44,7 @@ class CredentialTests(utils.TestCase, utils.CrudTests):
         # which should be translated into "blob" at the API call level
         req_ref = self.new_ref()
         api_ref = self._ref_data_not_blob(req_ref)
+        req_ref.pop('id')
         self.test_create(api_ref, req_ref)
 
     def test_update_data_not_blob(self):

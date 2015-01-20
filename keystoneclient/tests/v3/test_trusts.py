@@ -55,6 +55,7 @@ class TrustTests(utils.TestCase, utils.CrudTests):
         ref['trustee_user_id'] = uuid.uuid4().hex
         ref['impersonation'] = False
         req_ref = ref.copy()
+        req_ref.pop('id')
 
         # Note the TrustManager takes a list of role_names, and converts
         # internally to the slightly odd list-of-dict API format, so we
@@ -71,6 +72,7 @@ class TrustTests(utils.TestCase, utils.CrudTests):
         ref['expires_at'] = timeutils.parse_isotime(
             '2013-03-04T12:00:01.000000Z')
         req_ref = ref.copy()
+        req_ref.pop('id')
 
         # Note the TrustManager takes a datetime.datetime object for
         # expires_at, and converts it internally into an iso format datestamp
@@ -90,6 +92,7 @@ class TrustTests(utils.TestCase, utils.CrudTests):
         ref['trustee_user_id'] = uuid.uuid4().hex
         ref['impersonation'] = True
         req_ref = ref.copy()
+        req_ref.pop('id')
         ref['role_names'] = ['atestrole']
         req_ref['roles'] = [{'name': 'atestrole'}]
         super(TrustTests, self).test_create(ref=ref, req_ref=req_ref)
