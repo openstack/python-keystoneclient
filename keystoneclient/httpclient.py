@@ -21,7 +21,7 @@ OpenStack Client interface. Handles the REST calls and responses.
 
 import logging
 
-from oslo.serialization import jsonutils
+from oslo_serialization import jsonutils
 import pkg_resources
 import requests
 from six.moves.urllib import parse as urlparse

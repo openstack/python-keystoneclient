@@ -14,7 +14,7 @@ import os
 import sys
 
 import mock
-from oslo.serialization import jsonutils
+from oslo_serialization import jsonutils
 import six
 from testtools import matchers
 

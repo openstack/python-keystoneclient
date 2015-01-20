@@ -25,7 +25,7 @@ import uuid
 import fixtures
 import iso8601
 import mock
-from oslo.serialization import jsonutils
+from oslo_serialization import jsonutils
 from oslo_utils import timeutils
 from requests_mock.contrib import fixture as mock_fixture
 import six

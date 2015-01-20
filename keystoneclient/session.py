@@ -18,7 +18,7 @@ import os
 import time
 
 from oslo.config import cfg
-from oslo.serialization import jsonutils
+from oslo_serialization import jsonutils
 from oslo_utils import importutils
 import requests
 import six

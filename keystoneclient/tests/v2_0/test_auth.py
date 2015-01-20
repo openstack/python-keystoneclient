@@ -13,7 +13,7 @@
 import copy
 import datetime
 
-from oslo.serialization import jsonutils
+from oslo_serialization import jsonutils
 from oslo_utils import timeutils
 
 from keystoneclient import exceptions
