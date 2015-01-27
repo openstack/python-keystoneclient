@@ -269,14 +269,25 @@ class ShellTests(utils.TestCase):
         self.run_command('tenant-delete 2')
         self.assert_called('DELETE', '/tenants/2')
 
-    def test_service_create(self):
+    def test_service_create_with_required_arguments_only(self):
         self.stub_url('POST', ['OS-KSADM', 'services'],
                       json={'OS-KSADM:service': {}})
-        self.run_command('service-create --name service1 --type compute')
+        self.run_command('service-create --type compute')
+        self.assert_called('POST', '/OS-KSADM/services')
+        json = {"OS-KSADM:service": {"type": "compute",
+                                     "name": None,
+                                     "description": None}}
+        self.assertRequestBodyIs(json=json)
+
+    def test_service_create_with_all_arguments(self):
+        self.stub_url('POST', ['OS-KSADM', 'services'],
+                      json={'OS-KSADM:service': {}})
+        self.run_command('service-create --type compute '
+                         '--name service1 --description desc1')
         self.assert_called('POST', '/OS-KSADM/services')
         json = {"OS-KSADM:service": {"type": "compute",
                                      "name": "service1",
-                                     "description": None}}
+                                     "description": "desc1"}}
         self.assertRequestBodyIs(json=json)
 
     def test_service_get(self):
