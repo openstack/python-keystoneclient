@@ -65,7 +65,7 @@ class RegionManager(base.CrudManager):
         return super(RegionManager, self).list(
             **kwargs)
 
-    def update(self, region, description=None, enabled=True,
+    def update(self, region, description=None, enabled=None,
                parent_region=None, **kwargs):
         """Update a Catalog region.
 
@@ -75,7 +75,7 @@ class RegionManager(base.CrudManager):
                 pre-existing region in the backend.  Allows for hierarchical
                 region organization.
             :param enabled: determines whether the endpoint appears in the
-                catalog. Defaults to True
+                catalog.
 
         """
         return super(RegionManager, self).update(

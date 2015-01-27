@@ -41,3 +41,8 @@ class DomainTests(utils.TestCase, utils.CrudTests):
         expected_query = {'enabled': '0'}
         super(DomainTests, self).test_list(expected_query=expected_query,
                                            enabled=False)
+
+    def test_update_enabled_defaults_to_none(self):
+        req_ref = self.new_ref()
+        del req_ref['enabled']
+        super(DomainTests, self).test_update(req_ref=req_ref)
