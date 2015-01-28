@@ -114,7 +114,7 @@ class CommonIdentityTests(object):
         # register responses such that if the discovery URL is hit more than
         # once then the response will be invalid and not point to COMPUTE_ADMIN
         resps = [{'json': self.TEST_DISCOVERY}, {'status_code': 500}]
-        self.requests.register_uri('GET', self.TEST_COMPUTE_ADMIN, resps)
+        self.requests.get(self.TEST_COMPUTE_ADMIN, resps)
 
         body = 'SUCCESS'
         self.stub_url('GET', ['path'], text=body)
@@ -139,7 +139,7 @@ class CommonIdentityTests(object):
         # register responses such that if the discovery URL is hit more than
         # once then the response will be invalid and not point to COMPUTE_ADMIN
         resps = [{'json': self.TEST_DISCOVERY}, {'status_code': 500}]
-        self.requests.register_uri('GET', self.TEST_COMPUTE_ADMIN, resps)
+        self.requests.get(self.TEST_COMPUTE_ADMIN, resps)
 
         body = 'SUCCESS'
         self.stub_url('GET', ['path'], text=body)

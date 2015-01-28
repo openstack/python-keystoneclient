@@ -275,13 +275,11 @@ class MultiStepAuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
 
         # Get a token, then try to retrieve revocation list and get a 401.
         # Get a new token, try to retrieve revocation list and return 200.
-        self.requests.register_uri('POST', "%s/v2.0/tokens" % BASE_URI,
-                                   text=FAKE_ADMIN_TOKEN)
+        self.requests.post("%s/v2.0/tokens" % BASE_URI, text=FAKE_ADMIN_TOKEN)
 
         text = self.examples.SIGNED_REVOCATION_LIST
-        self.requests.register_uri('GET', "%s/v2.0/tokens/revoked" % BASE_URI,
-                                   response_list=[{'status_code': 401},
-                                                  {'text': text}])
+        self.requests.get("%s/v2.0/tokens/revoked" % BASE_URI,
+                          response_list=[{'status_code': 401}, {'text': text}])
 
         fetched_list = jsonutils.loads(self.middleware.fetch_revocation_list())
         self.assertEqual(fetched_list, self.examples.REVOCATION_LIST)
@@ -308,17 +306,17 @@ class DiabloAuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
         super(DiabloAuthTokenMiddlewareTest, self).setUp(
             expected_env=expected_env)
 
-        self.requests.register_uri('GET', "%s/" % BASE_URI,
-                                   text=VERSION_LIST_v2, status_code=300)
+        self.requests.get("%s/" % BASE_URI,
+                          text=VERSION_LIST_v2,
+                          status_code=300)
 
-        self.requests.register_uri('POST', "%s/v2.0/tokens" % BASE_URI,
-                                   text=FAKE_ADMIN_TOKEN)
+        self.requests.post("%s/v2.0/tokens" % BASE_URI, text=FAKE_ADMIN_TOKEN)
 
         self.token_id = self.examples.VALID_DIABLO_TOKEN
         token_response = self.examples.JSON_TOKEN_RESPONSES[self.token_id]
 
         url = '%s/v2.0/tokens/%s' % (BASE_URI, self.token_id)
-        self.requests.register_uri('GET', url, text=token_response)
+        self.requests.get(url, text=token_response)
 
         self.set_middleware()
 
@@ -873,8 +871,7 @@ class CommonAuthTokenMiddlewareTest(object):
         self.assertEqual(self.middleware.token_revocation_list, in_memory_list)
 
     def test_invalid_revocation_list_raises_service_error(self):
-        self.requests.register_uri('GET', '%s/v2.0/tokens/revoked' % BASE_URI,
-                                   text='{}')
+        self.requests.get('%s/v2.0/tokens/revoked' % BASE_URI, text='{}')
 
         self.assertRaises(auth_token.ServiceError,
                           self.middleware.fetch_revocation_list)
@@ -889,8 +886,7 @@ class CommonAuthTokenMiddlewareTest(object):
         # remember because we are testing the middleware we stub the connection
         # to the keystone server, but this is not what gets returned
         invalid_uri = "%s/v2.0/tokens/invalid-token" % BASE_URI
-        self.requests.register_uri('GET', invalid_uri, text="",
-                                   status_code=404)
+        self.requests.get(invalid_uri, text="", status_code=404)
 
         req = webob.Request.blank('/')
         req.headers['X-Auth-Token'] = 'invalid-token'
@@ -978,7 +974,7 @@ class CommonAuthTokenMiddlewareTest(object):
 
     def test_memcache_set_invalid_uuid(self):
         invalid_uri = "%s/v2.0/tokens/invalid-token" % BASE_URI
-        self.requests.register_uri('GET', invalid_uri, status_code=404)
+        self.requests.get(invalid_uri, status_code=404)
 
         req = webob.Request.blank('/')
         token = 'invalid-token'
@@ -1271,10 +1267,10 @@ class V2CertDownloadMiddlewareTest(BaseAuthTokenMiddlewareTest,
     def test_request_no_token_dummy(self):
         cms._ensure_subprocess()
 
-        self.requests.register_uri('GET', "%s%s" % (BASE_URI, self.ca_path),
-                                   status_code=404)
+        self.requests.get("%s%s" % (BASE_URI, self.ca_path),
+                          status_code=404)
         url = "%s%s" % (BASE_URI, self.signing_path)
-        self.requests.register_uri('GET', url, status_code=404)
+        self.requests.get(url, status_code=404)
         self.assertRaises(exceptions.CertificateConfigError,
                           self.middleware.verify_signed_token,
                           self.examples.SIGNED_TOKEN_SCOPED,
@@ -1283,7 +1279,7 @@ class V2CertDownloadMiddlewareTest(BaseAuthTokenMiddlewareTest,
     def test_fetch_signing_cert(self):
         data = 'FAKE CERT'
         url = '%s%s' % (BASE_URI, self.signing_path)
-        self.requests.register_uri('GET', url, text=data)
+        self.requests.get(url, text=data)
         self.middleware.fetch_signing_cert()
 
         with open(self.middleware.signing_cert_file_name, 'r') as f:
@@ -1293,8 +1289,7 @@ class V2CertDownloadMiddlewareTest(BaseAuthTokenMiddlewareTest,
 
     def test_fetch_signing_ca(self):
         data = 'FAKE CA'
-        self.requests.register_uri('GET', "%s%s" % (BASE_URI, self.ca_path),
-                                   text=data)
+        self.requests.get("%s%s" % (BASE_URI, self.ca_path), text=data)
         self.middleware.fetch_ca_cert()
 
         with open(self.middleware.signing_ca_file_name, 'r') as f:
@@ -1309,11 +1304,10 @@ class V2CertDownloadMiddlewareTest(BaseAuthTokenMiddlewareTest,
         self.conf['auth_port'] = 1234
         self.conf['auth_admin_prefix'] = '/newadmin/'
 
-        self.requests.register_uri('GET',
-                                   "%s/newadmin%s" % (BASE_HOST, self.ca_path),
-                                   text='FAKECA')
+        self.requests.get("%s/newadmin%s" % (BASE_HOST, self.ca_path),
+                          text='FAKECA')
         url = "%s/newadmin%s" % (BASE_HOST, self.signing_path)
-        self.requests.register_uri('GET', url, text='FAKECERT')
+        self.requests.get(url, text='FAKECERT')
 
         self.set_middleware(conf=self.conf)
 
@@ -1332,11 +1326,9 @@ class V2CertDownloadMiddlewareTest(BaseAuthTokenMiddlewareTest,
         self.conf['auth_port'] = 1234
         self.conf['auth_admin_prefix'] = ''
 
-        self.requests.register_uri('GET', "%s%s" % (BASE_HOST, self.ca_path),
-                                   text='FAKECA')
-        self.requests.register_uri('GET', "%s%s" % (BASE_HOST,
-                                                    self.signing_path),
-                                   text='FAKECERT')
+        self.requests.get("%s%s" % (BASE_HOST, self.ca_path), text='FAKECA')
+        self.requests.get("%s%s" % (BASE_HOST, self.signing_path),
+                          text='FAKECERT')
 
         self.set_middleware(conf=self.conf)
 
@@ -1408,14 +1400,15 @@ class v2AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
             self.examples.REVOKED_TOKEN_HASH_SHA256,
         }
 
-        self.requests.register_uri('GET', "%s/" % BASE_URI,
-                                   text=VERSION_LIST_v2, status_code=300)
+        self.requests.get("%s/" % BASE_URI,
+                          text=VERSION_LIST_v2,
+                          status_code=300)
 
-        self.requests.register_uri('POST', "%s/v2.0/tokens" % BASE_URI,
-                                   text=FAKE_ADMIN_TOKEN)
+        self.requests.post("%s/v2.0/tokens" % BASE_URI,
+                           text=FAKE_ADMIN_TOKEN)
 
-        self.requests.register_uri('GET', "%s/v2.0/tokens/revoked" % BASE_URI,
-                                   text=self.examples.SIGNED_REVOCATION_LIST)
+        self.requests.get("%s/v2.0/tokens/revoked" % BASE_URI,
+                          text=self.examples.SIGNED_REVOCATION_LIST)
 
         for token in (self.examples.UUID_TOKEN_DEFAULT,
                       self.examples.UUID_TOKEN_UNSCOPED,
@@ -1425,14 +1418,11 @@ class v2AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
                       self.examples.SIGNED_TOKEN_SCOPED_KEY,
                       self.examples.SIGNED_TOKEN_SCOPED_PKIZ_KEY,):
             text = self.examples.JSON_TOKEN_RESPONSES[token]
-            self.requests.register_uri('GET',
-                                       '%s/v2.0/tokens/%s' % (BASE_URI, token),
-                                       text=text)
+            self.requests.get('%s/v2.0/tokens/%s' % (BASE_URI, token),
+                              text=text)
 
-        self.requests.register_uri('GET',
-                                   '%s/v2.0/tokens/%s' % (BASE_URI,
-                                                          ERROR_TOKEN),
-                                   text=network_error_response)
+        self.requests.get('%s/v2.0/tokens/%s' % (BASE_URI, ERROR_TOKEN),
+                          text=network_error_response)
 
         self.set_middleware()
 
@@ -1508,16 +1498,16 @@ class CrossVersionAuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
             'auth_version': 'v2.0'
         }
 
-        self.requests.register_uri('GET', '%s/' % BASE_URI,
-                                   text=VERSION_LIST_v3, status_code=300)
+        self.requests.get('%s/' % BASE_URI,
+                          text=VERSION_LIST_v3,
+                          status_code=300)
 
-        self.requests.register_uri('POST', '%s/v2.0/tokens' % BASE_URI,
-                                   text=FAKE_ADMIN_TOKEN)
+        self.requests.post('%s/v2.0/tokens' % BASE_URI, text=FAKE_ADMIN_TOKEN)
 
         token = self.examples.UUID_TOKEN_DEFAULT
         url = '%s/v2.0/tokens/%s' % (BASE_URI, token)
         response_body = self.examples.JSON_TOKEN_RESPONSES[token]
-        self.requests.register_uri('GET', url, text=response_body)
+        self.requests.get(url, text=response_body)
 
         self.set_middleware(conf=conf)
 
@@ -1589,20 +1579,18 @@ class v3AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
             self.examples.REVOKED_v3_PKIZ_TOKEN_HASH,
         }
 
-        self.requests.register_uri('GET', BASE_URI,
-                                   text=VERSION_LIST_v3, status_code=300)
+        self.requests.get(BASE_URI, text=VERSION_LIST_v3, status_code=300)
 
         # TODO(jamielennox): auth_token middleware uses a v2 admin token
         # regardless of the auth_version that is set.
-        self.requests.register_uri('POST', '%s/v2.0/tokens' % BASE_URI,
-                                   text=FAKE_ADMIN_TOKEN)
+        self.requests.post('%s/v2.0/tokens' % BASE_URI, text=FAKE_ADMIN_TOKEN)
 
         # TODO(jamielennox): there is no v3 revocation url yet, it uses v2
-        self.requests.register_uri('GET', '%s/v2.0/tokens/revoked' % BASE_URI,
-                                   text=self.examples.SIGNED_REVOCATION_LIST)
+        self.requests.get('%s/v2.0/tokens/revoked' % BASE_URI,
+                          text=self.examples.SIGNED_REVOCATION_LIST)
 
-        self.requests.register_uri('GET', '%s/v3/auth/tokens' % BASE_URI,
-                                   text=self.token_response)
+        self.requests.get('%s/v3/auth/tokens' % BASE_URI,
+                          text=self.token_response)
 
         self.set_middleware()
 

@@ -431,8 +431,7 @@ class V3IdentityPlugin(utils.TestCase):
                           {'status_code': 200, 'json': self.TEST_RESPONSE_DICT,
                            'headers': {'X-Subject-Token': 'token2'}}]
 
-        self.requests.register_uri('POST', '%s/auth/tokens' % self.TEST_URL,
-                                   auth_responses)
+        self.requests.post('%s/auth/tokens' % self.TEST_URL, auth_responses)
 
         a = v3.Password(self.TEST_URL, username=self.TEST_USER,
                         password=self.TEST_PASS)

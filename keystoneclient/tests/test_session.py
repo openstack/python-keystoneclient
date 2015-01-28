@@ -447,7 +447,7 @@ class SessionAuthTests(utils.TestCase):
     def test_raises_exc_only_when_asked(self):
         # A request that returns a HTTP error should by default raise an
         # exception by default, if you specify raise_exc=False then it will not
-        self.requests.register_uri('GET', self.TEST_URL, status_code=401)
+        self.requests.get(self.TEST_URL, status_code=401)
 
         sess = client_session.Session()
         self.assertRaises(exceptions.Unauthorized, sess.get, self.TEST_URL)
@@ -459,9 +459,8 @@ class SessionAuthTests(utils.TestCase):
         passed = CalledAuthPlugin()
         sess = client_session.Session()
 
-        self.requests.register_uri('GET',
-                                   CalledAuthPlugin.ENDPOINT + 'path',
-                                   status_code=200)
+        self.requests.get(CalledAuthPlugin.ENDPOINT + 'path',
+                          status_code=200)
         endpoint_filter = {'service_type': 'identity'}
 
         # no plugin with authenticated won't work
@@ -484,9 +483,8 @@ class SessionAuthTests(utils.TestCase):
 
         sess = client_session.Session(fixed)
 
-        self.requests.register_uri('GET',
-                                   CalledAuthPlugin.ENDPOINT + 'path',
-                                   status_code=200)
+        self.requests.get(CalledAuthPlugin.ENDPOINT + 'path',
+                          status_code=200)
 
         resp = sess.get('path', auth=passed,
                         endpoint_filter={'service_type': 'identity'})
@@ -518,9 +516,9 @@ class SessionAuthTests(utils.TestCase):
         auth = CalledAuthPlugin(invalidate=True)
         sess = client_session.Session(auth=auth)
 
-        self.requests.register_uri('GET', self.TEST_URL,
-                                   [{'text': 'Failed', 'status_code': 401},
-                                    {'text': 'Hello', 'status_code': 200}])
+        self.requests.get(self.TEST_URL,
+                          [{'text': 'Failed', 'status_code': 401},
+                           {'text': 'Hello', 'status_code': 200}])
 
         # allow_reauth=True is the default
         resp = sess.get(self.TEST_URL, authenticated=True)
@@ -533,9 +531,9 @@ class SessionAuthTests(utils.TestCase):
         auth = CalledAuthPlugin(invalidate=True)
         sess = client_session.Session(auth=auth)
 
-        self.requests.register_uri('GET', self.TEST_URL,
-                                   [{'text': 'Failed', 'status_code': 401},
-                                    {'text': 'Hello', 'status_code': 200}])
+        self.requests.get(self.TEST_URL,
+                          [{'text': 'Failed', 'status_code': 401},
+                           {'text': 'Hello', 'status_code': 200}])
 
         self.assertRaises(exceptions.Unauthorized, sess.get, self.TEST_URL,
                           authenticated=True, allow_reauth=False)
@@ -550,7 +548,7 @@ class SessionAuthTests(utils.TestCase):
         override_url = override_base + path
         resp_text = uuid.uuid4().hex
 
-        self.requests.register_uri('GET', override_url, text=resp_text)
+        self.requests.get(override_url, text=resp_text)
 
         resp = sess.get(path,
                         endpoint_override=override_base,
@@ -570,7 +568,7 @@ class SessionAuthTests(utils.TestCase):
         url = self.TEST_URL + path
 
         resp_text = uuid.uuid4().hex
-        self.requests.register_uri('GET', url, text=resp_text)
+        self.requests.get(url, text=resp_text)
 
         resp = sess.get(url,
                         endpoint_override='http://someother.url',
@@ -692,7 +690,7 @@ class AdapterTest(utils.TestCase):
         adpt = adapter.Adapter(sess, endpoint_override=endpoint_override)
 
         response = uuid.uuid4().hex
-        self.requests.register_uri('GET', endpoint_url, text=response)
+        self.requests.get(endpoint_url, text=response)
 
         resp = adpt.get(path)
 
