@@ -451,3 +451,20 @@ class V3IdentityPlugin(utils.TestCase):
         self.assertEqual(self.TEST_TOKEN, s.get_token())
 
         self.assertNotIn(password, self.logger.output)
+
+    def test_sends_nocatalog(self):
+        del self.TEST_RESPONSE_DICT['token']['catalog']
+        self.stub_auth(json=self.TEST_RESPONSE_DICT)
+
+        a = v3.Password(self.TEST_URL,
+                        username=self.TEST_USER,
+                        password=self.TEST_PASS,
+                        include_catalog=False)
+        s = session.Session(auth=a)
+
+        s.get_token()
+
+        auth_url = self.TEST_URL + '/auth/tokens'
+        self.assertEqual(auth_url, a.token_url)
+        self.assertEqual(auth_url + '?nocatalog',
+                         self.requests.last_request.url)
