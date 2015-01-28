@@ -34,3 +34,14 @@ class TokenManager(object):
             token_id = base.getid(token)
         headers = {'X-Subject-Token': token_id}
         return self._client.delete('/auth/tokens', headers=headers)
+
+    def get_revoked(self):
+        """Get revoked tokens list.
+
+        :returns: A dict containing "signed" which is a CMS formatted string.
+        :rtype: dict
+
+        """
+
+        resp, body = self._client.get('/auth/tokens/OS-PKI/revoked')
+        return body
