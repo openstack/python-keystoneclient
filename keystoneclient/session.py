@@ -549,6 +549,16 @@ class Session(object):
 
         return cls(verify=verify, cert=cert, **kwargs)
 
+    def _auth_required(self, auth, msg):
+        if not auth:
+            auth = self.auth
+
+        if not auth:
+            msg_fmt = _('An auth plugin is required to %s')
+            raise exceptions.MissingAuthPlugin(msg_fmt % msg)
+
+        return auth
+
     def get_token(self, auth=None):
         """Return a token as provided by the auth plugin.
 
@@ -564,11 +574,7 @@ class Session(object):
         :returns: A valid token.
         :rtype: string
         """
-        if not auth:
-            auth = self.auth
-
-        if not auth:
-            raise exceptions.MissingAuthPlugin(_("Token Required"))
+        auth = self._auth_required(auth, 'fetch a token')
 
         try:
             return auth.get_token(self)
@@ -589,14 +595,7 @@ class Session(object):
         :returns: An endpoint if available or None.
         :rtype: string
         """
-        if not auth:
-            auth = self.auth
-
-        if not auth:
-            raise exceptions.MissingAuthPlugin(
-                _('An auth plugin is required to determine the endpoint '
-                  'URL.'))
-
+        auth = self._auth_required(auth, 'determine endpoint URL')
         return auth.get_endpoint(self, **kwargs)
 
     def invalidate(self, auth=None):
@@ -607,14 +606,42 @@ class Session(object):
         :type auth: :py:class:`keystoneclient.auth.base.BaseAuthPlugin`
 
         """
-        if not auth:
-            auth = self.auth
-
-        if not auth:
-            msg = _('Auth plugin not available to invalidate')
-            raise exceptions.MissingAuthPlugin(msg)
-
+        auth = self._auth_required(auth, 'validate')
         return auth.invalidate()
+
+    def get_user_id(self, auth=None):
+        """Return the authenticated user_id as provided by the auth plugin.
+
+        :param auth: The auth plugin to use for token. Overrides the plugin
+                     on the session. (optional)
+        :type auth: keystoneclient.auth.base.BaseAuthPlugin
+
+        :raises keystoneclient.exceptions.AuthorizationFailure:
+            if a new token fetch fails.
+        :raises keystoneclient.exceptions.MissingAuthPlugin:
+            if a plugin is not available.
+
+        :returns string: Current user_id or None if not supported by plugin.
+        """
+        auth = self._auth_required(auth, 'get user_id')
+        return auth.get_user_id(self)
+
+    def get_project_id(self, auth=None):
+        """Return the authenticated project_id as provided by the auth plugin.
+
+        :param auth: The auth plugin to use for token. Overrides the plugin
+                     on the session. (optional)
+        :type auth: keystoneclient.auth.base.BaseAuthPlugin
+
+        :raises keystoneclient.exceptions.AuthorizationFailure:
+            if a new token fetch fails.
+        :raises keystoneclient.exceptions.MissingAuthPlugin:
+            if a plugin is not available.
+
+        :returns string: Current project_id or None if not supported by plugin.
+        """
+        auth = self._auth_required(auth, 'get project_id')
+        return auth.get_project_id(self)
 
     @utils.positional.classmethod()
     def get_conf_options(cls, deprecated_opts=None):
