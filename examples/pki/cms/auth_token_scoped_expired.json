@@ -2,6 +2,7 @@
     "access": {
         "token": {
             "expires": "2010-06-02T14:47:34Z",
+            "issued_at": "2002-01-18T21:14:07Z",
             "id": "placeholder",
             "tenant": {
                 "id": "tenant_id1",
@@ -73,9 +74,11 @@
             "id": "user_id1",
             "roles": [
                 {
+                    "id": "f03fda8f8a3249b2a70fb1f176a7b631",
                     "name": "role1"
                 },
                 {
+                    "id": "f03fda8f8a3249b2a70fb1f176a7b631",
                     "name": "role2"
                 }
             ],

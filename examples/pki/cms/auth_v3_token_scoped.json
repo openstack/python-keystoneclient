@@ -5,12 +5,15 @@
         ],
         "roles": [
             {
+                "id": "f03fda8f8a3249b2a70fb1f176a7b631",
                 "name": "role1"
             },
             {
+                "id": "f03fda8f8a3249b2a70fb1f176a7b631",
                 "name": "role2"
             }
         ],
+        "issued_at": "2002-01-18T21:14:07Z",
         "expires_at": "2038-01-18T21:14:07Z",
         "project": {
             "id": "tenant_id1",
@@ -26,84 +29,100 @@
             {
                 "endpoints": [
                     {
+                        "id": "3b5e554bcf114f2483e8a1be7a0506d1",
                         "interface": "admin",
                         "url": "http://127.0.0.1:8776/v1/64b6f3fbcc53435e8a60fcf89bb6617a",
                         "region": "regionOne"
                     },
                     {
+                        "id": "54abd2dc463c4ba4a72915498f8ecad1",
                         "interface": "internal",
                         "url": "http://127.0.0.1:8776/v1/64b6f3fbcc53435e8a60fcf89bb6617a",
                         "region": "regionOne"
                     },
                     {
+                        "id": "70a7efa4b1b941968357cc43ae1419ee",
                         "interface": "public",
                         "url": "http://127.0.0.1:8776/v1/64b6f3fbcc53435e8a60fcf89bb6617a",
                         "region": "regionOne"
                     }
                 ],
+                "id": "5707c3fc0a294703a3c638e9cf6a6c3a",
                 "type": "volume",
                 "name": "volume"
             },
             {
                 "endpoints": [
                     {
+                        "id": "92217a3b95394492859bc49fd474382f",
                         "interface": "admin",
                         "url": "http://127.0.0.1:9292/v1",
                         "region": "regionOne"
                     },
                     {
+                        "id": "f20563bdf66f4efa8a1f11d99b672be1",
                         "interface": "internal",
                         "url": "http://127.0.0.1:9292/v1",
                         "region": "regionOne"
                     },
                     {
+                        "id": "375f9ba459a447738fb60fe5fc26e9aa",
                         "interface": "public",
                         "url": "http://127.0.0.1:9292/v1",
                         "region": "regionOne"
                     }
                 ],
+                "id": "15c21aae6b274a8da52e0a068e908aac",
                 "type": "image",
                 "name": "glance"
             },
             {
                 "endpoints": [
                     {
+                        "id": "edbd9f50f66746ae9ed11dc3b1ae35da",
                         "interface": "admin",
                         "url": "http://127.0.0.1:8774/v1.1/64b6f3fbcc53435e8a60fcf89bb6617a",
                         "region": "regionOne"
                     },
                     {
+                        "id": "9e03c46c80a34a159cb39f5cb0498b92",
                         "interface": "internal",
                         "url": "http://127.0.0.1:8774/v1.1/64b6f3fbcc53435e8a60fcf89bb6617a",
                         "region": "regionOne"
                     },
                     {
+                        "id": "1df0b44d92634d59bd0e0d60cf7ce432",
                         "interface": "public",
                         "url": "http://127.0.0.1:8774/v1.1/64b6f3fbcc53435e8a60fcf89bb6617a",
                         "region": "regionOne"
                     }
                 ],
+                "id": "2f404fdb89154c589efbc10726b029ec",
                 "type": "compute",
                 "name": "nova"
             },
             {
                 "endpoints": [
                     {
+                        "id": "a4501e141a4b4e14bf282e7bffd81dc5",
                         "interface": "admin",
                         "url": "http://127.0.0.1:35357/v3",
                         "region": "RegionOne"
                     },
                     {
+                        "id": "3d17e3227bfc4483b58de5eaa584e360",
                         "interface": "internal",
                         "url": "http://127.0.0.1:35357/v3",
                         "region": "RegionOne"
                     },
                     {
+                        "id": "8cd4b957090f4ca5842a22e9a74099cd",
                         "interface": "public",
                         "url": "http://127.0.0.1:5000/v3",
                         "region": "RegionOne"
                     }
                 ],
+                "id": "c5d926d566424e4fba4f80c37916cde5",
                 "type": "identity",
                 "name": "keystone"
             }
