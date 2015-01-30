@@ -12,6 +12,14 @@
 
 from keystoneclient import access
 from keystoneclient import base
+from keystoneclient import utils
+
+
+def _calc_id(token):
+    if isinstance(token, access.AccessInfo):
+        return token.auth_token
+
+    return base.getid(token)
 
 
 class TokenManager(object):
@@ -28,10 +36,7 @@ class TokenManager(object):
                       token_id.
         """
 
-        if isinstance(token, access.AccessInfo):
-            token_id = token.auth_token
-        else:
-            token_id = base.getid(token)
+        token_id = _calc_id(token)
         headers = {'X-Subject-Token': token_id}
         return self._client.delete('/auth/tokens', headers=headers)
 
@@ -45,3 +50,29 @@ class TokenManager(object):
 
         resp, body = self._client.get('/auth/tokens/OS-PKI/revoked')
         return body
+
+    @utils.positional.method(1)
+    def validate(self, token, include_catalog=True):
+        """Validate a token.
+
+        :param token: Token to be validated. This can be an instance of
+                      :py:class:`keystoneclient.access.AccessInfo` or a string
+                      token_id.
+        :param include_catalog: If False, the response is requested to not
+                                include the catalog.
+
+        :rtype: :py:class:`keystoneclient.access.AccessInfoV3`
+
+        """
+
+        token_id = _calc_id(token)
+        headers = {'X-Subject-Token': token_id}
+
+        url = '/auth/tokens'
+        if not include_catalog:
+            url += '?nocatalog'
+
+        resp, body = self._client.get(url, headers=headers)
+
+        access_info = access.AccessInfo.factory(resp=resp, body=body)
+        return access_info
