@@ -86,14 +86,23 @@ class TestCase(testtools.TestCase):
 
         The qs parameter should be of the format \'foo=bar&abc=xyz\'
         """
-        expected = urlparse.parse_qs(qs)
+        expected = urlparse.parse_qs(qs, keep_blank_values=True)
         parts = urlparse.urlparse(self.requests.last_request.url)
-        querystring = urlparse.parse_qs(parts.query)
+        querystring = urlparse.parse_qs(parts.query, keep_blank_values=True)
         self.assertEqual(expected, querystring)
 
     def assertQueryStringContains(self, **kwargs):
+        """Verify the query string contains the expected parameters.
+
+        This method is used to verify that the query string for the most recent
+        request made contains all the parameters provided as ``kwargs``, and
+        that the value of each parameter contains the value for the kwarg. If
+        the value for the kwarg is an empty string (''), then all that's
+        verified is that the parameter is present.
+
+        """
         parts = urlparse.urlparse(self.requests.last_request.url)
-        qs = urlparse.parse_qs(parts.query)
+        qs = urlparse.parse_qs(parts.query, keep_blank_values=True)
 
         for k, v in six.iteritems(kwargs):
             self.assertIn(k, qs)
