@@ -202,8 +202,11 @@ class CrudTests(object):
         # signature for the request when the manager does some
         # conversion before doing the request (e.g. converting
         # from datetime object to timestamp string)
-        req_ref = (req_ref or ref).copy()
-        req_ref.pop('id')
+        if req_ref:
+            req_ref = req_ref.copy()
+        else:
+            req_ref = ref.copy()
+            req_ref.pop('id')
 
         self.stub_entity('POST', entity=req_ref, status_code=201)
 
@@ -304,8 +307,11 @@ class CrudTests(object):
         # signature for the request when the manager does some
         # conversion before doing the request (e.g. converting
         # from datetime object to timestamp string)
-        req_ref = (req_ref or ref).copy()
-        req_ref.pop('id')
+        if req_ref:
+            req_ref = req_ref.copy()
+        else:
+            req_ref = ref.copy()
+            req_ref.pop('id')
 
         returned = self.manager.update(ref['id'], **parameterize(req_ref))
         self.assertIsInstance(returned, self.model)

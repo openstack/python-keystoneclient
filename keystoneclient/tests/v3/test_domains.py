@@ -43,6 +43,5 @@ class DomainTests(utils.TestCase, utils.CrudTests):
                                            enabled=False)
 
     def test_update_enabled_defaults_to_none(self):
-        req_ref = self.new_ref()
-        del req_ref['enabled']
-        super(DomainTests, self).test_update(req_ref=req_ref)
+        super(DomainTests, self).test_update(
+            req_ref={'name': uuid.uuid4().hex})
