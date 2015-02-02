@@ -28,7 +28,7 @@ from keystoneclient.i18n import _
 
 
 class Ec2Signer(object):
-    """Utility class which adds allows a request to be signed with an AWS style
+    """Utility class which allows a request to be signed with an AWS style
     signature, which can then be used for authentication via the keystone ec2
     authentication extension.
     """
