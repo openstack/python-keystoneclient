@@ -520,3 +520,13 @@ class ShellTest(utils.TestCase):
                       'http://example.com:4321/go',
                       'http://example.com:9876/adm')
             self.assertTrue(all([x == y for x, y in zip(actual, expect)]))
+
+    def test_shell_keyboard_interrupt(self):
+        shell_mock = mock.MagicMock()
+        with mock.patch('keystoneclient.shell.OpenStackIdentityShell.main',
+                        shell_mock):
+            try:
+                shell_mock.side_effect = KeyboardInterrupt()
+                openstack_shell.main()
+            except SystemExit as ex:
+                self.assertEqual(130, ex.code)
