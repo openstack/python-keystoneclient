@@ -342,7 +342,7 @@ LIST_OF_VERSIONS_TO_ATTEMPT = ['v2.0', 'v3.0']
 CACHE_KEY_TEMPLATE = 'tokens/%s'
 
 
-class BIND_MODE:
+class BIND_MODE(object):
     DISABLED = 'disabled'
     PERMISSIVE = 'permissive'
     STRICT = 'strict'
