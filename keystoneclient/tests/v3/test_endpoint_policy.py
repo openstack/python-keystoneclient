@@ -57,7 +57,7 @@ class EndpointPolicyTests(utils.TestCase,
             self, http_action, manager_action):
         policy_ref = self.new_policy_ref()
         endpoint_ref = self.new_endpoint_ref()
-        policy = self.client.projects.resource_class(
+        policy = self.client.policies.resource_class(
             self.client.policies, policy_ref, loaded=True)
         endpoint = self.client.endpoints.resource_class(
             self.client.endpoints, endpoint_ref, loaded=True)
@@ -108,7 +108,7 @@ class EndpointPolicyTests(utils.TestCase,
             self, http_action, manager_action):
         policy_ref = self.new_policy_ref()
         service_ref = self.new_service_ref()
-        policy = self.client.projects.resource_class(
+        policy = self.client.policies.resource_class(
             self.client.policies, policy_ref, loaded=True)
         service = self.client.services.resource_class(
             self.client.services, service_ref, loaded=True)
@@ -161,7 +161,7 @@ class EndpointPolicyTests(utils.TestCase,
         policy_ref = self.new_policy_ref()
         region_ref = self.new_region_ref()
         service_ref = self.new_service_ref()
-        policy = self.client.projects.resource_class(
+        policy = self.client.policies.resource_class(
             self.client.policies, policy_ref, loaded=True)
         region = self.client.regions.resource_class(
             self.client.regions, region_ref, loaded=True)
