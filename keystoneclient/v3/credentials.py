@@ -24,6 +24,10 @@ class Credential(base.Resource):
 
     Attributes:
         * id: a uuid that identifies the credential
+        * user_id: user ID
+        * type: credential type
+        * blob: credential data
+        * project_id: project ID (optional)
 
     """
     pass
@@ -51,6 +55,20 @@ class CredentialManager(base.CrudManager):
 
     @utils.positional(1, enforcement=utils.positional.WARN)
     def create(self, user, type, blob=None, data=None, project=None, **kwargs):
+        """Create a credential
+
+        :param user: User
+        :type user: :class:`keystoneclient.v3.users.User` or str
+        :param str type: credential type, should be either ``ec2`` or ``cert``
+        :param JSON blob: Credential data
+        :param JSON data: Deprecated, use blob instead.
+        :param project: Project, optional
+        :type project: :class:`keystoneclient.v3.projects.Project` or str
+        :param kwargs: Extra attributes passed to create.
+
+        :raises ValueError: if one of ``blob`` or ``data`` is not specified.
+
+        """
         return super(CredentialManager, self).create(
             user_id=base.getid(user),
             type=type,
@@ -59,6 +77,12 @@ class CredentialManager(base.CrudManager):
             **kwargs)
 
     def get(self, credential):
+        """Get a credential
+
+        :param credential: Credential
+        :type credential: :class:`Credential` or str
+
+        """
         return super(CredentialManager, self).get(
             credential_id=base.getid(credential))
 
@@ -73,6 +97,22 @@ class CredentialManager(base.CrudManager):
     @utils.positional(2, enforcement=utils.positional.WARN)
     def update(self, credential, user, type=None, blob=None, data=None,
                project=None, **kwargs):
+        """Update a credential
+
+        :param credential: Credential to update
+        :type credential: :class:`Credential` or str
+        :param user: User
+        :type user: :class:`keystoneclient.v3.users.User` or str
+        :param str type: credential type, should be either ``ec2`` or ``cert``
+        :param JSON blob: Credential data
+        :param JSON data: Deprecated, use blob instead.
+        :param project: Project
+        :type project: :class:`keystoneclient.v3.projects.Project` or str
+        :param kwargs: Extra attributes passed to create.
+
+        :raises ValueError: if one of ``blob`` or ``data`` is not specified.
+
+        """
         return super(CredentialManager, self).update(
             credential_id=base.getid(credential),
             user_id=base.getid(user),
@@ -82,5 +122,12 @@ class CredentialManager(base.CrudManager):
             **kwargs)
 
     def delete(self, credential):
+        """Delete a credential
+
+        :param credential: Credential
+        :type credential: :class:`Credential` or str
+
+        """
+
         return super(CredentialManager, self).delete(
             credential_id=base.getid(credential))
