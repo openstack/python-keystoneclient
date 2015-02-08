@@ -9,8 +9,7 @@ Development takes place via the usual OpenStack processes as outlined in the
 `OpenStack wiki <http://wiki.openstack.org/HowToContribute>`_.  The master
 repository is on `GitHub <http://github.com/openstack/python-keystoneclient>`_.
 
-This code is a fork of `Rackspace's python-novaclient
-<http://github.com/rackspace/python-novaclient>`_ which is in turn a fork of
+This code is a fork of Rackspace's python-novaclient which is in turn a fork of
 `Jacobian's python-cloudservers
 <http://github.com/jacobian/python-cloudservers>`_. ``python-keystoneclient``
 is licensed under the Apache License like the rest of OpenStack.
