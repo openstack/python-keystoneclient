@@ -185,7 +185,8 @@ class V3IdentityPlugin(utils.TestCase):
                         password=self.TEST_PASS)
         s = session.Session(auth=a)
 
-        s.get_token()
+        self.assertEqual({'X-Auth-Token': self.TEST_TOKEN},
+                         s.get_auth_headers())
 
         req = {'auth': {'identity':
                {'methods': ['password'],
@@ -225,7 +226,9 @@ class V3IdentityPlugin(utils.TestCase):
         a = v3.Password(self.TEST_URL, username=self.TEST_USER,
                         password=self.TEST_PASS, domain_id=self.TEST_DOMAIN_ID)
         s = session.Session(a)
-        s.get_token()
+
+        self.assertEqual({'X-Auth-Token': self.TEST_TOKEN},
+                         s.get_auth_headers())
 
         req = {'auth': {'identity':
                {'methods': ['password'],
@@ -241,7 +244,9 @@ class V3IdentityPlugin(utils.TestCase):
                         password=self.TEST_PASS,
                         project_id=self.TEST_DOMAIN_ID)
         s = session.Session(a)
-        s.get_token()
+
+        self.assertEqual({'X-Auth-Token': self.TEST_TOKEN},
+                         s.get_auth_headers())
 
         req = {'auth': {'identity':
                {'methods': ['password'],
@@ -256,7 +261,9 @@ class V3IdentityPlugin(utils.TestCase):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
         a = v3.Token(self.TEST_URL, self.TEST_TOKEN)
         s = session.Session(auth=a)
-        s.get_token()
+
+        self.assertEqual({'X-Auth-Token': self.TEST_TOKEN},
+                         s.get_auth_headers())
 
         req = {'auth': {'identity':
                {'methods': ['token'],
@@ -279,7 +286,8 @@ class V3IdentityPlugin(utils.TestCase):
         a.auth_ref = access.AccessInfo.factory(body=d)
         s = session.Session(auth=a)
 
-        s.get_token()
+        self.assertEqual({'X-Auth-Token': self.TEST_TOKEN},
+                         s.get_auth_headers())
 
         self.assertEqual(a.auth_ref['expires_at'],
                          self.TEST_RESPONSE_DICT['token']['expires_at'])
@@ -288,15 +296,20 @@ class V3IdentityPlugin(utils.TestCase):
         a = v3.Password(self.TEST_URL, username='username',
                         password='password', project_id='project',
                         domain_id='domain')
+
         self.assertRaises(exceptions.AuthorizationFailure,
                           a.get_token, None)
+        self.assertRaises(exceptions.AuthorizationFailure,
+                          a.get_headers, None)
 
     def test_with_trust_id(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
         a = v3.Password(self.TEST_URL, username=self.TEST_USER,
                         password=self.TEST_PASS, trust_id='trust')
         s = session.Session(a)
-        s.get_token()
+
+        self.assertEqual({'X-Auth-Token': self.TEST_TOKEN},
+                         s.get_auth_headers())
 
         req = {'auth': {'identity':
                {'methods': ['password'],
@@ -312,7 +325,9 @@ class V3IdentityPlugin(utils.TestCase):
         t = v3.TokenMethod(token='foo')
         a = v3.Auth(self.TEST_URL, [p, t], trust_id='trust')
         s = session.Session(a)
-        s.get_token()
+
+        self.assertEqual({'X-Auth-Token': self.TEST_TOKEN},
+                         s.get_auth_headers())
 
         req = {'auth': {'identity':
                {'methods': ['password', 'token'],
@@ -331,7 +346,8 @@ class V3IdentityPlugin(utils.TestCase):
         a = v3.Auth(self.TEST_URL, [p, t], trust_id='trust')
         s = session.Session(auth=a)
 
-        s.get_token()
+        self.assertEqual({'X-Auth-Token': self.TEST_TOKEN},
+                         s.get_auth_headers())
 
         req = {'auth': {'identity':
                {'methods': ['password', 'token'],
@@ -438,8 +454,10 @@ class V3IdentityPlugin(utils.TestCase):
         s = session.Session(auth=a)
 
         self.assertEqual('token1', s.get_token())
+        self.assertEqual({'X-Auth-Token': 'token1'}, s.get_auth_headers())
         a.invalidate()
         self.assertEqual('token2', s.get_token())
+        self.assertEqual({'X-Auth-Token': 'token2'}, s.get_auth_headers())
 
     def test_doesnt_log_password(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
@@ -449,6 +467,8 @@ class V3IdentityPlugin(utils.TestCase):
                         password=password)
         s = session.Session(a)
         self.assertEqual(self.TEST_TOKEN, s.get_token())
+        self.assertEqual({'X-Auth-Token': self.TEST_TOKEN},
+                         s.get_auth_headers())
 
         self.assertNotIn(password, self.logger.output)
 
