@@ -81,7 +81,18 @@ class MissingAuthPlugin(ClientException):
 class NoMatchingPlugin(ClientException):
     """There were no auth plugins that could be created from the parameters
     provided.
+
+    :param str name: The name of the plugin that was attempted to load.
+
+    .. py:attribute:: name
+
+        The name of the plugin that was attempted to load.
     """
+
+    def __init__(self, name):
+        self.name = name
+        msg = _('The plugin %s could not be found') % name
+        super(NoMatchingPlugin, self).__init__(msg)
 
 
 class InvalidResponse(ClientException):
