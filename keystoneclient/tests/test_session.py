@@ -15,8 +15,8 @@ import itertools
 import uuid
 
 import mock
-from oslo.config import cfg
-from oslo.config import fixture as config
+from oslo_config import cfg
+from oslo_config import fixture as config
 from oslo_serialization import jsonutils
 import requests
 import six

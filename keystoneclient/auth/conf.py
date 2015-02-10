@@ -10,7 +10,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 from keystoneclient.auth import base
 
@@ -21,7 +21,7 @@ _AUTH_SECTION_OPT = cfg.StrOpt('auth_section', help=_section_help)
 
 
 def get_common_conf_options():
-    """Get the oslo.config options common for all auth plugins.
+    """Get the oslo_config options common for all auth plugins.
 
     These may be useful without being registered for config file generation
     or to manipulate the options before registering them yourself.
@@ -30,24 +30,24 @@ def get_common_conf_options():
         :auth_plugin: The name of the pluign to load.
         :auth_section: The config file section to load options from.
 
-    :returns: A list of oslo.config options.
+    :returns: A list of oslo_config options.
     """
     return [_AUTH_PLUGIN_OPT, _AUTH_SECTION_OPT]
 
 
 def get_plugin_options(name):
-    """Get the oslo.config options for a specific plugin.
+    """Get the oslo_config options for a specific plugin.
 
     This will be the list of config options that is registered and loaded by
     the specified plugin.
 
-    :returns: A list of oslo.config options.
+    :returns: A list of oslo_config options.
     """
     return base.get_plugin_class(name).get_options()
 
 
 def register_conf_options(conf, group):
-    """Register the oslo.config options that are needed for a plugin.
+    """Register the oslo_config options that are needed for a plugin.
 
     This only registers the basic options shared by all plugins. Options that
     are specific to a plugin are loaded just before they are read.
@@ -61,7 +61,7 @@ def register_conf_options(conf, group):
          taken from the same group as provided in the parameters.
 
     :param conf: config object to register with.
-    :type conf: oslo.config.cfg.ConfigOpts
+    :type conf: oslo_config.cfg.ConfigOpts
     :param string group: The ini group to register options in.
     """
     conf.register_opt(_AUTH_SECTION_OPT, group=group)
@@ -78,7 +78,7 @@ def register_conf_options(conf, group):
 
 
 def load_from_conf_options(conf, group, **kwargs):
-    """Load a plugin from an oslo.config CONF object.
+    """Load a plugin from an oslo_config CONF object.
 
     Each plugin will register their own required options and so there is no
     standard list and the plugin should be consulted.
@@ -87,7 +87,7 @@ def load_from_conf_options(conf, group, **kwargs):
     before this function is called.
 
     :param conf: A conf object.
-    :type conf: oslo.config.cfg.ConfigOpts
+    :type conf: oslo_config.cfg.ConfigOpts
     :param string group: The group name that options should be read from.
 
     :returns: An authentication Plugin or None if a name is not provided

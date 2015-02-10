@@ -18,7 +18,7 @@ import os
 import socket
 import time
 
-from oslo.config import cfg
+from oslo_config import cfg
 from oslo_serialization import jsonutils
 from oslo_utils import importutils
 import requests
@@ -667,7 +667,7 @@ class Session(object):
 
     @utils.positional.classmethod()
     def get_conf_options(cls, deprecated_opts=None):
-        """Get the oslo.config options that are needed for a
+        """Get the oslo_config options that are needed for a
         :py:class:`.Session`.
 
         These may be useful without being registered for config file generation
@@ -691,7 +691,7 @@ class Session(object):
                  old_opt = oslo.cfg.DeprecatedOpt('ca_file', 'old_group')
                  deprecated_opts={'cafile': [old_opt]}
 
-        :returns: A list of oslo.config options.
+        :returns: A list of oslo_config options.
         """
         if deprecated_opts is None:
             deprecated_opts = {}
@@ -717,7 +717,7 @@ class Session(object):
 
     @utils.positional.classmethod()
     def register_conf_options(cls, conf, group, deprecated_opts=None):
-        """Register the oslo.config options that are needed for a session.
+        """Register the oslo_config options that are needed for a session.
 
         The options that are set are:
             :cafile: The certificate authority filename.
@@ -726,7 +726,7 @@ class Session(object):
             :insecure: Whether to ignore SSL verification.
             :timeout: The max time to wait for HTTP connections.
 
-        :param oslo.config.Cfg conf: config object to register with.
+        :param oslo_config.Cfg conf: config object to register with.
         :param string group: The ini group to register options in.
         :param dict deprecated_opts: Deprecated options that should be included
              in the definition of new options. This should be a dict from the
@@ -748,12 +748,12 @@ class Session(object):
 
     @classmethod
     def load_from_conf_options(cls, conf, group, **kwargs):
-        """Create a session object from an oslo.config object.
+        """Create a session object from an oslo_config object.
 
         The options must have been previously registered with
         register_conf_options.
 
-        :param oslo.config.Cfg conf: config object to register with.
+        :param oslo_config.Cfg conf: config object to register with.
         :param string group: The ini group to register options in.
         :param dict kwargs: Additional parameters to pass to session
                             construction.

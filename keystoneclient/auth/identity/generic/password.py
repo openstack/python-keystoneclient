@@ -12,7 +12,7 @@
 
 import logging
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 from keystoneclient.auth.identity.generic import base
 from keystoneclient.auth.identity import v2

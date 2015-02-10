@@ -217,10 +217,10 @@ class BaseAuthPlugin(object):
         :type parser: argparse.ArgumentParser
         """
 
-        # NOTE(jamielennox): ideally oslo.config would be smart enough to
+        # NOTE(jamielennox): ideally oslo_config would be smart enough to
         # handle all the Opt manipulation that goes on in this file. However it
         # is currently not.  Options are handled in as similar a way as
-        # possible to oslo.config such that when available we should be able to
+        # possible to oslo_config such that when available we should be able to
         # transition.
 
         for opt in cls.get_options():
@@ -263,10 +263,10 @@ class BaseAuthPlugin(object):
 
     @classmethod
     def register_conf_options(cls, conf, group):
-        """Register the oslo.config options that are needed for a plugin.
+        """Register the oslo_config options that are needed for a plugin.
 
         :param conf: A config object.
-        :type conf: oslo.config.cfg.ConfigOpts
+        :type conf: oslo_config.cfg.ConfigOpts
         :param string group: The group name that options should be read from.
         """
         plugin_opts = cls.get_options()
@@ -279,7 +279,7 @@ class BaseAuthPlugin(object):
         Convert the options already registered into a real plugin.
 
         :param conf: A config object.
-        :type conf: oslo.config.cfg.ConfigOpts
+        :type conf: oslo_config.cfg.ConfigOpts
         :param string group: The group name that options should be read from.
 
         :returns: An authentication Plugin.
