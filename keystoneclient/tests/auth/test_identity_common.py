@@ -19,8 +19,7 @@ import six
 
 from keystoneclient import access
 from keystoneclient.auth import base
-from keystoneclient.auth.identity import v2
-from keystoneclient.auth.identity import v3
+from keystoneclient.auth import identity
 from keystoneclient import fixture
 from keystoneclient import session
 from keystoneclient.tests import utils
@@ -268,7 +267,7 @@ class V3(CommonIdentityTests, utils.TestCase):
         kwargs.setdefault('auth_url', self.TEST_URL)
         kwargs.setdefault('username', self.TEST_USER)
         kwargs.setdefault('password', self.TEST_PASS)
-        return v3.Password(**kwargs)
+        return identity.V3Password(**kwargs)
 
 
 class V2(CommonIdentityTests, utils.TestCase):
@@ -281,7 +280,7 @@ class V2(CommonIdentityTests, utils.TestCase):
         kwargs.setdefault('auth_url', self.TEST_URL)
         kwargs.setdefault('username', self.TEST_USER)
         kwargs.setdefault('password', self.TEST_PASS)
-        return v2.Password(**kwargs)
+        return identity.V2Password(**kwargs)
 
     def get_auth_data(self, **kwargs):
         token = fixture.V2Token(**kwargs)
@@ -331,9 +330,9 @@ class CatalogHackTests(utils.TestCase):
                       base_url=self.V2_URL,
                       json=token)
 
-        v2_auth = v2.Password(self.V2_URL,
-                              username=uuid.uuid4().hex,
-                              password=uuid.uuid4().hex)
+        v2_auth = identity.V2Password(self.V2_URL,
+                                      username=uuid.uuid4().hex,
+                                      password=uuid.uuid4().hex)
 
         sess = session.Session(auth=v2_auth)
 
@@ -357,9 +356,9 @@ class CatalogHackTests(utils.TestCase):
 
         self.stub_url('GET', [], base_url=self.BASE_URL, status_code=404)
 
-        v2_auth = v2.Password(self.V2_URL,
-                              username=uuid.uuid4().hex,
-                              password=uuid.uuid4().hex)
+        v2_auth = identity.V2Password(self.V2_URL,
+                                      username=uuid.uuid4().hex,
+                                      password=uuid.uuid4().hex)
 
         sess = session.Session(auth=v2_auth)
 
