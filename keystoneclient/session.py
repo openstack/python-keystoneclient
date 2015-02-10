@@ -54,7 +54,7 @@ def request(url, method='GET', **kwargs):
     return Session().request(url, method=method, **kwargs)
 
 
-def remove_service_catalog(body):
+def _remove_service_catalog(body):
     try:
         data = jsonutils.loads(body)
     except ValueError:
@@ -201,7 +201,7 @@ class Session(object):
             if not headers:
                 headers = response.headers
             if not text:
-                text = remove_service_catalog(response.text)
+                text = _remove_service_catalog(response.text)
         if json:
             text = jsonutils.dumps(json)
 
