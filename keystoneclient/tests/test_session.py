@@ -17,7 +17,7 @@ import uuid
 import mock
 from oslo.config import cfg
 from oslo.config import fixture as config
-from oslo.serialization import jsonutils
+from oslo_serialization import jsonutils
 import requests
 import six
 from testtools import matchers

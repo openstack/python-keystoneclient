@@ -18,7 +18,7 @@ import uuid
 import fixtures
 import mock
 from mox3 import mox
-from oslo.serialization import jsonutils
+from oslo_serialization import jsonutils
 import requests
 from requests_mock.contrib import fixture
 import six

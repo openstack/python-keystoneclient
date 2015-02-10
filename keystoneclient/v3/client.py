@@ -15,7 +15,7 @@
 
 import logging
 
-from oslo.serialization import jsonutils
+from oslo_serialization import jsonutils
 
 from keystoneclient.auth.identity import v3 as v3_auth
 from keystoneclient import exceptions

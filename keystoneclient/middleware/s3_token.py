@@ -33,7 +33,7 @@ This WSGI component:
 
 import logging
 
-from oslo.serialization import jsonutils
+from oslo_serialization import jsonutils
 import requests
 import six
 from six.moves import urllib
