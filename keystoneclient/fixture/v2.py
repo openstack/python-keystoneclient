@@ -13,7 +13,7 @@
 import datetime
 import uuid
 
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 
 from keystoneclient.fixture import exception
 

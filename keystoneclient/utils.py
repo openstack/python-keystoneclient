@@ -17,7 +17,7 @@ import inspect
 import logging
 import sys
 
-from oslo.utils import encodeutils
+from oslo_utils import encodeutils
 import prettytable
 import six
 

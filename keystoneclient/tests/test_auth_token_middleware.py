@@ -26,7 +26,7 @@ import fixtures
 import iso8601
 import mock
 from oslo.serialization import jsonutils
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 from requests_mock.contrib import fixture as mock_fixture
 import six
 from six.moves.urllib import parse as urlparse

@@ -26,7 +26,7 @@ import argparse
 import getpass
 import sys
 
-from oslo.utils import strutils
+from oslo_utils import strutils
 import six
 
 from keystoneclient.i18n import _

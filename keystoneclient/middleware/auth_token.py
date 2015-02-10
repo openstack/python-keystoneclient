@@ -159,7 +159,7 @@ import time
 import netaddr
 from oslo.config import cfg
 from oslo.serialization import jsonutils
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 import requests
 import six
 from six.moves import urllib

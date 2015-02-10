@@ -17,7 +17,7 @@
 
 import datetime
 
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 
 from keystoneclient.i18n import _
 from keystoneclient import service_catalog
