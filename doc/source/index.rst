@@ -27,7 +27,7 @@ using `Gerrit`_.
 
 .. _on GitHub: https://github.com/openstack/python-keystoneclient
 .. _Launchpad: https://launchpad.net/python-keystoneclient
-.. _Gerrit: http://wiki.openstack.org/GerritWorkflow
+.. _Gerrit: http://docs.openstack.org/infra/manual/developers.html#development-workflow
 
 Run tests with ``python setup.py test``.
 
