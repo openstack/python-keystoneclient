@@ -326,7 +326,10 @@ class Session(object):
                 base_url = self.get_endpoint(auth, **endpoint_filter)
 
             if not base_url:
-                raise exceptions.EndpointNotFound()
+                service_type = (endpoint_filter or {}).get('service_type',
+                                                           'unknown')
+                msg = _('Endpoint for %s service') % service_type
+                raise exceptions.EndpointNotFound(msg)
 
             url = '%s/%s' % (base_url.rstrip('/'), url.lstrip('/'))
 
