@@ -81,7 +81,7 @@ function run_tests {
     if [ "$testropts" = "" ] && [ "$testrargs" = "" ]; then
       # Default to running all tests if specific test is not
       # provided.
-      testrargs="discover ./keystoneclient/tests"
+      testrargs="discover ./keystoneclient/tests/unit"
     fi
     ${wrapper} python -m testtools.run $testropts $testrargs
 
