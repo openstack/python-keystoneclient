@@ -57,16 +57,21 @@ def request(url, method='GET', **kwargs):
 def remove_service_catalog(body):
     try:
         data = jsonutils.loads(body)
-    except ValueError:
-        return body
-    try:
-        if 'catalog' in data['token']:
+
+        # V3 token
+        if 'token' in data and 'catalog' in data['token']:
             data['token']['catalog'] = '<removed>'
             return jsonutils.dumps(data)
-        else:
-            return body
-    except KeyError:
-        return body
+
+        # V2 token
+        if 'serviceCatalog' in data['access']:
+            data['access']['serviceCatalog'] = '<removed>'
+            return jsonutils.dumps(data)
+
+    except Exception:
+        # Don't fail trying to clean up the request body.
+        pass
+    return body
 
 
 class Session(object):
