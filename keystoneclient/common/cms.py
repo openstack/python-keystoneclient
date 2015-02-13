@@ -85,9 +85,7 @@ def _check_files_accessible(files):
     except IOError as e:
         # Catching IOError means there is an issue with
         # the given file.
-        err = _('Hit OSError in _process_communicate_handle_oserror()\n'
-                'Likely due to %(file)s: %(error)s') % {'file': try_file,
-                                                        'error': e.strerror}
+        err = try_file, e.strerror
         # Emulate openssl behavior, which returns with code 2 when
         # access to a file failed.
         retcode = OpensslCmsExitStatus.INPUT_FILE_READ_ERROR
@@ -111,12 +109,25 @@ def _process_communicate_handle_oserror(process, data, files):
         retcode, err = _check_files_accessible(files)
         if process.stderr:
             msg = process.stderr.read()
-            err = err + msg.decode('utf-8')
+            if isinstance(msg, six.binary_type):
+                msg = msg.decode('utf-8')
+            if err:
+                err = (_('Hit OSError in '
+                         '_process_communicate_handle_oserror(): '
+                         '%(stderr)s\nLikely due to %(file)s: %(error)s') %
+                       {'stderr': msg,
+                        'file': err[0],
+                        'error': err[1]})
+            else:
+                err = (_('Hit OSError in '
+                         '_process_communicate_handle_oserror(): %s') % msg)
+
         output = ''
     else:
         retcode = process.poll()
         if err is not None:
-            err = err.decode('utf-8')
+            if isinstance(err, six.binary_type):
+                err = err.decode('utf-8')
 
     return output, err, retcode
 

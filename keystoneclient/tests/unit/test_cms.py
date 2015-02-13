@@ -42,6 +42,11 @@ class CMSTest(utils.TestCase, testresources.ResourcedTestCase):
             raise Exception('Your version of OpenSSL is not supported. '
                             'You will need to update it to 1.0 or later.')
 
+    def _raise_OSError(*args):
+        e = OSError()
+        e.errno = errno.EPIPE
+        raise e
+
     def test_cms_verify(self):
         self.assertRaises(exceptions.CertificateConfigError,
                           cms.cms_verify,
@@ -90,12 +95,8 @@ class CMSTest(utils.TestCase, testresources.ResourcedTestCase):
                           '/no/such/file', '/no/such/key')
 
     def test_cms_verify_token_no_oserror(self):
-        def raise_OSError(*args):
-            e = OSError()
-            e.errno = errno.EPIPE
-            raise e
-
-        with mock.patch('subprocess.Popen.communicate', new=raise_OSError):
+        with mock.patch('subprocess.Popen.communicate',
+                        new=self._raise_OSError):
             try:
                 cms.cms_verify("x", '/no/such/file', '/no/such/key')
             except exceptions.CertificateConfigError as e:
@@ -154,6 +155,47 @@ class CMSTest(utils.TestCase, testresources.ResourcedTestCase):
         token_id = cms.cms_hash_token(token, mode='sha256')
         # sha256 hash is 64 chars.
         self.assertThat(token_id, matchers.HasLength(64))
+
+    @mock.patch('keystoneclient.common.cms._check_files_accessible')
+    def test_process_communicate_handle_oserror_epipe(self, files_acc_mock):
+        process_mock = mock.Mock()
+        process_mock.communicate = self._raise_OSError
+        process_mock.stderr = mock.Mock()
+        process_mock.stderr.read = mock.Mock(return_value='proc stderr')
+        files_acc_mock.return_value = 1, ('file_path', 'fileerror')
+        output, err, retcode = cms._process_communicate_handle_oserror(
+            process_mock, '', [])
+
+        self.assertEqual((output, retcode), ('', 1))
+        self.assertIn('file_path', err)
+        self.assertIn('fileerror', err)
+        self.assertIn('proc stderr', err)
+
+    @mock.patch('keystoneclient.common.cms._check_files_accessible')
+    def test_process_communicate_handle_oserror_epipe_files_ok(
+            self, files_acc_mock):
+        process_mock = mock.Mock()
+        process_mock.communicate = self._raise_OSError
+        process_mock.stderr = mock.Mock()
+        process_mock.stderr.read = mock.Mock(return_value='proc stderr')
+        files_acc_mock.return_value = -1, None
+        output, err, retcode = cms._process_communicate_handle_oserror(
+            process_mock, '', [])
+
+        self.assertEqual((output, retcode), ('', -1))
+        self.assertIn('proc stderr', err)
+
+    def test_process_communicate_handle_oserror_no_exception(self):
+        process_mock = mock.Mock()
+        process_mock.communicate.return_value = 'out', 'err'
+        process_mock.poll.return_value = 0
+
+        output, err, retcode = cms._process_communicate_handle_oserror(
+            process_mock, '', [])
+
+        self.assertEqual(output, 'out')
+        self.assertEqual(err, 'err')
+        self.assertEqual(retcode, 0)
 
 
 def load_tests(loader, tests, pattern):
