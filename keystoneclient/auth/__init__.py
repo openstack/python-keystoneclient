@@ -20,6 +20,8 @@ __all__ = [
     # auth.base
     'AUTH_INTERFACE',
     'BaseAuthPlugin',
+    'get_available_plugin_names',
+    'get_available_plugin_classes',
     'get_plugin_class',
     'IDENTITY_AUTH_HEADER_NAME',
     'PLUGIN_NAMESPACE',
