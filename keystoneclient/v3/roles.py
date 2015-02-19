@@ -37,7 +37,8 @@ class RoleManager(base.CrudManager):
     collection_key = 'roles'
     key = 'role'
 
-    def _role_grants_base_url(self, user, group, domain, project):
+    def _role_grants_base_url(self, user, group, domain, project,
+                              use_inherit_extension):
         # When called, we have already checked that only one of user & group
         # and one of domain & project have been specified
         params = {}
@@ -48,6 +49,9 @@ class RoleManager(base.CrudManager):
         elif domain:
             params['domain_id'] = base.getid(domain)
             base_url = '/domains/%(domain_id)s'
+
+            if use_inherit_extension:
+                base_url = '/OS-INHERIT' + base_url
 
         if user:
             params['user_id'] = base.getid(user)
@@ -85,7 +89,8 @@ class RoleManager(base.CrudManager):
             role_id=base.getid(role))
 
     @utils.positional(enforcement=utils.positional.WARN)
-    def list(self, user=None, group=None, domain=None, project=None, **kwargs):
+    def list(self, user=None, group=None, domain=None,
+             project=None, os_inherit_extension_inherited=False, **kwargs):
         """Lists roles and role grants.
 
         If no arguments are provided, all roles in the system will be
@@ -95,16 +100,22 @@ class RoleManager(base.CrudManager):
         domain or project to list role grants on that pair. And if
         ``**kwargs`` are provided, then also filter roles with
         attributes matching ``**kwargs``.
+
+        If 'os_inherit_extension_inherited' is passed, then OS-INHERIT will be
+        used. It provides the ability for projects to inherit role assignments
+        from their domains or from projects in the hierarchy.
         """
 
+        if os_inherit_extension_inherited:
+            kwargs['tail'] = '/inherited_to_projects'
         if user or group:
             self._require_user_xor_group(user, group)
             self._require_domain_xor_project(domain, project)
 
-            return super(RoleManager, self).list(
-                base_url=self._role_grants_base_url(user, group,
-                                                    domain, project),
-                **kwargs)
+            base_url = self._role_grants_base_url(
+                user, group, domain, project, os_inherit_extension_inherited)
+            return super(RoleManager, self).list(base_url=base_url,
+                                                 **kwargs)
 
         return super(RoleManager, self).list(**kwargs)
 
@@ -120,31 +131,68 @@ class RoleManager(base.CrudManager):
             role_id=base.getid(role))
 
     @utils.positional(enforcement=utils.positional.WARN)
-    def grant(self, role, user=None, group=None, domain=None, project=None):
-        """Grants a role to a user or group on a domain or project."""
+    def grant(self, role, user=None, group=None, domain=None, project=None,
+              os_inherit_extension_inherited=False, **kwargs):
+        """Grants a role to a user or group on a domain or project.
+
+        If 'os_inherit_extension_inherited' is passed, then OS-INHERIT will be
+        used. It provides the ability for projects to inherit role assignments
+        from their domains or from projects in the hierarchy.
+        """
         self._require_domain_xor_project(domain, project)
         self._require_user_xor_group(user, group)
 
-        return super(RoleManager, self).put(
-            base_url=self._role_grants_base_url(user, group, domain, project),
-            role_id=base.getid(role))
+        if os_inherit_extension_inherited:
+            kwargs['tail'] = '/inherited_to_projects'
+
+        base_url = self._role_grants_base_url(
+            user, group, domain, project, os_inherit_extension_inherited)
+        return super(RoleManager, self).put(base_url=base_url,
+                                            role_id=base.getid(role),
+                                            **kwargs)
 
     @utils.positional(enforcement=utils.positional.WARN)
-    def check(self, role, user=None, group=None, domain=None, project=None):
-        """Checks if a user or group has a role on a domain or project."""
+    def check(self, role, user=None, group=None, domain=None, project=None,
+              os_inherit_extension_inherited=False, **kwargs):
+        """Checks if a user or group has a role on a domain or project.
+
+        If 'os_inherit_extension_inherited' is passed, then OS-INHERIT will be
+        used. It provides the ability for projects to inherit role assignments
+        from their domains or from projects in the hierarchy.
+        """
         self._require_domain_xor_project(domain, project)
         self._require_user_xor_group(user, group)
 
+        if os_inherit_extension_inherited:
+            kwargs['tail'] = '/inherited_to_projects'
+
+        base_url = self._role_grants_base_url(
+            user, group, domain, project, os_inherit_extension_inherited)
         return super(RoleManager, self).head(
-            base_url=self._role_grants_base_url(user, group, domain, project),
-            role_id=base.getid(role))
+            base_url=base_url,
+            role_id=base.getid(role),
+            os_inherit_extension_inherited=os_inherit_extension_inherited,
+            **kwargs)
 
     @utils.positional(enforcement=utils.positional.WARN)
-    def revoke(self, role, user=None, group=None, domain=None, project=None):
-        """Revokes a role from a user or group on a domain or project."""
+    def revoke(self, role, user=None, group=None, domain=None, project=None,
+               os_inherit_extension_inherited=False, **kwargs):
+        """Revokes a role from a user or group on a domain or project.
+
+        If 'os_inherit_extension_inherited' is passed, then OS-INHERIT will be
+        used. It provides the ability for projects to inherit role assignments
+        from their domains or from projects in the hierarchy.
+        """
         self._require_domain_xor_project(domain, project)
         self._require_user_xor_group(user, group)
 
+        if os_inherit_extension_inherited:
+            kwargs['tail'] = '/inherited_to_projects'
+
+        base_url = self._role_grants_base_url(
+            user, group, domain, project, os_inherit_extension_inherited)
         return super(RoleManager, self).delete(
-            base_url=self._role_grants_base_url(user, group, domain, project),
-            role_id=base.getid(role))
+            base_url=base_url,
+            role_id=base.getid(role),
+            os_inherit_extension_inherited=os_inherit_extension_inherited,
+            **kwargs)
