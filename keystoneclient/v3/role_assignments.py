@@ -47,7 +47,7 @@ class RoleAssignmentManager(base.CrudManager):
             raise exceptions.ValidationError(msg)
 
     def list(self, user=None, group=None, project=None, domain=None, role=None,
-             effective=False):
+             effective=False, os_inherit_extension_inherited_to=None):
         """Lists role assignments.
 
         If no arguments are provided, all role assignments in the
@@ -66,6 +66,9 @@ class RoleAssignmentManager(base.CrudManager):
         :param role: Role to be used as query filter. (optional)
         :param boolean effective: return effective role
                                   assignments. (optional)
+        :param string os_inherit_extension_inherited_to:
+            return inherited role assignments for either 'projects' or
+            'domains'. (optional)
         """
 
         self._check_not_user_and_group(user, group)
@@ -84,6 +87,9 @@ class RoleAssignmentManager(base.CrudManager):
             query_params['role.id'] = base.getid(role)
         if effective:
             query_params['effective'] = effective
+        if os_inherit_extension_inherited_to:
+            query_params['scope.OS-INHERIT:inherited_to'] = (
+                os_inherit_extension_inherited_to)
 
         return super(RoleAssignmentManager, self).list(**query_params)
 
