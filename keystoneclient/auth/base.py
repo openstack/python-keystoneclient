@@ -78,6 +78,7 @@ class BaseAuthPlugin(object):
         :return: A token to use.
         :rtype: string
         """
+        return None
 
     def get_headers(self, session, **kwargs):
         """Fetch authentication headers for message.
@@ -137,6 +138,7 @@ class BaseAuthPlugin(object):
                   service or None if not available.
         :rtype: string
         """
+        return None
 
     def invalidate(self):
         """Invalidate the current authentication data.
