@@ -216,3 +216,31 @@ class ServiceCatalogTest(utils.TestCase):
         self.assertRaises(exceptions.EndpointNotFound, ab_sc.url_for,
                           service_type='compute', service_name='NotExist',
                           endpoint_type='public')
+
+
+class ServiceCatalogV3Test(ServiceCatalogTest):
+
+    def test_building_a_service_catalog(self):
+        auth_ref = access.AccessInfo.factory(self.RESPONSE,
+                                             self.AUTH_RESPONSE_BODY)
+        sc = auth_ref.service_catalog
+
+        self.assertEqual(sc.url_for(service_type='compute'),
+                         'https://compute.north.host/novapi/public')
+        self.assertEqual(sc.url_for(service_type='compute',
+                                    endpoint_type='internal'),
+                         'https://compute.north.host/novapi/internal')
+
+        self.assertRaises(exceptions.EndpointNotFound, sc.url_for, 'region_id',
+                          'South', service_type='compute')
+
+    def test_service_catalog_endpoints(self):
+        auth_ref = access.AccessInfo.factory(self.RESPONSE,
+                                             self.AUTH_RESPONSE_BODY)
+        sc = auth_ref.service_catalog
+
+        public_ep = sc.get_endpoints(service_type='compute',
+                                     endpoint_type='public')
+        self.assertEqual(public_ep['compute'][0]['region_id'], 'North')
+        self.assertEqual(public_ep['compute'][0]['url'],
+                         'https://compute.north.host/novapi/public')

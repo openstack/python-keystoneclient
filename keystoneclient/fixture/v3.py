@@ -28,7 +28,8 @@ class _Service(dict):
     def add_endpoint(self, interface, url, region=None):
         data = {'interface': interface,
                 'url': url,
-                'region': region}
+                'region': region,
+                'region_id': region}
         self.setdefault('endpoints', []).append(data)
         return data
 
