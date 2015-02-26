@@ -127,7 +127,7 @@ class ServiceCatalog(object):
                     if service_name != sn:
                         continue
 
-            sc[st] = []
+            endpoints = sc.setdefault(st, [])
 
             for endpoint in service.get('endpoints', []):
                 if (endpoint_type and not
@@ -136,7 +136,7 @@ class ServiceCatalog(object):
                 if (region_name and
                         region_name != self._get_endpoint_region(endpoint)):
                     continue
-                sc[st].append(endpoint)
+                endpoints.append(endpoint)
 
         return sc
 

@@ -12,6 +12,7 @@
 
 from keystoneclient import access
 from keystoneclient import exceptions
+from keystoneclient import fixture
 from keystoneclient.tests.unit.v3 import client_fixtures
 from keystoneclient.tests.unit.v3 import utils
 
@@ -244,3 +245,27 @@ class ServiceCatalogV3Test(ServiceCatalogTest):
         self.assertEqual(public_ep['compute'][0]['region_id'], 'North')
         self.assertEqual(public_ep['compute'][0]['url'],
                          'https://compute.north.host/novapi/public')
+
+    def test_service_catalog_multiple_service_types(self):
+        token = fixture.V3Token()
+        token.set_project_scope()
+
+        for i in range(3):
+            s = token.add_service('compute')
+            s.add_standard_endpoints(public='public-%d' % i,
+                                     admin='admin-%d' % i,
+                                     internal='internal-%d' % i,
+                                     region='region-%d' % i)
+
+        auth_ref = access.AccessInfo.factory(resp=None, body=token)
+
+        urls = auth_ref.service_catalog.get_urls(service_type='compute',
+                                                 endpoint_type='public')
+
+        self.assertEqual(set(['public-0', 'public-1', 'public-2']), set(urls))
+
+        urls = auth_ref.service_catalog.get_urls(service_type='compute',
+                                                 endpoint_type='public',
+                                                 region_name='region-1')
+
+        self.assertEqual(('public-1', ), urls)

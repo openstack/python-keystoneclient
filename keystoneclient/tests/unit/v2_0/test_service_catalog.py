@@ -12,6 +12,7 @@
 
 from keystoneclient import access
 from keystoneclient import exceptions
+from keystoneclient import fixture
 from keystoneclient.tests.unit.v2_0 import client_fixtures
 from keystoneclient.tests.unit.v2_0 import utils
 
@@ -173,3 +174,27 @@ class ServiceCatalogTest(utils.TestCase):
                            endpoint_type='public')
 
         self.assertIsNone(urls)
+
+    def test_service_catalog_multiple_service_types(self):
+        token = fixture.V2Token()
+        token.set_scope()
+
+        for i in range(3):
+            s = token.add_service('compute')
+            s.add_endpoint(public='public-%d' % i,
+                           admin='admin-%d' % i,
+                           internal='internal-%d' % i,
+                           region='region-%d' % i)
+
+        auth_ref = access.AccessInfo.factory(resp=None, body=token)
+
+        urls = auth_ref.service_catalog.get_urls(service_type='compute',
+                                                 endpoint_type='publicURL')
+
+        self.assertEqual(set(['public-0', 'public-1', 'public-2']), set(urls))
+
+        urls = auth_ref.service_catalog.get_urls(service_type='compute',
+                                                 endpoint_type='publicURL',
+                                                 region_name='region-1')
+
+        self.assertEqual(('public-1', ), urls)
