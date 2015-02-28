@@ -168,8 +168,8 @@ def cms_verify(formatted, signing_cert_file_name, ca_file_name,
     # You can get more from
     # http://www.openssl.org/docs/apps/cms.html#EXIT_CODES
     #
-    # $ openssl cms -verify -certfile not_exist_file -CAfile \
-    #       not_exist_file -inform PEM -nosmimecap -nodetach \
+    # $ openssl cms -verify -certfile not_exist_file -CAfile
+    #       not_exist_file -inform PEM -nosmimecap -nodetach
     #       -nocerts -noattr
     # Error opening certificate file not_exist_file
     #
