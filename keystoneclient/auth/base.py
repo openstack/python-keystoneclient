@@ -255,13 +255,11 @@ class BaseAuthPlugin(object):
         :returns: An auth plugin, or None if a name is not provided.
         :rtype: :py:class:`keystoneclient.auth.BaseAuthPlugin`
         """
-        for opt in cls.get_options():
-            val = getattr(namespace, 'os_%s' % opt.dest)
-            if val is not None:
-                val = opt.type(val)
-            kwargs.setdefault(opt.dest, val)
 
-        return cls.load_from_options(**kwargs)
+        def _getter(opt):
+            return getattr(namespace, 'os_%s' % opt.dest)
+
+        return cls.load_from_options_getter(_getter, **kwargs)
 
     @classmethod
     def register_conf_options(cls, conf, group):
@@ -287,10 +285,34 @@ class BaseAuthPlugin(object):
         :returns: An authentication Plugin.
         :rtype: :py:class:`keystoneclient.auth.BaseAuthPlugin`
         """
+
+        def _getter(opt):
+            return conf[group][opt.dest]
+
+        return cls.load_from_options_getter(_getter, **kwargs)
+
+    @classmethod
+    def load_from_options_getter(cls, getter, **kwargs):
+        """Load a plugin from a getter function that returns appropriate values
+
+        To handle cases other than the provided CONF and CLI loading you can
+        specify a custom loader function that will be queried for the option
+        value.
+
+        The getter is a function that takes one value, an
+        :py:class:`oslo_config.cfg.Opt` and returns a value to load with.
+
+        :param getter: A function that returns a value for the given opt.
+        :type getter: callable
+
+        :returns: An authentication Plugin.
+        :rtype: :py:class:`keystoneclient.auth.BaseAuthPlugin`
+        """
+
         plugin_opts = cls.get_options()
 
         for opt in plugin_opts:
-            val = conf[group][opt.dest]
+            val = getter(opt)
             if val is not None:
                 val = opt.type(val)
             kwargs.setdefault(opt.dest, val)
