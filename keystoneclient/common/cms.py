@@ -38,6 +38,7 @@ PKI_ASN1_PREFIX = 'MII'
 PKIZ_PREFIX = 'PKIZ_'
 PKIZ_CMS_FORM = 'DER'
 PKI_ASN1_FORM = 'PEM'
+DEFAULT_TOKEN_DIGEST_ALGORITHM = 'sha256'
 
 
 # The openssl cms command exits with these status codes.
@@ -198,11 +199,13 @@ def is_pkiz(token_text):
 def pkiz_sign(text,
               signing_cert_file_name,
               signing_key_file_name,
-              compression_level=6):
+              compression_level=6,
+              message_digest=DEFAULT_TOKEN_DIGEST_ALGORITHM):
     signed = cms_sign_data(text,
                            signing_cert_file_name,
                            signing_key_file_name,
-                           PKIZ_CMS_FORM)
+                           PKIZ_CMS_FORM,
+                           message_digest=message_digest)
 
     compressed = zlib.compress(signed, compression_level)
     encoded = PKIZ_PREFIX + base64.urlsafe_b64encode(
@@ -297,13 +300,15 @@ def is_ans1_token(token):
     return is_asn1_token(token)
 
 
-def cms_sign_text(data_to_sign, signing_cert_file_name, signing_key_file_name):
+def cms_sign_text(data_to_sign, signing_cert_file_name, signing_key_file_name,
+                  message_digest=DEFAULT_TOKEN_DIGEST_ALGORITHM):
     return cms_sign_data(data_to_sign, signing_cert_file_name,
-                         signing_key_file_name)
+                         signing_key_file_name, message_digest=message_digest)
 
 
 def cms_sign_data(data_to_sign, signing_cert_file_name, signing_key_file_name,
-                  outform=PKI_ASN1_FORM):
+                  outform=PKI_ASN1_FORM,
+                  message_digest=DEFAULT_TOKEN_DIGEST_ALGORITHM):
     """Uses OpenSSL to sign a document.
 
     Produces a Base64 encoding of a DER formatted CMS Document
@@ -316,7 +321,7 @@ def cms_sign_data(data_to_sign, signing_cert_file_name, signing_key_file_name,
         the data
     :param outform: Format for the signed document PKIZ_CMS_FORM or
         PKI_ASN1_FORM
-
+    :param message_digest: Digest algorithm to use when signing or resigning
 
     """
     _ensure_subprocess()
@@ -330,7 +335,7 @@ def cms_sign_data(data_to_sign, signing_cert_file_name, signing_key_file_name,
                                 '-outform', 'PEM',
                                 '-nosmimecap', '-nodetach',
                                 '-nocerts', '-noattr',
-                                '-md', 'sha256', ],
+                                '-md', message_digest, ],
                                stdin=subprocess.PIPE,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE,
@@ -353,8 +358,10 @@ def cms_sign_data(data_to_sign, signing_cert_file_name, signing_key_file_name,
         return output
 
 
-def cms_sign_token(text, signing_cert_file_name, signing_key_file_name):
-    output = cms_sign_data(text, signing_cert_file_name, signing_key_file_name)
+def cms_sign_token(text, signing_cert_file_name, signing_key_file_name,
+                   message_digest=DEFAULT_TOKEN_DIGEST_ALGORITHM):
+    output = cms_sign_data(text, signing_cert_file_name, signing_key_file_name,
+                           message_digest=message_digest)
     return cms_to_token(output)
 
 
