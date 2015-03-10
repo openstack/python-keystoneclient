@@ -76,7 +76,7 @@ class AccessInfoTest(utils.TestCase):
         auth_ref = access.AccessInfo.factory(resp=TOKEN_RESPONSE,
                                              body=UNSCOPED_TOKEN)
         self.assertFalse(auth_ref.will_expire_soon(stale_duration=120))
-        self.assertTrue(auth_ref.will_expire_soon(stale_duration=300))
+        self.assertTrue(auth_ref.will_expire_soon(stale_duration=301))
         self.assertFalse(auth_ref.will_expire_soon())
 
     def test_building_domain_scoped_accessinfo(self):
