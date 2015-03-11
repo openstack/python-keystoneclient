@@ -18,6 +18,7 @@ from keystoneclient.auth.identity.v3.token import *  # noqa
 __all__ = ['Auth',
            'AuthConstructor',
            'AuthMethod',
+           'BaseAuth',
 
            'Password',
            'PasswordMethod',

@@ -24,10 +24,11 @@ from keystoneclient import utils
 
 _logger = logging.getLogger(__name__)
 
-__all__ = ['Auth', 'AuthMethod', 'AuthConstructor']
+__all__ = ['Auth', 'AuthMethod', 'AuthConstructor', 'BaseAuth']
 
 
-class Auth(base.BaseIdentityPlugin):
+@six.add_metaclass(abc.ABCMeta)
+class BaseAuth(base.BaseIdentityPlugin):
     """Identity V3 Authentication Plugin.
 
     :param string auth_url: Identity service endpoint for authentication.
@@ -46,7 +47,7 @@ class Auth(base.BaseIdentityPlugin):
     """
 
     @utils.positional()
-    def __init__(self, auth_url, auth_methods,
+    def __init__(self, auth_url,
                  trust_id=None,
                  domain_id=None,
                  domain_name=None,
@@ -56,10 +57,8 @@ class Auth(base.BaseIdentityPlugin):
                  project_domain_name=None,
                  reauthenticate=True,
                  include_catalog=True):
-        super(Auth, self).__init__(auth_url=auth_url,
-                                   reauthenticate=reauthenticate)
-
-        self.auth_methods = auth_methods
+        super(BaseAuth, self).__init__(auth_url=auth_url,
+                                       reauthenticate=reauthenticate)
         self.trust_id = trust_id
         self.domain_id = domain_id
         self.domain_name = domain_name
@@ -73,6 +72,51 @@ class Auth(base.BaseIdentityPlugin):
     def token_url(self):
         """The full URL where we will send authentication data."""
         return '%s/auth/tokens' % self.auth_url.rstrip('/')
+
+    @abc.abstractmethod
+    def get_auth_ref(self, session, **kwargs):
+        return None
+
+    @classmethod
+    def get_options(cls):
+        options = super(BaseAuth, cls).get_options()
+
+        options.extend([
+            cfg.StrOpt('domain-id', help='Domain ID to scope to'),
+            cfg.StrOpt('domain-name', help='Domain name to scope to'),
+            cfg.StrOpt('project-id', help='Project ID to scope to'),
+            cfg.StrOpt('project-name', help='Project name to scope to'),
+            cfg.StrOpt('project-domain-id',
+                       help='Domain ID containing project'),
+            cfg.StrOpt('project-domain-name',
+                       help='Domain name containing project'),
+            cfg.StrOpt('trust-id', help='Trust ID'),
+        ])
+
+        return options
+
+
+class Auth(BaseAuth):
+    """Identity V3 Authentication Plugin.
+
+    :param string auth_url: Identity service endpoint for authentication.
+    :param list auth_methods: A collection of methods to authenticate with.
+    :param string trust_id: Trust ID for trust scoping.
+    :param string domain_id: Domain ID for domain scoping.
+    :param string domain_name: Domain name for domain scoping.
+    :param string project_id: Project ID for project scoping.
+    :param string project_name: Project name for project scoping.
+    :param string project_domain_id: Project's domain ID for project.
+    :param string project_domain_name: Project's domain name for project.
+    :param bool reauthenticate: Allow fetching a new token if the current one
+                                is going to expire. (optional) default True
+    :param bool include_catalog: Include the service catalog in the returned
+                                 token. (optional) default True.
+    """
+
+    def __init__(self, auth_url, auth_methods, **kwargs):
+        super(Auth, self).__init__(auth_url=auth_url, **kwargs)
+        self.auth_methods = auth_methods
 
     def get_auth_ref(self, session, **kwargs):
         headers = {'Accept': 'application/json'}
@@ -135,24 +179,6 @@ class Auth(base.BaseIdentityPlugin):
 
         return access.AccessInfoV3(resp.headers['X-Subject-Token'],
                                    **resp_data)
-
-    @classmethod
-    def get_options(cls):
-        options = super(Auth, cls).get_options()
-
-        options.extend([
-            cfg.StrOpt('domain-id', help='Domain ID to scope to'),
-            cfg.StrOpt('domain-name', help='Domain name to scope to'),
-            cfg.StrOpt('project-id', help='Project ID to scope to'),
-            cfg.StrOpt('project-name', help='Project name to scope to'),
-            cfg.StrOpt('project-domain-id',
-                       help='Domain ID containing project'),
-            cfg.StrOpt('project-domain-name',
-                       help='Domain name containing project'),
-            cfg.StrOpt('trust-id', help='Trust ID'),
-        ])
-
-        return options
 
 
 @six.add_metaclass(abc.ABCMeta)
