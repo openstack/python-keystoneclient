@@ -18,6 +18,15 @@ Contents:
    using-api-v2
    api/modules
 
+Related Identity Projects
+=========================
+
+In addition to creating the Python client library, the Keystone team also
+provides `Identity Service`_, as well as `WSGI Middleware`_.
+
+.. _`Identity Service`: http://docs.openstack.org/developer/keystone/
+.. _`WSGI Middleware`: http://docs.openstack.org/developer/keystonemiddleware/
+
 Contributing
 ============
 
