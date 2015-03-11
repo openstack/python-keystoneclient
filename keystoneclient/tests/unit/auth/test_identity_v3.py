@@ -15,6 +15,7 @@ import uuid
 
 from keystoneclient import access
 from keystoneclient.auth.identity import v3
+from keystoneclient.auth.identity.v3 import base as v3_base
 from keystoneclient import client
 from keystoneclient import exceptions
 from keystoneclient import fixture
@@ -488,3 +489,8 @@ class V3IdentityPlugin(utils.TestCase):
         self.assertEqual(auth_url, a.token_url)
         self.assertEqual(auth_url + '?nocatalog',
                          self.requests.last_request.url)
+
+    def test_symbols(self):
+        self.assertIs(v3.AuthMethod, v3_base.AuthMethod)
+        self.assertIs(v3.AuthConstructor, v3_base.AuthConstructor)
+        self.assertIs(v3.Auth, v3_base.Auth)

@@ -15,6 +15,7 @@ import uuid
 from keystoneclient.auth.identity.generic import password
 from keystoneclient.auth.identity import v2
 from keystoneclient.auth.identity import v3
+from keystoneclient.auth.identity.v3 import password as v3_password
 from keystoneclient.tests.unit.auth import utils
 
 
@@ -61,3 +62,7 @@ class PasswordTests(utils.GenericPluginTestCase):
 
         self.assertEqual(set(allowed_opts), set(opts))
         self.assertEqual(len(allowed_opts), len(opts))
+
+    def test_symbols(self):
+        self.assertIs(v3.Password, v3_password.Password)
+        self.assertIs(v3.PasswordMethod, v3_password.PasswordMethod)

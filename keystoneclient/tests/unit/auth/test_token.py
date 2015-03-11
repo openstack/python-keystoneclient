@@ -15,6 +15,7 @@ import uuid
 from keystoneclient.auth.identity.generic import token
 from keystoneclient.auth.identity import v2
 from keystoneclient.auth.identity import v3
+from keystoneclient.auth.identity.v3 import token as v3_token
 from keystoneclient.tests.unit.auth import utils
 
 
@@ -45,3 +46,7 @@ class TokenTests(utils.GenericPluginTestCase):
 
         self.assertEqual(set(allowed_opts), set(opts))
         self.assertEqual(len(allowed_opts), len(opts))
+
+    def test_symbols(self):
+        self.assertIs(v3.Token, v3_token.Token)
+        self.assertIs(v3.TokenMethod, v3_token.TokenMethod)
