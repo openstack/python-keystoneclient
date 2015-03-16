@@ -71,14 +71,9 @@ class IdentityProviderTests(utils.TestCase, utils.CrudTests):
             self.assertRaises(TypeError, getattr(self.manager, f_name),
                               *args)
 
-    def test_create(self, ref=None, req_ref=None):
-        ref = ref or self.new_ref()
-
-        # req_ref argument allows you to specify a different
-        # signature for the request when the manager does some
-        # conversion before doing the request (e.g. converting
-        # from datetime object to timestamp string)
-        req_ref = (req_ref or ref).copy()
+    def test_create(self):
+        ref = self.new_ref()
+        req_ref = ref.copy()
         req_ref.pop('id')
 
         self.stub_entity('PUT', entity=ref, id=ref['id'], status_code=201)
@@ -108,16 +103,11 @@ class MappingTests(utils.TestCase, utils.CrudTests):
                                     uuid.uuid4().hex])
         return kwargs
 
-    def test_create(self, ref=None, req_ref=None):
-        ref = ref or self.new_ref()
+    def test_create(self):
+        ref = self.new_ref()
         manager_ref = ref.copy()
         mapping_id = manager_ref.pop('id')
-
-        # req_ref argument allows you to specify a different
-        # signature for the request when the manager does some
-        # conversion before doing the request (e.g. converting
-        # from datetime object to timestamp string)
-        req_ref = (req_ref or ref).copy()
+        req_ref = ref.copy()
 
         self.stub_entity('PUT', entity=req_ref, id=mapping_id,
                          status_code=201)
