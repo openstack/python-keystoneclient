@@ -250,14 +250,14 @@ class CrudTests(object):
         ref_list = ref_list or [self.new_ref(), self.new_ref()]
         expected_path = self._get_expected_path(expected_path)
 
-        self.requests.get(urlparse.urljoin(self.TEST_URL, expected_path),
-                          json=self.encode(ref_list))
+        self.requests_mock.get(urlparse.urljoin(self.TEST_URL, expected_path),
+                               json=self.encode(ref_list))
 
         returned_list = self.manager.list(**filter_kwargs)
         self.assertEqual(len(ref_list), len(returned_list))
         [self.assertIsInstance(r, self.model) for r in returned_list]
 
-        qs_args = self.requests.last_request.qs
+        qs_args = self.requests_mock.last_request.qs
         qs_args_expected = expected_query or filter_kwargs
         for key, value in six.iteritems(qs_args_expected):
             self.assertIn(key, qs_args)
@@ -276,8 +276,8 @@ class CrudTests(object):
         filter_kwargs = {uuid.uuid4().hex: uuid.uuid4().hex}
         expected_path = self._get_expected_path()
 
-        self.requests.get(urlparse.urljoin(self.TEST_URL, expected_path),
-                          json=self.encode(ref_list))
+        self.requests_mock.get(urlparse.urljoin(self.TEST_URL, expected_path),
+                               json=self.encode(ref_list))
 
         self.manager.list(**filter_kwargs)
         self.assertQueryStringContains(**filter_kwargs)

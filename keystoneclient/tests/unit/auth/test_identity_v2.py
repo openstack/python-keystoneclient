@@ -200,7 +200,8 @@ class V2IdentityPlugin(utils.TestCase):
         resp = s.get('/path', endpoint_filter=endpoint_filter)
 
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(self.requests.last_request.url, base_url + '/path')
+        self.assertEqual(self.requests_mock.last_request.url,
+                         base_url + '/path')
 
     def test_service_url(self):
         endpoint_filter = {'service_type': 'compute',

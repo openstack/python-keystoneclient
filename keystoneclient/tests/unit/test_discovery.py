@@ -242,7 +242,7 @@ class AvailableVersionsTests(utils.TestCase):
         for path, text in six.iteritems(examples):
             url = "%s%s" % (BASE_URL, path)
 
-            self.requests.get(url, status_code=300, text=text)
+            self.requests_mock.get(url, status_code=300, text=text)
             versions = discover.available_versions(url)
 
             for v in versions:
@@ -252,7 +252,7 @@ class AvailableVersionsTests(utils.TestCase):
                                                          matchers.Contains(n)))
 
     def test_available_versions_individual(self):
-        self.requests.get(V3_URL, status_code=200, text=V3_VERSION_ENTRY)
+        self.requests_mock.get(V3_URL, status_code=200, text=V3_VERSION_ENTRY)
 
         versions = discover.available_versions(V3_URL)
 
@@ -263,7 +263,7 @@ class AvailableVersionsTests(utils.TestCase):
             self.assertIn('links', v)
 
     def test_available_keystone_data(self):
-        self.requests.get(BASE_URL, status_code=300, text=V3_VERSION_LIST)
+        self.requests_mock.get(BASE_URL, status_code=300, text=V3_VERSION_LIST)
 
         versions = discover.available_versions(BASE_URL)
         self.assertEqual(2, len(versions))
@@ -278,7 +278,7 @@ class AvailableVersionsTests(utils.TestCase):
 
     def test_available_cinder_data(self):
         text = jsonutils.dumps(CINDER_EXAMPLES)
-        self.requests.get(BASE_URL, status_code=300, text=text)
+        self.requests_mock.get(BASE_URL, status_code=300, text=text)
 
         versions = discover.available_versions(BASE_URL)
         self.assertEqual(2, len(versions))
@@ -294,7 +294,7 @@ class AvailableVersionsTests(utils.TestCase):
 
     def test_available_glance_data(self):
         text = jsonutils.dumps(GLANCE_EXAMPLES)
-        self.requests.get(BASE_URL, status_code=200, text=text)
+        self.requests_mock.get(BASE_URL, status_code=200, text=text)
 
         versions = discover.available_versions(BASE_URL)
         self.assertEqual(5, len(versions))
@@ -311,9 +311,9 @@ class AvailableVersionsTests(utils.TestCase):
 class ClientDiscoveryTests(utils.TestCase):
 
     def assertCreatesV3(self, **kwargs):
-        self.requests.post('%s/auth/tokens' % V3_URL,
-                           text=V3_AUTH_RESPONSE,
-                           headers={'X-Subject-Token': V3_TOKEN})
+        self.requests_mock.post('%s/auth/tokens' % V3_URL,
+                                text=V3_AUTH_RESPONSE,
+                                headers={'X-Subject-Token': V3_TOKEN})
 
         kwargs.setdefault('username', 'foo')
         kwargs.setdefault('password', 'bar')
@@ -322,7 +322,7 @@ class ClientDiscoveryTests(utils.TestCase):
         return keystone
 
     def assertCreatesV2(self, **kwargs):
-        self.requests.post("%s/tokens" % V2_URL, text=V2_AUTH_RESPONSE)
+        self.requests_mock.post("%s/tokens" % V2_URL, text=V2_AUTH_RESPONSE)
 
         kwargs.setdefault('username', 'foo')
         kwargs.setdefault('password', 'bar')
@@ -345,78 +345,78 @@ class ClientDiscoveryTests(utils.TestCase):
                           client.Client, **kwargs)
 
     def test_discover_v3(self):
-        self.requests.get(BASE_URL, status_code=300, text=V3_VERSION_LIST)
+        self.requests_mock.get(BASE_URL, status_code=300, text=V3_VERSION_LIST)
 
         self.assertCreatesV3(auth_url=BASE_URL)
 
     def test_discover_v2(self):
-        self.requests.get(BASE_URL, status_code=300, text=V2_VERSION_LIST)
-        self.requests.post("%s/tokens" % V2_URL, text=V2_AUTH_RESPONSE)
+        self.requests_mock.get(BASE_URL, status_code=300, text=V2_VERSION_LIST)
+        self.requests_mock.post("%s/tokens" % V2_URL, text=V2_AUTH_RESPONSE)
 
         self.assertCreatesV2(auth_url=BASE_URL)
 
     def test_discover_endpoint_v2(self):
-        self.requests.get(BASE_URL, status_code=300, text=V2_VERSION_LIST)
+        self.requests_mock.get(BASE_URL, status_code=300, text=V2_VERSION_LIST)
         self.assertCreatesV2(endpoint=BASE_URL, token='fake-token')
 
     def test_discover_endpoint_v3(self):
-        self.requests.get(BASE_URL, status_code=300, text=V3_VERSION_LIST)
+        self.requests_mock.get(BASE_URL, status_code=300, text=V3_VERSION_LIST)
         self.assertCreatesV3(endpoint=BASE_URL, token='fake-token')
 
     def test_discover_invalid_major_version(self):
-        self.requests.get(BASE_URL, status_code=300, text=V3_VERSION_LIST)
+        self.requests_mock.get(BASE_URL, status_code=300, text=V3_VERSION_LIST)
 
         self.assertVersionNotAvailable(auth_url=BASE_URL, version=5)
 
     def test_discover_200_response_fails(self):
-        self.requests.get(BASE_URL, text='ok')
+        self.requests_mock.get(BASE_URL, text='ok')
         self.assertDiscoveryFailure(auth_url=BASE_URL)
 
     def test_discover_minor_greater_than_available_fails(self):
-        self.requests.get(BASE_URL, status_code=300, text=V3_VERSION_LIST)
+        self.requests_mock.get(BASE_URL, status_code=300, text=V3_VERSION_LIST)
 
         self.assertVersionNotAvailable(endpoint=BASE_URL, version=3.4)
 
     def test_discover_individual_version_v2(self):
-        self.requests.get(V2_URL, text=V2_VERSION_ENTRY)
+        self.requests_mock.get(V2_URL, text=V2_VERSION_ENTRY)
 
         self.assertCreatesV2(auth_url=V2_URL)
 
     def test_discover_individual_version_v3(self):
-        self.requests.get(V3_URL, text=V3_VERSION_ENTRY)
+        self.requests_mock.get(V3_URL, text=V3_VERSION_ENTRY)
 
         self.assertCreatesV3(auth_url=V3_URL)
 
     def test_discover_individual_endpoint_v2(self):
-        self.requests.get(V2_URL, text=V2_VERSION_ENTRY)
+        self.requests_mock.get(V2_URL, text=V2_VERSION_ENTRY)
         self.assertCreatesV2(endpoint=V2_URL, token='fake-token')
 
     def test_discover_individual_endpoint_v3(self):
-        self.requests.get(V3_URL, text=V3_VERSION_ENTRY)
+        self.requests_mock.get(V3_URL, text=V3_VERSION_ENTRY)
         self.assertCreatesV3(endpoint=V3_URL, token='fake-token')
 
     def test_discover_fail_to_create_bad_individual_version(self):
-        self.requests.get(V2_URL, text=V2_VERSION_ENTRY)
-        self.requests.get(V3_URL, text=V3_VERSION_ENTRY)
+        self.requests_mock.get(V2_URL, text=V2_VERSION_ENTRY)
+        self.requests_mock.get(V3_URL, text=V3_VERSION_ENTRY)
 
         self.assertVersionNotAvailable(auth_url=V2_URL, version=3)
         self.assertVersionNotAvailable(auth_url=V3_URL, version=2)
 
     def test_discover_unstable_versions(self):
         version_list = fixture.DiscoveryList(BASE_URL, v3_status='beta')
-        self.requests.get(BASE_URL, status_code=300, json=version_list)
+        self.requests_mock.get(BASE_URL, status_code=300, json=version_list)
 
         self.assertCreatesV2(auth_url=BASE_URL)
         self.assertVersionNotAvailable(auth_url=BASE_URL, version=3)
         self.assertCreatesV3(auth_url=BASE_URL, unstable=True)
 
     def test_discover_forwards_original_ip(self):
-        self.requests.get(BASE_URL, status_code=300, text=V3_VERSION_LIST)
+        self.requests_mock.get(BASE_URL, status_code=300, text=V3_VERSION_LIST)
 
         ip = '192.168.1.1'
         self.assertCreatesV3(auth_url=BASE_URL, original_ip=ip)
 
-        self.assertThat(self.requests.last_request.headers['forwarded'],
+        self.assertThat(self.requests_mock.last_request.headers['forwarded'],
                         matchers.Contains(ip))
 
     def test_discover_bad_args(self):
@@ -424,7 +424,7 @@ class ClientDiscoveryTests(utils.TestCase):
                           client.Client)
 
     def test_discover_bad_response(self):
-        self.requests.get(BASE_URL, status_code=300, json={'FOO': 'BAR'})
+        self.requests_mock.get(BASE_URL, status_code=300, json={'FOO': 'BAR'})
         self.assertDiscoveryFailure(auth_url=BASE_URL)
 
     def test_discovery_ignore_invalid(self):
@@ -433,40 +433,40 @@ class ClientDiscoveryTests(utils.TestCase):
                  'media-types': V3_MEDIA_TYPES,
                  'status': 'stable',
                  'updated': UPDATED}]
-        self.requests.get(BASE_URL, status_code=300,
-                          text=_create_version_list(resp))
+        self.requests_mock.get(BASE_URL, status_code=300,
+                               text=_create_version_list(resp))
         self.assertDiscoveryFailure(auth_url=BASE_URL)
 
     def test_ignore_entry_without_links(self):
         v3 = V3_VERSION.copy()
         v3['links'] = []
-        self.requests.get(BASE_URL, status_code=300,
-                          text=_create_version_list([v3, V2_VERSION]))
+        self.requests_mock.get(BASE_URL, status_code=300,
+                               text=_create_version_list([v3, V2_VERSION]))
         self.assertCreatesV2(auth_url=BASE_URL)
 
     def test_ignore_entry_without_status(self):
         v3 = V3_VERSION.copy()
         del v3['status']
-        self.requests.get(BASE_URL, status_code=300,
-                          text=_create_version_list([v3, V2_VERSION]))
+        self.requests_mock.get(BASE_URL, status_code=300,
+                               text=_create_version_list([v3, V2_VERSION]))
         self.assertCreatesV2(auth_url=BASE_URL)
 
     def test_greater_version_than_required(self):
         versions = fixture.DiscoveryList(BASE_URL, v3_id='v3.6')
-        self.requests.get(BASE_URL, json=versions)
+        self.requests_mock.get(BASE_URL, json=versions)
         self.assertCreatesV3(auth_url=BASE_URL, version=(3, 4))
 
     def test_lesser_version_than_required(self):
         versions = fixture.DiscoveryList(BASE_URL, v3_id='v3.4')
-        self.requests.get(BASE_URL, json=versions)
+        self.requests_mock.get(BASE_URL, json=versions)
         self.assertVersionNotAvailable(auth_url=BASE_URL, version=(3, 6))
 
     def test_bad_response(self):
-        self.requests.get(BASE_URL, status_code=300, text="Ugly Duckling")
+        self.requests_mock.get(BASE_URL, status_code=300, text="Ugly Duckling")
         self.assertDiscoveryFailure(auth_url=BASE_URL)
 
     def test_pass_client_arguments(self):
-        self.requests.get(BASE_URL, status_code=300, text=V2_VERSION_LIST)
+        self.requests_mock.get(BASE_URL, status_code=300, text=V2_VERSION_LIST)
         kwargs = {'original_ip': '100', 'use_keyring': False,
                   'stale_duration': 15}
 
@@ -477,11 +477,11 @@ class ClientDiscoveryTests(utils.TestCase):
         self.assertFalse(cl.use_keyring)
 
     def test_overriding_stored_kwargs(self):
-        self.requests.get(BASE_URL, status_code=300, text=V3_VERSION_LIST)
+        self.requests_mock.get(BASE_URL, status_code=300, text=V3_VERSION_LIST)
 
-        self.requests.post("%s/auth/tokens" % V3_URL,
-                           text=V3_AUTH_RESPONSE,
-                           headers={'X-Subject-Token': V3_TOKEN})
+        self.requests_mock.post("%s/auth/tokens" % V3_URL,
+                                text=V3_AUTH_RESPONSE,
+                                headers={'X-Subject-Token': V3_TOKEN})
 
         disc = discover.Discover(auth_url=BASE_URL, debug=False,
                                  username='foo')
@@ -494,7 +494,9 @@ class ClientDiscoveryTests(utils.TestCase):
         self.assertEqual(client.password, 'bar')
 
     def test_available_versions(self):
-        self.requests.get(BASE_URL, status_code=300, text=V3_VERSION_ENTRY)
+        self.requests_mock.get(BASE_URL,
+                               status_code=300,
+                               text=V3_VERSION_ENTRY)
         disc = discover.Discover(auth_url=BASE_URL)
 
         versions = disc.available_versions()
@@ -509,7 +511,7 @@ class ClientDiscoveryTests(utils.TestCase):
                       'updated': UPDATED}
         versions = fixture.DiscoveryList()
         versions.add_version(V4_VERSION)
-        self.requests.get(BASE_URL, status_code=300, json=versions)
+        self.requests_mock.get(BASE_URL, status_code=300, json=versions)
 
         disc = discover.Discover(auth_url=BASE_URL)
         self.assertRaises(exceptions.DiscoveryFailure,
@@ -517,14 +519,14 @@ class ClientDiscoveryTests(utils.TestCase):
 
     def test_discovery_fail_for_missing_v3(self):
         versions = fixture.DiscoveryList(v2=True, v3=False)
-        self.requests.get(BASE_URL, status_code=300, json=versions)
+        self.requests_mock.get(BASE_URL, status_code=300, json=versions)
 
         disc = discover.Discover(auth_url=BASE_URL)
         self.assertRaises(exceptions.DiscoveryFailure,
                           disc.create_client, version=(3, 0))
 
     def _do_discovery_call(self, token=None, **kwargs):
-        self.requests.get(BASE_URL, status_code=300, text=V3_VERSION_LIST)
+        self.requests_mock.get(BASE_URL, status_code=300, text=V3_VERSION_LIST)
 
         if not token:
             token = uuid.uuid4().hex
@@ -536,7 +538,7 @@ class ClientDiscoveryTests(utils.TestCase):
         # will default to true as there is a plugin on the session
         discover.Discover(s, auth_url=BASE_URL, **kwargs)
 
-        self.assertEqual(BASE_URL, self.requests.last_request.url)
+        self.assertEqual(BASE_URL, self.requests_mock.last_request.url)
 
     def test_setting_authenticated_true(self):
         token = uuid.uuid4().hex
@@ -545,13 +547,14 @@ class ClientDiscoveryTests(utils.TestCase):
 
     def test_setting_authenticated_false(self):
         self._do_discovery_call(authenticated=False)
-        self.assertNotIn('X-Auth-Token', self.requests.last_request.headers)
+        self.assertNotIn('X-Auth-Token',
+                         self.requests_mock.last_request.headers)
 
 
 class DiscoverQueryTests(utils.TestCase):
 
     def test_available_keystone_data(self):
-        self.requests.get(BASE_URL, status_code=300, text=V3_VERSION_LIST)
+        self.requests_mock.get(BASE_URL, status_code=300, text=V3_VERSION_LIST)
 
         disc = discover.Discover(auth_url=BASE_URL)
         versions = disc.version_data()
@@ -579,7 +582,7 @@ class DiscoverQueryTests(utils.TestCase):
 
     def test_available_cinder_data(self):
         text = jsonutils.dumps(CINDER_EXAMPLES)
-        self.requests.get(BASE_URL, status_code=300, text=text)
+        self.requests_mock.get(BASE_URL, status_code=300, text=text)
 
         v1_url = "%sv1/" % BASE_URL
         v2_url = "%sv2/" % BASE_URL
@@ -610,7 +613,7 @@ class DiscoverQueryTests(utils.TestCase):
 
     def test_available_glance_data(self):
         text = jsonutils.dumps(GLANCE_EXAMPLES)
-        self.requests.get(BASE_URL, text=text)
+        self.requests_mock.get(BASE_URL, text=text)
 
         v1_url = "%sv1/" % BASE_URL
         v2_url = "%sv2/" % BASE_URL
@@ -659,7 +662,7 @@ class DiscoverQueryTests(utils.TestCase):
                          'status': status,
                          'updated': UPDATED}]
         text = jsonutils.dumps({'versions': version_list})
-        self.requests.get(BASE_URL, text=text)
+        self.requests_mock.get(BASE_URL, text=text)
 
         disc = discover.Discover(auth_url=BASE_URL)
 
@@ -681,7 +684,7 @@ class DiscoverQueryTests(utils.TestCase):
                          'status': status,
                          'updated': UPDATED}]
         text = jsonutils.dumps({'versions': version_list})
-        self.requests.get(BASE_URL, text=text)
+        self.requests_mock.get(BASE_URL, text=text)
 
         disc = discover.Discover(auth_url=BASE_URL)
 
@@ -698,7 +701,7 @@ class DiscoverQueryTests(utils.TestCase):
         status = 'abcdef'
         version_list = fixture.DiscoveryList(BASE_URL, v2=False,
                                              v3_status=status)
-        self.requests.get(BASE_URL, json=version_list)
+        self.requests_mock.get(BASE_URL, json=version_list)
         disc = discover.Discover(auth_url=BASE_URL)
 
         versions = disc.version_data()
@@ -727,7 +730,7 @@ class DiscoverQueryTests(utils.TestCase):
                          }]
 
         text = jsonutils.dumps({'versions': version_list})
-        self.requests.get(BASE_URL, text=text)
+        self.requests_mock.get(BASE_URL, text=text)
 
         disc = discover.Discover(auth_url=BASE_URL)
 

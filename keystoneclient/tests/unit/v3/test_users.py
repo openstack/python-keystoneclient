@@ -241,7 +241,7 @@ class UserTests(utils.TestCase, utils.CrudTests):
         }
 
         self.assertEqual(self.TEST_URL + '/users/test/password',
-                         self.requests.last_request.url)
+                         self.requests_mock.last_request.url)
         self.assertRequestBodyIs(json=exp_req_body)
         self.assertNotIn(old_password, self.logger.output)
         self.assertNotIn(new_password, self.logger.output)

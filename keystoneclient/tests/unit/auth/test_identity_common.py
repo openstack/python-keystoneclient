@@ -113,7 +113,7 @@ class CommonIdentityTests(object):
         # register responses such that if the discovery URL is hit more than
         # once then the response will be invalid and not point to COMPUTE_ADMIN
         resps = [{'json': self.TEST_DISCOVERY}, {'status_code': 500}]
-        self.requests.get(self.TEST_COMPUTE_ADMIN, resps)
+        self.requests_mock.get(self.TEST_COMPUTE_ADMIN, resps)
 
         body = 'SUCCESS'
         self.stub_url('GET', ['path'], text=body)
@@ -138,7 +138,7 @@ class CommonIdentityTests(object):
         # register responses such that if the discovery URL is hit more than
         # once then the response will be invalid and not point to COMPUTE_ADMIN
         resps = [{'json': self.TEST_DISCOVERY}, {'status_code': 500}]
-        self.requests.get(self.TEST_COMPUTE_ADMIN, resps)
+        self.requests_mock.get(self.TEST_COMPUTE_ADMIN, resps)
 
         body = 'SUCCESS'
         self.stub_url('GET', ['path'], text=body)
@@ -419,4 +419,5 @@ class GenericAuthPluginTests(utils.TestCase):
         self.assertIsNone(self.session.get_token())
         self.assertEqual(self.auth.headers,
                          self.session.get_auth_headers())
-        self.assertNotIn('X-Auth-Token', self.requests.last_request.headers)
+        self.assertNotIn('X-Auth-Token',
+                         self.requests_mock.last_request.headers)

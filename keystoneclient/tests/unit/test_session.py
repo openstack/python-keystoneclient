@@ -38,7 +38,7 @@ class SessionTests(utils.TestCase):
         self.stub_url('GET', text='response')
         resp = session.get(self.TEST_URL)
 
-        self.assertEqual('GET', self.requests.last_request.method)
+        self.assertEqual('GET', self.requests_mock.last_request.method)
         self.assertEqual(resp.text, 'response')
         self.assertTrue(resp.ok)
 
@@ -47,7 +47,7 @@ class SessionTests(utils.TestCase):
         self.stub_url('POST', text='response')
         resp = session.post(self.TEST_URL, json={'hello': 'world'})
 
-        self.assertEqual('POST', self.requests.last_request.method)
+        self.assertEqual('POST', self.requests_mock.last_request.method)
         self.assertEqual(resp.text, 'response')
         self.assertTrue(resp.ok)
         self.assertRequestBodyIs(json={'hello': 'world'})
@@ -57,7 +57,7 @@ class SessionTests(utils.TestCase):
         self.stub_url('HEAD')
         resp = session.head(self.TEST_URL)
 
-        self.assertEqual('HEAD', self.requests.last_request.method)
+        self.assertEqual('HEAD', self.requests_mock.last_request.method)
         self.assertTrue(resp.ok)
         self.assertRequestBodyIs('')
 
@@ -66,7 +66,7 @@ class SessionTests(utils.TestCase):
         self.stub_url('PUT', text='response')
         resp = session.put(self.TEST_URL, json={'hello': 'world'})
 
-        self.assertEqual('PUT', self.requests.last_request.method)
+        self.assertEqual('PUT', self.requests_mock.last_request.method)
         self.assertEqual(resp.text, 'response')
         self.assertTrue(resp.ok)
         self.assertRequestBodyIs(json={'hello': 'world'})
@@ -76,7 +76,7 @@ class SessionTests(utils.TestCase):
         self.stub_url('DELETE', text='response')
         resp = session.delete(self.TEST_URL)
 
-        self.assertEqual('DELETE', self.requests.last_request.method)
+        self.assertEqual('DELETE', self.requests_mock.last_request.method)
         self.assertTrue(resp.ok)
         self.assertEqual(resp.text, 'response')
 
@@ -85,7 +85,7 @@ class SessionTests(utils.TestCase):
         self.stub_url('PATCH', text='response')
         resp = session.patch(self.TEST_URL, json={'hello': 'world'})
 
-        self.assertEqual('PATCH', self.requests.last_request.method)
+        self.assertEqual('PATCH', self.requests_mock.last_request.method)
         self.assertTrue(resp.ok)
         self.assertEqual(resp.text, 'response')
         self.assertRequestBodyIs(json={'hello': 'world'})
@@ -202,7 +202,7 @@ class SessionTests(utils.TestCase):
             m.assert_called_with(2.0)
 
         # we count retries so there will be one initial request + 3 retries
-        self.assertThat(self.requests.request_history,
+        self.assertThat(self.requests_mock.request_history,
                         matchers.HasLength(retries + 1))
 
     def test_uses_tcp_keepalive_by_default(self):
@@ -234,14 +234,14 @@ class RedirectTests(utils.TestCase):
         redirect_kwargs.setdefault('text', self.DEFAULT_REDIRECT_BODY)
 
         for s, d in zip(self.REDIRECT_CHAIN, self.REDIRECT_CHAIN[1:]):
-            self.requests.register_uri(method, s, status_code=status_code,
-                                       headers={'Location': d},
-                                       **redirect_kwargs)
+            self.requests_mock.register_uri(method, s, status_code=status_code,
+                                            headers={'Location': d},
+                                            **redirect_kwargs)
 
         final_kwargs.setdefault('status_code', 200)
         final_kwargs.setdefault('text', self.DEFAULT_RESP_BODY)
-        self.requests.register_uri(method, self.REDIRECT_CHAIN[-1],
-                                   **final_kwargs)
+        self.requests_mock.register_uri(method, self.REDIRECT_CHAIN[-1],
+                                        **final_kwargs)
 
     def assertResponse(self, resp):
         self.assertEqual(resp.status_code, 200)
@@ -405,7 +405,7 @@ class SessionAuthTests(utils.TestCase):
         base_url = AuthPlugin.SERVICE_URLS[service_type][interface]
         uri = "%s/%s" % (base_url.rstrip('/'), path.lstrip('/'))
 
-        self.requests.register_uri(method, uri, **kwargs)
+        self.requests_mock.register_uri(method, uri, **kwargs)
 
     def test_auth_plugin_default_with_plugin(self):
         self.stub_url('GET', base_url=self.TEST_URL, json=self.TEST_JSON)
@@ -446,7 +446,7 @@ class SessionAuthTests(utils.TestCase):
                         endpoint_filter={'service_type': service_type,
                                          'interface': interface})
 
-        self.assertEqual(self.requests.last_request.url,
+        self.assertEqual(self.requests_mock.last_request.url,
                          AuthPlugin.SERVICE_URLS['compute']['public'] + path)
         self.assertEqual(resp.text, body)
         self.assertEqual(resp.status_code, status)
@@ -468,7 +468,7 @@ class SessionAuthTests(utils.TestCase):
     def test_raises_exc_only_when_asked(self):
         # A request that returns a HTTP error should by default raise an
         # exception by default, if you specify raise_exc=False then it will not
-        self.requests.get(self.TEST_URL, status_code=401)
+        self.requests_mock.get(self.TEST_URL, status_code=401)
 
         sess = client_session.Session()
         self.assertRaises(exceptions.Unauthorized, sess.get, self.TEST_URL)
@@ -480,8 +480,8 @@ class SessionAuthTests(utils.TestCase):
         passed = CalledAuthPlugin()
         sess = client_session.Session()
 
-        self.requests.get(CalledAuthPlugin.ENDPOINT + 'path',
-                          status_code=200)
+        self.requests_mock.get(CalledAuthPlugin.ENDPOINT + 'path',
+                               status_code=200)
         endpoint_filter = {'service_type': 'identity'}
 
         # no plugin with authenticated won't work
@@ -504,8 +504,8 @@ class SessionAuthTests(utils.TestCase):
 
         sess = client_session.Session(fixed)
 
-        self.requests.get(CalledAuthPlugin.ENDPOINT + 'path',
-                          status_code=200)
+        self.requests_mock.get(CalledAuthPlugin.ENDPOINT + 'path',
+                               status_code=200)
 
         resp = sess.get('path', auth=passed,
                         endpoint_filter={'service_type': 'identity'})
@@ -537,9 +537,9 @@ class SessionAuthTests(utils.TestCase):
         auth = CalledAuthPlugin(invalidate=True)
         sess = client_session.Session(auth=auth)
 
-        self.requests.get(self.TEST_URL,
-                          [{'text': 'Failed', 'status_code': 401},
-                           {'text': 'Hello', 'status_code': 200}])
+        self.requests_mock.get(self.TEST_URL,
+                               [{'text': 'Failed', 'status_code': 401},
+                                {'text': 'Hello', 'status_code': 200}])
 
         # allow_reauth=True is the default
         resp = sess.get(self.TEST_URL, authenticated=True)
@@ -552,9 +552,9 @@ class SessionAuthTests(utils.TestCase):
         auth = CalledAuthPlugin(invalidate=True)
         sess = client_session.Session(auth=auth)
 
-        self.requests.get(self.TEST_URL,
-                          [{'text': 'Failed', 'status_code': 401},
-                           {'text': 'Hello', 'status_code': 200}])
+        self.requests_mock.get(self.TEST_URL,
+                               [{'text': 'Failed', 'status_code': 401},
+                                {'text': 'Hello', 'status_code': 200}])
 
         self.assertRaises(exceptions.Unauthorized, sess.get, self.TEST_URL,
                           authenticated=True, allow_reauth=False)
@@ -569,14 +569,14 @@ class SessionAuthTests(utils.TestCase):
         override_url = override_base + path
         resp_text = uuid.uuid4().hex
 
-        self.requests.get(override_url, text=resp_text)
+        self.requests_mock.get(override_url, text=resp_text)
 
         resp = sess.get(path,
                         endpoint_override=override_base,
                         endpoint_filter={'service_type': 'identity'})
 
         self.assertEqual(resp_text, resp.text)
-        self.assertEqual(override_url, self.requests.last_request.url)
+        self.assertEqual(override_url, self.requests_mock.last_request.url)
 
         self.assertTrue(auth.get_token_called)
         self.assertFalse(auth.get_endpoint_called)
@@ -589,14 +589,14 @@ class SessionAuthTests(utils.TestCase):
         url = self.TEST_URL + path
 
         resp_text = uuid.uuid4().hex
-        self.requests.get(url, text=resp_text)
+        self.requests_mock.get(url, text=resp_text)
 
         resp = sess.get(url,
                         endpoint_override='http://someother.url',
                         endpoint_filter={'service_type': 'identity'})
 
         self.assertEqual(resp_text, resp.text)
-        self.assertEqual(url, self.requests.last_request.url)
+        self.assertEqual(url, self.requests_mock.last_request.url)
 
         self.assertTrue(auth.get_token_called)
         self.assertFalse(auth.get_endpoint_called)
@@ -718,12 +718,12 @@ class AdapterTest(utils.TestCase):
         adpt = adapter.Adapter(sess, endpoint_override=endpoint_override)
 
         response = uuid.uuid4().hex
-        self.requests.get(endpoint_url, text=response)
+        self.requests_mock.get(endpoint_url, text=response)
 
         resp = adpt.get(path)
 
         self.assertEqual(response, resp.text)
-        self.assertEqual(endpoint_url, self.requests.last_request.url)
+        self.assertEqual(endpoint_url, self.requests_mock.last_request.url)
 
         self.assertEqual(endpoint_override, adpt.get_endpoint())
 
@@ -760,7 +760,7 @@ class AdapterTest(utils.TestCase):
             self.assertEqual(retries, m.call_count)
 
         # we count retries so there will be one initial request + 2 retries
-        self.assertThat(self.requests.request_history,
+        self.assertThat(self.requests_mock.request_history,
                         matchers.HasLength(retries + 1))
 
     def test_user_and_project_id(self):

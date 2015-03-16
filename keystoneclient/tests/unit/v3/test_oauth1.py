@@ -183,7 +183,7 @@ class RequestTokenTests(TokenTests):
 
         # Assert that the project id is in the header
         self.assertRequestHeaderEqual('requested-project-id', project_id)
-        req_headers = self.requests.last_request.headers
+        req_headers = self.requests_mock.last_request.headers
 
         oauth_client = oauth1.Client(consumer_key,
                                      client_secret=consumer_secret,
@@ -223,7 +223,7 @@ class AccessTokenTests(TokenTests):
         self.assertEqual(access_secret, access_token.secret)
         self.assertEqual(expires_at, access_token.expires)
 
-        req_headers = self.requests.last_request.headers
+        req_headers = self.requests_mock.last_request.headers
         oauth_client = oauth1.Client(consumer_key,
                                      client_secret=consumer_secret,
                                      resource_owner_key=request_key,
@@ -275,7 +275,7 @@ class AuthenticateWithOAuthTests(TokenTests):
         self.assertRequestBodyIs(json=OAUTH_REQUEST_BODY)
 
         # Assert that the headers have the same oauthlib data
-        req_headers = self.requests.last_request.headers
+        req_headers = self.requests_mock.last_request.headers
         oauth_client = oauth1.Client(consumer_key,
                                      client_secret=consumer_secret,
                                      resource_owner_key=access_key,

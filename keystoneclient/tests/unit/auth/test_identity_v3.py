@@ -385,7 +385,8 @@ class V3IdentityPlugin(utils.TestCase):
         resp = s.get('/path', endpoint_filter=endpoint_filter)
 
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(self.requests.last_request.url, base_url + '/path')
+        self.assertEqual(self.requests_mock.last_request.url,
+                         base_url + '/path')
 
     def test_service_url(self):
         endpoint_filter = {'service_type': 'compute',
@@ -448,7 +449,8 @@ class V3IdentityPlugin(utils.TestCase):
                           {'status_code': 200, 'json': self.TEST_RESPONSE_DICT,
                            'headers': {'X-Subject-Token': 'token2'}}]
 
-        self.requests.post('%s/auth/tokens' % self.TEST_URL, auth_responses)
+        self.requests_mock.post('%s/auth/tokens' % self.TEST_URL,
+                                auth_responses)
 
         a = v3.Password(self.TEST_URL, username=self.TEST_USER,
                         password=self.TEST_PASS)
@@ -488,7 +490,7 @@ class V3IdentityPlugin(utils.TestCase):
         auth_url = self.TEST_URL + '/auth/tokens'
         self.assertEqual(auth_url, a.token_url)
         self.assertEqual(auth_url + '?nocatalog',
-                         self.requests.last_request.url)
+                         self.requests_mock.last_request.url)
 
     def test_symbols(self):
         self.assertIs(v3.AuthMethod, v3_base.AuthMethod)
