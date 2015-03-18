@@ -15,6 +15,8 @@
 #    under the License.
 
 from keystoneclient import base
+from keystoneclient import exceptions
+from keystoneclient.i18n import _
 from keystoneclient import utils
 
 
@@ -103,8 +105,23 @@ class ProjectManager(base.CrudManager):
             fallback_to_auth=True,
             **kwargs)
 
+    def _check_not_parents_as_ids_and_parents_as_list(self, parents_as_ids,
+                                                      parents_as_list):
+        if parents_as_ids and parents_as_list:
+            msg = _('Specify either parents_as_ids or parents_as_list '
+                    'parameters, not both')
+            raise exceptions.ValidationError(msg)
+
+    def _check_not_subtree_as_ids_and_subtree_as_list(self, subtree_as_ids,
+                                                      subtree_as_list):
+        if subtree_as_ids and subtree_as_list:
+            msg = _('Specify either subtree_as_ids or subtree_as_list '
+                    'parameters, not both')
+            raise exceptions.ValidationError(msg)
+
     @utils.positional()
-    def get(self, project, subtree_as_list=False, parents_as_list=False):
+    def get(self, project, subtree_as_list=False, parents_as_list=False,
+            subtree_as_ids=False, parents_as_ids=False):
         """Get a project.
 
         :param project: project to be retrieved.
@@ -115,17 +132,37 @@ class ProjectManager(base.CrudManager):
         :param boolean parents_as_list: retrieve projects above this project
                                         in the hierarchy as a flat list.
                                         (optional)
-        """
-        # According to the API spec, the query params are key only
-        query = ''
-        if subtree_as_list:
-            query = '?subtree_as_list'
-        if parents_as_list:
-            query = query + '&parents_as_list' if query else '?parents_as_list'
+        :param boolean subtree_as_ids: retrieve the IDs from the projects below
+                                       this project in the hierarchy as a
+                                       structured dictionary. (optional)
+        :param boolean parents_as_ids: retrieve the IDs from the projects above
+                                       this project in the hierarchy as a
+                                       structured dictionary. (optional)
 
+        :raises keystoneclient.exceptions.ValidationError: if subtree_as_list
+            and subtree_as_ids or parents_as_list and parents_as_ids are
+            included at the same time in the call.
+        """
+        self._check_not_parents_as_ids_and_parents_as_list(
+            parents_as_ids, parents_as_list)
+        self._check_not_subtree_as_ids_and_subtree_as_list(
+            subtree_as_ids, subtree_as_list)
+
+        # According to the API spec, the query params are key only
+        query_params = []
+        if subtree_as_list:
+            query_params.append('subtree_as_list')
+        if subtree_as_ids:
+            query_params.append('subtree_as_ids')
+        if parents_as_list:
+            query_params.append('parents_as_list')
+        if parents_as_ids:
+            query_params.append('parents_as_ids')
+
+        query = self.build_key_only_query(query_params)
         dict_args = {'project_id': base.getid(project)}
-        url = self.build_url(dict_args_in_out=dict_args) + query
-        return self._get(url, self.key)
+        url = self.build_url(dict_args_in_out=dict_args)
+        return self._get(url + query, self.key)
 
     @utils.positional(enforcement=utils.positional.WARN)
     def update(self, project, name=None, domain=None, description=None,

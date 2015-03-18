@@ -21,6 +21,8 @@ Exception definitions.
 
 .. py:exception:: HttpError
 
+.. py:exception:: ValidationError
+
 .. py:exception:: Unauthorized
 
 """

@@ -340,6 +340,15 @@ class CrudManager(Manager):
     def _build_query(self, params):
         return '?%s' % urllib.parse.urlencode(params) if params else ''
 
+    def build_key_only_query(self, params_list):
+        """Builds a query that does not include values, just keys.
+
+        The Identity API has some calls that define queries without values,
+        this can not be accomplished by using urllib.parse.urlencode(). This
+        method builds a query using only the keys.
+        """
+        return '?%s' % '&'.join(params_list) if params_list else ''
+
     @filter_kwargs
     def list(self, fallback_to_auth=False, **kwargs):
         url = self.build_url(dict_args_in_out=kwargs)

@@ -144,6 +144,75 @@ class ProjectTests(utils.TestCase, utils.CrudTests):
 
         return projects
 
+    def test_get_with_subtree_as_ids(self):
+        projects = self._create_projects_hierarchy()
+        ref = projects[0]
+
+        # We will query for projects[0] subtree, it should include projects[1]
+        # and projects[2] structured like the following:
+        # {
+        #   projects[1]: {
+        #       projects[2]: None
+        #   }
+        # }
+        ref['subtree'] = {
+            projects[1]['id']: {
+                projects[2]['id']: None
+            }
+        }
+
+        self.stub_entity('GET', id=ref['id'], entity=ref)
+
+        returned = self.manager.get(ref['id'], subtree_as_ids=True)
+        self.assertQueryStringIs('subtree_as_ids')
+        self.assertDictEqual(ref['subtree'], returned.subtree)
+
+    def test_get_with_parents_as_ids(self):
+        projects = self._create_projects_hierarchy()
+        ref = projects[2]
+
+        # We will query for projects[2] parents, it should include projects[1]
+        # and projects[0] structured like the following:
+        # {
+        #   projects[1]: {
+        #       projects[0]: None
+        #   }
+        # }
+        ref['parents'] = {
+            projects[1]['id']: {
+                projects[0]['id']: None
+            }
+        }
+
+        self.stub_entity('GET', id=ref['id'], entity=ref)
+
+        returned = self.manager.get(ref['id'], parents_as_ids=True)
+        self.assertQueryStringIs('parents_as_ids')
+        self.assertDictEqual(ref['parents'], returned.parents)
+
+    def test_get_with_parents_as_ids_and_subtree_as_ids(self):
+        ref = self.new_ref()
+        projects = self._create_projects_hierarchy()
+        ref = projects[1]
+
+        # We will query for projects[1] subtree and parents. The subtree should
+        # include projects[2] and the parents should include projects[2].
+        ref['parents'] = {
+            projects[0]['id']: None
+        }
+        ref['subtree'] = {
+            projects[2]['id']: None
+        }
+
+        self.stub_entity('GET', id=ref['id'], entity=ref)
+
+        returned = self.manager.get(ref['id'],
+                                    parents_as_ids=True,
+                                    subtree_as_ids=True)
+        self.assertQueryStringIs('subtree_as_ids&parents_as_ids')
+        self.assertDictEqual(ref['parents'], returned.parents)
+        self.assertDictEqual(ref['subtree'], returned.subtree)
+
     def test_get_with_subtree_as_list(self):
         projects = self._create_projects_hierarchy()
         ref = projects[0]
@@ -212,6 +281,23 @@ class ProjectTests(utils.TestCase, utils.CrudTests):
                 child[attr],
                 projects[2][attr],
                 'Expected different %s' % attr)
+
+    def test_get_with_invalid_parameters_combination(self):
+        # subtree_as_list and subtree_as_ids can not be included at the
+        # same time in the call.
+        self.assertRaises(exceptions.ValidationError,
+                          self.manager.get,
+                          project=uuid.uuid4().hex,
+                          subtree_as_list=True,
+                          subtree_as_ids=True)
+
+        # parents_as_list and parents_as_ids can not be included at the
+        # same time in the call.
+        self.assertRaises(exceptions.ValidationError,
+                          self.manager.get,
+                          project=uuid.uuid4().hex,
+                          parents_as_list=True,
+                          parents_as_ids=True)
 
     def test_update_with_parent_project(self):
         ref = self.new_ref()
