@@ -40,13 +40,16 @@ class Adapter(object):
                                 be attempted for connection errors.
                                 Default None - use session default which
                                 is don't retry.
+    :param logger: A logging object to use for requests that pass through this
+                   adapter.
+    :type logger: logging.Logger
     """
 
     @utils.positional()
     def __init__(self, session, service_type=None, service_name=None,
                  interface=None, region_name=None, endpoint_override=None,
                  version=None, auth=None, user_agent=None,
-                 connect_retries=None):
+                 connect_retries=None, logger=None):
         # NOTE(jamielennox): when adding new parameters to adapter please also
         # add them to the adapter call in httpclient.HTTPClient.__init__
         self.session = session
@@ -59,6 +62,7 @@ class Adapter(object):
         self.user_agent = user_agent
         self.auth = auth
         self.connect_retries = connect_retries
+        self.logger = logger
 
     def _set_endpoint_filter_kwargs(self, kwargs):
         if self.service_type:
@@ -85,6 +89,8 @@ class Adapter(object):
             kwargs.setdefault('user_agent', self.user_agent)
         if self.connect_retries is not None:
             kwargs.setdefault('connect_retries', self.connect_retries)
+        if self.logger:
+            kwargs.setdefault('logger', self.logger)
 
         return self.session.request(url, method, **kwargs)
 

@@ -12,6 +12,7 @@
 
 import argparse
 import itertools
+import logging
 import uuid
 
 import mock
@@ -608,6 +609,34 @@ class SessionAuthTests(utils.TestCase):
         self.assertEqual(auth.TEST_USER_ID, sess.get_user_id())
         self.assertEqual(auth.TEST_PROJECT_ID, sess.get_project_id())
 
+    def test_logger_object_passed(self):
+        logger = logging.getLogger(uuid.uuid4().hex)
+        logger.setLevel(logging.DEBUG)
+        logger.propagate = False
+
+        io = six.StringIO()
+        handler = logging.StreamHandler(io)
+        logger.addHandler(handler)
+
+        auth = AuthPlugin()
+        sess = client_session.Session(auth=auth)
+        response = uuid.uuid4().hex
+
+        self.stub_url('GET',
+                      text=response,
+                      headers={'Content-Type': 'text/html'})
+
+        resp = sess.get(self.TEST_URL, logger=logger)
+
+        self.assertEqual(response, resp.text)
+        output = io.getvalue()
+
+        self.assertIn(self.TEST_URL, output)
+        self.assertIn(response, output)
+
+        self.assertNotIn(self.TEST_URL, self.logger.output)
+        self.assertNotIn(response, self.logger.output)
+
 
 class AdapterTest(utils.TestCase):
 
@@ -770,6 +799,35 @@ class AdapterTest(utils.TestCase):
 
         self.assertEqual(auth.TEST_USER_ID, adpt.get_user_id())
         self.assertEqual(auth.TEST_PROJECT_ID, adpt.get_project_id())
+
+    def test_logger_object_passed(self):
+        logger = logging.getLogger(uuid.uuid4().hex)
+        logger.setLevel(logging.DEBUG)
+        logger.propagate = False
+
+        io = six.StringIO()
+        handler = logging.StreamHandler(io)
+        logger.addHandler(handler)
+
+        auth = AuthPlugin()
+        sess = client_session.Session(auth=auth)
+        adpt = adapter.Adapter(sess, auth=auth, logger=logger)
+
+        response = uuid.uuid4().hex
+
+        self.stub_url('GET', text=response,
+                      headers={'Content-Type': 'text/html'})
+
+        resp = adpt.get(self.TEST_URL, logger=logger)
+
+        self.assertEqual(response, resp.text)
+        output = io.getvalue()
+
+        self.assertIn(self.TEST_URL, output)
+        self.assertIn(response, output)
+
+        self.assertNotIn(self.TEST_URL, self.logger.output)
+        self.assertNotIn(response, self.logger.output)
 
 
 class ConfLoadingTests(utils.TestCase):

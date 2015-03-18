@@ -162,8 +162,8 @@ class Session(object):
 
     @utils.positional()
     def _http_log_request(self, url, method=None, data=None,
-                          json=None, headers=None):
-        if not _logger.isEnabledFor(logging.DEBUG):
+                          json=None, headers=None, logger=_logger):
+        if not logger.isEnabledFor(logging.DEBUG):
             # NOTE(morganfainberg): This whole debug section is expensive,
             # there is no need to do the work if we're not going to emit a
             # debug log.
@@ -192,12 +192,13 @@ class Session(object):
         if data:
             string_parts.append("-d '%s'" % data)
 
-        _logger.debug(' '.join(string_parts))
+        logger.debug(' '.join(string_parts))
 
     @utils.positional()
     def _http_log_response(self, response=None, json=None,
-                           status_code=None, headers=None, text=None):
-        if not _logger.isEnabledFor(logging.DEBUG):
+                           status_code=None, headers=None, text=None,
+                           logger=_logger):
+        if not logger.isEnabledFor(logging.DEBUG):
             return
 
         if response:
@@ -220,14 +221,15 @@ class Session(object):
         if text:
             string_parts.append('\nRESP BODY: %s\n' % text)
 
-        _logger.debug(' '.join(string_parts))
+        logger.debug(' '.join(string_parts))
 
     @utils.positional(enforcement=utils.positional.WARN)
     def request(self, url, method, json=None, original_ip=None,
                 user_agent=None, redirect=None, authenticated=None,
                 endpoint_filter=None, auth=None, requests_auth=None,
                 raise_exc=True, allow_reauth=True, log=True,
-                endpoint_override=None, connect_retries=0, **kwargs):
+                endpoint_override=None, connect_retries=0, logger=_logger,
+                **kwargs):
         """Send an HTTP request with the specified characteristics.
 
         Wrapper around `requests.Session.request` to handle tasks such as
@@ -286,6 +288,10 @@ class Session(object):
                                   response. (optional, default True)
         :param bool log: If True then log the request and response data to the
                          debug log. (optional, default True)
+        :param logger: The logger object to use to log request and responses.
+                       If not provided the keystoneclient.session default
+                       logger will be used.
+        :type logger: logging.Logger
         :param kwargs: any other parameter that can be passed to
                        requests.Session.request (such as `headers`). Except:
                        'data' will be overwritten by the data in 'json' param.
@@ -361,7 +367,8 @@ class Session(object):
         if log:
             self._http_log_request(url, method=method,
                                    data=kwargs.get('data'),
-                                   headers=headers)
+                                   headers=headers,
+                                   logger=logger)
 
         # Force disable requests redirect handling. We will manage this below.
         kwargs['allow_redirects'] = False
@@ -370,7 +377,8 @@ class Session(object):
             redirect = self.redirect
 
         send = functools.partial(self._send_request,
-                                 url, method, redirect, log, connect_retries)
+                                 url, method, redirect, log, logger,
+                                 connect_retries)
         resp = send(**kwargs)
 
         # handle getting a 401 Unauthorized response by invalidating the plugin
@@ -384,14 +392,14 @@ class Session(object):
                     resp = send(**kwargs)
 
         if raise_exc and resp.status_code >= 400:
-            _logger.debug('Request returned failure status: %s',
-                          resp.status_code)
+            logger.debug('Request returned failure status: %s',
+                         resp.status_code)
             raise exceptions.from_response(resp, method, url)
 
         return resp
 
-    def _send_request(self, url, method, redirect, log, connect_retries,
-                      connect_retry_delay=0.5, **kwargs):
+    def _send_request(self, url, method, redirect, log, logger,
+                      connect_retries, connect_retry_delay=0.5, **kwargs):
         # NOTE(jamielennox): We handle redirection manually because the
         # requests lib follows some browser patterns where it will redirect
         # POSTs as GETs for certain statuses which is not want we want for an
@@ -419,18 +427,18 @@ class Session(object):
             if connect_retries <= 0:
                 raise
 
-            _logger.info(_LI('Failure: %(e)s. Retrying in %(delay).1fs.'),
-                         {'e': e, 'delay': connect_retry_delay})
+            logger.info(_LI('Failure: %(e)s. Retrying in %(delay).1fs.'),
+                        {'e': e, 'delay': connect_retry_delay})
             time.sleep(connect_retry_delay)
 
             return self._send_request(
-                url, method, redirect, log,
+                url, method, redirect, log, logger,
                 connect_retries=connect_retries - 1,
                 connect_retry_delay=connect_retry_delay * 2,
                 **kwargs)
 
         if log:
-            self._http_log_response(response=resp)
+            self._http_log_response(response=resp, logger=logger)
 
         if resp.status_code in self._REDIRECT_STATUSES:
             # be careful here in python True == 1 and False == 0
@@ -446,13 +454,13 @@ class Session(object):
             try:
                 location = resp.headers['location']
             except KeyError:
-                _logger.warn(_LW("Failed to redirect request to %s as new "
-                                 "location was not provided."), resp.url)
+                logger.warn(_LW("Failed to redirect request to %s as new "
+                                "location was not provided."), resp.url)
             else:
                 # NOTE(jamielennox): We don't pass through connect_retry_delay.
                 # This request actually worked so we can reset the delay count.
                 new_resp = self._send_request(
-                    location, method, redirect, log,
+                    location, method, redirect, log, logger,
                     connect_retries=connect_retries,
                     **kwargs)
 
