@@ -14,13 +14,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-"""
-Pending deprecation: Command-line interface to the OpenStack Identity API.
-
-This CLI is pending deprecation in favor of python-openstackclient. For a
-Python library, continue using python-keystoneclient.
-
-"""
+"""Command-line interface to the OpenStack Identity API."""
 
 from __future__ import print_function
 
@@ -29,6 +23,7 @@ import getpass
 import logging
 import os
 import sys
+import warnings
 
 from oslo_utils import encodeutils
 import six
@@ -60,6 +55,16 @@ def env(*vars, **kwargs):
 class OpenStackIdentityShell(object):
 
     def __init__(self, parser_class=argparse.ArgumentParser):
+
+        # Since Python 2.7, DeprecationWarning is ignored by default, enable
+        # it so that the deprecation message is displayed.
+        warnings.simplefilter('once', category=DeprecationWarning)
+        warnings.warn(
+            'The keystone CLI is deprecated in favor of '
+            'python-openstackclient. For a Python library, continue using '
+            'python-keystoneclient.', DeprecationWarning)
+        # And back to normal!
+        warnings.resetwarnings()
         self.parser_class = parser_class
 
     def get_base_parser(self):
