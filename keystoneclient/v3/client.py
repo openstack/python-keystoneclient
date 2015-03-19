@@ -25,6 +25,7 @@ from keystoneclient.v3.contrib import endpoint_filter
 from keystoneclient.v3.contrib import endpoint_policy
 from keystoneclient.v3.contrib import federation
 from keystoneclient.v3.contrib import oauth1
+from keystoneclient.v3.contrib import simple_cert
 from keystoneclient.v3.contrib import trusts
 from keystoneclient.v3 import credentials
 from keystoneclient.v3 import domains
@@ -145,6 +146,10 @@ EndpointPolicyManager`
 
         :py:class:`keystoneclient.v3.roles.RoleManager`
 
+    .. py:attribute:: simple_cert
+
+        :py:class:`keystoneclient.v3.contrib.simple_cert.SimpleCertManager`
+
     .. py:attribute:: services
 
         :py:class:`keystoneclient.v3.services.ServiceManager`
@@ -186,6 +191,7 @@ EndpointPolicyManager`
             role_assignments.RoleAssignmentManager(self._adapter))
         self.roles = roles.RoleManager(self._adapter)
         self.services = services.ServiceManager(self._adapter)
+        self.simple_cert = simple_cert.SimpleCertManager(self._adapter)
         self.tokens = tokens.TokenManager(self._adapter)
         self.trusts = trusts.TrustManager(self._adapter)
         self.users = users.UserManager(self._adapter)
