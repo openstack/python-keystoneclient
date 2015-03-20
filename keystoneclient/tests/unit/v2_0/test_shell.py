@@ -80,9 +80,9 @@ class ShellTests(utils.TestCase):
         return out
 
     def assert_called(self, method, path, base_url=TEST_URL):
-        self.assertEqual(method, self.requests.last_request.method)
+        self.assertEqual(method, self.requests_mock.last_request.method)
         self.assertEqual(base_url + path.lstrip('/'),
-                         self.requests.last_request.url)
+                         self.requests_mock.last_request.url)
 
     def test_user_list(self):
         self.stub_url('GET', ['users'], json={'users': []})
@@ -394,7 +394,7 @@ class ShellTests(utils.TestCase):
 
         def called_anytime(method, path, json=None):
             test_url = self.TEST_URL.strip('/')
-            for r in self.requests.request_history:
+            for r in self.requests_mock.request_history:
                 if not r.method == method:
                     continue
                 if not r.url == test_url + path:

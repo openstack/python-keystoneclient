@@ -159,13 +159,13 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
 
         cl = client.Client(auth_url=self.TEST_URL,
                            token=fake_token)
-        json_body = jsonutils.loads(self.requests.last_request.body)
+        json_body = jsonutils.loads(self.requests_mock.last_request.body)
         self.assertEqual(json_body['auth']['token']['id'], fake_token)
 
         resp, body = cl.get(fake_url)
         self.assertEqual(fake_resp, body)
 
-        token = self.requests.last_request.headers.get('X-Auth-Token')
+        token = self.requests_mock.last_request.headers.get('X-Auth-Token')
         self.assertEqual(self.TEST_TOKEN, token)
 
     def test_authenticate_success_token_scoped(self):
@@ -236,7 +236,7 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         resp, body = cl.get(fake_url)
         self.assertEqual(fake_resp, body)
 
-        token = self.requests.last_request.headers.get('X-Auth-Token')
+        token = self.requests_mock.last_request.headers.get('X-Auth-Token')
         self.assertEqual(self.TEST_TOKEN, token)
 
         # then override that token and the new token shall be used
@@ -245,7 +245,7 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         resp, body = cl.get(fake_url)
         self.assertEqual(fake_resp, body)
 
-        token = self.requests.last_request.headers.get('X-Auth-Token')
+        token = self.requests_mock.last_request.headers.get('X-Auth-Token')
         self.assertEqual(fake_token, token)
 
         # if we clear that overridden token then we fall back to the original
@@ -254,5 +254,5 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         resp, body = cl.get(fake_url)
         self.assertEqual(fake_resp, body)
 
-        token = self.requests.last_request.headers.get('X-Auth-Token')
+        token = self.requests_mock.last_request.headers.get('X-Auth-Token')
         self.assertEqual(self.TEST_TOKEN, token)

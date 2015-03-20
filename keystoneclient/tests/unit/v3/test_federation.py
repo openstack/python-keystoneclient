@@ -340,7 +340,7 @@ class FederationProjectTests(utils.TestCase):
         projects_json = {
             self.collection_key: [self.new_ref(), self.new_ref()]
         }
-        self.requests.get(self.URL, json=projects_json)
+        self.requests_mock.get(self.URL, json=projects_json)
         returned_list = self.manager.list()
 
         self.assertEqual(len(projects_ref), len(returned_list))
@@ -371,7 +371,7 @@ class FederationDomainTests(utils.TestCase):
         domains_json = {
             self.collection_key: domains_ref
         }
-        self.requests.get(self.URL, json=domains_json)
+        self.requests_mock.get(self.URL, json=domains_json)
         returned_list = self.manager.list()
         self.assertEqual(len(domains_ref), len(returned_list))
         for domain in returned_list:

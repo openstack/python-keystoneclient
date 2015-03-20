@@ -48,7 +48,7 @@ class TestCase(testtools.TestCase):
         self.time_patcher = mock.patch.object(time, 'time', lambda: 1234)
         self.time_patcher.start()
 
-        self.requests = self.useFixture(fixture.Fixture())
+        self.requests_mock = self.useFixture(fixture.Fixture())
 
     def tearDown(self):
         self.time_patcher.stop()
@@ -71,10 +71,10 @@ class TestCase(testtools.TestCase):
             url = base_url
 
         url = url.replace("/?", "?")
-        self.requests.register_uri(method, url, **kwargs)
+        self.requests_mock.register_uri(method, url, **kwargs)
 
     def assertRequestBodyIs(self, body=None, json=None):
-        last_request_body = self.requests.last_request.body
+        last_request_body = self.requests_mock.last_request.body
         if json:
             val = jsonutils.loads(last_request_body)
             self.assertEqual(json, val)
@@ -87,7 +87,7 @@ class TestCase(testtools.TestCase):
         The qs parameter should be of the format \'foo=bar&abc=xyz\'
         """
         expected = urlparse.parse_qs(qs, keep_blank_values=True)
-        parts = urlparse.urlparse(self.requests.last_request.url)
+        parts = urlparse.urlparse(self.requests_mock.last_request.url)
         querystring = urlparse.parse_qs(parts.query, keep_blank_values=True)
         self.assertEqual(expected, querystring)
 
@@ -101,7 +101,7 @@ class TestCase(testtools.TestCase):
         verified is that the parameter is present.
 
         """
-        parts = urlparse.urlparse(self.requests.last_request.url)
+        parts = urlparse.urlparse(self.requests_mock.last_request.url)
         qs = urlparse.parse_qs(parts.query, keep_blank_values=True)
 
         for k, v in six.iteritems(kwargs):
@@ -113,7 +113,7 @@ class TestCase(testtools.TestCase):
 
         The request must have already been made.
         """
-        headers = self.requests.last_request.headers
+        headers = self.requests_mock.last_request.headers
         self.assertEqual(headers.get(name), val)
 
 

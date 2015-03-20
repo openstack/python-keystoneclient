@@ -68,8 +68,8 @@ class ClientTest(utils.TestCase):
         self.stub_url('GET', text=RESPONSE_BODY)
 
         resp, body = cl.get("/hi")
-        self.assertEqual(self.requests.last_request.method, 'GET')
-        self.assertEqual(self.requests.last_request.url, self.TEST_URL)
+        self.assertEqual(self.requests_mock.last_request.method, 'GET')
+        self.assertEqual(self.requests_mock.last_request.url, self.TEST_URL)
 
         self.assertRequestHeaderEqual('X-Auth-Token', 'token')
         self.assertRequestHeaderEqual('User-Agent', httpclient.USER_AGENT)
@@ -108,8 +108,8 @@ class ClientTest(utils.TestCase):
         self.stub_url('POST')
         cl.post("/hi", body=[1, 2, 3])
 
-        self.assertEqual(self.requests.last_request.method, 'POST')
-        self.assertEqual(self.requests.last_request.body, '[1, 2, 3]')
+        self.assertEqual(self.requests_mock.last_request.method, 'POST')
+        self.assertEqual(self.requests_mock.last_request.body, '[1, 2, 3]')
 
         self.assertRequestHeaderEqual('X-Auth-Token', 'token')
         self.assertRequestHeaderEqual('Content-Type', 'application/json')
@@ -164,8 +164,8 @@ class BasicRequestTests(utils.TestCase):
         if not url:
             url = self.url
 
-        self.requests.register_uri(method, url, text=response,
-                                   status_code=status_code)
+        self.requests_mock.register_uri(method, url, text=response,
+                                        status_code=status_code)
 
         return httpclient.request(url, method, **kwargs)
 
@@ -176,7 +176,7 @@ class BasicRequestTests(utils.TestCase):
 
         self.request(method=method, status_code=status, response=response)
 
-        self.assertEqual(self.requests.last_request.method, method)
+        self.assertEqual(self.requests_mock.last_request.method, method)
 
         logger_message = self.logger_message.getvalue()
 

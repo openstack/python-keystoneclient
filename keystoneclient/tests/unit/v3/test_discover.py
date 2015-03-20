@@ -61,9 +61,9 @@ class DiscoverKeystoneTests(utils.UnauthenticatedTestCase):
         }
 
     def test_get_version_local(self):
-        self.requests.get("http://localhost:35357/",
-                          status_code=300,
-                          json=self.TEST_RESPONSE_DICT)
+        self.requests_mock.get("http://localhost:35357/",
+                               status_code=300,
+                               json=self.TEST_RESPONSE_DICT)
 
         cs = client.Client()
         versions = cs.discover()
