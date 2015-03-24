@@ -219,3 +219,20 @@ class EC2(Base):
         self.addCleanup(self.client.ec2.delete,
                         self.user_id,
                         self.entity.access)
+
+
+class DomainConfig(Base):
+
+    def __init__(self, client, domain_id):
+        super(DomainConfig, self).__init__(client, domain_id=domain_id)
+        self.domain_id = domain_id
+
+    def setUp(self):
+        super(DomainConfig, self).setUp()
+
+        self.ref = {'identity': {'driver': uuid.uuid4().hex},
+                    'ldap': {'url': uuid.uuid4().hex}}
+        self.entity = self.client.domain_configs.create(
+            self.domain_id, self.ref)
+        self.addCleanup(self.client.domain_configs.delete,
+                        self.domain_id)
