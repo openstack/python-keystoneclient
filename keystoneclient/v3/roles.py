@@ -50,8 +50,8 @@ class RoleManager(base.CrudManager):
             params['domain_id'] = base.getid(domain)
             base_url = '/domains/%(domain_id)s'
 
-            if use_inherit_extension:
-                base_url = '/OS-INHERIT' + base_url
+        if use_inherit_extension:
+            base_url = '/OS-INHERIT' + base_url
 
         if user:
             params['user_id'] = base.getid(user)

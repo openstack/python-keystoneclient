@@ -59,6 +59,20 @@ class RoleTests(utils.TestCase, utils.CrudTests):
         self.manager.grant(role=ref['id'], domain=domain_id, user=user_id,
                            os_inherit_extension_inherited=True)
 
+    def test_project_role_grant_inherited(self):
+        user_id = uuid.uuid4().hex
+        project_id = uuid.uuid4().hex
+        ref = self.new_ref()
+
+        self.stub_url('PUT',
+                      ['OS-INHERIT', 'projects', project_id, 'users', user_id,
+                       self.collection_key, ref['id'],
+                       'inherited_to_projects'],
+                      status_code=204)
+
+        self.manager.grant(role=ref['id'], project=project_id, user=user_id,
+                           os_inherit_extension_inherited=True)
+
     def test_domain_group_role_grant(self):
         group_id = uuid.uuid4().hex
         domain_id = uuid.uuid4().hex
@@ -85,6 +99,20 @@ class RoleTests(utils.TestCase, utils.CrudTests):
         self.manager.grant(role=ref['id'], domain=domain_id, group=group_id,
                            os_inherit_extension_inherited=True)
 
+    def test_project_group_role_grant_inherited(self):
+        group_id = uuid.uuid4().hex
+        project_id = uuid.uuid4().hex
+        ref = self.new_ref()
+
+        self.stub_url('PUT',
+                      ['OS-INHERIT', 'projects', project_id, 'groups',
+                       group_id, self.collection_key, ref['id'],
+                       'inherited_to_projects'],
+                      status_code=204)
+
+        self.manager.grant(role=ref['id'], project=project_id, group=group_id,
+                           os_inherit_extension_inherited=True)
+
     def test_domain_role_list(self):
         user_id = uuid.uuid4().hex
         domain_id = uuid.uuid4().hex
@@ -108,6 +136,23 @@ class RoleTests(utils.TestCase, utils.CrudTests):
                          entity=ref_list)
 
         returned_list = self.manager.list(domain=domain_id, user=user_id,
+                                          os_inherit_extension_inherited=True)
+
+        self.assertThat(ref_list, matchers.HasLength(len(returned_list)))
+        [self.assertIsInstance(r, self.model) for r in returned_list]
+
+    def test_project_user_role_list_inherited(self):
+        user_id = uuid.uuid4().hex
+        project_id = uuid.uuid4().hex
+        ref_list = [self.new_ref(), self.new_ref()]
+
+        self.stub_entity('GET',
+                         ['OS-INHERIT',
+                          'projects', project_id, 'users', user_id,
+                          self.collection_key, 'inherited_to_projects'],
+                         entity=ref_list)
+
+        returned_list = self.manager.list(project=project_id, user=user_id,
                                           os_inherit_extension_inherited=True)
 
         self.assertThat(ref_list, matchers.HasLength(len(returned_list)))
@@ -141,6 +186,23 @@ class RoleTests(utils.TestCase, utils.CrudTests):
         self.assertThat(ref_list, matchers.HasLength(len(returned_list)))
         [self.assertIsInstance(r, self.model) for r in returned_list]
 
+    def test_project_group_role_list_inherited(self):
+        group_id = uuid.uuid4().hex
+        project_id = uuid.uuid4().hex
+        ref_list = [self.new_ref(), self.new_ref()]
+
+        self.stub_entity('GET',
+                         ['OS-INHERIT',
+                          'projects', project_id, 'groups', group_id,
+                          self.collection_key, 'inherited_to_projects'],
+                         entity=ref_list)
+
+        returned_list = self.manager.list(project=project_id, group=group_id,
+                                          os_inherit_extension_inherited=True)
+
+        self.assertThat(ref_list, matchers.HasLength(len(returned_list)))
+        [self.assertIsInstance(r, self.model) for r in returned_list]
+
     def test_domain_role_check(self):
         user_id = uuid.uuid4().hex
         domain_id = uuid.uuid4().hex
@@ -169,6 +231,21 @@ class RoleTests(utils.TestCase, utils.CrudTests):
         self.manager.check(role=ref['id'], domain=domain_id,
                            user=user_id, os_inherit_extension_inherited=True)
 
+    def test_project_role_check_inherited(self):
+        user_id = uuid.uuid4().hex
+        project_id = uuid.uuid4().hex
+        ref = self.new_ref()
+
+        self.stub_url('HEAD',
+                      ['OS-INHERIT',
+                       'projects', project_id, 'users', user_id,
+                       self.collection_key, ref['id'],
+                       'inherited_to_projects'],
+                      status_code=204)
+
+        self.manager.check(role=ref['id'], project=project_id,
+                           user=user_id, os_inherit_extension_inherited=True)
+
     def test_domain_group_role_check(self):
         return
         group_id = uuid.uuid4().hex
@@ -195,6 +272,21 @@ class RoleTests(utils.TestCase, utils.CrudTests):
                       status_code=204)
 
         self.manager.check(role=ref['id'], domain=domain_id,
+                           group=group_id, os_inherit_extension_inherited=True)
+
+    def test_project_group_role_check_inherited(self):
+        group_id = uuid.uuid4().hex
+        project_id = uuid.uuid4().hex
+        ref = self.new_ref()
+
+        self.stub_url('HEAD',
+                      ['OS-INHERIT',
+                       'projects', project_id, 'groups', group_id,
+                       self.collection_key, ref['id'],
+                       'inherited_to_projects'],
+                      status_code=204)
+
+        self.manager.check(role=ref['id'], project=project_id,
                            group=group_id, os_inherit_extension_inherited=True)
 
     def test_domain_role_revoke(self):
@@ -235,6 +327,20 @@ class RoleTests(utils.TestCase, utils.CrudTests):
         self.manager.revoke(role=ref['id'], domain=domain_id,
                             user=user_id, os_inherit_extension_inherited=True)
 
+    def test_project_role_revoke_inherited(self):
+        user_id = uuid.uuid4().hex
+        project_id = uuid.uuid4().hex
+        ref = self.new_ref()
+
+        self.stub_url('DELETE',
+                      ['OS-INHERIT', 'projects', project_id, 'users', user_id,
+                       self.collection_key, ref['id'],
+                       'inherited_to_projects'],
+                      status_code=204)
+
+        self.manager.revoke(role=ref['id'], project=project_id,
+                            user=user_id, os_inherit_extension_inherited=True)
+
     def test_domain_group_role_revoke_inherited(self):
         group_id = uuid.uuid4().hex
         domain_id = uuid.uuid4().hex
@@ -247,6 +353,21 @@ class RoleTests(utils.TestCase, utils.CrudTests):
                       status_code=200)
 
         self.manager.revoke(role=ref['id'], domain=domain_id,
+                            group=group_id,
+                            os_inherit_extension_inherited=True)
+
+    def test_project_group_role_revoke_inherited(self):
+        group_id = uuid.uuid4().hex
+        project_id = uuid.uuid4().hex
+        ref = self.new_ref()
+
+        self.stub_url('DELETE',
+                      ['OS-INHERIT', 'projects', project_id, 'groups',
+                       group_id, self.collection_key, ref['id'],
+                       'inherited_to_projects'],
+                      status_code=204)
+
+        self.manager.revoke(role=ref['id'], project=project_id,
                             group=group_id,
                             os_inherit_extension_inherited=True)
 
