@@ -61,6 +61,10 @@ class AccessInfoTest(utils.TestCase, testresources.ResourcedTestCase):
         self.assertEqual(auth_ref.expires, token.expires)
         self.assertEqual(auth_ref.issued, token.issued)
 
+        self.assertEqual(token.audit_id, auth_ref.audit_id)
+        self.assertIsNone(auth_ref.audit_chain_id)
+        self.assertIsNone(token.audit_chain_id)
+
     def test_will_expire_soon(self):
         token = client_fixtures.unscoped_token()
         expires = timeutils.utcnow() + datetime.timedelta(minutes=5)
@@ -105,6 +109,9 @@ class AccessInfoTest(utils.TestCase, testresources.ResourcedTestCase):
         self.assertTrue(auth_ref.scoped)
         self.assertTrue(auth_ref.project_scoped)
         self.assertFalse(auth_ref.domain_scoped)
+
+        self.assertEqual(token.audit_id, auth_ref.audit_id)
+        self.assertEqual(token.audit_chain_id, auth_ref.audit_chain_id)
 
     def test_diablo_token(self):
         diablo_token = self.examples.TOKEN_RESPONSES[

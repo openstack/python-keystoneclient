@@ -400,6 +400,35 @@ class AccessInfo(dict):
         """
         raise NotImplementedError()
 
+    @property
+    def audit_id(self):
+        """Return the audit ID if present.
+
+        :returns: str or None.
+        """
+        raise NotImplementedError()
+
+    @property
+    def audit_chain_id(self):
+        """Return the audit chain ID if present.
+
+        In the event that a token was rescoped then this ID will be the
+        :py:attr:`audit_id` of the initial token. Returns None if no value
+        present.
+
+        :returns: str or None.
+        """
+        raise NotImplementedError()
+
+    @property
+    def initial_audit_id(self):
+        """The audit ID of the initially requested token.
+
+        This is the :py:attr:`audit_chain_id` if present or the
+        :py:attr:`audit_id`.
+        """
+        return self.audit_chain_id or self.audit_id
+
 
 class AccessInfoV2(AccessInfo):
     """An object for encapsulating a raw v2 auth token from identity
@@ -592,6 +621,20 @@ class AccessInfoV2(AccessInfo):
     def is_federated(self):
         return False
 
+    @property
+    def audit_id(self):
+        try:
+            return self['token'].get('audit_ids', [])[0]
+        except IndexError:
+            return None
+
+    @property
+    def audit_chain_id(self):
+        try:
+            return self['token'].get('audit_ids', [])[1]
+        except IndexError:
+            return None
+
 
 class AccessInfoV3(AccessInfo):
     """An object for encapsulating a raw v3 auth token from identity
@@ -760,3 +803,17 @@ class AccessInfoV3(AccessInfo):
     @property
     def oauth_consumer_id(self):
         return self.get('OS-OAUTH1', {}).get('consumer_id')
+
+    @property
+    def audit_id(self):
+        try:
+            return self.get('audit_ids', [])[0]
+        except IndexError:
+            return None
+
+    @property
+    def audit_chain_id(self):
+        try:
+            return self.get('audit_ids', [])[1]
+        except IndexError:
+            return None

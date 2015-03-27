@@ -70,6 +70,10 @@ class AccessInfoTest(utils.TestCase):
         self.assertEqual(auth_ref.expires, UNSCOPED_TOKEN.expires)
         self.assertEqual(auth_ref.issued, UNSCOPED_TOKEN.issued)
 
+        self.assertEqual(auth_ref.audit_id, UNSCOPED_TOKEN.audit_id)
+        self.assertIsNone(auth_ref.audit_chain_id)
+        self.assertIsNone(UNSCOPED_TOKEN.audit_chain_id)
+
     def test_will_expire_soon(self):
         expires = timeutils.utcnow() + datetime.timedelta(minutes=5)
         UNSCOPED_TOKEN['token']['expires_at'] = expires.isoformat()
@@ -113,6 +117,10 @@ class AccessInfoTest(utils.TestCase):
         self.assertTrue(auth_ref.domain_scoped)
         self.assertFalse(auth_ref.project_scoped)
 
+        self.assertEqual(DOMAIN_SCOPED_TOKEN.audit_id, auth_ref.audit_id)
+        self.assertEqual(DOMAIN_SCOPED_TOKEN.audit_chain_id,
+                         auth_ref.audit_chain_id)
+
     def test_building_project_scoped_accessinfo(self):
         auth_ref = access.AccessInfo.factory(resp=TOKEN_RESPONSE,
                                              body=PROJECT_SCOPED_TOKEN)
@@ -155,6 +163,10 @@ class AccessInfoTest(utils.TestCase):
 
         self.assertFalse(auth_ref.domain_scoped)
         self.assertTrue(auth_ref.project_scoped)
+
+        self.assertEqual(PROJECT_SCOPED_TOKEN.audit_id, auth_ref.audit_id)
+        self.assertEqual(PROJECT_SCOPED_TOKEN.audit_chain_id,
+                         auth_ref.audit_chain_id)
 
     def test_oauth_access(self):
         consumer_id = uuid.uuid4().hex

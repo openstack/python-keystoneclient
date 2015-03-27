@@ -11,6 +11,7 @@
 #    under the License.
 
 from __future__ import unicode_literals
+import uuid
 
 from keystoneclient import fixture
 
@@ -30,7 +31,8 @@ def project_scoped_token():
                         tenant_id='225da22d3ce34b15877ea70b2a575f58',
                         tenant_name='exampleproject',
                         user_id='c4da488862bd435c9e6c0275a0d0e49a',
-                        user_name='exampleuser')
+                        user_name='exampleuser',
+                        audit_chain_id=uuid.uuid4().hex)
 
     f.add_role(id='member_id', name='Member')
 
@@ -73,7 +75,8 @@ def auth_response_body():
                         tenant_id='345',
                         tenant_name='My Project',
                         user_id='123',
-                        user_name='jqsmith')
+                        user_name='jqsmith',
+                        audit_chain_id=uuid.uuid4().hex)
 
     f.add_role(id='234', name='compute:admin')
     role = f.add_role(id='235', name='object-store:admin')
