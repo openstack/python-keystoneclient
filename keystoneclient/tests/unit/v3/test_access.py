@@ -38,10 +38,10 @@ class AccessInfoTest(utils.TestCase):
         self.assertIn('methods', auth_ref)
         self.assertNotIn('catalog', auth_ref)
 
-        self.assertEqual(auth_ref.auth_token,
-                         '3e2813b7ba0b4006840c3825860b86ed')
-        self.assertEqual(auth_ref.username, 'exampleuser')
-        self.assertEqual(auth_ref.user_id, 'c4da488862bd435c9e6c0275a0d0e49a')
+        self.assertEqual(client_fixtures.AUTH_SUBJECT_TOKEN,
+                         auth_ref.auth_token)
+        self.assertEqual(UNSCOPED_TOKEN.user_name, auth_ref.username)
+        self.assertEqual(UNSCOPED_TOKEN.user_id, auth_ref.user_id)
 
         self.assertEqual(auth_ref.role_ids, [])
         self.assertEqual(auth_ref.role_names, [])
@@ -55,9 +55,10 @@ class AccessInfoTest(utils.TestCase):
         self.assertFalse(auth_ref.domain_scoped)
         self.assertFalse(auth_ref.project_scoped)
 
-        self.assertEqual(auth_ref.user_domain_id,
-                         '4e6893b7ba0b4006840c3845660b86ed')
-        self.assertEqual(auth_ref.user_domain_name, 'exampledomain')
+        self.assertEqual(UNSCOPED_TOKEN.user_domain_id,
+                         auth_ref.user_domain_id)
+        self.assertEqual(UNSCOPED_TOKEN.user_domain_name,
+                         auth_ref.user_domain_name)
 
         self.assertIsNone(auth_ref.project_domain_id)
         self.assertIsNone(auth_ref.project_domain_name)
@@ -92,24 +93,24 @@ class AccessInfoTest(utils.TestCase):
         self.assertIn('catalog', auth_ref)
         self.assertTrue(auth_ref['catalog'])
 
-        self.assertEqual(auth_ref.auth_token,
-                         '3e2813b7ba0b4006840c3825860b86ed')
-        self.assertEqual(auth_ref.username, 'exampleuser')
-        self.assertEqual(auth_ref.user_id, 'c4da488862bd435c9e6c0275a0d0e49a')
+        self.assertEqual(client_fixtures.AUTH_SUBJECT_TOKEN,
+                         auth_ref.auth_token)
+        self.assertEqual(DOMAIN_SCOPED_TOKEN.user_name, auth_ref.username)
+        self.assertEqual(DOMAIN_SCOPED_TOKEN.user_id, auth_ref.user_id)
 
-        self.assertEqual(auth_ref.role_ids, ['76e72a', 'f4f392'])
-        self.assertEqual(auth_ref.role_names, ['admin', 'member'])
+        self.assertEqual(DOMAIN_SCOPED_TOKEN.role_ids, auth_ref.role_ids)
+        self.assertEqual(DOMAIN_SCOPED_TOKEN.role_names, auth_ref.role_names)
 
-        self.assertEqual(auth_ref.domain_name, 'anotherdomain')
-        self.assertEqual(auth_ref.domain_id,
-                         '8e9283b7ba0b1038840c3842058b86ab')
+        self.assertEqual(DOMAIN_SCOPED_TOKEN.domain_name, auth_ref.domain_name)
+        self.assertEqual(DOMAIN_SCOPED_TOKEN.domain_id, auth_ref.domain_id)
 
         self.assertIsNone(auth_ref.project_name)
         self.assertIsNone(auth_ref.project_id)
 
-        self.assertEqual(auth_ref.user_domain_id,
-                         '4e6893b7ba0b4006840c3845660b86ed')
-        self.assertEqual(auth_ref.user_domain_name, 'exampledomain')
+        self.assertEqual(DOMAIN_SCOPED_TOKEN.user_domain_id,
+                         auth_ref.user_domain_id)
+        self.assertEqual(DOMAIN_SCOPED_TOKEN.user_domain_name,
+                         auth_ref.user_domain_name)
 
         self.assertIsNone(auth_ref.project_domain_id)
         self.assertIsNone(auth_ref.project_domain_name)
@@ -130,20 +131,20 @@ class AccessInfoTest(utils.TestCase):
         self.assertIn('catalog', auth_ref)
         self.assertTrue(auth_ref['catalog'])
 
-        self.assertEqual(auth_ref.auth_token,
-                         '3e2813b7ba0b4006840c3825860b86ed')
-        self.assertEqual(auth_ref.username, 'exampleuser')
-        self.assertEqual(auth_ref.user_id, 'c4da488862bd435c9e6c0275a0d0e49a')
+        self.assertEqual(client_fixtures.AUTH_SUBJECT_TOKEN,
+                         auth_ref.auth_token)
+        self.assertEqual(PROJECT_SCOPED_TOKEN.user_name, auth_ref.username)
+        self.assertEqual(PROJECT_SCOPED_TOKEN.user_id, auth_ref.user_id)
 
-        self.assertEqual(auth_ref.role_ids, ['76e72a', 'f4f392'])
-        self.assertEqual(auth_ref.role_names, ['admin', 'member'])
+        self.assertEqual(PROJECT_SCOPED_TOKEN.role_ids, auth_ref.role_ids)
+        self.assertEqual(PROJECT_SCOPED_TOKEN.role_names, auth_ref.role_names)
 
         self.assertIsNone(auth_ref.domain_name)
         self.assertIsNone(auth_ref.domain_id)
 
-        self.assertEqual(auth_ref.project_name, 'exampleproject')
-        self.assertEqual(auth_ref.project_id,
-                         '225da22d3ce34b15877ea70b2a575f58')
+        self.assertEqual(PROJECT_SCOPED_TOKEN.project_name,
+                         auth_ref.project_name)
+        self.assertEqual(PROJECT_SCOPED_TOKEN.project_id, auth_ref.project_id)
 
         self.assertEqual(auth_ref.tenant_name, auth_ref.project_name)
         self.assertEqual(auth_ref.tenant_id, auth_ref.project_id)
@@ -153,13 +154,15 @@ class AccessInfoTest(utils.TestCase):
         self.assertEqual(auth_ref.management_url,
                          ('http://admin:35357/v3',))
 
-        self.assertEqual(auth_ref.project_domain_id,
-                         '4e6893b7ba0b4006840c3845660b86ed')
-        self.assertEqual(auth_ref.project_domain_name, 'exampledomain')
+        self.assertEqual(PROJECT_SCOPED_TOKEN.project_domain_id,
+                         auth_ref.project_domain_id)
+        self.assertEqual(PROJECT_SCOPED_TOKEN.project_domain_name,
+                         auth_ref.project_domain_name)
 
-        self.assertEqual(auth_ref.user_domain_id,
-                         '4e6893b7ba0b4006840c3845660b86ed')
-        self.assertEqual(auth_ref.user_domain_name, 'exampledomain')
+        self.assertEqual(PROJECT_SCOPED_TOKEN.user_domain_id,
+                         auth_ref.user_domain_id)
+        self.assertEqual(PROJECT_SCOPED_TOKEN.user_domain_name,
+                         auth_ref.user_domain_name)
 
         self.assertFalse(auth_ref.domain_scoped)
         self.assertTrue(auth_ref.project_scoped)

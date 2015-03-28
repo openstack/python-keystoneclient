@@ -16,26 +16,18 @@ import uuid
 from keystoneclient import fixture
 
 
-def unscoped_token():
-    return fixture.V3Token(user_id='c4da488862bd435c9e6c0275a0d0e49a',
-                           user_name='exampleuser',
-                           user_domain_id='4e6893b7ba0b4006840c3845660b86ed',
-                           user_domain_name='exampledomain',
-                           expires='2010-11-01T03:32:15-05:00')
+def unscoped_token(**kwargs):
+    return fixture.V3Token(**kwargs)
 
 
-def domain_scoped_token():
-    f = fixture.V3Token(user_id='c4da488862bd435c9e6c0275a0d0e49a',
-                        user_name='exampleuser',
-                        user_domain_id='4e6893b7ba0b4006840c3845660b86ed',
-                        user_domain_name='exampledomain',
-                        expires='2010-11-01T03:32:15-05:00',
-                        domain_id='8e9283b7ba0b1038840c3842058b86ab',
-                        domain_name='anotherdomain',
-                        audit_chain_id=uuid.uuid4().hex)
+def domain_scoped_token(**kwargs):
+    kwargs.setdefault('audit_chain_id', uuid.uuid4().hex)
+    f = fixture.V3Token(**kwargs)
+    if not f.domain_id:
+        f.set_domain_scope()
 
-    f.add_role(id='76e72a', name='admin')
-    f.add_role(id='f4f392', name='member')
+    f.add_role(name='admin')
+    f.add_role(name='member')
     region = 'RegionOne'
 
     s = f.add_service('volume')
@@ -71,20 +63,15 @@ def domain_scoped_token():
     return f
 
 
-def project_scoped_token():
-    f = fixture.V3Token(user_id='c4da488862bd435c9e6c0275a0d0e49a',
-                        user_name='exampleuser',
-                        user_domain_id='4e6893b7ba0b4006840c3845660b86ed',
-                        user_domain_name='exampledomain',
-                        expires='2010-11-01T03:32:15-05:00',
-                        project_id='225da22d3ce34b15877ea70b2a575f58',
-                        project_name='exampleproject',
-                        project_domain_id='4e6893b7ba0b4006840c3845660b86ed',
-                        project_domain_name='exampledomain',
-                        audit_chain_id=uuid.uuid4().hex)
+def project_scoped_token(**kwargs):
+    kwargs.setdefault('audit_chain_id', uuid.uuid4().hex)
+    f = fixture.V3Token(**kwargs)
 
-    f.add_role(id='76e72a', name='admin')
-    f.add_role(id='f4f392', name='member')
+    if not f.project_id:
+        f.set_project_scope()
+
+    f.add_role(name='admin')
+    f.add_role(name='member')
 
     region = 'RegionOne'
     tenant = '225da22d3ce34b15877ea70b2a575f58'
@@ -122,7 +109,7 @@ def project_scoped_token():
     return f
 
 
-AUTH_SUBJECT_TOKEN = '3e2813b7ba0b4006840c3825860b86ed'
+AUTH_SUBJECT_TOKEN = uuid.uuid4().hex
 
 AUTH_RESPONSE_HEADERS = {
     'X-Subject-Token': AUTH_SUBJECT_TOKEN,
@@ -130,19 +117,11 @@ AUTH_RESPONSE_HEADERS = {
 
 
 def auth_response_body():
-    f = fixture.V3Token(user_id='567',
-                        user_name='test',
-                        user_domain_id='1',
-                        user_domain_name='aDomain',
-                        expires='2010-11-01T03:32:15-05:00',
-                        project_domain_id='123',
-                        project_domain_name='aDomain',
-                        project_id='345',
-                        project_name='aTenant',
-                        audit_chain_id=uuid.uuid4().hex)
+    f = fixture.V3Token(audit_chain_id=uuid.uuid4().hex)
+    f.set_project_scope()
 
-    f.add_role(id='76e72a', name='admin')
-    f.add_role(id='f4f392', name='member')
+    f.add_role(name='admin')
+    f.add_role(name='member')
 
     s = f.add_service('compute', name='nova')
     s.add_standard_endpoints(
@@ -175,13 +154,6 @@ def auth_response_body():
 
 
 def trust_token():
-    return fixture.V3Token(user_id='0ca8f6',
-                           user_name='exampleuser',
-                           user_domain_id='4e6893b7ba0b4006840c3845660b86ed',
-                           user_domain_name='exampledomain',
-                           expires='2010-11-01T03:32:15-05:00',
-                           trust_id='fe0aef',
-                           trust_impersonation=False,
-                           trustee_user_id='0ca8f6',
-                           trustor_user_id='bd263c',
-                           audit_chain_id=uuid.uuid4().hex)
+    f = fixture.V3Token(audit_chain_id=uuid.uuid4().hex)
+    f.set_trust_scope()
+    return f

@@ -325,6 +325,14 @@ class Token(dict):
     def audit_chain_id(self, value):
         self.root['audit_ids'] = [self.audit_id, value]
 
+    @property
+    def role_ids(self):
+        return [r['id'] for r in self.root.get('roles', [])]
+
+    @property
+    def role_names(self):
+        return [r['name'] for r in self.root.get('roles', [])]
+
     def validate(self):
         project = self.root.get('project')
         domain = self.root.get('domain')

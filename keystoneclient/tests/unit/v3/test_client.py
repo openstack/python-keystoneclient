@@ -27,71 +27,67 @@ from keystoneclient.v3 import client
 class KeystoneClientTest(utils.TestCase):
 
     def test_unscoped_init(self):
-        self.stub_auth(json=client_fixtures.unscoped_token())
+        token = client_fixtures.unscoped_token()
+        self.stub_auth(json=token)
 
-        c = client.Client(user_domain_name='exampledomain',
-                          username='exampleuser',
+        c = client.Client(user_domain_name=token.user_domain_name,
+                          username=token.user_name,
                           password='password',
                           auth_url=self.TEST_URL)
         self.assertIsNotNone(c.auth_ref)
         self.assertFalse(c.auth_ref.domain_scoped)
         self.assertFalse(c.auth_ref.project_scoped)
-        self.assertEqual(c.auth_user_id,
-                         'c4da488862bd435c9e6c0275a0d0e49a')
+        self.assertEqual(token.user_id, c.auth_user_id)
         self.assertFalse(c.has_service_catalog())
 
-        self.assertEqual('c4da488862bd435c9e6c0275a0d0e49a',
-                         c.get_user_id(session=None))
+        self.assertEqual(token.user_id, c.get_user_id(session=None))
         self.assertIsNone(c.get_project_id(session=None))
 
     def test_domain_scoped_init(self):
-        self.stub_auth(json=client_fixtures.domain_scoped_token())
+        token = client_fixtures.domain_scoped_token()
+        self.stub_auth(json=token)
 
-        c = client.Client(user_id='c4da488862bd435c9e6c0275a0d0e49a',
+        c = client.Client(user_id=token.user_id,
                           password='password',
-                          domain_name='exampledomain',
+                          domain_name=token.domain_name,
                           auth_url=self.TEST_URL)
         self.assertIsNotNone(c.auth_ref)
         self.assertTrue(c.auth_ref.domain_scoped)
         self.assertFalse(c.auth_ref.project_scoped)
-        self.assertEqual(c.auth_user_id,
-                         'c4da488862bd435c9e6c0275a0d0e49a')
-        self.assertEqual(c.auth_domain_id,
-                         '8e9283b7ba0b1038840c3842058b86ab')
+        self.assertEqual(token.user_id, c.auth_user_id)
+        self.assertEqual(token.domain_id, c.auth_domain_id)
 
     def test_project_scoped_init(self):
-        self.stub_auth(json=client_fixtures.project_scoped_token()),
+        token = client_fixtures.project_scoped_token()
+        self.stub_auth(json=token),
 
-        c = client.Client(user_id='c4da488862bd435c9e6c0275a0d0e49a',
+        c = client.Client(user_id=token.user_id,
                           password='password',
-                          user_domain_name='exampledomain',
-                          project_name='exampleproject',
+                          user_domain_name=token.user_domain_name,
+                          project_name=token.project_name,
                           auth_url=self.TEST_URL)
         self.assertIsNotNone(c.auth_ref)
         self.assertFalse(c.auth_ref.domain_scoped)
         self.assertTrue(c.auth_ref.project_scoped)
-        self.assertEqual(c.auth_user_id,
-                         'c4da488862bd435c9e6c0275a0d0e49a')
-        self.assertEqual(c.auth_tenant_id,
-                         '225da22d3ce34b15877ea70b2a575f58')
-        self.assertEqual('c4da488862bd435c9e6c0275a0d0e49a',
-                         c.get_user_id(session=None))
-        self.assertEqual('225da22d3ce34b15877ea70b2a575f58',
-                         c.get_project_id(session=None))
+        self.assertEqual(token.user_id, c.auth_user_id)
+        self.assertEqual(token.project_id, c.auth_tenant_id)
+        self.assertEqual(token.user_id, c.get_user_id(session=None))
+        self.assertEqual(token.project_id, c.get_project_id(session=None))
 
     def test_auth_ref_load(self):
-        self.stub_auth(json=client_fixtures.project_scoped_token())
+        token = client_fixtures.project_scoped_token()
+        self.stub_auth(json=token)
 
-        c = client.Client(user_id='c4da488862bd435c9e6c0275a0d0e49a',
+        c = client.Client(user_id=token.user_id,
                           password='password',
-                          project_id='225da22d3ce34b15877ea70b2a575f58',
+                          project_id=token.project_id,
                           auth_url=self.TEST_URL)
         cache = json.dumps(c.auth_ref)
         new_client = client.Client(auth_ref=json.loads(cache))
         self.assertIsNotNone(new_client.auth_ref)
         self.assertFalse(new_client.auth_ref.domain_scoped)
         self.assertTrue(new_client.auth_ref.project_scoped)
-        self.assertEqual(new_client.username, 'exampleuser')
+        self.assertEqual(token.user_name, new_client.username)
         self.assertIsNone(new_client.password)
         self.assertEqual(new_client.management_url,
                          'http://admin:35357/v3')
@@ -99,13 +95,22 @@ class KeystoneClientTest(utils.TestCase):
     def test_auth_ref_load_with_overridden_arguments(self):
         new_auth_url = 'https://newkeystone.com/v3'
 
-        self.stub_auth(json=client_fixtures.project_scoped_token())
-        self.stub_auth(json=client_fixtures.project_scoped_token(),
-                       base_url=new_auth_url)
+        user_id = uuid.uuid4().hex
+        user_name = uuid.uuid4().hex
+        project_id = uuid.uuid4().hex
 
-        c = client.Client(user_id='c4da488862bd435c9e6c0275a0d0e49a',
+        first = client_fixtures.project_scoped_token(user_id=user_id,
+                                                     user_name=user_name,
+                                                     project_id=project_id)
+        second = client_fixtures.project_scoped_token(user_id=user_id,
+                                                      user_name=user_name,
+                                                      project_id=project_id)
+        self.stub_auth(json=first)
+        self.stub_auth(json=second, base_url=new_auth_url)
+
+        c = client.Client(user_id=user_id,
                           password='password',
-                          project_id='225da22d3ce34b15877ea70b2a575f58',
+                          project_id=project_id,
                           auth_url=self.TEST_URL)
         cache = json.dumps(c.auth_ref)
         new_client = client.Client(auth_ref=json.loads(cache),
@@ -113,28 +118,29 @@ class KeystoneClientTest(utils.TestCase):
         self.assertIsNotNone(new_client.auth_ref)
         self.assertFalse(new_client.auth_ref.domain_scoped)
         self.assertTrue(new_client.auth_ref.project_scoped)
-        self.assertEqual(new_client.auth_url, new_auth_url)
-        self.assertEqual(new_client.username, 'exampleuser')
+        self.assertEqual(new_auth_url, new_client.auth_url)
+        self.assertEqual(user_name, new_client.username)
         self.assertIsNone(new_client.password)
         self.assertEqual(new_client.management_url,
                          'http://admin:35357/v3')
 
     def test_trust_init(self):
-        self.stub_auth(json=client_fixtures.trust_token())
+        token = client_fixtures.trust_token()
+        self.stub_auth(json=token)
 
-        c = client.Client(user_domain_name='exampledomain',
-                          username='exampleuser',
+        c = client.Client(user_domain_name=token.user_domain_name,
+                          username=token.user_name,
                           password='password',
                           auth_url=self.TEST_URL,
-                          trust_id='fe0aef')
+                          trust_id=token.trust_id)
         self.assertIsNotNone(c.auth_ref)
         self.assertFalse(c.auth_ref.domain_scoped)
         self.assertFalse(c.auth_ref.project_scoped)
-        self.assertEqual(c.auth_ref.trust_id, 'fe0aef')
-        self.assertEqual(c.auth_ref.trustee_user_id, '0ca8f6')
-        self.assertEqual(c.auth_ref.trustor_user_id, 'bd263c')
+        self.assertEqual(token.trust_id, c.auth_ref.trust_id)
+        self.assertEqual(token.trustee_user_id, c.auth_ref.trustee_user_id)
+        self.assertEqual(token.trustor_user_id, c.auth_ref.trustor_user_id)
         self.assertTrue(c.auth_ref.trust_scoped)
-        self.assertEqual(c.auth_user_id, '0ca8f6')
+        self.assertEqual(token.user_id, c.auth_user_id)
 
     def test_init_err_no_auth_url(self):
         self.assertRaises(exceptions.AuthorizationFailure,
