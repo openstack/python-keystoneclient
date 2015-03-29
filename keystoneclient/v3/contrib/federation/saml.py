@@ -14,6 +14,7 @@ from keystoneclient import base
 
 
 SAML2_ENDPOINT = '/auth/OS-FEDERATION/saml2'
+ECP_ENDPOINT = '/auth/OS-FEDERATION/saml2/ecp'
 
 
 class SamlManager(base.Manager):
@@ -34,6 +35,33 @@ class SamlManager(base.Manager):
         :rtype: string
         """
 
+        headers, body = self._create_common_request(service_provider, token_id)
+        resp, body = self.client.post(SAML2_ENDPOINT, json=body,
+                                      headers=headers)
+        return resp.text
+
+    def create_ecp_assertion(self, service_provider, token_id):
+        """Create an ECP wrapped SAML assertion from a token.
+
+        Equivalent Identity API call:
+        POST /auth/OS-FEDERATION/saml2/ecp
+
+        :param service_provider: Service Provider resource.
+        :type service_provider: string
+        :param token_id: Token to transform to SAML assertion.
+        :type token_id: string
+
+        :returns: SAML representation of token_id, wrapped in ECP envelope
+        :rtype: string
+        """
+
+        headers, body = self._create_common_request(service_provider, token_id)
+        resp, body = self.client.post(ECP_ENDPOINT, json=body,
+                                      headers=headers)
+        return resp.text
+
+    def _create_common_request(self, service_provider, token_id):
+        headers = {'Content-Type': 'application/json'}
         body = {
             'auth': {
                 'identity': {
@@ -50,7 +78,4 @@ class SamlManager(base.Manager):
             }
         }
 
-        headers = {'Content-Type': 'application/json'}
-        resp, body = self.client.post(SAML2_ENDPOINT, json=body,
-                                      headers=headers)
-        return resp.text
+        return (headers, body)

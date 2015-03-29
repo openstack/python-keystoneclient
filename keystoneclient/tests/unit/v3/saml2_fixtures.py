@@ -170,8 +170,9 @@ DOMAINS = {
     }
 }
 
-TOKEN_BASED_SAML = """
-<?xml version='1.0' encoding='UTF-8'?>
+SAML_ENCODING = "<?xml version='1.0' encoding='UTF-8'?>"
+
+TOKEN_SAML_RESPONSE = """
 <ns2:Response Destination="http://beta.example.com/Shibboleth.sso/POST/ECP"
   ID="8c21de08d2f2435c9acf13e72c982846"
   IssueInstant="2015-03-25T14:43:21Z"
@@ -253,3 +254,28 @@ TOKEN_BASED_SAML = """
   </saml:Assertion>
 </ns2:Response>
 """
+
+TOKEN_BASED_SAML = ''.join([SAML_ENCODING, TOKEN_SAML_RESPONSE])
+
+ECP_ENVELOPE = """
+<ns0:Envelope
+  xmlns:ns0="http://schemas.xmlsoap.org/soap/envelope/"
+  xmlns:ns1="urn:oasis:names:tc:SAML:2.0:profiles:SSO:ecp"
+  xmlns:ns2="urn:oasis:names:tc:SAML:2.0:protocol"
+  xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
+  xmlns:xmldsig="http://www.w3.org/2000/09/xmldsig#"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <ns0:Header>
+    <ns1:RelayState
+      ns0:actor="http://schemas.xmlsoap.org/soap/actor/next"
+      ns0:mustUnderstand="1">
+        ss:mem:1ddfe8b0f58341a5a840d2e8717b0737
+      </ns1:RelayState>
+  </ns0:Header>
+  <ns0:Body>
+  {0}
+  </ns0:Body>
+</ns0:Envelope>
+""".format(TOKEN_SAML_RESPONSE)
+
+TOKEN_BASED_ECP = ''.join([SAML_ENCODING, ECP_ENVELOPE])

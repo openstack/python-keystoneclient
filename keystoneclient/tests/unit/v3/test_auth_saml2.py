@@ -631,6 +631,8 @@ class SAMLGenerationTests(utils.TestCase):
         self.manager = self.client.federation.saml
         self.SAML2_FULL_URL = ''.join([self.TEST_URL,
                                        saml_manager.SAML2_ENDPOINT])
+        self.ECP_FULL_URL = ''.join([self.TEST_URL,
+                                     saml_manager.ECP_ENDPOINT])
 
     def test_saml_create(self):
         """Test that a token can be exchanged for a SAML assertion."""
@@ -647,6 +649,29 @@ class SAMLGenerationTests(utils.TestCase):
 
         # Ensure returned text is correct
         self.assertEqual(saml2_fixtures.TOKEN_BASED_SAML, text)
+
+        # Ensure request headers and body are correct
+        req_json = self.requests_mock.last_request.json()
+        self.assertEqual(token_id, req_json['auth']['identity']['token']['id'])
+        self.assertEqual(service_provider_id,
+                         req_json['auth']['scope']['service_provider']['id'])
+        self.assertRequestHeaderEqual('Content-Type', 'application/json')
+
+    def test_ecp_create(self):
+        """Test that a token can be exchanged for an ECP wrapped assertion."""
+
+        token_id = uuid.uuid4().hex
+        service_provider_id = uuid.uuid4().hex
+
+        # Mock returned text for '/auth/OS-FEDERATION/saml2/ecp
+        self.requests_mock.post(self.ECP_FULL_URL,
+                                text=saml2_fixtures.TOKEN_BASED_ECP)
+
+        text = self.manager.create_ecp_assertion(service_provider_id,
+                                                 token_id)
+
+        # Ensure returned text is correct
+        self.assertEqual(saml2_fixtures.TOKEN_BASED_ECP, text)
 
         # Ensure request headers and body are correct
         req_json = self.requests_mock.last_request.json()
