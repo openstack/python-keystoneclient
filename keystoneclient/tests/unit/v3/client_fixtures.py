@@ -11,6 +11,7 @@
 #    under the License.
 
 from __future__ import unicode_literals
+import uuid
 
 from keystoneclient import fixture
 
@@ -30,7 +31,8 @@ def domain_scoped_token():
                         user_domain_name='exampledomain',
                         expires='2010-11-01T03:32:15-05:00',
                         domain_id='8e9283b7ba0b1038840c3842058b86ab',
-                        domain_name='anotherdomain')
+                        domain_name='anotherdomain',
+                        audit_chain_id=uuid.uuid4().hex)
 
     f.add_role(id='76e72a', name='admin')
     f.add_role(id='f4f392', name='member')
@@ -78,7 +80,8 @@ def project_scoped_token():
                         project_id='225da22d3ce34b15877ea70b2a575f58',
                         project_name='exampleproject',
                         project_domain_id='4e6893b7ba0b4006840c3845660b86ed',
-                        project_domain_name='exampledomain')
+                        project_domain_name='exampledomain',
+                        audit_chain_id=uuid.uuid4().hex)
 
     f.add_role(id='76e72a', name='admin')
     f.add_role(id='f4f392', name='member')
@@ -135,7 +138,8 @@ def auth_response_body():
                         project_domain_id='123',
                         project_domain_name='aDomain',
                         project_id='345',
-                        project_name='aTenant')
+                        project_name='aTenant',
+                        audit_chain_id=uuid.uuid4().hex)
 
     f.add_role(id='76e72a', name='admin')
     f.add_role(id='f4f392', name='member')
@@ -179,4 +183,5 @@ def trust_token():
                            trust_id='fe0aef',
                            trust_impersonation=False,
                            trustee_user_id='0ca8f6',
-                           trustor_user_id='bd263c')
+                           trustor_user_id='bd263c',
+                           audit_chain_id=uuid.uuid4().hex)
