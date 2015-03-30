@@ -496,3 +496,38 @@ class V3IdentityPlugin(utils.TestCase):
         self.assertIs(v3.AuthMethod, v3_base.AuthMethod)
         self.assertIs(v3.AuthConstructor, v3_base.AuthConstructor)
         self.assertIs(v3.Auth, v3_base.Auth)
+
+    def test_unscoped_request(self):
+        token = fixture.V3Token()
+        self.stub_auth(json=token)
+        password = uuid.uuid4().hex
+
+        a = v3.Password(self.TEST_URL,
+                        user_id=token.user_id,
+                        password=password,
+                        unscoped=True)
+        s = session.Session()
+
+        auth_ref = a.get_access(s)
+
+        self.assertFalse(auth_ref.scoped)
+        body = self.requests_mock.last_request.json()
+
+        ident = body['auth']['identity']
+
+        self.assertEqual(['password'], ident['methods'])
+        self.assertEqual(token.user_id, ident['password']['user']['id'])
+        self.assertEqual(password, ident['password']['user']['password'])
+
+        self.assertEqual({}, body['auth']['scope']['unscoped'])
+
+    def test_unscoped_with_scope_data(self):
+        a = v3.Password(self.TEST_URL,
+                        user_id=uuid.uuid4().hex,
+                        password=uuid.uuid4().hex,
+                        unscoped=True,
+                        project_id=uuid.uuid4().hex)
+
+        s = session.Session()
+
+        self.assertRaises(exceptions.AuthorizationFailure, a.get_auth_ref, s)

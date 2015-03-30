@@ -112,9 +112,13 @@ class Auth(BaseAuth):
                                 is going to expire. (optional) default True
     :param bool include_catalog: Include the service catalog in the returned
                                  token. (optional) default True.
+    :param bool unscoped: Force the return of an unscoped token. This will make
+                          the keystone server return an unscoped token even if
+                          a default_project_id is set for this user.
     """
 
     def __init__(self, auth_url, auth_methods, **kwargs):
+        self.unscoped = kwargs.pop('unscoped', False)
         super(Auth, self).__init__(auth_url=auth_url, **kwargs)
         self.auth_methods = auth_methods
 
@@ -138,12 +142,13 @@ class Auth(BaseAuth):
 
         mutual_exclusion = [bool(self.domain_id or self.domain_name),
                             bool(self.project_id or self.project_name),
-                            bool(self.trust_id)]
+                            bool(self.trust_id),
+                            bool(self.unscoped)]
 
         if sum(mutual_exclusion) > 1:
             raise exceptions.AuthorizationFailure(
                 _('Authentication cannot be scoped to multiple targets. Pick '
-                  'one of: project, domain or trust'))
+                  'one of: project, domain, trust or unscoped'))
 
         if self.domain_id:
             body['auth']['scope'] = {'domain': {'id': self.domain_id}}
@@ -161,6 +166,8 @@ class Auth(BaseAuth):
                 scope['project']['domain'] = {'name': self.project_domain_name}
         elif self.trust_id:
             body['auth']['scope'] = {'OS-TRUST:trust': {'id': self.trust_id}}
+        elif self.unscoped:
+            body['auth']['scope'] = {'unscoped': {}}
 
         # NOTE(jamielennox): we add nocatalog here rather than in token_url
         # directly as some federation plugins require the base token_url
