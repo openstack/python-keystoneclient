@@ -34,8 +34,9 @@ def get_options():
 @six.add_metaclass(abc.ABCMeta)
 class BaseIdentityPlugin(base.BaseAuthPlugin):
 
-    # we count a token as valid if it is valid for at least this many seconds
-    MIN_TOKEN_LIFE_SECONDS = 1
+    # we count a token as valid (not needing refreshing) if it is valid for at
+    # least this many seconds before the token expiry time
+    MIN_TOKEN_LIFE_SECONDS = 120
 
     def __init__(self,
                  auth_url=None,
