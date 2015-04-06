@@ -27,17 +27,9 @@ Identity V2 and V3 clients can also be created directly. See
 
 """
 
+import sys
 
 import pbr.version
-
-from keystoneclient import access
-from keystoneclient import client
-from keystoneclient import exceptions
-from keystoneclient import generic
-from keystoneclient import httpclient
-from keystoneclient import service_catalog
-from keystoneclient import v2_0
-from keystoneclient import v3
 
 
 __version__ = pbr.version.VersionInfo('python-keystoneclient').version_string()
@@ -55,3 +47,32 @@ __all__ = [
     'httpclient',
     'service_catalog',
 ]
+
+
+class _LazyImporter(object):
+    def __init__(self, module):
+        self._module = module
+
+    def __getattr__(self, name):
+        # NB: this is only called until the import has been done.
+        # These submodules are part of the API without explicit importing, but
+        # expensive to load, so we load them on-demand rather than up-front.
+        lazy_submodules = [
+            'access',
+            'client',
+            'exceptions',
+            'generic',
+            'httpclient',
+            'service_catalog',
+            'v2_0',
+            'v3',
+        ]
+        # __import__ rather than importlib for Python 2.6.
+        if name in lazy_submodules:
+            __import__('keystoneclient.%s' % name)
+            return getattr(self, name)
+        # Return module attributes like __all__ etc.
+        return getattr(self._module, name)
+
+
+sys.modules[__name__] = _LazyImporter(sys.modules[__name__])
