@@ -124,7 +124,7 @@ class S3TokenMiddlewareTestGood(S3TokenMiddlewareTestBase):
     @mock.patch.object(requests, 'post')
     def test_insecure(self, MOCK_REQUEST):
         self.middleware = (
-            s3_token.filter_factory({'insecure': True})(FakeApp()))
+            s3_token.filter_factory({'insecure': 'True'})(FakeApp()))
 
         text_return_value = jsonutils.dumps(GOOD_RESPONSE)
         if six.PY3:
@@ -141,6 +141,28 @@ class S3TokenMiddlewareTestGood(S3TokenMiddlewareTestBase):
         self.assertTrue(MOCK_REQUEST.called)
         mock_args, mock_kwargs = MOCK_REQUEST.call_args
         self.assertIs(mock_kwargs['verify'], False)
+
+    def test_insecure_option(self):
+        # insecure is passed as a string.
+
+        # Some non-secure values.
+        true_values = ['true', 'True', '1', 'yes']
+        for val in true_values:
+            config = {'insecure': val, 'certfile': 'false_ind'}
+            middleware = s3_token.filter_factory(config)(FakeApp())
+            self.assertIs(False, middleware.verify)
+
+        # Some "secure" values, including unexpected value.
+        false_values = ['false', 'False', '0', 'no', 'someweirdvalue']
+        for val in false_values:
+            config = {'insecure': val, 'certfile': 'false_ind'}
+            middleware = s3_token.filter_factory(config)(FakeApp())
+            self.assertEqual('false_ind', middleware.verify)
+
+        # Default is secure.
+        config = {'certfile': 'false_ind'}
+        middleware = s3_token.filter_factory(config)(FakeApp())
+        self.assertIs('false_ind', middleware.verify)
 
 
 class S3TokenMiddlewareTestBad(S3TokenMiddlewareTestBase):
