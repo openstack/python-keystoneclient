@@ -34,6 +34,7 @@ This WSGI component:
 import logging
 
 from oslo_serialization import jsonutils
+from oslo_utils import strutils
 import requests
 import six
 from six.moves import urllib
@@ -116,7 +117,7 @@ class S3Token(object):
         self.request_uri = '%s://%s:%s' % (auth_protocol, auth_host, auth_port)
 
         # SSL
-        insecure = conf.get('insecure', False)
+        insecure = strutils.bool_from_string(conf.get('insecure', False))
         cert_file = conf.get('certfile')
         key_file = conf.get('keyfile')
 
