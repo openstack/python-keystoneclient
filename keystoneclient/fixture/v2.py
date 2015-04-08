@@ -171,7 +171,7 @@ class Token(dict):
 
     @property
     def trust_id(self):
-        return self.root.setdefault('trust', {})['id']
+        return self.root.setdefault('trust', {}).get('id')
 
     @trust_id.setter
     def trust_id(self, value):

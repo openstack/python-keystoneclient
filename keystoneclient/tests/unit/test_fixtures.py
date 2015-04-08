@@ -35,6 +35,7 @@ class V2TokenTests(utils.TestCase):
         self.assertEqual(user_id, token['access']['user']['id'])
         self.assertEqual(user_name, token.user_name)
         self.assertEqual(user_name, token['access']['user']['name'])
+        self.assertIsNone(token.trust_id)
 
     def test_tenant_scoped(self):
         tenant_id = uuid.uuid4().hex
@@ -48,6 +49,7 @@ class V2TokenTests(utils.TestCase):
         self.assertEqual(tenant_name, token.tenant_name)
         tn = token['access']['token']['tenant']['name']
         self.assertEqual(tenant_name, tn)
+        self.assertIsNone(token.trust_id)
 
     def test_trust_scoped(self):
         trust_id = uuid.uuid4().hex
