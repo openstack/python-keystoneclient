@@ -104,6 +104,7 @@
         ],
         "issued_at": "2002-01-18T21:14:07Z",
         "expires_at": "2038-01-18T21:14:07Z",
+        "audit_ids": ["ZzzZ2ZZYqT8OzfUVvrjEITQ", "cCCCCCctTzO1-XUk5STybw"],
         "project": {
             "enabled": true,
             "description": null,
