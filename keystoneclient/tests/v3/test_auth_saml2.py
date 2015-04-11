@@ -582,9 +582,8 @@ class AuthenticateviaADFSTests(utils.TestCase):
             self.session)
 
     def test_access_sp_no_cookies_fail(self):
-        # clean cookie jar
-        self.session.session.cookies = []
-
+        # There are no cookies in the session initially, and
+        # _access_service_provider requires a cookie in the session.
         self.assertRaises(exceptions.AuthorizationFailure,
                           self.adfsplugin._access_service_provider,
                           self.session)
@@ -594,7 +593,11 @@ class AuthenticateviaADFSTests(utils.TestCase):
                           json=saml2_fixtures.UNSCOPED_TOKEN,
                           headers=client_fixtures.AUTH_RESPONSE_HEADERS)
 
-        self.session.session.cookies = [object()]
+        # _access_service_provider requires a cookie in the session.
+        cookie = requests.cookies.create_cookie(
+            name=self.getUniqueString(), value=self.getUniqueString())
+        self.session.session.cookies.set_cookie(cookie)
+
         self.adfsplugin._access_service_provider(self.session)
         response = self.adfsplugin.authenticated_response
 
@@ -617,7 +620,10 @@ class AuthenticateviaADFSTests(utils.TestCase):
 
         # NOTE(marek-denis): We need to mimic this until self.requests can
         # issue cookies properly.
-        self.session.session.cookies = [object()]
+        cookie = requests.cookies.create_cookie(
+            name=self.getUniqueString(), value=self.getUniqueString())
+        self.session.session.cookies.set_cookie(cookie)
+
         token, token_json = self.adfsplugin._get_unscoped_token(self.session)
         self.assertEqual(token, client_fixtures.AUTH_SUBJECT_TOKEN)
         self.assertEqual(saml2_fixtures.UNSCOPED_TOKEN['token'], token_json)
