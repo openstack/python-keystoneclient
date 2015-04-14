@@ -148,8 +148,8 @@ class Session(object):
         if user_agent is not None:
             self.user_agent = user_agent
 
-    @classmethod
-    def process_header(cls, header):
+    @staticmethod
+    def _process_header(header):
         """Redacts the secure headers to be logged."""
         secure_headers = ('authorization', 'x-auth-token',
                           'x-subject-token',)
@@ -186,7 +186,7 @@ class Session(object):
         if headers:
             for header in six.iteritems(headers):
                 string_parts.append('-H "%s: %s"'
-                                    % Session.process_header(header))
+                                    % self._process_header(header))
         if json:
             data = jsonutils.dumps(json)
         if data:
@@ -217,7 +217,7 @@ class Session(object):
             string_parts.append('[%s]' % status_code)
         if headers:
             for header in six.iteritems(headers):
-                string_parts.append('%s: %s' % Session.process_header(header))
+                string_parts.append('%s: %s' % self._process_header(header))
         if text:
             string_parts.append('\nRESP BODY: %s\n' % text)
 
