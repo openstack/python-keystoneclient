@@ -10,7 +10,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import argparse
 import uuid
+
+import mock
 
 from keystoneclient.auth.identity.generic import password
 from keystoneclient.auth.identity import v2
@@ -66,3 +69,31 @@ class PasswordTests(utils.GenericPluginTestCase):
     def test_symbols(self):
         self.assertIs(v3.Password, v3_password.Password)
         self.assertIs(v3.PasswordMethod, v3_password.PasswordMethod)
+
+    @mock.patch('sys.stdin', autospec=True)
+    def test_prompt_password(self, mock_stdin):
+        parser = argparse.ArgumentParser()
+        self.PLUGIN_CLASS.register_argparse_arguments(parser)
+
+        username = uuid.uuid4().hex
+        user_domain_id = uuid.uuid4().hex
+        auth_url = uuid.uuid4().hex
+        project_id = uuid.uuid4().hex
+        password = uuid.uuid4().hex
+
+        opts = parser.parse_args(['--os-username', username,
+                                  '--os-auth-url', auth_url,
+                                  '--os-user-domain-id', user_domain_id,
+                                  '--os-project-id', project_id])
+
+        with mock.patch('getpass.getpass') as mock_getpass:
+            mock_getpass.return_value = password
+            mock_stdin.isatty = lambda: True
+
+            plugin = self.PLUGIN_CLASS.load_from_argparse_arguments(opts)
+
+            self.assertEqual(auth_url, plugin.auth_url)
+            self.assertEqual(username, plugin._username)
+            self.assertEqual(project_id, plugin._project_id)
+            self.assertEqual(user_domain_id, plugin._user_domain_id)
+            self.assertEqual(password, plugin._password)

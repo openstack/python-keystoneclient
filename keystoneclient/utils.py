@@ -147,6 +147,24 @@ def hash_signed_token(signed_text, mode='md5'):
     return hash_.hexdigest()
 
 
+def prompt_user_password():
+    """Prompt user for a password
+
+    Prompt for a password if stdin is a tty.
+    """
+    password = None
+
+    # If stdin is a tty, try prompting for the password
+    if hasattr(sys.stdin, 'isatty') and sys.stdin.isatty():
+        # Check for Ctl-D
+        try:
+            password = getpass.getpass('Password: ')
+        except EOFError:
+            pass
+
+    return password
+
+
 def prompt_for_password():
     """Prompt user for password if not provided so the password
     doesn't show up in the bash history.

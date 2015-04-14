@@ -82,3 +82,11 @@ class Password(base.BaseGenericPlugin):
         options = super(Password, cls).get_options()
         options.extend(get_options())
         return options
+
+    @classmethod
+    def load_from_argparse_arguments(cls, namespace, **kwargs):
+        if not (kwargs.get('password') or namespace.os_password):
+            kwargs['password'] = utils.prompt_user_password()
+
+        return super(Password, cls).load_from_argparse_arguments(namespace,
+                                                                 **kwargs)
