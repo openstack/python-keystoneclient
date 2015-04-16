@@ -25,8 +25,9 @@ class _Service(dict):
     this object and then you can add_endpoints to the service.
     """
 
-    def add_endpoint(self, interface, url, region=None):
-        data = {'interface': interface,
+    def add_endpoint(self, interface, url, region=None, id=None):
+        data = {'id': id or uuid.uuid4().hex,
+                'interface': interface,
                 'url': url,
                 'region': region,
                 'region_id': region}
@@ -354,8 +355,8 @@ class Token(dict):
         roles.append(data)
         return data
 
-    def add_service(self, type, name=None):
-        service = _Service(type=type)
+    def add_service(self, type, name=None, id=None):
+        service = _Service(type=type, id=id or uuid.uuid4().hex)
         if name:
             service['name'] = name
         self.root.setdefault('catalog', []).append(service)
