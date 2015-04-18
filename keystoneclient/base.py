@@ -305,6 +305,8 @@ class CrudManager(Manager):
 
         If a `base_url` is provided, the generated URL will be appended to it.
 
+        If a 'tail' is provided, it will be appended to the end of the URL.
+
         """
         if dict_args_in_out is None:
             dict_args_in_out = {}
@@ -316,6 +318,9 @@ class CrudManager(Manager):
         entity_id = dict_args_in_out.pop('%s_id' % self.key, None)
         if entity_id is not None:
             url += '/%s' % entity_id
+
+        if dict_args_in_out.get('tail'):
+            url += dict_args_in_out['tail']
 
         return url
 
