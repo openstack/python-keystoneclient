@@ -229,6 +229,10 @@ def pkiz_verify(signed_text, signing_cert_file_name, ca_file_name):
 # This function is deprecated and will be removed once the ASN1 token format
 # is no longer required. It is only here to be used for testing.
 def token_to_cms(signed_text):
+    """Converts a custom formatted token to a PEM-formatted token.
+
+    See documentation for cms_to_token() for details on the custom formatting.
+    """
     copy_of_text = signed_text.replace('-', '/')
 
     lines = ['-----BEGIN CMS-----']
@@ -366,7 +370,25 @@ def cms_sign_token(text, signing_cert_file_name, signing_key_file_name,
 
 
 def cms_to_token(cms_text):
+    """Converts a CMS-signed token in PEM format to a custom URL-safe format.
 
+    The conversion consists of replacing '/' char in the PEM-formatted token
+    with the '-' char and doing other such textual replacements to make the
+    result marshallable via HTTP. The return value can thus be used as the
+    value of a HTTP header such as "X-Auth-Token".
+
+    This ad-hoc conversion is an unfortunate oversight since the returned
+    value now does not conform to any of the standard variants of base64
+    encoding. It would have been better to use base64url encoding (either on
+    the PEM formatted text or, perhaps even better, on the inner CMS-signed
+    binary value without any PEM formatting). In any case, the same conversion
+    is done in reverse in the other direction (for token verification), so
+    there are no correctness issues here. Note that the non-standard encoding
+    of the token will be preserved so as to not break backward compatibility.
+
+    The conversion issue is detailed by the code author in a blog post at
+    http://adam.younglogic.com/2014/02/compressed-tokens/.
+    """
     start_delim = '-----BEGIN CMS-----'
     end_delim = '-----END CMS-----'
     signed_text = cms_text
