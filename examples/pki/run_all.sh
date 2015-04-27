@@ -26,6 +26,5 @@ generate_ca
 ssl_cert_req
 cms_signing_cert_req
 issue_certs
-create_middleware_cert
 gen_sample_cms
 cleanup

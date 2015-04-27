@@ -13,7 +13,6 @@ mock>=1.2
 oauthlib>=0.6
 oslosphinx!=3.4.0,>=2.5.0 # Apache-2.0
 oslotest>=1.10.0 # Apache-2.0
-pycrypto>=2.6
 reno>=0.1.1 # Apache2
 requests-mock>=0.7.0 # Apache-2.0
 sphinx!=1.2.0,!=1.3b1,<1.3,>=1.1.2

@@ -1,0 +1,10 @@
+---
+prelude: >
+    keystoneclient.middleware has been removed.
+critical:
+  - >
+    [`bug 1449066 <https://bugs.launchpad.net/python-keystoneclient/+bug/1449066>`_]
+    The module `keystoneclient.middleware` has been removed in favor of the
+    keystonemiddleware library. The aforementioned module has been depreacted
+    since the v0.10.0 of keystoneclient which was inclued in the Juno release
+    of OpenStack.
