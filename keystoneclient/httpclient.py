@@ -51,6 +51,7 @@ if not hasattr(urlparse, 'parse_qsl'):
     urlparse.parse_qsl = cgi.parse_qsl
 
 
+from keystoneclient import _discover
 from keystoneclient import access
 from keystoneclient import adapter
 from keystoneclient.auth import base
@@ -323,13 +324,16 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         # NOTE(jamielennox): unfortunately we can't just use **kwargs here as
         # it would incompatibly limit the kwargs that can be passed to __init__
         # try and keep this list in sync with adapter.Adapter.__init__
+        version = (
+            _discover.normalize_version_number(self.version) if self.version
+            else None)
         self._adapter = _KeystoneAdapter(session,
                                          service_type='identity',
                                          service_name=service_name,
                                          interface=interface,
                                          region_name=region_name,
                                          endpoint_override=endpoint_override,
-                                         version=self.version,
+                                         version=version,
                                          auth=auth,
                                          user_agent=user_agent,
                                          connect_retries=connect_retries)
