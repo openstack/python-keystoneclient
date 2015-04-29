@@ -1,18 +1,29 @@
 Python bindings to the OpenStack Identity API (Keystone)
 ========================================================
 
-This is a client for the OpenStack Identity API, implemented by Keystone.
-There's a Python API (the ``keystoneclient`` module), and a command-line script
-(``keystone``).
+This is a client for the OpenStack Identity API, implemented by the Keystone
+team; it contains a Python API (the ``keystoneclient`` module) for
+OpenStack's Identity Service. For command line interface support, use
+`OpenStackClient`_.
 
-Development takes place via the usual OpenStack processes as outlined in the
-`developer guide <http://docs.openstack.org/infra/manual/developers.html>`_.  The master
-repository is in `Git <http://git.openstack.org/cgit/openstack/python-keystoneclient>`_.
+* `PyPi`_ - package installation
+* `Online Documentation`_
+* `Launchpad project`_ - release management
+* `Blueprints`_ - feature specifications
+* `Bugs`_ - issue tracking
+* `Source`_
+* `Specs`_
+* `How to Contribute`_
 
-This code is a fork of Rackspace's python-novaclient which is in turn a fork of
-`Jacobian's python-cloudservers
-<http://github.com/jacobian/python-cloudservers>`_. ``python-keystoneclient``
-is licensed under the Apache License like the rest of OpenStack.
+.. _PyPi: https://pypi.python.org/pypi/python-keystoneclient
+.. _Online Documentation: http://docs.openstack.org/developer/python-keystoneclient
+.. _Launchpad project: https://launchpad.net/python-keystoneclient
+.. _Blueprints: https://blueprints.launchpad.net/python-keystoneclient
+.. _Bugs: https://bugs.launchpad.net/python-keystoneclient
+.. _Source: https://git.openstack.org/cgit/openstack/python-keystoneclient
+.. _OpenStackClient: https://pypi.python.org/pypi/python-openstackclient
+.. _How to Contribute: http://docs.openstack.org/infra/manual/developers.html
+.. _Specs: http://specs.openstack.org/openstack/keystone-specs/
 
 .. contents:: Contents:
    :local:
