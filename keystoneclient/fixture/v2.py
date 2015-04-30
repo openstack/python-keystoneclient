@@ -21,12 +21,13 @@ from keystoneclient.fixture import exception
 class _Service(dict):
 
     def add_endpoint(self, public, admin=None, internal=None,
-                     tenant_id=None, region=None):
+                     tenant_id=None, region=None, id=None):
         data = {'tenantId': tenant_id or uuid.uuid4().hex,
                 'publicURL': public,
                 'adminURL': admin or public,
                 'internalURL': internal or public,
-                'region': region}
+                'region': region,
+                'id': id or uuid.uuid4().hex}
 
         self.setdefault('endpoints', []).append(data)
         return data
