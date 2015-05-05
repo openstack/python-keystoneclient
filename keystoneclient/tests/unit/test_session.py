@@ -174,6 +174,18 @@ class SessionTests(utils.TestCase):
             self.assertEqual(v, resp.headers[k])
             self.assertNotIn(v, self.logger.output)
 
+    def test_logs_failed_output(self):
+        """Test that output is logged even for failed requests"""
+
+        session = client_session.Session()
+        body = uuid.uuid4().hex
+
+        self.stub_url('GET', text=body, status_code=400)
+        resp = session.get(self.TEST_URL, raise_exc=False)
+
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn(body, self.logger.output)
+
     def test_logging_cacerts(self):
         path_to_certs = '/path/to/certs'
         session = client_session.Session(verify=path_to_certs)
