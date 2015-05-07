@@ -181,4 +181,4 @@ class KeystoneClientTest(utils.TestCase):
             self.assertEqual(v, getattr(cl._adapter, k))
 
         self.assertEqual('identity', cl._adapter.service_type)
-        self.assertEqual('v2.0', cl._adapter.version)
+        self.assertEqual((2, 0), cl._adapter.version)
