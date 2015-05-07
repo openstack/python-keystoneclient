@@ -20,13 +20,27 @@
 Base utilities to build API operation managers and objects on top of.
 """
 
+########################################################################
+#
+# THIS MODULE IS DEPRECATED
+#
+# Please refer to
+# https://etherpad.openstack.org/p/kilo-keystoneclient-library-proposals for
+# the discussion leading to this deprecation.
+#
+# We recommend checking out the python-openstacksdk project
+# (https://launchpad.net/python-openstacksdk) instead.
+#
+########################################################################
+
+
 # E1102: %s is not callable
 # pylint: disable=E1102
 
 import abc
 import copy
 
-from oslo.utils import strutils
+from oslo_utils import strutils
 import six
 from six.moves.urllib import parse
 
@@ -388,7 +402,7 @@ class CrudManager(BaseManager):
                 'name': self.resource_class.__name__,
                 'args': kwargs
             }
-            raise exceptions.NotFound(404, msg)
+            raise exceptions.NotFound(msg)
         elif num > 1:
             raise exceptions.NoUniqueMatch
         else:

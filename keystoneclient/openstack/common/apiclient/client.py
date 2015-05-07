@@ -34,8 +34,8 @@ try:
 except ImportError:
     import json
 
-from oslo.utils import encodeutils
-from oslo.utils import importutils
+from oslo_utils import encodeutils
+from oslo_utils import importutils
 import requests
 
 from keystoneclient.openstack.common._i18n import _
@@ -118,7 +118,7 @@ class HTTPClient(object):
             return
 
         string_parts = [
-            "curl -i",
+            "curl -g -i",
             "-X '%s'" % method,
             "'%s'" % url,
         ]
