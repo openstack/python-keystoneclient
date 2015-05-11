@@ -137,17 +137,16 @@ class ProtocolTests(utils.TestCase, utils.CrudTests):
 
         """
         response = copy.deepcopy(ref)
-        response['id'] = response.pop('protocol_id')
         del response['identity_provider']
         return response
 
     def new_ref(self, **kwargs):
+        kwargs.setdefault('id', uuid.uuid4().hex)
         kwargs.setdefault('mapping', uuid.uuid4().hex)
         kwargs.setdefault('identity_provider', uuid.uuid4().hex)
-        kwargs.setdefault('protocol_id', uuid.uuid4().hex)
         return kwargs
 
-    def build_parts(self, identity_provider, protocol_id=None):
+    def build_parts(self, idp_id, protocol_id=None):
         """Build array used to construct mocking URL.
 
         Construct and return array with URL parts later used
@@ -158,7 +157,7 @@ class ProtocolTests(utils.TestCase, utils.CrudTests):
 
         """
         parts = ['OS-FEDERATION', 'identity_providers',
-                 identity_provider, 'protocols']
+                 idp_id, 'protocols']
         if protocol_id:
             parts.append(protocol_id)
         return parts
@@ -203,15 +202,19 @@ class ProtocolTests(utils.TestCase, utils.CrudTests):
         $identity_provider/protocols/$protocol
 
         """
-        request_args = self.new_ref()
-        expected = self._transform_to_response(request_args)
-        parts = self.build_parts(request_args['identity_provider'],
-                                 request_args['protocol_id'])
+        ref = self.new_ref()
+        expected = self._transform_to_response(ref)
+        parts = self.build_parts(
+            idp_id=ref['identity_provider'],
+            protocol_id=ref['id'])
         self.stub_entity('PUT', entity=expected,
                          parts=parts, status_code=201)
-        returned = self.manager.create(**request_args)
+        returned = self.manager.create(
+            protocol_id=ref['id'],
+            identity_provider=ref['identity_provider'],
+            mapping=ref['mapping'])
         self.assertEqual(expected, returned.to_dict())
-        request_body = {'mapping_id': request_args['mapping']}
+        request_body = {'mapping_id': ref['mapping']}
         self.assertEntityRequestBodyIs(request_body)
 
     def test_get(self):
@@ -221,16 +224,17 @@ class ProtocolTests(utils.TestCase, utils.CrudTests):
         $identity_provider/protocols/$protocol
 
         """
-        request_args = self.new_ref()
-        expected = self._transform_to_response(request_args)
+        ref = self.new_ref()
+        expected = self._transform_to_response(ref)
 
-        parts = self.build_parts(request_args['identity_provider'],
-                                 request_args['protocol_id'])
+        parts = self.build_parts(
+            idp_id=ref['identity_provider'],
+            protocol_id=ref['id'])
         self.stub_entity('GET', entity=expected,
                          parts=parts, status_code=201)
 
-        returned = self.manager.get(request_args['identity_provider'],
-                                    request_args['protocol_id'])
+        returned = self.manager.get(ref['identity_provider'],
+                                    ref['id'])
         self.assertIsInstance(returned, self.model)
         self.assertEqual(expected, returned.to_dict())
 
@@ -241,14 +245,15 @@ class ProtocolTests(utils.TestCase, utils.CrudTests):
         $identity_provider/protocols/$protocol
 
         """
-        request_args = self.new_ref()
-        parts = self.build_parts(request_args['identity_provider'],
-                                 request_args['protocol_id'])
+        ref = self.new_ref()
+        parts = self.build_parts(
+            idp_id=ref['identity_provider'],
+            protocol_id=ref['id'])
 
         self.stub_entity('DELETE', parts=parts, status_code=204)
 
-        self.manager.delete(request_args['identity_provider'],
-                            request_args['protocol_id'])
+        self.manager.delete(ref['identity_provider'],
+                            ref['id'])
 
     def test_list(self):
         """Test listing all federation protocols tied to the Identity Provider.
@@ -263,13 +268,13 @@ class ProtocolTests(utils.TestCase, utils.CrudTests):
                 'mapping_id': uuid.uuid4().hex
             }
 
-        request_args = self.new_ref()
+        ref = self.new_ref()
         expected = [_ref_protocols() for _ in range(3)]
-        parts = self.build_parts(request_args['identity_provider'])
+        parts = self.build_parts(idp_id=ref['identity_provider'])
         self.stub_entity('GET', parts=parts,
                          entity=expected, status_code=200)
 
-        returned = self.manager.list(request_args['identity_provider'])
+        returned = self.manager.list(ref['identity_provider'])
         for obj, ref_obj in zip(returned, expected):
             self.assertEqual(obj.to_dict(), ref_obj)
 
@@ -293,21 +298,22 @@ class ProtocolTests(utils.TestCase, utils.CrudTests):
         $identity_provider/protocols/$protocol
 
         """
-        request_args = self.new_ref()
-        expected = self._transform_to_response(request_args)
+        ref = self.new_ref()
+        expected = self._transform_to_response(ref)
 
-        parts = self.build_parts(request_args['identity_provider'],
-                                 request_args['protocol_id'])
+        parts = self.build_parts(
+            idp_id=ref['identity_provider'],
+            protocol_id=ref['id'])
 
         self.stub_entity('PATCH', parts=parts,
                          entity=expected, status_code=200)
 
-        returned = self.manager.update(request_args['identity_provider'],
-                                       request_args['protocol_id'],
-                                       mapping=request_args['mapping'])
+        returned = self.manager.update(ref['identity_provider'],
+                                       ref['id'],
+                                       mapping=ref['mapping'])
         self.assertIsInstance(returned, self.model)
         self.assertEqual(expected, returned.to_dict())
-        request_body = {'mapping_id': request_args['mapping']}
+        request_body = {'mapping_id': ref['mapping']}
         self.assertEntityRequestBodyIs(request_body)
 
 
