@@ -142,7 +142,7 @@ class ProtocolTests(utils.TestCase, utils.CrudTests):
 
     def new_ref(self, **kwargs):
         kwargs.setdefault('id', uuid.uuid4().hex)
-        kwargs.setdefault('mapping', uuid.uuid4().hex)
+        kwargs.setdefault('mapping_id', uuid.uuid4().hex)
         kwargs.setdefault('identity_provider', uuid.uuid4().hex)
         return kwargs
 
@@ -212,9 +212,9 @@ class ProtocolTests(utils.TestCase, utils.CrudTests):
         returned = self.manager.create(
             protocol_id=ref['id'],
             identity_provider=ref['identity_provider'],
-            mapping=ref['mapping'])
+            mapping=ref['mapping_id'])
         self.assertEqual(expected, returned.to_dict())
-        request_body = {'mapping_id': ref['mapping']}
+        request_body = {'mapping_id': ref['mapping_id']}
         self.assertEntityRequestBodyIs(request_body)
 
     def test_get(self):
@@ -310,10 +310,10 @@ class ProtocolTests(utils.TestCase, utils.CrudTests):
 
         returned = self.manager.update(ref['identity_provider'],
                                        ref['id'],
-                                       mapping=ref['mapping'])
+                                       mapping=ref['mapping_id'])
         self.assertIsInstance(returned, self.model)
         self.assertEqual(expected, returned.to_dict())
-        request_body = {'mapping_id': ref['mapping']}
+        request_body = {'mapping_id': ref['mapping_id']}
         self.assertEntityRequestBodyIs(request_body)
 
 
