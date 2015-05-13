@@ -18,7 +18,7 @@ from keystoneclient.tests.functional import base
 from keystoneclient.tests.functional.v3 import client_fixtures as fixtures
 
 
-class EndpointGroupsTestCase(base.V3ClientTestCase):
+class EndpointGroupsTestMixin(object):
 
     def check_endpoint_group(self, endpoint_group, endpoint_group_ref=None):
         self.assertIsNotNone(endpoint_group.id)
@@ -39,6 +39,9 @@ class EndpointGroupsTestCase(base.V3ClientTestCase):
             # Only check remaining mandatory attributes
             self.assertIsNotNone(endpoint_group.name)
             self.assertIsNotNone(endpoint_group.filters)
+
+
+class EndpointGroupsTestCase(base.V3ClientTestCase, EndpointGroupsTestMixin):
 
     def test_create_endpoint_group(self):
         endpoint_group_ref = {
