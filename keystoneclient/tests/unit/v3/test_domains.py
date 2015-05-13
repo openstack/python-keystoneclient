@@ -30,6 +30,12 @@ class DomainTests(utils.TestCase, utils.CrudTests):
         kwargs.setdefault('name', uuid.uuid4().hex)
         return kwargs
 
+    def test_filter_for_default_domain_by_id(self):
+        ref = self.new_ref(id='default')
+        super(DomainTests, self).test_list_by_id(
+            ref=ref,
+            id=ref['id'])
+
     def test_list_filter_name(self):
         super(DomainTests, self).test_list(name='adomain123')
 

@@ -278,6 +278,16 @@ class ProtocolTests(utils.TestCase, utils.CrudTests):
         for obj, ref_obj in zip(returned, expected):
             self.assertEqual(obj.to_dict(), ref_obj)
 
+    def test_list_by_id(self):
+        # The test in the parent class needs to be overridden because it
+        # assumes globally unique IDs, which is not the case with protocol IDs
+        # (which are contextualized per identity provider).
+        ref = self.new_ref()
+        super(ProtocolTests, self).test_list_by_id(
+            ref=ref,
+            identity_provider=ref['identity_provider'],
+            id=ref['id'])
+
     def test_list_params(self):
         request_args = self.new_ref()
         filter_kwargs = {uuid.uuid4().hex: uuid.uuid4().hex}

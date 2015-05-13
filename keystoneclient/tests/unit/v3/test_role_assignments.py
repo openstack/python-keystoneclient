@@ -71,6 +71,15 @@ class RoleAssignmentsTests(utils.TestCase, utils.CrudTests):
         self.assertEqual(len(ref_list), len(returned_list))
         [self.assertIsInstance(r, self.model) for r in returned_list]
 
+    def test_list_by_id(self):
+        # It doesn't make sense to "list role assignments by ID" at all, given
+        # that they don't have globally unique IDs in the first place. But
+        # calling RoleAssignmentsManager.list(id=...) should still raise a
+        # TypeError when given an unexpected keyword argument 'id', so we don't
+        # actually have to modify the test in the superclass... I just wanted
+        # to make a note here in case the superclass changes.
+        super(RoleAssignmentsTests, self).test_list_by_id()
+
     def test_list_params(self):
         ref_list = self.TEST_USER_PROJECT_LIST
         self.stub_entity('GET',
