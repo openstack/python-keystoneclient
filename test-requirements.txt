@@ -22,3 +22,6 @@ testrepository>=0.0.18
 testresources>=0.2.4
 testtools>=0.9.36,!=1.2.0
 WebOb>=1.2.3
+
+# Bandit security code scanner
+bandit>=0.10.1
