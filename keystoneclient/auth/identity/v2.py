@@ -153,7 +153,7 @@ class Password(Auth):
                        dest='username',
                        deprecated_name='username',
                        help='Username to login with'),
-            cfg.StrOpt('user-id', help='User ID to longin with'),
+            cfg.StrOpt('user-id', help='User ID to login with'),
             cfg.StrOpt('password', secret=True, help='Password to use'),
         ])
 
