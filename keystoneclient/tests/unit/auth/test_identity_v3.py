@@ -117,9 +117,8 @@ class V3IdentityPlugin(utils.TestCase):
     def setUp(self):
         super(V3IdentityPlugin, self).setUp()
 
-        V3_URL = "%sv3" % self.TEST_URL
         self.TEST_DISCOVERY_RESPONSE = {
-            'versions': {'values': [fixture.V3Discovery(V3_URL)]}}
+            'versions': {'values': [fixture.V3Discovery(self.TEST_URL)]}}
 
         self.TEST_RESPONSE_DICT = {
             "token": {

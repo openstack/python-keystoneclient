@@ -198,26 +198,29 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
         :rtype: string or None
         """
         # NOTE(jamielennox): if you specifically ask for requests to be sent to
-        # the auth url then we can ignore the rest of the checks. Typically if
-        # you are asking for the auth endpoint it means that there is no
-        # catalog to query anyway.
+        # the auth url then we can ignore many of the checks. Typically if you
+        # are asking for the auth endpoint it means that there is no catalog to
+        # query however we still need to support asking for a specific version
+        # of the auth_url for generic plugins.
         if interface is base.AUTH_INTERFACE:
-            return self.auth_url
+            url = self.auth_url
+            service_type = service_type or 'identity'
 
-        if not service_type:
-            LOG.warn(_LW('Plugin cannot return an endpoint without knowing '
-                         'the service type that is required. Add service_type '
-                         'to endpoint filtering data.'))
-            return None
+        else:
+            if not service_type:
+                LOG.warn(_LW('Plugin cannot return an endpoint without '
+                             'knowing the service type that is required. Add '
+                             'service_type to endpoint filtering data.'))
+                return None
 
-        if not interface:
-            interface = 'public'
+            if not interface:
+                interface = 'public'
 
-        service_catalog = self.get_access(session).service_catalog
-        url = service_catalog.url_for(service_type=service_type,
-                                      endpoint_type=interface,
-                                      region_name=region_name,
-                                      service_name=service_name)
+            service_catalog = self.get_access(session).service_catalog
+            url = service_catalog.url_for(service_type=service_type,
+                                          endpoint_type=interface,
+                                          region_name=region_name,
+                                          service_name=service_name)
 
         if not version:
             # NOTE(jamielennox): This may not be the best thing to default to
