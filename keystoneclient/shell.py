@@ -19,7 +19,6 @@
 from __future__ import print_function
 
 import argparse
-import getpass
 import logging
 import os
 import sys
@@ -296,13 +295,8 @@ class OpenStackIdentityShell(object):
                         '--os-username or env[OS_USERNAME]')
 
                 if not args.os_password:
-                    # No password, If we've got a tty, try prompting for it
-                    if hasattr(sys.stdin, 'isatty') and sys.stdin.isatty():
-                        # Check for Ctl-D
-                        try:
-                            args.os_password = getpass.getpass('OS Password: ')
-                        except EOFError:
-                            pass
+                    args.os_password = utils.prompt_user_password()
+
                     # No password because we didn't have a tty or the
                     # user Ctl-D when prompted?
                     if not args.os_password:

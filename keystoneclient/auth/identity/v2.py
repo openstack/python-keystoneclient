@@ -145,6 +145,14 @@ class Password(Auth):
         return {'passwordCredentials': auth}
 
     @classmethod
+    def load_from_argparse_arguments(cls, namespace, **kwargs):
+        if not (kwargs.get('password') or namespace.os_password):
+            kwargs['password'] = utils.prompt_user_password()
+
+        return super(Password, cls).load_from_argparse_arguments(namespace,
+                                                                 **kwargs)
+
+    @classmethod
     def get_options(cls):
         options = super(Password, cls).get_options()
 
