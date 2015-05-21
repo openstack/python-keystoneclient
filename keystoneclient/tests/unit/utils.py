@@ -160,3 +160,50 @@ class TestResponse(requests.Response):
     @property
     def text(self):
         return self.content
+
+
+class DisableModuleFixture(fixtures.Fixture):
+    """A fixture to provide support for unloading/disabling modules."""
+
+    def __init__(self, module, *args, **kw):
+        super(DisableModuleFixture, self).__init__(*args, **kw)
+        self.module = module
+        self._finders = []
+        self._cleared_modules = {}
+
+    def tearDown(self):
+        super(DisableModuleFixture, self).tearDown()
+        for finder in self._finders:
+            sys.meta_path.remove(finder)
+        sys.modules.update(self._cleared_modules)
+
+    def clear_module(self):
+        cleared_modules = {}
+        for fullname in sys.modules.keys():
+            if (fullname == self.module or
+                    fullname.startswith(self.module + '.')):
+                cleared_modules[fullname] = sys.modules.pop(fullname)
+        return cleared_modules
+
+    def setUp(self):
+        """Ensure ImportError for the specified module."""
+
+        super(DisableModuleFixture, self).setUp()
+
+        # Clear 'module' references in sys.modules
+        self._cleared_modules.update(self.clear_module())
+
+        finder = NoModuleFinder(self.module)
+        self._finders.append(finder)
+        sys.meta_path.insert(0, finder)
+
+
+class NoModuleFinder(object):
+    """Disallow further imports of 'module'."""
+
+    def __init__(self, module):
+        self.module = module
+
+    def find_module(self, fullname, path):
+        if fullname == self.module or fullname.startswith(self.module + '.'):
+            raise ImportError
