@@ -191,6 +191,11 @@ function issue_certs {
   check_error $?
 }
 
+function create_middleware_cert {
+  cp $CERTS_DIR/ssl_cert.pem $CERTS_DIR/middleware.pem
+  cat $PRIVATE_DIR/ssl_key.pem >> $CERTS_DIR/middleware.pem
+}
+
 function check_openssl {
   echo 'Checking openssl availability ...'
   which openssl
