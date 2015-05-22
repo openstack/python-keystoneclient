@@ -31,11 +31,14 @@ class FederatedBaseAuth(base.BaseAuth):
 
         :param auth_url: URL of the Identity Service
         :type auth_url: string
-        :param identity_provider: name of the Identity Provider the client
+        :param identity_provider: Name of the Identity Provider the client
                                   will authenticate against. This parameter
                                   will be used to build a dynamic URL used to
                                   obtain unscoped OpenStack token.
         :type identity_provider: string
+        :param protocol: Protocol name configured on the keystone service
+                         provider side
+        :type protocol: string
 
         """
         super(FederatedBaseAuth, self).__init__(auth_url=auth_url, **kwargs)
@@ -49,8 +52,12 @@ class FederatedBaseAuth(base.BaseAuth):
         options.extend([
             cfg.StrOpt('identity-provider',
                        help="Identity Provider's name"),
-            cfg.StrOpt('protocol',
-                       help='Protocol for federated plugin'),
+            cfg.StrOpt('protocol', help="Name of the federated protocol used "
+                                        "for federated authentication. Must "
+                                        "match its counterpart name "
+                                        "configured at the keystone service "
+                                        "provider. Typically values would be "
+                                        "'saml2' or 'oidc'.")
         ])
 
         return options
