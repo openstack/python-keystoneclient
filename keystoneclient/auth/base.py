@@ -27,6 +27,34 @@ PLUGIN_NAMESPACE = 'keystoneclient.auth.plugin'
 IDENTITY_AUTH_HEADER_NAME = 'X-Auth-Token'
 
 
+def get_available_plugin_names():
+    """Get the names of all the plugins that are available on the system.
+
+    This is particularly useful for help and error text to prompt a user for
+    example what plugins they may specify.
+
+    :returns: A list of names.
+    :rtype: frozenset
+    """
+    mgr = stevedore.ExtensionManager(namespace=PLUGIN_NAMESPACE,
+                                     invoke_on_load=False)
+    return frozenset(mgr.names())
+
+
+def get_available_plugin_classes():
+    """Retrieve all the plugin classes available on the system.
+
+    :returns: A dict with plugin entrypoint name as the key and the plugin
+              class as the value.
+    :rtype: dict
+    """
+    mgr = stevedore.ExtensionManager(namespace=PLUGIN_NAMESPACE,
+                                     propagate_map_exceptions=True,
+                                     invoke_on_load=False)
+
+    return dict(mgr.map(lambda ext: (ext.entry_point.name, ext.plugin)))
+
+
 def get_plugin_class(name):
     """Retrieve a plugin class by its entrypoint name.
 
