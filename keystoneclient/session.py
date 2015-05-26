@@ -574,8 +574,7 @@ class Session(object):
             auth = self.auth
 
         if not auth:
-            msg_fmt = _('An auth plugin is required to %s')
-            raise exceptions.MissingAuthPlugin(msg_fmt % msg)
+            raise exceptions.MissingAuthPlugin(msg)
 
         return auth
 
@@ -594,7 +593,8 @@ class Session(object):
         :returns: Authentication headers or None for failure.
         :rtype: dict
         """
-        auth = self._auth_required(auth, 'fetch a token')
+        msg = _('An auth plugin is required to fetch a token')
+        auth = self._auth_required(auth, msg)
         return auth.get_headers(self, **kwargs)
 
     def get_token(self, auth=None):
@@ -631,7 +631,8 @@ class Session(object):
         :returns: An endpoint if available or None.
         :rtype: string
         """
-        auth = self._auth_required(auth, 'determine endpoint URL')
+        msg = _('An auth plugin is required to determine endpoint URL')
+        auth = self._auth_required(auth, msg)
         return auth.get_endpoint(self, **kwargs)
 
     def invalidate(self, auth=None):
@@ -642,7 +643,8 @@ class Session(object):
         :type auth: :py:class:`keystoneclient.auth.base.BaseAuthPlugin`
 
         """
-        auth = self._auth_required(auth, 'validate')
+        msg = _('An auth plugin is required to validate')
+        auth = self._auth_required(auth, msg)
         return auth.invalidate()
 
     def get_user_id(self, auth=None):
@@ -659,7 +661,8 @@ class Session(object):
 
         :returns string: Current user_id or None if not supported by plugin.
         """
-        auth = self._auth_required(auth, 'get user_id')
+        msg = _('An auth plugin is required to get user_id')
+        auth = self._auth_required(auth, msg)
         return auth.get_user_id(self)
 
     def get_project_id(self, auth=None):
@@ -676,7 +679,8 @@ class Session(object):
 
         :returns string: Current project_id or None if not supported by plugin.
         """
-        auth = self._auth_required(auth, 'get project_id')
+        msg = _('An auth plugin is required to get project_id')
+        auth = self._auth_required(auth, msg)
         return auth.get_project_id(self)
 
     @utils.positional.classmethod()
