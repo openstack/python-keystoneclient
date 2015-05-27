@@ -1,5 +1,5 @@
 =======================
-Using the V2 Client API
+Using the V2 client API
 =======================
 
 Introduction
@@ -36,7 +36,7 @@ it will raise an instance of subclass of
 Authenticating
 ==============
 
-There are two ways to authenticate against Keystone:
+There are two ways to authenticate against keystone:
  * against the admin endpoint with the admin token
  * against the public endpoint with a username and password
 
@@ -56,7 +56,7 @@ user::
 
     >>> from keystoneclient.v2_0 import client
     >>> username='adminUser'
-    >>> password='secreetword'
+    >>> password='secretword'
     >>> tenant_name='openstackDemo'
     >>> auth_url='http://192.168.206.130:5000/v2.0'
     >>> keystone = client.Client(username=username, password=password,
@@ -65,7 +65,7 @@ user::
 Creating tenants
 ================
 
-This example will create a tenant named *openStackDemo*::
+This example will create a tenant named *openstackDemo*::
 
     >>> from keystoneclient.v2_0 import client
     >>> keystone = client.Client(...)
@@ -77,7 +77,7 @@ Creating users
 ==============
 
 This example will create a user named *adminUser* with a password *secretword*
-in the opoenstackDemo tenant. We first need to retrieve the tenant::
+in the openstackDemo tenant. We first need to retrieve the tenant::
 
     >>> from keystoneclient.v2_0 import client
     >>> keystone = client.Client(...)
