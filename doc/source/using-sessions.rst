@@ -59,10 +59,11 @@ An example from keystoneclient::
     >>> from keystoneclient import session
     >>> from keystoneclient.v3 import client
 
-    >>> auth = v3.Password(auth_url='https://my.keystone.com:5000/v2.0',
+    >>> auth = v3.Password(auth_url='https://my.keystone.com:5000/v3,
     ...                    username='myuser',
     ...                    password='mypassword',
-    ...                    project_id='proj')
+    ...                    project_id='proj',
+    ...                    user_domain_id='domain')
     >>> sess = session.Session(auth=auth,
     ...                        verify='/path/to/ca.cert')
     >>> ks = client.Client(session=sess)
