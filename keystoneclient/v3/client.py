@@ -29,6 +29,7 @@ from keystoneclient.v3.contrib import simple_cert
 from keystoneclient.v3.contrib import trusts
 from keystoneclient.v3 import credentials
 from keystoneclient.v3 import domains
+from keystoneclient.v3 import ec2
 from keystoneclient.v3 import endpoints
 from keystoneclient.v3 import groups
 from keystoneclient.v3 import policies
@@ -99,6 +100,10 @@ class Client(httpclient.HTTPClient):
     .. py:attribute:: credentials
 
         :py:class:`keystoneclient.v3.credentials.CredentialManager`
+
+    .. py:attribute:: ec2
+
+        :py:class:`keystoneclient.v3.ec2.EC2Manager`
 
     .. py:attribute:: endpoint_filter
 
@@ -175,6 +180,7 @@ EndpointPolicyManager`
         super(Client, self).__init__(**kwargs)
 
         self.credentials = credentials.CredentialManager(self._adapter)
+        self.ec2 = ec2.EC2Manager(self._adapter)
         self.endpoint_filter = endpoint_filter.EndpointFilterManager(
             self._adapter)
         self.endpoint_policy = endpoint_policy.EndpointPolicyManager(
