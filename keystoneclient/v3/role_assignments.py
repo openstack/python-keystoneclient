@@ -47,7 +47,8 @@ class RoleAssignmentManager(base.CrudManager):
             raise exceptions.ValidationError(msg)
 
     def list(self, user=None, group=None, project=None, domain=None, role=None,
-             effective=False, os_inherit_extension_inherited_to=None):
+             effective=False, os_inherit_extension_inherited_to=None,
+             include_subtree=False):
         """Lists role assignments.
 
         If no arguments are provided, all role assignments in the
@@ -69,6 +70,7 @@ class RoleAssignmentManager(base.CrudManager):
         :param string os_inherit_extension_inherited_to:
             return inherited role assignments for either 'projects' or
             'domains'. (optional)
+        :param boolean include_subtree: Include subtree (optional)
         """
 
         self._check_not_user_and_group(user, group)
@@ -90,6 +92,8 @@ class RoleAssignmentManager(base.CrudManager):
         if os_inherit_extension_inherited_to:
             query_params['scope.OS-INHERIT:inherited_to'] = (
                 os_inherit_extension_inherited_to)
+        if include_subtree:
+            query_params['include_subtree'] = include_subtree
 
         return super(RoleAssignmentManager, self).list(**query_params)
 
