@@ -244,10 +244,11 @@ class SessionTests(utils.TestCase):
         # The exception should contain the URL and details about the SSL error
         msg = _('SSL exception connecting to %(url)s: %(error)s') % {
             'url': self.TEST_URL, 'error': error}
-        self.assertRaisesRegex(exceptions.SSLError,
-                               msg,
-                               session.get,
-                               self.TEST_URL)
+        six.assertRaisesRegex(self,
+                              exceptions.SSLError,
+                              msg,
+                              session.get,
+                              self.TEST_URL)
 
 
 class RedirectTests(utils.TestCase):
