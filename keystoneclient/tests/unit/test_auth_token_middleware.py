@@ -43,6 +43,7 @@ from keystoneclient.middleware import auth_token
 from keystoneclient.openstack.common import memorycache
 from keystoneclient.tests.unit import client_fixtures
 from keystoneclient.tests.unit import utils
+from keystoneclient import utils as client_utils
 
 
 EXPECTED_V2_DEFAULT_ENV_RESPONSE = {
@@ -1684,10 +1685,10 @@ class TokenExpirationTest(BaseAuthTokenMiddlewareTest):
         super(TokenExpirationTest, self).setUp()
         self.now = timeutils.utcnow()
         self.delta = datetime.timedelta(hours=1)
-        self.one_hour_ago = timeutils.isotime(self.now - self.delta,
-                                              subsecond=True)
-        self.one_hour_earlier = timeutils.isotime(self.now + self.delta,
-                                                  subsecond=True)
+        self.one_hour_ago = client_utils.isotime(self.now - self.delta,
+                                                 subsecond=True)
+        self.one_hour_earlier = client_utils.isotime(self.now + self.delta,
+                                                     subsecond=True)
 
     def create_v2_token_fixture(self, expires=None):
         v2_fixture = {
