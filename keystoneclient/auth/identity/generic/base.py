@@ -130,9 +130,9 @@ class BaseGenericPlugin(base.BaseIdentityPlugin):
         except (exceptions.DiscoveryFailure,
                 exceptions.HTTPError,
                 exceptions.ConnectionError):
-            LOG.warn(_LW('Discovering versions from the identity service '
-                         'failed when creating the password plugin. '
-                         'Attempting to determine version from URL.'))
+            LOG.warning(_LW('Discovering versions from the identity service '
+                            'failed when creating the password plugin. '
+                            'Attempting to determine version from URL.'))
 
             url_parts = urlparse.urlparse(self.auth_url)
             path = url_parts.path.lower()

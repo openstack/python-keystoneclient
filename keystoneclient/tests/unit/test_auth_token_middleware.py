@@ -927,7 +927,7 @@ class CommonAuthTokenMiddlewareTest(object):
                 self.msg = None
                 self.debugmsg = None
 
-            def warn(self, msg=None, *args, **kwargs):
+            def warning(self, msg=None, *args, **kwargs):
                 self.msg = msg
 
             def debug(self, msg=None, *args, **kwargs):

@@ -331,7 +331,7 @@ class positional(object):
                 if self._enforcement == self.EXCEPT:
                     raise TypeError(message)
                 elif self._enforcement == self.WARN:
-                    logger.warn(message)
+                    logger.warning(message)
 
             return func(*args, **kwargs)
 

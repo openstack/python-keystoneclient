@@ -750,8 +750,8 @@ class AuthProtocol(object):
             return token
         else:
             if not self.delay_auth_decision:
-                self.LOG.warn('Unable to find authentication token'
-                              ' in headers')
+                self.LOG.warning('Unable to find authentication token'
+                                 ' in headers')
                 self.LOG.debug('Headers: %s', env)
             raise InvalidUserToken('Unable to find token in headers')
 
@@ -804,8 +804,8 @@ class AuthProtocol(object):
         if self.cert_file and self.key_file:
             kwargs['cert'] = (self.cert_file, self.key_file)
         elif self.cert_file or self.key_file:
-            self.LOG.warn('Cannot use only a cert or key file. '
-                          'Please provide both. Ignoring.')
+            self.LOG.warning('Cannot use only a cert or key file. '
+                             'Please provide both. Ignoring.')
 
         kwargs['verify'] = self.ssl_ca_file or True
         if self.ssl_insecure:
@@ -822,7 +822,8 @@ class AuthProtocol(object):
                     self.LOG.error('HTTP connection exception: %s', e)
                     raise NetworkError('Unable to communicate with keystone')
                 # NOTE(vish): sleep 0.5, 1, 2
-                self.LOG.warn('Retrying on HTTP connection exception: %s', e)
+                self.LOG.warning('Retrying on HTTP connection exception: %s',
+                                 e)
                 time.sleep(2.0 ** retry / 2)
                 retry += 1
 
@@ -896,12 +897,12 @@ class AuthProtocol(object):
             datetime_expiry = timeutils.parse_isotime(expiry)
             return (token, timeutils.normalize_time(datetime_expiry))
         except (AssertionError, KeyError):
-            self.LOG.warn(
+            self.LOG.warning(
                 'Unexpected response from keystone service: %s', data)
             raise ServiceError('invalid json response')
         except (ValueError):
             data['access']['token']['id'] = '<SANITIZED>'
-            self.LOG.warn(
+            self.LOG.warning(
                 'Unable to parse expiration time from token: %s', data)
             raise ServiceError('invalid json response')
 
@@ -948,13 +949,13 @@ class AuthProtocol(object):
             return data
         except NetworkError:
             self.LOG.debug('Token validation failure.', exc_info=True)
-            self.LOG.warn('Authorization failed for token')
+            self.LOG.warning('Authorization failed for token')
             raise InvalidUserToken('Token authorization failed')
         except Exception:
             self.LOG.debug('Token validation failure.', exc_info=True)
             if token_id:
                 self._token_cache.store_invalid(token_id)
-            self.LOG.warn('Authorization failed for token')
+            self.LOG.warning('Authorization failed for token')
             raise InvalidUserToken('Token authorization failed')
 
     def _build_user_headers(self, token_info):
@@ -1143,7 +1144,7 @@ class AuthProtocol(object):
         if response.status_code == 200:
             return data
         if response.status_code == 404:
-            self.LOG.warn('Authorization failed for token')
+            self.LOG.warning('Authorization failed for token')
             raise InvalidUserToken('Token authorization failed')
         if response.status_code == 401:
             self.LOG.info(
@@ -1156,7 +1157,7 @@ class AuthProtocol(object):
             self.LOG.info('Retrying validation')
             return self.verify_uuid_token(user_token, False)
         else:
-            self.LOG.warn('Invalid user token. Keystone response: %s', data)
+            self.LOG.warning('Invalid user token. Keystone response: %s', data)
 
             raise InvalidUserToken()
 
