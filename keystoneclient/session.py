@@ -379,6 +379,19 @@ class Session(object):
         send = functools.partial(self._send_request,
                                  url, method, redirect, log, logger,
                                  connect_retries)
+
+        try:
+            connection_params = self.get_auth_connection_params(auth=auth)
+        except exceptions.MissingAuthPlugin:
+            # NOTE(jamielennox): If we've gotten this far without an auth
+            # plugin then we should be happy with allowing no additional
+            # connection params. This will be the typical case for plugins
+            # anyway.
+            pass
+        else:
+            if connection_params:
+                kwargs.update(connection_params)
+
         resp = send(**kwargs)
 
         # handle getting a 401 Unauthorized response by invalidating the plugin
@@ -634,6 +647,59 @@ class Session(object):
         msg = _('An auth plugin is required to determine endpoint URL')
         auth = self._auth_required(auth, msg)
         return auth.get_endpoint(self, **kwargs)
+
+    def get_auth_connection_params(self, auth=None, **kwargs):
+        """Return auth connection params as provided by the auth plugin.
+
+        An auth plugin may specify connection parameters to the request like
+        providing a client certificate for communication.
+
+        We restrict the values that may be returned from this function to
+        prevent an auth plugin overriding values unrelated to connection
+        parmeters. The values that are currently accepted are:
+
+        - `cert`: a path to a client certificate, or tuple of client
+          certificate and key pair that are used with this request.
+        - `verify`: a boolean value to indicate verifying SSL certificates
+          against the system CAs or a path to a CA file to verify with.
+
+        These values are passed to the requests library and further information
+        on accepted values may be found there.
+
+        :param auth: The auth plugin to use for tokens. Overrides the plugin
+                     on the session. (optional)
+        :type auth: keystoneclient.auth.base.BaseAuthPlugin
+
+        :raises keystoneclient.exceptions.AuthorizationFailure: if a new token
+                                                                fetch fails.
+        :raises keystoneclient.exceptions.MissingAuthPlugin: if a plugin is not
+                                                             available.
+        :raises keystoneclient.exceptions.UnsupportedParameters: if the plugin
+            returns a parameter that is not supported by this session.
+
+        :returns: Authentication headers or None for failure.
+        :rtype: dict
+        """
+        msg = _('An auth plugin is required to fetch connection params')
+        auth = self._auth_required(auth, msg)
+        params = auth.get_connection_params(self, **kwargs)
+
+        # NOTE(jamielennox): There needs to be some consensus on what
+        # parameters are allowed to be modified by the auth plugin here.
+        # Ideally I think it would be only the send() parts of the request
+        # flow. For now lets just allow certain elements.
+        params_copy = params.copy()
+
+        for arg in ('cert', 'verify'):
+            try:
+                kwargs[arg] = params_copy.pop(arg)
+            except KeyError:
+                pass
+
+        if params_copy:
+            raise exceptions.UnsupportedParameters(list(params_copy.keys()))
+
+        return params
 
     def invalidate(self, auth=None):
         """Invalidate an authentication plugin.
