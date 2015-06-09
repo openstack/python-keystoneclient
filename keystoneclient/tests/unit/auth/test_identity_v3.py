@@ -245,7 +245,7 @@ class V3IdentityPlugin(utils.TestCase):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
         a = v3.Password(self.TEST_URL, username=self.TEST_USER,
                         password=self.TEST_PASS,
-                        project_id=self.TEST_DOMAIN_ID)
+                        project_id=self.TEST_TENANT_ID)
         s = session.Session(a)
 
         self.assertEqual({'X-Auth-Token': self.TEST_TOKEN},
@@ -255,10 +255,10 @@ class V3IdentityPlugin(utils.TestCase):
                {'methods': ['password'],
                 'password': {'user': {'name': self.TEST_USER,
                                       'password': self.TEST_PASS}}},
-               'scope': {'project': {'id': self.TEST_DOMAIN_ID}}}}
+               'scope': {'project': {'id': self.TEST_TENANT_ID}}}}
         self.assertRequestBodyIs(json=req)
         self.assertEqual(s.auth.auth_ref.auth_token, self.TEST_TOKEN)
-        self.assertEqual(s.auth.auth_ref.project_id, self.TEST_DOMAIN_ID)
+        self.assertEqual(s.auth.auth_ref.project_id, self.TEST_TENANT_ID)
 
     def test_authenticate_with_token(self):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)

@@ -364,7 +364,7 @@ class AuthPlugin(base.BaseAuthPlugin):
     Takes Parameters such that it can throw exceptions at the right times.
     """
 
-    TEST_TOKEN = 'aToken'
+    TEST_TOKEN = utils.TestCase.TEST_TOKEN
     TEST_USER_ID = 'aUser'
     TEST_PROJECT_ID = 'aProject'
 
@@ -414,7 +414,7 @@ class CalledAuthPlugin(base.BaseAuthPlugin):
 
     def get_token(self, session):
         self.get_token_called = True
-        return 'aToken'
+        return utils.TestCase.TEST_TOKEN
 
     def get_endpoint(self, session, **kwargs):
         self.get_endpoint_called = True

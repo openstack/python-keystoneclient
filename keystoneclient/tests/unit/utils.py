@@ -28,15 +28,15 @@ import testtools
 
 class TestCase(testtools.TestCase):
 
-    TEST_DOMAIN_ID = '1'
-    TEST_DOMAIN_NAME = 'aDomain'
+    TEST_DOMAIN_ID = uuid.uuid4().hex
+    TEST_DOMAIN_NAME = uuid.uuid4().hex
     TEST_GROUP_ID = uuid.uuid4().hex
     TEST_ROLE_ID = uuid.uuid4().hex
-    TEST_TENANT_ID = '1'
-    TEST_TENANT_NAME = 'aTenant'
-    TEST_TOKEN = 'aToken'
-    TEST_TRUST_ID = 'aTrust'
-    TEST_USER = 'test'
+    TEST_TENANT_ID = uuid.uuid4().hex
+    TEST_TENANT_NAME = uuid.uuid4().hex
+    TEST_TOKEN = uuid.uuid4().hex
+    TEST_TRUST_ID = uuid.uuid4().hex
+    TEST_USER = uuid.uuid4().hex
     TEST_USER_ID = uuid.uuid4().hex
 
     TEST_ROOT_URL = 'http://127.0.0.1:5000/'
