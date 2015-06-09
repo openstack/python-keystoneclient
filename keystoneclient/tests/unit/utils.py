@@ -16,8 +16,8 @@ import time
 import uuid
 
 import fixtures
-import mock
 from oslo_serialization import jsonutils
+from oslotest import mockpatch
 import requests
 from requests_mock.contrib import fixture
 import six
@@ -43,14 +43,10 @@ class TestCase(testtools.TestCase):
     def setUp(self):
         super(TestCase, self).setUp()
         self.logger = self.useFixture(fixtures.FakeLogger(level=logging.DEBUG))
-        self.time_patcher = mock.patch.object(time, 'time', lambda: 1234)
-        self.time_patcher.start()
+        self.time_patcher = self.useFixture(
+            mockpatch.PatchObject(time, 'time', lambda: 1234)).mock
 
         self.requests_mock = self.useFixture(fixture.Fixture())
-
-    def tearDown(self):
-        self.time_patcher.stop()
-        super(TestCase, self).tearDown()
 
     def stub_url(self, method, parts=None, base_url=None, json=None, **kwargs):
         if not base_url:

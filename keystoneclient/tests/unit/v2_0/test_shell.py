@@ -39,7 +39,7 @@ class ShellTests(utils.TestCase):
 
         super(ShellTests, self).setUp()
 
-        self.old_environment = os.environ.copy()
+        self.addCleanup(setattr, os, 'environ', os.environ.copy())
         os.environ = {
             'OS_USERNAME': DEFAULT_USERNAME,
             'OS_PASSWORD': DEFAULT_PASSWORD,
@@ -57,10 +57,6 @@ class ShellTests(utils.TestCase):
                          admin=DEFAULT_ADMIN_URL)
 
         self.stub_auth(json=self.token, base_url=DEFAULT_AUTH_URL)
-
-    def tearDown(self):
-        os.environ = self.old_environment
-        super(ShellTests, self).tearDown()
 
     def run_command(self, cmd):
         orig = sys.stdout
