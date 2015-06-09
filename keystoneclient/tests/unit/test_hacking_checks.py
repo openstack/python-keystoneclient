@@ -21,6 +21,9 @@ from keystoneclient.tests.unit import client_fixtures
 
 
 class TestCheckOsloNamespaceImports(testtools.TestCase):
+    def setUp(self):
+        super(TestCheckOsloNamespaceImports, self).setUp()
+        self.useFixture(client_fixtures.Deprecations())
 
     # We are patching pep8 so that only the check under test is actually
     # installed.

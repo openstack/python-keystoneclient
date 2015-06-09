@@ -206,7 +206,9 @@ class BaseAuthTokenMiddlewareTest(testtools.TestCase):
 
     """
     def setUp(self, expected_env=None, auth_version=None, fake_app=None):
-        testtools.TestCase.setUp(self)
+        super(BaseAuthTokenMiddlewareTest, self).setUp()
+
+        self.useFixture(client_fixtures.Deprecations())
 
         self.expected_env = expected_env or dict()
         self.fake_app = fake_app or FakeApp
@@ -1673,6 +1675,10 @@ class v3AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
 
 
 class TokenEncodingTest(testtools.TestCase):
+    def setUp(self):
+        super(TokenEncodingTest, self).setUp()
+        self.useFixture(client_fixtures.Deprecations())
+
     def test_unquoted_token(self):
         self.assertEqual('foo%20bar', auth_token.safe_quote('foo bar'))
 

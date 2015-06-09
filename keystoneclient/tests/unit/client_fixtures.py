@@ -13,6 +13,7 @@
 # under the License.
 
 import os
+import warnings
 
 import fixtures
 from oslo_serialization import jsonutils
@@ -595,3 +596,14 @@ class HackingCode(fixtures.Fixture):
             (30, 0, 'K333'),
         ],
     }
+
+
+class Deprecations(fixtures.Fixture):
+    def setUp(self):
+        super(Deprecations, self).setUp()
+
+        # If keystoneclient calls any deprecated function this will raise an
+        # exception.
+        warnings.filterwarnings('error', category=DeprecationWarning,
+                                module='^keystoneclient\\.')
+        self.addCleanup(warnings.resetwarnings)
