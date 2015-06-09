@@ -230,8 +230,8 @@ class UserTests(utils.TestCase, utils.CrudTests):
         new_password = uuid.uuid4().hex
 
         self.stub_url('POST',
-                      [self.collection_key, self.TEST_USER, 'password'])
-        self.client.user_id = self.TEST_USER
+                      [self.collection_key, self.TEST_USER_ID, 'password'])
+        self.client.user_id = self.TEST_USER_ID
         self.manager.update_password(old_password, new_password)
 
         exp_req_body = {
@@ -240,8 +240,9 @@ class UserTests(utils.TestCase, utils.CrudTests):
             }
         }
 
-        self.assertEqual(self.TEST_URL + '/users/test/password',
-                         self.requests_mock.last_request.url)
+        self.assertEqual(
+            '%s/users/%s/password' % (self.TEST_URL, self.TEST_USER_ID),
+            self.requests_mock.last_request.url)
         self.assertRequestBodyIs(json=exp_req_body)
         self.assertNotIn(old_password, self.logger.output)
         self.assertNotIn(new_password, self.logger.output)
