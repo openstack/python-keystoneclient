@@ -226,8 +226,6 @@ def pkiz_verify(signed_text, signing_cert_file_name, ca_file_name):
                       inform=PKIZ_CMS_FORM)
 
 
-# This function is deprecated and will be removed once the ASN1 token format
-# is no longer required. It is only here to be used for testing.
 def token_to_cms(signed_text):
     """Converts a custom formatted token to a PEM-formatted token.
 
