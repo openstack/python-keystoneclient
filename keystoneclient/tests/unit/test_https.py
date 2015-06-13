@@ -42,13 +42,6 @@ def get_authed_client():
 
 class ClientTest(utils.TestCase):
 
-    def setUp(self):
-        super(ClientTest, self).setUp()
-        self.request_patcher = mock.patch.object(requests, 'request',
-                                                 self.mox.CreateMockAnything())
-        self.request_patcher.start()
-        self.addCleanup(self.request_patcher.stop)
-
     @mock.patch.object(requests, 'request')
     def test_get(self, MOCK_REQUEST):
         MOCK_REQUEST.return_value = FAKE_RESPONSE
