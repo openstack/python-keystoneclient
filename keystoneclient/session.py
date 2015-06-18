@@ -162,7 +162,7 @@ class Session(object):
 
     @utils.positional()
     def _http_log_request(self, url, method=None, data=None,
-                          json=None, headers=None, logger=_logger):
+                          headers=None, logger=_logger):
         if not logger.isEnabledFor(logging.DEBUG):
             # NOTE(morganfainberg): This whole debug section is expensive,
             # there is no need to do the work if we're not going to emit a
@@ -187,37 +187,22 @@ class Session(object):
             for header in six.iteritems(headers):
                 string_parts.append('-H "%s: %s"'
                                     % self._process_header(header))
-        if json:
-            data = jsonutils.dumps(json)
         if data:
             string_parts.append("-d '%s'" % data)
 
         logger.debug(' '.join(string_parts))
 
-    @utils.positional()
-    def _http_log_response(self, response=None, json=None,
-                           status_code=None, headers=None, text=None,
-                           logger=_logger):
+    def _http_log_response(self, response, logger):
         if not logger.isEnabledFor(logging.DEBUG):
             return
 
-        if response is not None:
-            if not status_code:
-                status_code = response.status_code
-            if not headers:
-                headers = response.headers
-            if not text:
-                text = _remove_service_catalog(response.text)
-        if json:
-            text = jsonutils.dumps(json)
+        text = _remove_service_catalog(response.text)
 
         string_parts = ['RESP:']
 
-        if status_code:
-            string_parts.append('[%s]' % status_code)
-        if headers:
-            for header in six.iteritems(headers):
-                string_parts.append('%s: %s' % self._process_header(header))
+        string_parts.append('[%s]' % response.status_code)
+        for header in six.iteritems(response.headers):
+            string_parts.append('%s: %s' % self._process_header(header))
         if text:
             string_parts.append('\nRESP BODY: %s\n' % text)
 
@@ -452,7 +437,7 @@ class Session(object):
                 **kwargs)
 
         if log:
-            self._http_log_response(response=resp, logger=logger)
+            self._http_log_response(resp, logger)
 
         if resp.status_code in self._REDIRECT_STATUSES:
             # be careful here in python True == 1 and False == 0
