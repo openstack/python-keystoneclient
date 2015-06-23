@@ -53,6 +53,10 @@ class TokenTests(utils.TestCase, testresources.ResourcedTestCase):
             self.examples.v3_UUID_TOKEN_DEFAULT]
         self.stub_url('GET', ['auth', 'tokens'],
                       headers={'X-Subject-Token': token_id, }, json=token_ref)
+
+        token_data = self.client.tokens.get_token_data(token_id)
+        self.assertEqual(token_data, token_ref)
+
         access_info = self.client.tokens.validate(token_id)
 
         self.assertRequestHeaderEqual('X-Subject-Token', token_id)
@@ -77,6 +81,9 @@ class TokenTests(utils.TestCase, testresources.ResourcedTestCase):
         # When the token is invalid the server typically returns a 404.
         token_id = uuid.uuid4().hex
         self.stub_url('GET', ['auth', 'tokens'], status_code=404)
+
+        self.assertRaises(exceptions.NotFound,
+                          self.client.tokens.get_token_data, token_id)
         self.assertRaises(exceptions.NotFound,
                           self.client.tokens.validate, token_id)
 
@@ -87,6 +94,11 @@ class TokenTests(utils.TestCase, testresources.ResourcedTestCase):
             self.examples.v3_UUID_TOKEN_DEFAULT]
         self.stub_url('GET', ['auth', 'tokens'],
                       headers={'X-Subject-Token': token_id, }, json=token_ref)
+
+        token_data = self.client.tokens.get_token_data(token_id)
+        self.assertQueryStringIs()
+        self.assertIn('catalog', token_data['token'])
+
         access_info = self.client.tokens.validate(token_id)
 
         self.assertQueryStringIs()
@@ -99,6 +111,11 @@ class TokenTests(utils.TestCase, testresources.ResourcedTestCase):
             self.examples.v3_UUID_TOKEN_UNSCOPED]
         self.stub_url('GET', ['auth', 'tokens'],
                       headers={'X-Subject-Token': token_id, }, json=token_ref)
+
+        token_data = self.client.tokens.get_token_data(token_id)
+        self.assertQueryStringIs()
+        self.assertNotIn('catalog', token_data['token'])
+
         access_info = self.client.tokens.validate(token_id,
                                                   include_catalog=False)
 
