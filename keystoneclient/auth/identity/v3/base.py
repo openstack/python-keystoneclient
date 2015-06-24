@@ -218,7 +218,7 @@ class AuthMethod(object):
             setattr(self, param, kwargs.pop(param, None))
 
         if kwargs:
-            msg = _("Unexpected Attributes: %s") % ", ".join(kwargs.keys())
+            msg = _("Unexpected Attributes: %s") % ", ".join(kwargs)
             raise AttributeError(msg)
 
     @classmethod
