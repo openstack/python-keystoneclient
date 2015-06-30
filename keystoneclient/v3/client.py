@@ -21,6 +21,7 @@ from keystoneclient.auth.identity import v3 as v3_auth
 from keystoneclient import exceptions
 from keystoneclient import httpclient
 from keystoneclient.i18n import _
+from keystoneclient.v3 import auth
 from keystoneclient.v3.contrib import endpoint_filter
 from keystoneclient.v3.contrib import endpoint_policy
 from keystoneclient.v3.contrib import federation
@@ -179,6 +180,7 @@ EndpointPolicyManager`
         """Initialize a new client for the Keystone v3 API."""
         super(Client, self).__init__(**kwargs)
 
+        self.auth = auth.AuthManager(self._adapter)
         self.credentials = credentials.CredentialManager(self._adapter)
         self.ec2 = ec2.EC2Manager(self._adapter)
         self.endpoint_filter = endpoint_filter.EndpointFilterManager(
