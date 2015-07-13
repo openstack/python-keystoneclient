@@ -103,7 +103,7 @@ add_module_names = True
 pygments_style = 'sphinx'
 
 # A list of ignored prefixes for module index sorting.
-#modindex_common_prefix = []
+modindex_common_prefix = ['keystoneclient.']
 
 # Grouping the document tree for man pages.
 # List of tuples 'sourcefile', 'target', 'title', 'Authors name', 'manual'
