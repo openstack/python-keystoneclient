@@ -169,6 +169,7 @@ from keystoneclient.common import cms
 from keystoneclient import exceptions
 from keystoneclient.middleware import memcache_crypt
 from keystoneclient.openstack.common import memorycache
+from keystoneclient import utils
 
 
 # alternative middleware configuration in the main application's
@@ -382,7 +383,7 @@ def confirm_token_not_expired(data):
     utcnow = timeutils.utcnow()
     if utcnow >= expires:
         raise InvalidUserToken('Token authorization failed')
-    return timeutils.isotime(at=expires, subsecond=True)
+    return utils.isotime(at=expires, subsecond=True)
 
 
 def _v3_to_v2_catalog(catalog):

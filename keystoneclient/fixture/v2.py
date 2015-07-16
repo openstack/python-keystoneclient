@@ -16,6 +16,7 @@ import uuid
 from oslo_utils import timeutils
 
 from keystoneclient.fixture import exception
+from keystoneclient import utils
 
 
 class _Service(dict):
@@ -112,7 +113,7 @@ class Token(dict):
 
     @expires.setter
     def expires(self, value):
-        self.expires_str = timeutils.isotime(value)
+        self.expires_str = utils.isotime(value)
 
     @property
     def issued_str(self):
@@ -128,7 +129,7 @@ class Token(dict):
 
     @issued.setter
     def issued(self, value):
-        self.issued_str = timeutils.isotime(value)
+        self.issued_str = utils.isotime(value)
 
     @property
     def _user(self):

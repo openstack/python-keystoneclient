@@ -77,7 +77,7 @@ class DiscoveryBase(dict):
 
     @updated.setter
     def updated(self, value):
-        self.updated_str = timeutils.isotime(value)
+        self.updated_str = utils.isotime(value)
 
     @utils.positional()
     def add_link(self, href, rel='self', type=None):

@@ -12,6 +12,9 @@
 
 from oslo_utils import timeutils
 
+from keystoneclient import utils
+
+
 # The set of attributes common between the RevokeEvent
 # and the dictionaries created from the token Data.
 _NAMES = ['trust_id',
@@ -75,11 +78,11 @@ class RevokeEvent(object):
         if self.consumer_id is not None:
             event['OS-OAUTH1:access_token_id'] = self.access_token_id
         if self.expires_at is not None:
-            event['expires_at'] = timeutils.isotime(self.expires_at,
-                                                    subsecond=True)
+            event['expires_at'] = utils.isotime(self.expires_at,
+                                                subsecond=True)
         if self.issued_before is not None:
-            event['issued_before'] = timeutils.isotime(self.issued_before,
-                                                       subsecond=True)
+            event['issued_before'] = utils.isotime(self.issued_before,
+                                                   subsecond=True)
         return event
 
     def key_for_name(self, name):

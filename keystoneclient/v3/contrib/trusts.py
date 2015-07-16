@@ -10,11 +10,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo_utils import timeutils
-
 from keystoneclient import base
 from keystoneclient import exceptions
 from keystoneclient.i18n import _
+from keystoneclient import utils
 
 
 class Trust(base.Resource):
@@ -61,7 +60,7 @@ class TrustManager(base.CrudManager):
 
         # Convert datetime.datetime expires_at to iso format string
         if expires_at:
-            expires_str = timeutils.isotime(at=expires_at, subsecond=True)
+            expires_str = utils.isotime(at=expires_at, subsecond=True)
         else:
             expires_str = None
 
