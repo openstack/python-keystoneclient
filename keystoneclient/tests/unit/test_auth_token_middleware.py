@@ -453,7 +453,7 @@ class GeneralAuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
         self.set_middleware(conf=conf)
         token = b'my_token'
         some_time_later = timeutils.utcnow() + datetime.timedelta(hours=4)
-        expires = timeutils.strtime(some_time_later)
+        expires = client_utils.strtime(some_time_later)
         data = ('this_data', expires)
         token_cache = self.middleware._token_cache
         token_cache.initialize({})
@@ -470,7 +470,7 @@ class GeneralAuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
         self.set_middleware(conf=conf)
         token = b'my_token'
         some_time_later = timeutils.utcnow() + datetime.timedelta(hours=4)
-        expires = timeutils.strtime(some_time_later)
+        expires = client_utils.strtime(some_time_later)
         data = ('this_data', expires)
         token_cache = self.middleware._token_cache
         token_cache.initialize({})
@@ -486,7 +486,7 @@ class GeneralAuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
         self.set_middleware(conf=conf)
         token = 'my_token'
         some_time_later = timeutils.utcnow() + datetime.timedelta(hours=4)
-        expires = timeutils.strtime(some_time_later)
+        expires = client_utils.strtime(some_time_later)
         data = ('this_data', expires)
         token_cache = self.middleware._token_cache
         token_cache.initialize({})
@@ -1821,7 +1821,7 @@ class TokenExpirationTest(BaseAuthTokenMiddlewareTest):
         data = 'this_data'
         self.set_middleware()
         self.middleware._token_cache.initialize({})
-        some_time_later = timeutils.strtime(at=(self.now + self.delta))
+        some_time_later = client_utils.strtime(at=(self.now + self.delta))
         expires = some_time_later
         self.middleware._token_cache.store(token, data, expires)
         self.assertEqual(self.middleware._token_cache._cache_get(token), data)
@@ -1849,7 +1849,7 @@ class TokenExpirationTest(BaseAuthTokenMiddlewareTest):
         data = 'this_data'
         self.set_middleware()
         self.middleware._token_cache.initialize({})
-        some_time_earlier = timeutils.strtime(at=(self.now - self.delta))
+        some_time_earlier = client_utils.strtime(at=(self.now - self.delta))
         expires = some_time_earlier
         self.middleware._token_cache.store(token, data, expires)
         self.assertThat(lambda: self.middleware._token_cache._cache_get(token),
@@ -1862,7 +1862,7 @@ class TokenExpirationTest(BaseAuthTokenMiddlewareTest):
         self.middleware._token_cache.initialize({})
         timezone_offset = datetime.timedelta(hours=2)
         some_time_later = self.now - timezone_offset + self.delta
-        expires = timeutils.strtime(some_time_later) + '-02:00'
+        expires = client_utils.strtime(some_time_later) + '-02:00'
         self.middleware._token_cache.store(token, data, expires)
         self.assertEqual(self.middleware._token_cache._cache_get(token), data)
 
@@ -1873,7 +1873,7 @@ class TokenExpirationTest(BaseAuthTokenMiddlewareTest):
         self.middleware._token_cache.initialize({})
         timezone_offset = datetime.timedelta(hours=2)
         some_time_earlier = self.now - timezone_offset - self.delta
-        expires = timeutils.strtime(some_time_earlier) + '-02:00'
+        expires = client_utils.strtime(some_time_earlier) + '-02:00'
         self.middleware._token_cache.store(token, data, expires)
         self.assertThat(lambda: self.middleware._token_cache._cache_get(token),
                         matchers.raises(auth_token.InvalidUserToken))

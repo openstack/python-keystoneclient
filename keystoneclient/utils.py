@@ -366,3 +366,8 @@ def isotime(at=None, subsecond=False):
     tz = at.tzinfo.tzname(None) if at.tzinfo else 'UTC'
     st += ('Z' if tz == 'UTC' else tz)
     return st
+
+
+def strtime(at=None):
+    at = at or timeutils.utcnow()
+    return at.strftime(timeutils.PERFECT_TIME_FORMAT)
