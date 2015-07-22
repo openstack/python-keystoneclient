@@ -28,7 +28,6 @@ from keystoneclient.v3.contrib.oauth1 import consumers
 from keystoneclient.v3.contrib.oauth1 import request_tokens
 
 try:
-    import oauthlib
     from oauthlib import oauth1
 except ImportError:
     oauth1 = None
@@ -103,16 +102,8 @@ class TokenTests(BaseTest):
         """
 
         self.assertThat(auth_header, matchers.StartsWith('OAuth '))
-        auth_header = auth_header[len('OAuth '):]
-        # NOTE(stevemar): In newer versions of oauthlib there is
-        # an additional argument for getting oauth parameters.
-        # Adding a conditional here to revert back to no arguments
-        # if an earlier version is detected.
-        if tuple(oauthlib.__version__.split('.')) > ('0', '6', '1'):
-            header_params = oauth_client.get_oauth_params(None)
-        else:
-            header_params = oauth_client.get_oauth_params()
-        parameters = dict(header_params)
+        parameters = dict(
+            oauth1.rfc5849.utils.parse_authorization_header(auth_header))
 
         self.assertEqual('HMAC-SHA1', parameters['oauth_signature_method'])
         self.assertEqual('1.0', parameters['oauth_version'])
@@ -128,9 +119,6 @@ class TokenTests(BaseTest):
         if oauth_client.callback_uri:
             self.assertEqual(oauth_client.callback_uri,
                              parameters['oauth_callback'])
-        if oauth_client.timestamp:
-            self.assertEqual(oauth_client.timestamp,
-                             parameters['oauth_timestamp'])
         return parameters
 
 
@@ -229,8 +217,8 @@ class AccessTokenTests(TokenTests):
                                      resource_owner_key=request_key,
                                      resource_owner_secret=request_secret,
                                      signature_method=oauth1.SIGNATURE_HMAC,
-                                     verifier=verifier,
-                                     timestamp=expires_at)
+                                     verifier=verifier)
+
         self._validate_oauth_headers(req_headers['Authorization'],
                                      oauth_client)
 
