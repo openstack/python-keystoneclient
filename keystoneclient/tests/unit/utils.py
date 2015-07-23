@@ -22,6 +22,8 @@ import six
 from six.moves.urllib import parse as urlparse
 import testtools
 
+from keystoneclient.tests.unit import client_fixtures
+
 
 class TestCase(testtools.TestCase):
 
@@ -40,6 +42,8 @@ class TestCase(testtools.TestCase):
 
     def setUp(self):
         super(TestCase, self).setUp()
+        self.useFixture(client_fixtures.Deprecations())
+
         self.logger = self.useFixture(fixtures.FakeLogger(level=logging.DEBUG))
         self.requests_mock = self.useFixture(fixture.Fixture())
 

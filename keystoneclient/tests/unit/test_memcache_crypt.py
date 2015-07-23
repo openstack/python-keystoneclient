@@ -14,9 +14,14 @@ import six
 import testtools
 
 from keystoneclient.middleware import memcache_crypt
+from keystoneclient.tests.unit import client_fixtures
 
 
 class MemcacheCryptPositiveTests(testtools.TestCase):
+    def setUp(self):
+        super(MemcacheCryptPositiveTests, self).setUp()
+        self.useFixture(client_fixtures.Deprecations())
+
     def _setup_keys(self, strategy):
         return memcache_crypt.derive_keys(b'token', b'secret', strategy)
 

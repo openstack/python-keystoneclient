@@ -17,12 +17,14 @@ from __future__ import unicode_literals
 import testtools
 
 from keystoneclient.contrib.ec2 import utils
+from keystoneclient.tests.unit import client_fixtures
 
 
 class Ec2SignerTest(testtools.TestCase):
 
     def setUp(self):
         super(Ec2SignerTest, self).setUp()
+        self.useFixture(client_fixtures.Deprecations())
         self.access = '966afbde20b84200ae4e62e09acf46b2'
         self.secret = '89cdf9e94e2643cab35b8b8ac5a51f83'
         self.signer = utils.Ec2Signer(self.secret)

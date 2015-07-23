@@ -20,6 +20,7 @@ import testtools
 import webob
 
 from keystoneclient.middleware import s3_token
+from keystoneclient.tests.unit import client_fixtures
 from keystoneclient.tests.unit import utils
 
 
@@ -221,6 +222,10 @@ class S3TokenMiddlewareTestBad(S3TokenMiddlewareTestBase):
 
 
 class S3TokenMiddlewareTestUtil(testtools.TestCase):
+    def setUp(self):
+        super(S3TokenMiddlewareTestUtil, self).setUp()
+        self.useFixture(client_fixtures.Deprecations())
+
     def test_split_path_failed(self):
         self.assertRaises(ValueError, s3_token.split_path, '')
         self.assertRaises(ValueError, s3_token.split_path, '/')
