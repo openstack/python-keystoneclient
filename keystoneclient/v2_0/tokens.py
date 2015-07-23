@@ -84,6 +84,17 @@ class TokenManager(base.Manager):
         """
         return self._get('/tokens/%s' % base.getid(token), 'access')
 
+    def get_token_data(self, token):
+        """Fetch the data about a token from the identity server.
+
+        :param str token: The token id.
+
+        :rtype: dict
+        """
+        url = '/tokens/%s' % token
+        resp, body = self.client.get(url)
+        return body
+
     def validate_access_info(self, token):
         """Validate a token.
 
@@ -100,10 +111,9 @@ class TokenManager(base.Manager):
                 return token.auth_token
             return base.getid(token)
 
-        url = '/tokens/%s' % calc_id(token)
-        resp, body = self.client.get(url)
-        access_info = access.AccessInfo.factory(resp=resp, body=body)
-        return access_info
+        token_id = calc_id(token)
+        body = self.get_token_data(token_id)
+        return access.AccessInfo.factory(auth_token=token_id, body=body)
 
     def get_revoked(self):
         """Returns the revoked tokens response.

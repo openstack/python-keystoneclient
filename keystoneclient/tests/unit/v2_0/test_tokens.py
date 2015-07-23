@@ -168,6 +168,9 @@ class TokenTests(utils.TestCase):
         token_fixture = fixture.V2Token(token_id=id_)
         self.stub_url('GET', ['tokens', id_], json=token_fixture)
 
+        token_data = self.client.tokens.get_token_data(id_)
+        self.assertEqual(token_fixture, token_data)
+
         token_ref = self.client.tokens.validate(id_)
         self.assertIsInstance(token_ref, tokens.Token)
         self.assertEqual(id_, token_ref.id)
@@ -178,6 +181,9 @@ class TokenTests(utils.TestCase):
         id_ = uuid.uuid4().hex
         # The server is expected to return 404 if the token is invalid.
         self.stub_url('GET', ['tokens', id_], status_code=404)
+
+        self.assertRaises(exceptions.NotFound,
+                          self.client.tokens.get_token_data, id_)
         self.assertRaises(exceptions.NotFound,
                           self.client.tokens.validate, id_)
 
