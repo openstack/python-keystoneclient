@@ -195,6 +195,9 @@ class Discover(object):
           :raw_status str: The status as provided by the server
         :rtype: list(dict)
         """
+        if kwargs.pop('unstable', None):
+            kwargs.setdefault('allow_experimental', True)
+            kwargs.setdefault('allow_unknown', True)
         data = self.raw_version_data(**kwargs)
         versions = []
 
