@@ -47,7 +47,8 @@ class AccessInfoTest(utils.TestCase, testresources.ResourcedTestCase):
 
         with self.deprecations.expect_deprecations_here():
             self.assertIsNone(auth_ref.auth_url)
-        self.assertIsNone(auth_ref.management_url)
+        with self.deprecations.expect_deprecations_here():
+            self.assertIsNone(auth_ref.management_url)
 
         with self.deprecations.expect_deprecations_here():
             self.assertFalse(auth_ref.scoped)
@@ -103,7 +104,9 @@ class AccessInfoTest(utils.TestCase, testresources.ResourcedTestCase):
         with self.deprecations.expect_deprecations_here():
             self.assertEqual(auth_ref.auth_url,
                              ('http://public.com:5000/v2.0',))
-        self.assertEqual(auth_ref.management_url, ('http://admin:35357/v2.0',))
+        with self.deprecations.expect_deprecations_here():
+            self.assertEqual(auth_ref.management_url,
+                             ('http://admin:35357/v2.0',))
 
         self.assertEqual(auth_ref.project_domain_id, 'default')
         self.assertEqual(auth_ref.project_domain_name, 'Default')
