@@ -48,7 +48,8 @@ class AccessInfoTest(utils.TestCase, testresources.ResourcedTestCase):
         self.assertIsNone(auth_ref.auth_url)
         self.assertIsNone(auth_ref.management_url)
 
-        self.assertFalse(auth_ref.scoped)
+        with self.deprecations.expect_deprecations_here():
+            self.assertFalse(auth_ref.scoped)
         self.assertFalse(auth_ref.domain_scoped)
         self.assertFalse(auth_ref.project_scoped)
         self.assertFalse(auth_ref.trust_scoped)
@@ -106,7 +107,8 @@ class AccessInfoTest(utils.TestCase, testresources.ResourcedTestCase):
         self.assertEqual(auth_ref.user_domain_id, 'default')
         self.assertEqual(auth_ref.user_domain_name, 'Default')
 
-        self.assertTrue(auth_ref.scoped)
+        with self.deprecations.expect_deprecations_here():
+            self.assertTrue(auth_ref.scoped)
         self.assertTrue(auth_ref.project_scoped)
         self.assertFalse(auth_ref.domain_scoped)
 
@@ -127,7 +129,8 @@ class AccessInfoTest(utils.TestCase, testresources.ResourcedTestCase):
         self.assertEqual(auth_ref.user_domain_id, 'default')
         self.assertEqual(auth_ref.user_domain_name, 'Default')
         self.assertEqual(auth_ref.role_names, ['role1', 'role2'])
-        self.assertFalse(auth_ref.scoped)
+        with self.deprecations.expect_deprecations_here():
+            self.assertFalse(auth_ref.scoped)
 
     def test_grizzly_token(self):
         grizzly_token = self.examples.TOKEN_RESPONSES[

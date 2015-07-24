@@ -258,7 +258,10 @@ class AccessInfo(dict):
         """Returns true if the authorization token was scoped to a tenant
            (project), and contains a populated service catalog.
 
-           This is deprecated, use project_scoped instead.
+        .. warning::
+
+            This is deprecated as of the 1.7.0 release in favor of
+            project_scoped and may be removed in the 2.0.0 release.
 
         :returns: bool
         """
@@ -537,6 +540,13 @@ class AccessInfoV2(AccessInfo):
 
     @property
     def scoped(self):
+        """Deprecated as of the 1.7.0 release in favor of project_scoped and
+        may be removed in the 2.0.0 release.
+        """
+        warnings.warn(
+            'scoped is deprecated as of the 1.7.0 release in favor of '
+            'project_scoped and may be removed in the 2.0.0 release.',
+            DeprecationWarning)
         if ('serviceCatalog' in self
                 and self['serviceCatalog']
                 and 'tenant' in self['token']):
@@ -759,6 +769,13 @@ class AccessInfoV3(AccessInfo):
 
     @property
     def scoped(self):
+        """Deprecated as of the 1.7.0 release in favor of project_scoped and
+        may be removed in the 2.0.0 release.
+        """
+        warnings.warn(
+            'scoped is deprecated as of the 1.7.0 release in favor of '
+            'project_scoped and may be removed in the 2.0.0 release.',
+            DeprecationWarning)
         return ('catalog' in self and self['catalog'] and 'project' in self)
 
     @property

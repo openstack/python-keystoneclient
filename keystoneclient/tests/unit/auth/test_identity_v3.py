@@ -512,7 +512,8 @@ class V3IdentityPlugin(utils.TestCase):
 
         auth_ref = a.get_access(s)
 
-        self.assertFalse(auth_ref.scoped)
+        with self.deprecations.expect_deprecations_here():
+            self.assertFalse(auth_ref.scoped)
         body = self.requests_mock.last_request.json()
 
         ident = body['auth']['identity']
