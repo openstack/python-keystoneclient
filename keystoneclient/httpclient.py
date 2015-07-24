@@ -20,6 +20,7 @@ OpenStack Client interface. Handles the REST calls and responses.
 """
 
 import logging
+import warnings
 
 from debtcollector import removals
 from debtcollector import renames
@@ -424,15 +425,35 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
     @property
     def tenant_id(self):
         """Provide read-only backwards compatibility for tenant_id.
-           This is deprecated, use project_id instead.
+
+        .. warning::
+
+            This is deprecated as of the 1.7.0 release in favor of project_id
+            and may be removed in the 2.0.0 release.
         """
+
+        warnings.warn(
+            'tenant_id is deprecated as of the 1.7.0 release in favor of '
+            'project_id and may be removed in the 2.0.0 release.',
+            DeprecationWarning)
+
         return self.project_id
 
     @property
     def tenant_name(self):
         """Provide read-only backwards compatibility for tenant_name.
-           This is deprecated, use project_name instead.
+
+        .. warning::
+
+            This is deprecated as of the 1.7.0 release in favor of project_name
+            and may be removed in the 2.0.0 release.
         """
+
+        warnings.warn(
+            'tenant_name is deprecated as of the 1.7.0 release in favor of '
+            'project_name and may be removed in the 2.0.0 release.',
+            DeprecationWarning)
+
         return self.project_name
 
     @utils.positional(enforcement=utils.positional.WARN)
