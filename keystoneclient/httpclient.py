@@ -248,8 +248,14 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
             self.project_id = self.auth_ref.project_id
             self.project_name = self.auth_ref.project_name
             self.project_domain_id = self.auth_ref.project_domain_id
-            self.auth_url = self.auth_ref.auth_url[0]
-            self._management_url = self.auth_ref.management_url[0]
+            auth_urls = self.auth_ref.service_catalog.get_urls(
+                service_type='identity', endpoint_type='public',
+                region_name=region_name)
+            self.auth_url = auth_urls[0]
+            management_urls = self.auth_ref.service_catalog.get_urls(
+                service_type='identity', endpoint_type='admin',
+                region_name=region_name)
+            self._management_url = management_urls[0]
             self.auth_token_from_user = self.auth_ref.auth_token
             self.trust_id = self.auth_ref.trust_id
             if self.auth_ref.has_service_catalog() and not region_name:
