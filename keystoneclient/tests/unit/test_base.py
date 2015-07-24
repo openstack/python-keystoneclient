@@ -94,7 +94,8 @@ class ManagerTest(utils.TestCase):
         self.mgr.resource_class = base.Resource
 
     def test_api(self):
-        self.assertEqual(self.mgr.api, self.client)
+        with self.deprecations.expect_deprecations_here():
+            self.assertEqual(self.mgr.api, self.client)
 
     def test_get(self):
         get_mock = self.useFixture(mockpatch.PatchObject(

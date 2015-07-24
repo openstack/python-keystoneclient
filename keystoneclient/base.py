@@ -21,6 +21,7 @@ Base utilities to build API operation managers and objects on top of.
 
 import abc
 import functools
+import warnings
 
 import six
 from six.moves import urllib
@@ -91,8 +92,17 @@ class Manager(object):
 
     @property
     def api(self):
-        """Deprecated. Use `client` instead.
+        """The client.
+
+        .. warning::
+
+            This property is deprecated as of the 1.7.0 release in favor of
+            :meth:`client` and may be removed in the 2.0.0 release.
+
         """
+        warnings.warn(
+            'api is deprecated as of the 1.7.0 release in favor of client and '
+            'may be removed in the 2.0.0 release', DeprecationWarning)
         return self.client
 
     def _list(self, url, response_key, obj_class=None, body=None, **kwargs):
