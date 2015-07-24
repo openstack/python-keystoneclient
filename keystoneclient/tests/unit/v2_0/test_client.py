@@ -49,7 +49,7 @@ class KeystoneClientTest(utils.TestCase):
 
         c = client.Client(username='exampleuser',
                           password='password',
-                          tenant_name='exampleproject',
+                          project_name='exampleproject',
                           auth_url=self.TEST_URL)
         self.assertIsNotNone(c.auth_ref)
         with self.deprecations.expect_deprecations_here():
@@ -67,7 +67,7 @@ class KeystoneClientTest(utils.TestCase):
 
         cl = client.Client(username='exampleuser',
                            password='password',
-                           tenant_name='exampleproject',
+                           project_name='exampleproject',
                            auth_url=self.TEST_URL)
         cache = json.dumps(cl.auth_ref)
         new_client = client.Client(auth_ref=json.loads(cache))
@@ -88,7 +88,7 @@ class KeystoneClientTest(utils.TestCase):
 
         cl = client.Client(username='exampleuser',
                            password='password',
-                           tenant_name='exampleproject',
+                           project_name='exampleproject',
                            auth_url=self.TEST_URL)
         cache = json.dumps(cl.auth_ref)
         new_auth_url = "http://new-public:5000/v2.0"
@@ -133,7 +133,7 @@ class KeystoneClientTest(utils.TestCase):
 
         cl = client.Client(username='exampleuser',
                            password='password',
-                           tenant_name='exampleproject',
+                           project_name='exampleproject',
                            auth_url=self.TEST_URL)
         self.assertEqual(cl.management_url, admin_url)
 
@@ -147,7 +147,7 @@ class KeystoneClientTest(utils.TestCase):
 
         cl = client.Client(username='exampleuser',
                            password='password',
-                           tenant_name='exampleproject',
+                           project_name='exampleproject',
                            auth_url=self.TEST_URL,
                            region_name='North')
         self.assertEqual(cl.service_catalog.url_for(service_type='image'),
@@ -155,7 +155,7 @@ class KeystoneClientTest(utils.TestCase):
 
         cl = client.Client(username='exampleuser',
                            password='password',
-                           tenant_name='exampleproject',
+                           project_name='exampleproject',
                            auth_url=self.TEST_URL,
                            region_name='South')
         self.assertEqual(cl.service_catalog.url_for(service_type='image'),
@@ -164,7 +164,7 @@ class KeystoneClientTest(utils.TestCase):
     def test_client_without_auth_params(self):
         self.assertRaises(exceptions.AuthorizationFailure,
                           client.Client,
-                          tenant_name='exampleproject',
+                          project_name='exampleproject',
                           auth_url=self.TEST_URL)
 
     def test_client_params(self):

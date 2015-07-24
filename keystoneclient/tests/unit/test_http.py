@@ -28,7 +28,7 @@ RESPONSE_BODY = '{"hi": "there"}'
 
 def get_client():
     cl = httpclient.HTTPClient(username="username", password="password",
-                               tenant_id="tenant", auth_url="auth_test")
+                               project_id="tenant", auth_url="auth_test")
     return cl
 
 
@@ -118,7 +118,7 @@ class ClientTest(utils.TestCase):
     def test_forwarded_for(self):
         ORIGINAL_IP = "10.100.100.1"
         cl = httpclient.HTTPClient(username="username", password="password",
-                                   tenant_id="tenant", auth_url="auth_test",
+                                   project_id="tenant", auth_url="auth_test",
                                    original_ip=ORIGINAL_IP)
 
         self.stub_url('GET')

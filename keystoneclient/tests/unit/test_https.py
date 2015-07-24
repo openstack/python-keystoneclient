@@ -28,7 +28,7 @@ RESPONSE_BODY = '{"hi": "there"}'
 
 def get_client():
     cl = httpclient.HTTPClient(username="username", password="password",
-                               tenant_id="tenant", auth_url="auth_test",
+                               project_id="tenant", auth_url="auth_test",
                                cacert="ca.pem", key="key.pem", cert="cert.pem")
     return cl
 
@@ -82,7 +82,7 @@ class ClientTest(utils.TestCase):
     def test_post_auth(self, MOCK_REQUEST):
         MOCK_REQUEST.return_value = FAKE_RESPONSE
         cl = httpclient.HTTPClient(
-            username="username", password="password", tenant_id="tenant",
+            username="username", password="password", project_id="tenant",
             auth_url="auth_test", cacert="ca.pem", key="key.pem",
             cert="cert.pem")
         cl.management_url = "https://127.0.0.1:5000"

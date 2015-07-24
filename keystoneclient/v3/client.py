@@ -66,11 +66,13 @@ class Client(httpclient.HTTPClient):
     :param string project_domain_name: Project's domain name for project
                                        scoping. (optional)
     :param string tenant_name: Tenant name. (optional)
-                               The tenant_name keyword argument is deprecated,
-                               use project_name instead.
+                               The tenant_name keyword argument is deprecated
+                               as of the 1.7.0 release in favor of project_name
+                               and may be removed in the 2.0.0 release.
     :param string tenant_id: Tenant id. (optional)
-                             The tenant_id keyword argument is deprecated,
-                             use project_id instead.
+                             The tenant_id keyword argument is deprecated as of
+                             the 1.7.0 release in favor of project_id and may
+                             be removed in the 2.0.0 release.
     :param string auth_url: Identity service endpoint for authorization.
     :param string region_name: Name of a region to select when choosing an
                                endpoint from the service catalog.

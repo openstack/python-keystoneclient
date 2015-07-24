@@ -321,7 +321,7 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
 
         cl = client.Client(username='exampleuser',
                            password='password',
-                           tenant_name='exampleproject',
+                           project_name='exampleproject',
                            auth_url=self.TEST_URL)
 
         self.assertEqual(cl.auth_token, self.TEST_TOKEN)

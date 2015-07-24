@@ -67,7 +67,7 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         self.stub_auth(response_list=[{'json': resp_a, 'headers': headers},
                                       {'json': resp_b, 'headers': headers}])
 
-        cs = client.Client(tenant_id=self.TEST_TENANT_ID,
+        cs = client.Client(project_id=self.TEST_TENANT_ID,
                            auth_url=self.TEST_URL,
                            username=self.TEST_USER,
                            password=self.TEST_TOKEN)
@@ -95,7 +95,7 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         def client_create_wrapper():
             client.Client(username=self.TEST_USER,
                           password="bad_key",
-                          tenant_id=self.TEST_TENANT_ID,
+                          project_id=self.TEST_TENANT_ID,
                           auth_url=self.TEST_URL)
 
         self.assertRaises(exceptions.Unauthorized, client_create_wrapper)
@@ -110,7 +110,7 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
 
         cs = client.Client(username=self.TEST_USER,
                            password=self.TEST_TOKEN,
-                           tenant_id=self.TEST_TENANT_ID,
+                           project_id=self.TEST_TENANT_ID,
                            auth_url=self.TEST_URL)
 
         self.assertEqual(cs.management_url,
@@ -125,7 +125,7 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
 
         cs = client.Client(username=self.TEST_USER,
                            password=self.TEST_TOKEN,
-                           tenant_id=self.TEST_TENANT_ID,
+                           project_id=self.TEST_TENANT_ID,
                            auth_url=self.TEST_URL)
         self.assertEqual(cs.management_url,
                          self.TEST_RESPONSE_DICT["access"]["serviceCatalog"][3]
@@ -174,7 +174,7 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
 
         cs = client.Client(token=self.TEST_TOKEN,
-                           tenant_id=self.TEST_TENANT_ID,
+                           project_id=self.TEST_TENANT_ID,
                            auth_url=self.TEST_URL)
         self.assertEqual(cs.management_url,
                          self.TEST_RESPONSE_DICT["access"]["serviceCatalog"][3]
@@ -193,7 +193,7 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         self.stub_auth(json=response)
 
         cs = client.Client(token=self.TEST_TOKEN,
-                           tenant_id=self.TEST_TENANT_ID,
+                           project_id=self.TEST_TENANT_ID,
                            trust_id=self.TEST_TRUST_ID,
                            auth_url=self.TEST_URL)
         self.assertTrue(cs.auth_ref.trust_scoped)
@@ -227,7 +227,7 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
 
         cl = client.Client(username='exampleuser',
                            password='password',
-                           tenant_name='exampleproject',
+                           project_name='exampleproject',
                            auth_url=self.TEST_URL)
 
         self.assertEqual(cl.auth_token, self.TEST_TOKEN)

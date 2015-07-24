@@ -22,6 +22,7 @@ OpenStack Client interface. Handles the REST calls and responses.
 import logging
 
 from debtcollector import removals
+from debtcollector import renames
 from oslo_serialization import jsonutils
 import pkg_resources
 import requests
@@ -190,10 +191,13 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
                                    keyring is about to expire. default: 30
                                    (optional)
     :param string tenant_name: Tenant name. (optional) The tenant_name keyword
-                               argument is deprecated, use project_name
-                               instead.
+                               argument is deprecated as of the 1.7.0 release
+                               in favor of project_name and may be removed in
+                               the 2.0.0 release.
     :param string tenant_id: Tenant id. (optional) The tenant_id keyword
-                             argument is deprecated, use project_id instead.
+                             argument is deprecated as of the 1.7.0 release in
+                             favor of project_id and may be removed in the
+                             2.0.0 release.
     :param string trust_id: Trust ID for trust scoping. (optional)
     :param object session: A Session object to be used for
                            communicating with the identity service.
@@ -216,6 +220,10 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
 
     version = None
 
+    @renames.renamed_kwarg('tenant_name', 'project_name', version='1.7.0',
+                           removal_version='2.0.0')
+    @renames.renamed_kwarg('tenant_id', 'project_id', version='1.7.0',
+                           removal_version='2.0.0')
     @utils.positional(enforcement=utils.positional.WARN)
     def __init__(self, username=None, tenant_id=None, tenant_name=None,
                  password=None, auth_url=None, region_name=None, endpoint=None,

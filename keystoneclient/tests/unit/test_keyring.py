@@ -88,7 +88,7 @@ class KeyringTest(utils.TestCase):
         the keyring is never accessed.
         """
         cl = httpclient.HTTPClient(username=USERNAME, password=PASSWORD,
-                                   tenant_id=TENANT_ID, auth_url=AUTH_URL)
+                                   project_id=TENANT_ID, auth_url=AUTH_URL)
 
         # stub and check that a new token is received
         method = 'get_raw_token_from_identity_service'
@@ -105,7 +105,7 @@ class KeyringTest(utils.TestCase):
 
     def test_build_keyring_key(self):
         cl = httpclient.HTTPClient(username=USERNAME, password=PASSWORD,
-                                   tenant_id=TENANT_ID, auth_url=AUTH_URL)
+                                   project_id=TENANT_ID, auth_url=AUTH_URL)
 
         keyring_key = cl._build_keyring_key(auth_url=AUTH_URL,
                                             username=USERNAME,
@@ -119,7 +119,7 @@ class KeyringTest(utils.TestCase):
 
     def test_set_and_get_keyring_expired(self):
         cl = httpclient.HTTPClient(username=USERNAME, password=PASSWORD,
-                                   tenant_id=TENANT_ID, auth_url=AUTH_URL,
+                                   project_id=TENANT_ID, auth_url=AUTH_URL,
                                    use_keyring=True)
 
         # set an expired token into the keyring
@@ -147,7 +147,7 @@ class KeyringTest(utils.TestCase):
 
     def test_get_keyring(self):
         cl = httpclient.HTTPClient(username=USERNAME, password=PASSWORD,
-                                   tenant_id=TENANT_ID, auth_url=AUTH_URL,
+                                   project_id=TENANT_ID, auth_url=AUTH_URL,
                                    use_keyring=True)
 
         # set an token into the keyring
@@ -163,7 +163,7 @@ class KeyringTest(utils.TestCase):
 
     def test_set_keyring(self):
         cl = httpclient.HTTPClient(username=USERNAME, password=PASSWORD,
-                                   tenant_id=TENANT_ID, auth_url=AUTH_URL,
+                                   project_id=TENANT_ID, auth_url=AUTH_URL,
                                    use_keyring=True)
 
         # stub and check that a new token is received
