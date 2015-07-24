@@ -10,13 +10,23 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from debtcollector import removals
+
 from keystoneclient import discover
 from keystoneclient import httpclient
 from keystoneclient import session as client_session
 
 
-# Using client.HTTPClient is deprecated. Use httpclient.HTTPClient instead.
-HTTPClient = httpclient.HTTPClient
+@removals.remove(message='Use keystoneclient.httpclient.HTTPClient instead',
+                 version='1.7.0', removal_version='2.0.0')
+class HTTPClient(httpclient.HTTPClient):
+    """Deprecated alias for httpclient.HTTPClient.
+
+    This class is deprecated as of the 1.7.0 release in favor of
+    :class:`keystoneclient.httpclient.HTTPClient` and may be removed in the
+    2.0.0 release.
+
+    """
 
 
 def Client(version=None, unstable=False, session=None, **kwargs):
