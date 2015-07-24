@@ -87,13 +87,33 @@ class OidcPassword(federated.FederatedBaseAuth):
         """
         super(OidcPassword, self).__init__(auth_url, identity_provider,
                                            protocol)
-        self.username = username
-        self.password = password
+        self._username = username
+        self._password = password
         self.client_id = client_id
         self.client_secret = client_secret
         self.access_token_endpoint = access_token_endpoint
         self.scope = scope
         self.grant_type = grant_type
+
+    @property
+    def username(self):
+        # Override to remove deprecation.
+        return self._username
+
+    @username.setter
+    def username(self, value):
+        # Override to remove deprecation.
+        self._username = value
+
+    @property
+    def password(self):
+        # Override to remove deprecation.
+        return self._password
+
+    @password.setter
+    def password(self, value):
+        # Override to remove deprecation.
+        self._password = value
 
     def get_unscoped_auth_ref(self, session):
         """Authenticate with OpenID Connect and get back claims.

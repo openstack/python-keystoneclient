@@ -131,8 +131,28 @@ class Password(Auth):
             user_id = None
 
         self.user_id = user_id
-        self.username = username
-        self.password = password
+        self._username = username
+        self._password = password
+
+    @property
+    def username(self):
+        # Override to remove deprecation.
+        return self._username
+
+    @username.setter
+    def username(self, value):
+        # Override to remove deprecation.
+        self._username = value
+
+    @property
+    def password(self):
+        # Override to remove deprecation.
+        return self._password
+
+    @password.setter
+    def password(self, value):
+        # Override to remove deprecation.
+        self._password = value
 
     def get_auth_data(self, headers=None):
         auth = {'password': self.password}
@@ -182,7 +202,17 @@ class Token(Auth):
 
     def __init__(self, auth_url, token, **kwargs):
         super(Token, self).__init__(auth_url, **kwargs)
-        self.token = token
+        self._token = token
+
+    @property
+    def token(self):
+        # Override to remove deprecation.
+        return self._token
+
+    @token.setter
+    def token(self, value):
+        # Override to remove deprecation.
+        self._token = value
 
     def get_auth_data(self, headers=None):
         if headers is not None:

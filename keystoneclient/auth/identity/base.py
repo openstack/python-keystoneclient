@@ -12,6 +12,7 @@
 
 import abc
 import logging
+import warnings
 
 from oslo_config import cfg
 import six
@@ -54,12 +55,84 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
 
         self._endpoint_cache = {}
 
+        self._username = username
+        self._password = password
+        self._token = token
         # NOTE(jamielennox): DEPRECATED. The following should not really be set
         # here but handled by the individual auth plugin.
-        self.username = username
-        self.password = password
-        self.token = token
         self.trust_id = trust_id
+
+    @property
+    def username(self):
+        """Deprecated as of the 1.7.0 release and may be removed in the 2.0.0
+        release.
+        """
+
+        warnings.warn(
+            'username is deprecated as of the 1.7.0 release and may be '
+            'removed in the 2.0.0 release.', DeprecationWarning)
+
+        return self._username
+
+    @username.setter
+    def username(self, value):
+        """Deprecated as of the 1.7.0 release and may be removed in the 2.0.0
+        release.
+        """
+
+        warnings.warn(
+            'username is deprecated as of the 1.7.0 release and may be '
+            'removed in the 2.0.0 release.', DeprecationWarning)
+
+        self._username = value
+
+    @property
+    def password(self):
+        """Deprecated as of the 1.7.0 release and may be removed in the 2.0.0
+        release.
+        """
+
+        warnings.warn(
+            'password is deprecated as of the 1.7.0 release and may be '
+            'removed in the 2.0.0 release.', DeprecationWarning)
+
+        return self._password
+
+    @password.setter
+    def password(self, value):
+        """Deprecated as of the 1.7.0 release and may be removed in the 2.0.0
+        release.
+        """
+
+        warnings.warn(
+            'password is deprecated as of the 1.7.0 release and may be '
+            'removed in the 2.0.0 release.', DeprecationWarning)
+
+        self._password = value
+
+    @property
+    def token(self):
+        """Deprecated as of the 1.7.0 release and may be removed in the 2.0.0
+        release.
+        """
+
+        warnings.warn(
+            'token is deprecated as of the 1.7.0 release and may be '
+            'removed in the 2.0.0 release.', DeprecationWarning)
+
+        return self._token
+
+    @token.setter
+    def token(self, value):
+        """Deprecated as of the 1.7.0 release and may be removed in the 2.0.0
+        release.
+        """
+
+        warnings.warn(
+            'token is deprecated as of the 1.7.0 release and may be '
+            'removed in the 2.0.0 release.', DeprecationWarning)
+
+        self._token = value
 
     @abc.abstractmethod
     def get_auth_ref(self, session, **kwargs):

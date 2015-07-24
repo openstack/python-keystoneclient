@@ -170,7 +170,27 @@ class Saml2UnscopedToken(_BaseSAMLPlugin):
         super(Saml2UnscopedToken, self).__init__(auth_url=auth_url, **kwargs)
         self.identity_provider = identity_provider
         self.identity_provider_url = identity_provider_url
-        self.username, self.password = username, password
+        self._username, self._password = username, password
+
+    @property
+    def username(self):
+        # Override to remove deprecation.
+        return self._username
+
+    @username.setter
+    def username(self, value):
+        # Override to remove deprecation.
+        self._username = value
+
+    @property
+    def password(self):
+        # Override to remove deprecation.
+        return self._password
+
+    @password.setter
+    def password(self, value):
+        # Override to remove deprecation.
+        self._password = value
 
     def _handle_http_302_ecp_redirect(self, session, response, method,
                                       **kwargs):
@@ -490,7 +510,27 @@ class ADFSUnscopedToken(_BaseSAMLPlugin):
         self.identity_provider = identity_provider
         self.identity_provider_url = identity_provider_url
         self.service_provider_endpoint = service_provider_endpoint
-        self.username, self.password = username, password
+        self._username, self._password = username, password
+
+    @property
+    def username(self):
+        # Override to remove deprecation.
+        return self._username
+
+    @username.setter
+    def username(self, value):
+        # Override to remove deprecation.
+        self._username = value
+
+    @property
+    def password(self):
+        # Override to remove deprecation.
+        return self._password
+
+    @password.setter
+    def password(self, value):
+        # Override to remove deprecation.
+        self._password = value
 
     @classmethod
     def get_options(cls):
