@@ -16,6 +16,7 @@
 
 
 import datetime
+import warnings
 
 from oslo_utils import timeutils
 
@@ -39,9 +40,20 @@ class AccessInfo(dict):
                 **kwargs):
         """Create AccessInfo object given a successful auth response & body
            or a user-provided dict.
+
+        .. warning::
+
+            Use of the region_name argument is deprecated as of the 1.7.0
+            release and may be removed in the 2.0.0 release.
+
         """
-        # FIXME(jamielennox): Passing region_name is deprecated. Provide an
-        # appropriate warning.
+
+        if region_name:
+            warnings.warn(
+                'Use of the region_name argument is deprecated as of the '
+                '1.7.0 release and may be removed in the 2.0.0 release.',
+                DeprecationWarning)
+
         auth_ref = None
 
         if body is not None or len(kwargs):
