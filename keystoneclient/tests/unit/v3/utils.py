@@ -129,9 +129,7 @@ class TestCase(UnauthenticatedTestCase):
 
     def setUp(self):
         super(TestCase, self).setUp()
-        self.client = client.Client(username=self.TEST_USER,
-                                    token=self.TEST_TOKEN,
-                                    tenant_name=self.TEST_TENANT_NAME,
+        self.client = client.Client(token=self.TEST_TOKEN,
                                     auth_url=self.TEST_URL,
                                     endpoint=self.TEST_URL)
 
