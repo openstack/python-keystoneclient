@@ -364,7 +364,8 @@ class AccessInfo(dict):
         (project), this property will return None.
 
         DEPRECATED: this doesn't correctly handle region name. You should fetch
-        it from the service catalog yourself.
+        it from the service catalog yourself. This may be removed in the 2.0.0
+        release.
 
         :returns: tuple of urls
         """
@@ -611,8 +612,13 @@ class AccessInfoV2(AccessInfo):
 
     @property
     def auth_url(self):
-        # FIXME(jamielennox): this is deprecated in favour of retrieving it
-        # from the service catalog. Provide a warning.
+        """Deprecated as of the 1.7.0 release in favor of
+        service_catalog.get_urls() and may be removed in the 2.0.0 release.
+        """
+        warnings.warn(
+            'auth_url is deprecated as of the 1.7.0 release in favor of '
+            'service_catalog.get_urls() and may be removed in the 2.0.0 '
+            'release.', DeprecationWarning)
         if self.service_catalog:
             return self.service_catalog.get_urls(service_type='identity',
                                                  endpoint_type='publicURL',
@@ -804,8 +810,13 @@ class AccessInfoV3(AccessInfo):
 
     @property
     def auth_url(self):
-        # FIXME(jamielennox): this is deprecated in favour of retrieving it
-        # from the service catalog. Provide a warning.
+        """Deprecated as of the 1.7.0 release in favor of
+        service_catalog.get_urls() and may be removed in the 2.0.0 release.
+        """
+        warnings.warn(
+            'auth_url is deprecated as of the 1.7.0 release in favor of '
+            'service_catalog.get_urls() and may be removed in the 2.0.0 '
+            'release.', DeprecationWarning)
         if self.service_catalog:
             return self.service_catalog.get_urls(service_type='identity',
                                                  endpoint_type='public',
