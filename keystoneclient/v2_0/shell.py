@@ -15,7 +15,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 """
-This module is pending deprecation in favor of python-openstackclient.
+This module is deprecated as of the 1.7.0 release in favor of
+python-openstackclient and may be removed in the 2.0.0 release.
 
 Bug fixes are welcome, but new features should be exposed to the CLI by
 python-openstackclient after being added to the python-keystoneclient library.

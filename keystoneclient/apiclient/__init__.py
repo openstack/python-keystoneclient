@@ -13,7 +13,16 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import warnings
+"""Deprecated.
+
+.. warning::
+
+  This module is deprecated as of the 1.7.0 release in favor of
+  :py:mod:`keystoneclient.exceptions` and may be removed in the 2.0.0 release.
+
+"""
+
+from debtcollector import removals
 
 from keystoneclient import exceptions
 
@@ -22,9 +31,10 @@ from keystoneclient import exceptions
 # to report 'deprecated' status of exceptions for next kind of imports
 #       from keystoneclient.apiclient import exceptions
 
-warnings.warn("The 'keystoneclient.apiclient' module is deprecated since "
-              "v.0.7.1. Use 'keystoneclient.exceptions' instead of this "
-              "module.", DeprecationWarning)
+removals.removed_module('keystoneclient.apiclient',
+                        replacement='keystoneclient.exceptions',
+                        version='0.7.1',
+                        removal_version='2.0')
 
 __all__ = [
     'exceptions',

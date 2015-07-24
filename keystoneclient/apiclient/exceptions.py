@@ -20,14 +20,15 @@
 Exception definitions.
 
 Deprecated since v0.7.1. Use 'keystoneclient.exceptions' instead of
-this module.
+this module. This module may be removed in the 2.0.0 release.
 """
 
-import warnings
+from debtcollector import removals
 
 from keystoneclient.exceptions import *     # noqa
 
 
-warnings.warn("The 'keystoneclient.apiclient.exceptions' module is deprecated "
-              "since v.0.7.1. Use 'keystoneclient.exceptions' instead of this "
-              "module.", DeprecationWarning)
+removals.removed_module('keystoneclient.apiclient.exceptions',
+                        replacement='keystoneclient.exceptions',
+                        version='0.7.1',
+                        removal_version='2.0')

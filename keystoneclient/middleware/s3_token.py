@@ -22,6 +22,12 @@
 """
 S3 TOKEN MIDDLEWARE
 
+.. warning::
+
+  This module is DEPRECATED and may be removed in the 2.0.0 release. The
+  s3_token middleware has been moved to the `keystonemiddleware repository
+  <http://docs.openstack.org/developer/keystonemiddleware/>`_.
+
 This WSGI component:
 
 * Get a request from the swift3 middleware with an S3 Authorization
