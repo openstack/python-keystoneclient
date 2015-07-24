@@ -42,7 +42,7 @@ class TestCase(testtools.TestCase):
 
     def setUp(self):
         super(TestCase, self).setUp()
-        self.useFixture(client_fixtures.Deprecations())
+        self.deprecations = self.useFixture(client_fixtures.Deprecations())
 
         self.logger = self.useFixture(fixtures.FakeLogger(level=logging.DEBUG))
         self.requests_mock = self.useFixture(fixture.Fixture())

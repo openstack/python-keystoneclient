@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import contextlib
 import os
 import warnings
 
@@ -607,3 +608,14 @@ class Deprecations(fixtures.Fixture):
         warnings.filterwarnings('error', category=DeprecationWarning,
                                 module='^keystoneclient\\.')
         self.addCleanup(warnings.resetwarnings)
+
+    def expect_deprecations(self):
+        """Call this if the test expects to call deprecated function."""
+        warnings.resetwarnings()
+
+    @contextlib.contextmanager
+    def expect_deprecations_here(self):
+        warnings.resetwarnings()
+        yield
+        warnings.filterwarnings('error', category=DeprecationWarning,
+                                module='^keystoneclient\\.')
