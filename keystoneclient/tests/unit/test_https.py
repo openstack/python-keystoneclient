@@ -47,7 +47,8 @@ class ClientTest(utils.TestCase):
         MOCK_REQUEST.return_value = FAKE_RESPONSE
         cl = get_authed_client()
 
-        resp, body = cl.get("/hi")
+        with self.deprecations.expect_deprecations_here():
+            resp, body = cl.get("/hi")
 
         # this may become too tightly couple later
         mock_args, mock_kwargs = MOCK_REQUEST.call_args
@@ -66,7 +67,8 @@ class ClientTest(utils.TestCase):
         MOCK_REQUEST.return_value = FAKE_RESPONSE
         cl = get_authed_client()
 
-        cl.post("/hi", body=[1, 2, 3])
+        with self.deprecations.expect_deprecations_here():
+            cl.post("/hi", body=[1, 2, 3])
 
         # this may become too tightly couple later
         mock_args, mock_kwargs = MOCK_REQUEST.call_args
@@ -87,7 +89,8 @@ class ClientTest(utils.TestCase):
             cert="cert.pem")
         cl.management_url = "https://127.0.0.1:5000"
         cl.auth_token = "token"
-        cl.post("/hi", body=[1, 2, 3])
+        with self.deprecations.expect_deprecations_here():
+            cl.post("/hi", body=[1, 2, 3])
 
         # this may become too tightly couple later
         mock_args, mock_kwargs = MOCK_REQUEST.call_args

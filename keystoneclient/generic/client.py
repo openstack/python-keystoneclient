@@ -84,9 +84,9 @@ class Client(httpclient.HTTPClient):
     def _check_keystone_versions(self, url):
         """Calls Keystone URL and detects the available API versions."""
         try:
-            resp, body = self.request(url, "GET",
-                                      headers={'Accept':
-                                               'application/json'})
+            resp, body = self._request(url, "GET",
+                                       headers={'Accept':
+                                                'application/json'})
             # Multiple Choices status code is returned by the root
             # identity endpoint, with references to one or more
             # Identity API versions -- v3 spec
@@ -148,9 +148,9 @@ class Client(httpclient.HTTPClient):
         try:
             if not url.endswith("/"):
                 url += '/'
-            resp, body = self.request("%sextensions" % url, "GET",
-                                      headers={'Accept':
-                                               'application/json'})
+            resp, body = self._request("%sextensions" % url, "GET",
+                                       headers={'Accept':
+                                                'application/json'})
             if resp.status_code in (200, 204):  # some cases we get No Content
                 if 'extensions' in body and 'values' in body['extensions']:
                     # Parse correct format (per contract)

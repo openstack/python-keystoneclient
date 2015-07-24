@@ -696,6 +696,7 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
     def serialize(self, entity):
         return jsonutils.dumps(entity)
 
+    @removals.remove(version='1.7.0', removal_version='2.0.0')
     def request(self, *args, **kwargs):
         """Send an http request with the specified characteristics.
 
@@ -703,10 +704,15 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         setting headers, JSON encoding/decoding, and error handling.
 
         .. warning::
+
             *DEPRECATED*: This function is no longer used. It was designed to
             be used only by the managers and the managers now receive an
             adapter so this function is no longer on the standard request path.
+            This may be removed in the 2.0.0 release.
         """
+        return self._request(*args, **kwargs)
+
+    def _request(self, *args, **kwargs):
         kwargs.setdefault('authenticated', False)
         return self._adapter.request(*args, **kwargs)
 
@@ -715,15 +721,14 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         concatenating self.management_url and url and passing in method and
         any associated kwargs.
         """
-        # NOTE(jamielennox): This is deprecated and is no longer a part of the
-        # standard client request path. It now goes via the adapter instead.
         if not management:
             endpoint_filter = kwargs.setdefault('endpoint_filter', {})
             endpoint_filter.setdefault('interface', 'public')
 
         kwargs.setdefault('authenticated', None)
-        return self.request(url, method, **kwargs)
+        return self._request(url, method, **kwargs)
 
+    @removals.remove(version='1.7.0', removal_version='2.0.0')
     def get(self, url, **kwargs):
         """Perform an authenticated GET request.
 
@@ -731,12 +736,16 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         authentication token if one is available.
 
         .. warning::
-            *DEPRECATED*: This function is no longer used. It was designed to
-            be used by the managers and the managers now receive an adapter so
-            this function is no longer on the standard request path.
+
+            *DEPRECATED*: This function is no longer used and is deprecated as
+            of the 1.7.0 release and may be removed in the 2.0.0 release. It
+            was designed to be used by the managers and the managers now
+            receive an adapter so this function is no longer on the standard
+            request path.
         """
         return self._cs_request(url, 'GET', **kwargs)
 
+    @removals.remove(version='1.7.0', removal_version='2.0.0')
     def head(self, url, **kwargs):
         """Perform an authenticated HEAD request.
 
@@ -744,12 +753,16 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         authentication token if one is available.
 
         .. warning::
-            *DEPRECATED*: This function is no longer used. It was designed to
-            be used by the managers and the managers now receive an adapter so
-            this function is no longer on the standard request path.
+
+            *DEPRECATED*: This function is no longer used and is deprecated as
+            of the 1.7.0 release and may be removed in the 2.0.0 release. It
+            was designed to be used by the managers and the managers now
+            receive an adapter so this function is no longer on the standard
+            request path.
         """
         return self._cs_request(url, 'HEAD', **kwargs)
 
+    @removals.remove(version='1.7.0', removal_version='2.0.0')
     def post(self, url, **kwargs):
         """Perform an authenticate POST request.
 
@@ -757,12 +770,16 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         authentication token if one is available.
 
         .. warning::
-            *DEPRECATED*: This function is no longer used. It was designed to
-            be used by the managers and the managers now receive an adapter so
-            this function is no longer on the standard request path.
+
+            *DEPRECATED*: This function is no longer used and is deprecated as
+            of the 1.7.0 release and may be removed in the 2.0.0 release. It
+            was designed to be used by the managers and the managers now
+            receive an adapter so this function is no longer on the standard
+            request path.
         """
         return self._cs_request(url, 'POST', **kwargs)
 
+    @removals.remove(version='1.7.0', removal_version='2.0.0')
     def put(self, url, **kwargs):
         """Perform an authenticate PUT request.
 
@@ -770,12 +787,16 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         authentication token if one is available.
 
         .. warning::
-            *DEPRECATED*: This function is no longer used. It was designed to
-            be used by the managers and the managers now receive an adapter so
-            this function is no longer on the standard request path.
+
+            *DEPRECATED*: This function is no longer used and is deprecated as
+            of the 1.7.0 release and may be removed in the 2.0.0 release. It
+            was designed to be used by the managers and the managers now
+            receive an adapter so this function is no longer on the standard
+            request path.
         """
         return self._cs_request(url, 'PUT', **kwargs)
 
+    @removals.remove(version='1.7.0', removal_version='2.0.0')
     def patch(self, url, **kwargs):
         """Perform an authenticate PATCH request.
 
@@ -783,12 +804,16 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         an authentication token if one is available.
 
         .. warning::
-            *DEPRECATED*: This function is no longer used. It was designed to
-            be used by the managers and the managers now receive an adapter so
-            this function is no longer on the standard request path.
+
+            *DEPRECATED*: This function is no longer used and is deprecated as
+            of the 1.7.0 release and may be removed in the 2.0.0 release. It
+            was designed to be used by the managers and the managers now
+            receive an adapter so this function is no longer on the standard
+            request path.
         """
         return self._cs_request(url, 'PATCH', **kwargs)
 
+    @removals.remove(version='1.7.0', removal_version='2.0.0')
     def delete(self, url, **kwargs):
         """Perform an authenticate DELETE request.
 
@@ -796,9 +821,12 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         an authentication token if one is available.
 
         .. warning::
-            *DEPRECATED*: This function is no longer used. It was designed to
-            be used by the managers and the managers now receive an adapter so
-            this function is no longer on the standard request path.
+
+            *DEPRECATED*: This function is no longer used and is deprecated as
+            of the 1.7.0 release and may be removed in the 2.0.0 release. It
+            was designed to be used by the managers and the managers now
+            receive an adapter so this function is no longer on the standard
+            request path.
         """
         return self._cs_request(url, 'DELETE', **kwargs)
 
