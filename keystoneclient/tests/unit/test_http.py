@@ -167,7 +167,8 @@ class BasicRequestTests(utils.TestCase):
         self.requests_mock.register_uri(method, url, text=response,
                                         status_code=status_code)
 
-        return httpclient.request(url, method, **kwargs)
+        with self.deprecations.expect_deprecations_here():
+            return httpclient.request(url, method, **kwargs)
 
     def test_basic_params(self):
         method = 'GET'
