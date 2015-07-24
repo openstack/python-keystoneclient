@@ -499,7 +499,8 @@ class ClientDiscoveryTests(utils.TestCase):
                                text=V3_VERSION_ENTRY)
         disc = discover.Discover(auth_url=BASE_URL)
 
-        versions = disc.available_versions()
+        with self.deprecations.expect_deprecations_here():
+            versions = disc.available_versions()
         self.assertEqual(1, len(versions))
         self.assertEqual(V3_VERSION, versions[0])
 

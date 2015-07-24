@@ -12,6 +12,7 @@
 
 import logging
 
+from debtcollector import removals
 import six
 
 from keystoneclient import _discover
@@ -165,14 +166,19 @@ class Discover(_discover.Discover):
         super(Discover, self).__init__(session, url,
                                        authenticated=authenticated)
 
+    @removals.remove(message='Use raw_version_data instead.', version='1.7.0',
+                     removal_version='2.0.0')
     def available_versions(self, **kwargs):
         """Return a list of identity APIs available on the server and the data
         associated with them.
 
-        DEPRECATED: use raw_version_data()
+        .. warning::
+
+            This method is deprecated as of the 1.7.0 release in favor of
+            :meth:`raw_version_data` and may be removed in the 2.0.0 release.
 
         :param bool unstable: Accept endpoints not marked 'stable'. (optional)
-                              DEPRECTED. Equates to setting allow_experimental
+                              Equates to setting allow_experimental
                               and allow_unknown to True.
         :param bool allow_experimental: Allow experimental version endpoints.
         :param bool allow_deprecated: Allow deprecated version endpoints.
