@@ -57,9 +57,19 @@ class Auth(base.BaseIdentityPlugin):
         super(Auth, self).__init__(auth_url=auth_url,
                                    reauthenticate=reauthenticate)
 
-        self.trust_id = trust_id
+        self._trust_id = trust_id
         self.tenant_id = tenant_id
         self.tenant_name = tenant_name
+
+    @property
+    def trust_id(self):
+        # Override to remove deprecation.
+        return self._trust_id
+
+    @trust_id.setter
+    def trust_id(self, value):
+        # Override to remove deprecation.
+        self._trust_id = value
 
     def get_auth_ref(self, session, **kwargs):
         headers = {'Accept': 'application/json'}

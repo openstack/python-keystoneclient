@@ -58,9 +58,7 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
         self._username = username
         self._password = password
         self._token = token
-        # NOTE(jamielennox): DEPRECATED. The following should not really be set
-        # here but handled by the individual auth plugin.
-        self.trust_id = trust_id
+        self._trust_id = trust_id
 
     @property
     def username(self):
@@ -133,6 +131,30 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
             'removed in the 2.0.0 release.', DeprecationWarning)
 
         self._token = value
+
+    @property
+    def trust_id(self):
+        """Deprecated as of the 1.7.0 release and may be removed in the 2.0.0
+        release.
+        """
+
+        warnings.warn(
+            'trust_id is deprecated as of the 1.7.0 release and may be '
+            'removed in the 2.0.0 release.', DeprecationWarning)
+
+        return self._trust_id
+
+    @trust_id.setter
+    def trust_id(self, value):
+        """Deprecated as of the 1.7.0 release and may be removed in the 2.0.0
+        release.
+        """
+
+        warnings.warn(
+            'trust_id is deprecated as of the 1.7.0 release and may be '
+            'removed in the 2.0.0 release.', DeprecationWarning)
+
+        self._trust_id = value
 
     @abc.abstractmethod
     def get_auth_ref(self, session, **kwargs):

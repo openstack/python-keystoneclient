@@ -59,7 +59,7 @@ class BaseAuth(base.BaseIdentityPlugin):
                  include_catalog=True):
         super(BaseAuth, self).__init__(auth_url=auth_url,
                                        reauthenticate=reauthenticate)
-        self.trust_id = trust_id
+        self._trust_id = trust_id
         self.domain_id = domain_id
         self.domain_name = domain_name
         self.project_id = project_id
@@ -67,6 +67,16 @@ class BaseAuth(base.BaseIdentityPlugin):
         self.project_domain_id = project_domain_id
         self.project_domain_name = project_domain_name
         self.include_catalog = include_catalog
+
+    @property
+    def trust_id(self):
+        # Override to remove deprecation.
+        return self._trust_id
+
+    @trust_id.setter
+    def trust_id(self, value):
+        # Override to remove deprecation.
+        self._trust_id = value
 
     @property
     def token_url(self):
