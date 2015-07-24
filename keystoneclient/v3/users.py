@@ -156,7 +156,7 @@ class UserManager(base.CrudManager):
         params = {'user': {'password': new_password,
                            'original_password': old_password}}
 
-        base_url = '/users/%s/password' % self.api.user_id
+        base_url = '/users/%s/password' % self.client.user_id
 
         return self._update(base_url, params, method='POST', log=False,
                             endpoint_filter={'interface': 'public'})
