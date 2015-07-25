@@ -356,6 +356,17 @@ class CrudManager(Manager):
 
     @filter_kwargs
     def list(self, fallback_to_auth=False, **kwargs):
+        if 'id' in kwargs.keys():
+            # Ensure that users are not trying to call things like
+            # ``domains.list(id='default')`` when they should have used
+            # ``[domains.get(domain_id='default')]`` instead. Keystone supports
+            # ``GET /v3/domains/{domain_id}``, not ``GET
+            # /v3/domains?id={domain_id}``.
+            raise TypeError(
+                _("list() got an unexpected keyword argument 'id'. To "
+                  "retrieve a single object using a globally unique "
+                  "identifier, try using get() instead."))
+
         url = self.build_url(dict_args_in_out=kwargs)
 
         try:

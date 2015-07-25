@@ -245,6 +245,20 @@ class CrudTests(object):
 
         return expected_path
 
+    def test_list_by_id(self, ref=None, **filter_kwargs):
+        """Test ``entities.list(id=x)`` being rewritten as ``GET /v3/entities/x``.
+
+        This tests an edge case of each manager's list() implementation, to
+        ensure that it "does the right thing" when users call ``.list()``
+        when they should have used ``.get()``.
+
+        """
+        if 'id' not in filter_kwargs:
+            ref = ref or self.new_ref()
+            filter_kwargs['id'] = ref['id']
+
+        self.assertRaises(TypeError, self.manager.list, **filter_kwargs)
+
     def test_list(self, ref_list=None, expected_path=None,
                   expected_query=None, **filter_kwargs):
         ref_list = ref_list or [self.new_ref(), self.new_ref()]
