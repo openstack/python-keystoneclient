@@ -472,7 +472,8 @@ class ClientDiscoveryTests(utils.TestCase):
 
         cl = self.assertCreatesV2(auth_url=BASE_URL, **kwargs)
 
-        self.assertEqual(cl.original_ip, '100')
+        with self.deprecations.expect_deprecations_here():
+            self.assertEqual(cl.original_ip, '100')
         self.assertEqual(cl.stale_duration, 15)
         self.assertFalse(cl.use_keyring)
 

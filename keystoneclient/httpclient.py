@@ -830,9 +830,6 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         """
         return self._cs_request(url, 'DELETE', **kwargs)
 
-    # DEPRECATIONS: The following methods are no longer directly supported
-    #               but maintained for compatibility purposes.
-
     deprecated_session_variables = {'original_ip': None,
                                     'cert': None,
                                     'timeout': None,
@@ -841,12 +838,15 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
     deprecated_adapter_variables = {'region_name': None}
 
     def __getattr__(self, name):
-        # FIXME(jamielennox): provide a proper deprecated warning
         try:
             var_name = self.deprecated_session_variables[name]
         except KeyError:
             pass
         else:
+            warnings.warn(
+                'The %s session variable is deprecated as of the 1.7.0 '
+                'release and may be removed in the 2.0.0 release' % name,
+                DeprecationWarning)
             return getattr(self.session, var_name or name)
 
         try:
@@ -854,17 +854,24 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         except KeyError:
             pass
         else:
+            warnings.warn(
+                'The %s adapter variable is deprecated as of the 1.7.0 '
+                'release and may be removed in the 2.0.0 release' % name,
+                DeprecationWarning)
             return getattr(self._adapter, var_name or name)
 
         raise AttributeError(_("Unknown Attribute: %s") % name)
 
     def __setattr__(self, name, val):
-        # FIXME(jamielennox): provide a proper deprecated warning
         try:
             var_name = self.deprecated_session_variables[name]
         except KeyError:
             pass
         else:
+            warnings.warn(
+                'The %s session variable is deprecated as of the 1.7.0 '
+                'release and may be removed in the 2.0.0 release' % name,
+                DeprecationWarning)
             return setattr(self.session, var_name or name)
 
         try:
@@ -872,6 +879,10 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         except KeyError:
             pass
         else:
+            warnings.warn(
+                'The %s adapter variable is deprecated as of the 1.7.0 '
+                'release and may be removed in the 2.0.0 release' % name,
+                DeprecationWarning)
             return setattr(self._adapter, var_name or name)
 
         super(HTTPClient, self).__setattr__(name, val)
