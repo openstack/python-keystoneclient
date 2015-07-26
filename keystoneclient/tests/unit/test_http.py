@@ -56,14 +56,18 @@ class ClientTest(utils.TestCase):
     TEST_URL = 'http://127.0.0.1:5000/hi'
 
     def test_unauthorized_client_requests(self):
-        cl = get_client()
+        # Creating a HTTPClient not using session is deprecated.
+        with self.deprecations.expect_deprecations_here():
+            cl = get_client()
         self.assertRaises(exceptions.AuthorizationFailure, cl.get, '/hi')
         self.assertRaises(exceptions.AuthorizationFailure, cl.post, '/hi')
         self.assertRaises(exceptions.AuthorizationFailure, cl.put, '/hi')
         self.assertRaises(exceptions.AuthorizationFailure, cl.delete, '/hi')
 
     def test_get(self):
-        cl = get_authed_client()
+        # Creating a HTTPClient not using session is deprecated.
+        with self.deprecations.expect_deprecations_here():
+            cl = get_authed_client()
 
         self.stub_url('GET', text=RESPONSE_BODY)
 
@@ -79,14 +83,18 @@ class ClientTest(utils.TestCase):
         self.assertEqual(body, {"hi": "there"})
 
     def test_get_error_with_plaintext_resp(self):
-        cl = get_authed_client()
+        # Creating a HTTPClient not using session is deprecated.
+        with self.deprecations.expect_deprecations_here():
+            cl = get_authed_client()
         self.stub_url('GET', status_code=400,
                       text='Some evil plaintext string')
 
         self.assertRaises(exceptions.BadRequest, cl.get, '/hi')
 
     def test_get_error_with_json_resp(self):
-        cl = get_authed_client()
+        # Creating a HTTPClient not using session is deprecated.
+        with self.deprecations.expect_deprecations_here():
+            cl = get_authed_client()
         err_response = {
             "error": {
                 "code": 400,
@@ -105,7 +113,9 @@ class ClientTest(utils.TestCase):
         self.assertTrue(exc_raised, 'Exception not raised.')
 
     def test_post(self):
-        cl = get_authed_client()
+        # Creating a HTTPClient not using session is deprecated.
+        with self.deprecations.expect_deprecations_here():
+            cl = get_authed_client()
 
         self.stub_url('POST')
         with self.deprecations.expect_deprecations_here():
@@ -120,9 +130,13 @@ class ClientTest(utils.TestCase):
 
     def test_forwarded_for(self):
         ORIGINAL_IP = "10.100.100.1"
-        cl = httpclient.HTTPClient(username="username", password="password",
-                                   project_id="tenant", auth_url="auth_test",
-                                   original_ip=ORIGINAL_IP)
+        # Creating a HTTPClient not using session is deprecated.
+        with self.deprecations.expect_deprecations_here():
+            cl = httpclient.HTTPClient(username="username",
+                                       password="password",
+                                       project_id="tenant",
+                                       auth_url="auth_test",
+                                       original_ip=ORIGINAL_IP)
 
         self.stub_url('GET')
 

@@ -148,6 +148,12 @@ class _KeystoneAdapter(adapter.LegacyJsonAdapter):
 class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
     """HTTP client
 
+    .. warning::
+
+        Creating an instance of this class without using the session argument
+        is deprecated as of the 1.7.0 release and may be removed in the 2.0.0
+        release.
+
     :param string user_id: User ID for authentication. (optional)
     :param string username: Username for authentication. (optional)
     :param string user_domain_id: User's domain ID for authentication.
@@ -166,18 +172,32 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
     :param string auth_url: Identity service endpoint for authorization.
     :param string region_name: Name of a region to select when choosing an
                                endpoint from the service catalog.
-    :param integer timeout: DEPRECATED: use session. (optional)
+    :param integer timeout: This argument is deprecated as of the 1.7.0 release
+                            in favor of session and may be removed in the 2.0.0
+                            release. (optional)
     :param string endpoint: A user-supplied endpoint URL for the identity
                             service.  Lazy-authentication is possible for API
                             service calls if endpoint is set at instantiation.
                             (optional)
     :param string token: Token for authentication. (optional)
-    :param string cacert: DEPRECATED: use session. (optional)
-    :param string key: DEPRECATED: use session. (optional)
-    :param string cert: DEPRECATED: use session. (optional)
-    :param boolean insecure: DEPRECATED: use session. (optional)
-    :param string original_ip: DEPRECATED: use session. (optional)
-    :param boolean debug: DEPRECATED: use logging configuration. (optional)
+    :param string cacert: This argument is deprecated as of the 1.7.0 release
+                          in favor of session and may be removed in the 2.0.0
+                          release. (optional)
+    :param string key: This argument is deprecated as of the 1.7.0 release
+                       in favor of session and may be removed in the 2.0.0
+                       release. (optional)
+    :param string cert: This argument is deprecated as of the 1.7.0 release
+                        in favor of session and may be removed in the 2.0.0
+                        release. (optional)
+    :param boolean insecure: This argument is deprecated as of the 1.7.0
+                             release in favor of session and may be removed in
+                             the 2.0.0 release. (optional)
+    :param string original_ip: This argument is deprecated as of the 1.7.0
+                               release in favor of session and may be removed
+                               in the 2.0.0 release. (optional)
+    :param boolean debug: This argument is deprecated as of the 1.7.0 release
+                          in favor of logging configuration and may be removed
+                          in the 2.0.0 release. (optional)
     :param dict auth_ref: To allow for consumers of the client to manage their
                           own caching strategy, you may initialize a client
                           with a previously captured auth_reference (token). If
@@ -345,6 +365,12 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         self._auth_token = None
 
         if not session:
+
+            warnings.warn(
+                'Constructing an HTTPClient instance without using a session '
+                'is deprecated as of the 1.7.0 release and may be removed in '
+                'the 2.0.0 release.', DeprecationWarning)
+
             kwargs['session'] = _FakeRequestSession()
             session = client_session.Session._construct(kwargs)
             session.auth = self
