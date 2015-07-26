@@ -191,10 +191,13 @@ class ServiceCatalog(object):
         except KeyError:
             return
 
-        # TODO(jamielennox): at least swiftclient is known to set attr and not
-        # filter_value and expects that to mean that filtering is ignored, so
-        # we can't check for the presence of attr. This behaviour should be
-        # deprecated and an appropriate warning provided.
+        if attr and not filter_value:
+            warnings.warn(
+                'Providing attr without filter_value to get_urls() is '
+                'deprecated as of the 1.7.0 release and may be removed in the '
+                '2.0.0 release. Either both should be provided or neither '
+                'should be provided.')
+
         if filter_value:
             return [endpoint for endpoint in endpoints
                     if endpoint.get(attr) == filter_value]
