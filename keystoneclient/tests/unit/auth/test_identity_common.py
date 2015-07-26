@@ -454,7 +454,8 @@ class GenericAuthPluginTests(utils.TestCase):
         for k, v in six.iteritems(self.auth.headers):
             self.assertRequestHeaderEqual(k, v)
 
-        self.assertIsNone(self.session.get_token())
+        with self.deprecations.expect_deprecations_here():
+            self.assertIsNone(self.session.get_token())
         self.assertEqual(self.auth.headers,
                          self.session.get_auth_headers())
         self.assertNotIn('X-Auth-Token',

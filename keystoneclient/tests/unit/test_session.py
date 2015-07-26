@@ -802,7 +802,8 @@ class AdapterTest(utils.TestCase):
         sess = client_session.Session()
         adpt = adapter.Adapter(sess, auth=auth)
 
-        self.assertEqual(self.TEST_TOKEN, adpt.get_token())
+        with self.deprecations.expect_deprecations_here():
+            self.assertEqual(self.TEST_TOKEN, adpt.get_token())
         self.assertTrue(auth.get_token_called)
 
     def test_adapter_connect_retries(self):

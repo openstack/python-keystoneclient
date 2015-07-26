@@ -248,7 +248,8 @@ class AuthenticateWithOAuthTests(TokenTests):
                        access_key=access_key,
                        access_secret=access_secret)
         s = session.Session(auth=a)
-        t = s.get_token()
+        with self.deprecations.expect_deprecations_here():
+            t = s.get_token()
         self.assertEqual(self.TEST_TOKEN, t)
 
         OAUTH_REQUEST_BODY = {

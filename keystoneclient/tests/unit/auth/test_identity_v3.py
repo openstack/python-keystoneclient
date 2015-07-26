@@ -458,10 +458,12 @@ class V3IdentityPlugin(utils.TestCase):
                         password=self.TEST_PASS)
         s = session.Session(auth=a)
 
-        self.assertEqual('token1', s.get_token())
+        with self.deprecations.expect_deprecations_here():
+            self.assertEqual('token1', s.get_token())
         self.assertEqual({'X-Auth-Token': 'token1'}, s.get_auth_headers())
         a.invalidate()
-        self.assertEqual('token2', s.get_token())
+        with self.deprecations.expect_deprecations_here():
+            self.assertEqual('token2', s.get_token())
         self.assertEqual({'X-Auth-Token': 'token2'}, s.get_auth_headers())
 
     def test_doesnt_log_password(self):
@@ -471,7 +473,8 @@ class V3IdentityPlugin(utils.TestCase):
         a = v3.Password(self.TEST_URL, username=self.TEST_USER,
                         password=password)
         s = session.Session(a)
-        self.assertEqual(self.TEST_TOKEN, s.get_token())
+        with self.deprecations.expect_deprecations_here():
+            self.assertEqual(self.TEST_TOKEN, s.get_token())
         self.assertEqual({'X-Auth-Token': self.TEST_TOKEN},
                          s.get_auth_headers())
 
@@ -487,7 +490,7 @@ class V3IdentityPlugin(utils.TestCase):
                         include_catalog=False)
         s = session.Session(auth=a)
 
-        s.get_token()
+        s.get_auth_headers()
 
         auth_url = self.TEST_URL + '/auth/tokens'
         self.assertEqual(auth_url, a.token_url)
