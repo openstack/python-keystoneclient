@@ -16,9 +16,11 @@
 
 import logging
 
+from debtcollector import renames
+
 from keystoneclient import base
 from keystoneclient import exceptions
-from keystoneclient.i18n import _, _LW
+from keystoneclient.i18n import _
 from keystoneclient import utils
 
 LOG = logging.getLogger(__name__)
@@ -45,6 +47,8 @@ class UserManager(base.CrudManager):
             msg = _('Specify both a user and a group')
             raise exceptions.ValidationError(msg)
 
+    @renames.renamed_kwarg('project', 'default_project', version='1.7.0',
+                           removal_version='2.0.0')
     @utils.positional(1, enforcement=utils.positional.WARN)
     def create(self, name, domain=None, project=None, password=None,
                email=None, description=None, enabled=True,
@@ -53,14 +57,12 @@ class UserManager(base.CrudManager):
 
         .. warning::
 
-          The project argument is deprecated, use default_project instead.
+            The project argument is deprecated as of the 1.7.0 release in favor
+            of default_project and may be removed in the 2.0.0 release.
 
         If both default_project and project is provided, the default_project
         will be used.
         """
-        if project:
-            LOG.warning(_LW("The project argument is deprecated, "
-                            "use default_project instead."))
         default_project_id = base.getid(default_project) or base.getid(project)
         user_data = base.filter_none(name=name,
                                      domain_id=base.getid(domain),
@@ -74,6 +76,8 @@ class UserManager(base.CrudManager):
         return self._create('/users', {'user': user_data}, 'user',
                             log=not bool(password))
 
+    @renames.renamed_kwarg('project', 'default_project', version='1.7.0',
+                           removal_version='2.0.0')
     @utils.positional(enforcement=utils.positional.WARN)
     def list(self, project=None, domain=None, group=None, default_project=None,
              **kwargs):
@@ -87,14 +91,12 @@ class UserManager(base.CrudManager):
 
         .. warning::
 
-          The project argument is deprecated, use default_project instead.
+          The project argument is deprecated as of the 1.7.0 release in favor
+          of default_project and may be removed in the 2.0.0 release.
 
         If both default_project and project is provided, the default_project
         will be used.
         """
-        if project:
-            LOG.warning(_LW("The project argument is deprecated, "
-                            "use default_project instead."))
         default_project_id = base.getid(default_project) or base.getid(project)
         if group:
             base_url = '/groups/%s' % base.getid(group)
@@ -111,6 +113,8 @@ class UserManager(base.CrudManager):
         return super(UserManager, self).get(
             user_id=base.getid(user))
 
+    @renames.renamed_kwarg('project', 'default_project', version='1.7.0',
+                           removal_version='2.0.0')
     @utils.positional(enforcement=utils.positional.WARN)
     def update(self, user, name=None, domain=None, project=None, password=None,
                email=None, description=None, enabled=None,
@@ -119,14 +123,12 @@ class UserManager(base.CrudManager):
 
         .. warning::
 
-          The project argument is deprecated, use default_project instead.
+            The project argument is deprecated as of the 1.7.0 release in favor
+            of default_project and may be removed in the 2.0.0 release.
 
         If both default_project and project is provided, the default_project
         will be used.
         """
-        if project:
-            LOG.warning(_LW("The project argument is deprecated, "
-                            "use default_project instead."))
         default_project_id = base.getid(default_project) or base.getid(project)
         user_data = base.filter_none(name=name,
                                      domain_id=base.getid(domain),
