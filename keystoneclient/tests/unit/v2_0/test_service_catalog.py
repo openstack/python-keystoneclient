@@ -48,7 +48,9 @@ class ServiceCatalogTest(utils.TestCase):
 
     def test_service_catalog_regions(self):
         self.AUTH_RESPONSE_BODY['access']['region_name'] = "North"
-        auth_ref = access.AccessInfo.factory(None, self.AUTH_RESPONSE_BODY)
+        # Setting region_name on the catalog is deprecated.
+        with self.deprecations.expect_deprecations_here():
+            auth_ref = access.AccessInfo.factory(None, self.AUTH_RESPONSE_BODY)
         sc = auth_ref.service_catalog
 
         url = sc.url_for(service_type='image', endpoint_type='publicURL')
@@ -133,7 +135,9 @@ class ServiceCatalogTest(utils.TestCase):
 
     def test_service_catalog_param_overrides_body_region(self):
         self.AUTH_RESPONSE_BODY['access']['region_name'] = "North"
-        auth_ref = access.AccessInfo.factory(None, self.AUTH_RESPONSE_BODY)
+        # Setting region_name on the catalog is deprecated.
+        with self.deprecations.expect_deprecations_here():
+            auth_ref = access.AccessInfo.factory(None, self.AUTH_RESPONSE_BODY)
         sc = auth_ref.service_catalog
 
         url = sc.url_for(service_type='image')

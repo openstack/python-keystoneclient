@@ -279,8 +279,13 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
             self._management_url = management_urls[0]
             self.auth_token_from_user = self.auth_ref.auth_token
             self.trust_id = self.auth_ref.trust_id
+
+            # TODO(blk-u): Using self.auth_ref.service_catalog._region_name is
+            # deprecated and this code must be removed when the property is
+            # actually removed.
             if self.auth_ref.has_service_catalog() and not region_name:
-                region_name = self.auth_ref.service_catalog.region_name
+                region_name = self.auth_ref.service_catalog._region_name
+
         else:
             self.auth_ref = None
 
