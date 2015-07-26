@@ -14,6 +14,7 @@
 #    under the License.
 
 import logging
+import warnings
 
 from oslo_serialization import jsonutils
 
@@ -82,6 +83,12 @@ class Client(httpclient.HTTPClient):
                             instantiation. (optional)
     :param integer timeout: Allows customization of the timeout for client
                             http requests. (optional)
+
+    .. warning::
+
+        Constructing an instance of this class without a session is
+        deprecated as of the 1.7.0 release and will be removed in the
+        2.0.0 release.
 
     Example::
 
@@ -181,6 +188,13 @@ EndpointPolicyManager`
     def __init__(self, **kwargs):
         """Initialize a new client for the Keystone v3 API."""
         super(Client, self).__init__(**kwargs)
+
+        if not kwargs.get('session'):
+            warnings.warn(
+                'Constructing an instance of the '
+                'keystoneclient.v3.client.Client class without a session is '
+                'deprecated as of the 1.7.0 release and may be removed in '
+                'the 2.0.0 release.', DeprecationWarning)
 
         self.auth = auth.AuthManager(self._adapter)
         self.credentials = credentials.CredentialManager(self._adapter)
