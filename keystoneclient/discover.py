@@ -11,6 +11,7 @@
 # under the License.
 
 import logging
+import warnings
 
 from debtcollector import removals
 import six
@@ -96,6 +97,12 @@ class Discover(_discover.Discover):
     In the event that auth_url and endpoint is provided then auth_url will be
     used in accordance with how the client operates.
 
+    .. warning::
+
+        Creating an instance of this class without using the session argument
+        is deprecated as of the 1.7.0 release and may be removed in the 2.0.0
+        release.
+
     :param session: A session object that will be used for communication.
                     Clients will also be constructed with this session.
     :type session: keystoneclient.session.Session
@@ -105,35 +112,38 @@ class Discover(_discover.Discover):
                             service. (optional)
     :param string original_ip: The original IP of the requesting user which
                                will be sent to identity service in a
-                               'Forwarded' header. (optional) DEPRECATED: use
-                               the session object. This is ignored if a session
-                               is provided.
+                               'Forwarded' header. (optional) This is ignored
+                               if a session is provided. Deprecated as of the
+                               1.7.0 release and may be removed in the 2.0.0
+                               release.
     :param boolean debug: Enables debug logging of all request and responses to
                           the identity service. default False (optional)
-                          DEPRECATED: use the session object. This is ignored
-                          if a session is provided.
+                          This is ignored if a session is provided. Deprecated
+                          as of the 1.7.0 release and may be removed in the
+                          2.0.0 release.
     :param string cacert: Path to the Privacy Enhanced Mail (PEM) file which
                           contains the trusted authority X.509 certificates
                           needed to established SSL connection with the
-                          identity service. (optional) DEPRECATED: use the
-                          session object. This is ignored if a session is
-                          provided.
+                          identity service. (optional) This is ignored if a
+                          session is provided. Deprecated as of the 1.7.0
+                          release and may be removed in the 2.0.0 release.
     :param string key: Path to the Privacy Enhanced Mail (PEM) file which
                        contains the unencrypted client private key needed to
                        established two-way SSL connection with the identity
-                       service. (optional) DEPRECATED: use the session object.
-                       This is ignored if a session is provided.
+                       service. (optional) This is ignored if a session is
+                       provided. Deprecated as of the 1.7.0 release and may be
+                       removed in the 2.0.0 release.
     :param string cert: Path to the Privacy Enhanced Mail (PEM) file which
                         contains the corresponding X.509 client certificate
                         needed to established two-way SSL connection with the
-                        identity service. (optional) DEPRECATED: use the
-                        session object. This is ignored if a session is
-                        provided.
+                        identity service. (optional) This is ignored if a
+                        session is provided. Deprecated as of the 1.7.0 release
+                        and may be removed in the 2.0.0 release.
     :param boolean insecure: Does not perform X.509 certificate validation when
                              establishing SSL connection with identity service.
-                             default: False (optional) DEPRECATED: use the
-                             session object. This is ignored if a session is
-                             provided.
+                             default: False (optional) This is ignored if a
+                             session is provided. Deprecated as of the 1.7.0
+                             release and may be removed in the 2.0.0 release.
     :param bool authenticated: Should a token be used to perform the initial
                                discovery operations. default: None (attach a
                                token if an auth plugin is available).
@@ -143,6 +153,10 @@ class Discover(_discover.Discover):
     @utils.positional(2)
     def __init__(self, session=None, authenticated=None, **kwargs):
         if not session:
+            warnings.warn(
+                'Constructing a Discover instance without using a session is '
+                'deprecated as of the 1.7.0 release and may be removed in the '
+                '2.0.0 release.', DeprecationWarning)
             session = client_session.Session._construct(kwargs)
         kwargs['session'] = session
 
