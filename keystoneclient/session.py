@@ -17,6 +17,7 @@ import logging
 import os
 import socket
 import time
+import warnings
 
 from oslo_config import cfg
 from oslo_serialization import jsonutils
@@ -525,15 +526,27 @@ class Session(object):
         new request-style arguments.
 
         .. warning::
-            *DEPRECATED*: This function is purely for bridging the gap between
-            older client arguments and the session arguments that they relate
-            to. It is not intended to be used as a generic Session Factory.
+
+            *DEPRECATED as of 1.7.0*: This function is purely for bridging the
+            gap between older client arguments and the session arguments that
+            they relate to. It is not intended to be used as a generic Session
+            Factory. This function may be removed in the 2.0.0 release.
 
         This function purposefully modifies the input kwargs dictionary so that
         the remaining kwargs dict can be reused and passed on to other
         functions without session arguments.
 
         """
+
+        warnings.warn(
+            'Session.construct() is deprecated as of the 1.7.0 release  in '
+            'favor of using session constructor and may be removed in the '
+            '2.0.0 release.', DeprecationWarning)
+
+        return cls._construct(kwargs)
+
+    @classmethod
+    def _construct(cls, kwargs):
         params = {}
 
         for attr in ('verify', 'cacert', 'cert', 'key', 'insecure',
