@@ -67,9 +67,13 @@ from keystoneclient import utils
 
 _logger = logging.getLogger(__name__)
 
-# This variable is moved and using it via httpclient is deprecated.
-# Maintain here for compatibility.
 USER_AGENT = client_session.USER_AGENT
+"""Default user agent string.
+
+This property is deprecated as of the 1.7.0 release in favor of
+:data:`keystoneclient.session.USER_AGENT` and may be removed in the 2.0.0
+release.
+"""
 
 
 @removals.remove(message='Use keystoneclient.session.request instead.',
