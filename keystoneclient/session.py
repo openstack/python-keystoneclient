@@ -574,8 +574,11 @@ class Session(object):
                 verify = cacert or True
 
         if cert and key:
-            # passing cert and key together is deprecated in favour of the
-            # requests lib form of having the cert and key as a tuple
+            warnings.warn(
+                'Passing cert and key together is deprecated as of the 1.7.0 '
+                'release in favor of the requests library form of having the '
+                'cert and key as a tuple and may be removed in the 2.0.0 '
+                'release.', DeprecationWarning)
             cert = (cert, key)
 
         return cls(verify=verify, cert=cert, **kwargs)
@@ -846,8 +849,8 @@ class Session(object):
 
         kwargs['insecure'] = c.insecure
         kwargs['cacert'] = c.cafile
-        kwargs['cert'] = c.certfile
-        kwargs['key'] = c.keyfile
+        if c.certfile and c.keyfile:
+            kwargs['cert'] = (c.certfile, c.keyfile)
         kwargs['timeout'] = c.timeout
 
         return cls._make(**kwargs)
@@ -904,8 +907,8 @@ class Session(object):
         """
         kwargs['insecure'] = args.insecure
         kwargs['cacert'] = args.os_cacert
-        kwargs['cert'] = args.os_cert
-        kwargs['key'] = args.os_key
+        if args.os_cert and args.os_key:
+            kwargs['cert'] = (args.os_cert, args.os_key)
         kwargs['timeout'] = args.timeout
 
         return cls._make(**kwargs)
