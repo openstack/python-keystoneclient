@@ -14,6 +14,7 @@
 #    under the License.
 
 import logging
+import warnings
 
 from keystoneclient.auth.identity import v2 as v2_auth
 from keystoneclient import exceptions
@@ -79,6 +80,11 @@ class Client(httpclient.HTTPClient):
         If debug is enabled, it may show passwords in plain text as a part of
         its output.
 
+    .. warning::
+
+        Constructing an instance of this class without a session is
+        deprecated as of the 1.7.0 release and will be removed in the
+        2.0.0 release.
 
     The client can be created and used like a user or in a strictly
     bootstrap mode. Normal operation expects a username, password, auth_url,
@@ -130,6 +136,14 @@ class Client(httpclient.HTTPClient):
 
     def __init__(self, **kwargs):
         """Initialize a new client for the Keystone v2.0 API."""
+
+        if not kwargs.get('session'):
+            warnings.warn(
+                'Constructing an instance of the '
+                'keystoneclient.v2_0.client.Client class without a session is '
+                'deprecated as of the 1.7.0 release and may be removed in '
+                'the 2.0.0 release.', DeprecationWarning)
+
         super(Client, self).__init__(**kwargs)
 
         self.certificates = certificates.CertificatesManager(self._adapter)
