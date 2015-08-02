@@ -906,29 +906,28 @@ class TCPKeepAliveAdapter(requests.adapters.HTTPAdapter):
     http://blogs.msdn.com/b/windowsazurestorage/archive/2010/06/25/nagle-s-algorithm-is-not-friendly-towards-small-requests.aspx
     """
     def init_poolmanager(self, *args, **kwargs):
-        if requests.__version__ >= '2.4.1':
-            socket_options = [
-                # Keep Nagle's algorithm off
-                (socket.IPPROTO_TCP, socket.TCP_NODELAY, 1),
-                # Turn on TCP Keep-Alive
-                (socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1),
-                # Set the maximum number of keep-alive probes
-                (socket.IPPROTO_TCP, socket.TCP_KEEPCNT, 4),
-                # Send keep-alive probes every 15 seconds
-                (socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, 15),
+        socket_options = [
+            # Keep Nagle's algorithm off
+            (socket.IPPROTO_TCP, socket.TCP_NODELAY, 1),
+            # Turn on TCP Keep-Alive
+            (socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1),
+            # Set the maximum number of keep-alive probes
+            (socket.IPPROTO_TCP, socket.TCP_KEEPCNT, 4),
+            # Send keep-alive probes every 15 seconds
+            (socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, 15),
+        ]
+
+        # Some operating systems (e.g., OSX) do not support setting
+        # keepidle
+        if hasattr(socket, 'TCP_KEEPIDLE'):
+            socket_options += [
+                # Wait 60 seconds before sending keep-alive probes
+                (socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, 60)
             ]
 
-            # Some operating systems (e.g., OSX) do not support setting
-            # keepidle
-            if hasattr(socket, 'TCP_KEEPIDLE'):
-                socket_options += [
-                    # Wait 60 seconds before sending keep-alive probes
-                    (socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, 60)
-                ]
-
-            # After waiting 60 seconds, and then sending a probe once every 15
-            # seconds 4 times, these options should ensure that a connection
-            # hands for no longer than 2 minutes before a ConnectionError is
-            # raised.
-            kwargs.setdefault('socket_options', socket_options)
+        # After waiting 60 seconds, and then sending a probe once every 15
+        # seconds 4 times, these options should ensure that a connection
+        # hands for no longer than 2 minutes before a ConnectionError is
+        # raised.
+        kwargs.setdefault('socket_options', socket_options)
         super(TCPKeepAliveAdapter, self).init_poolmanager(*args, **kwargs)
