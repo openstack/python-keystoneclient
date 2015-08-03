@@ -21,6 +21,7 @@ OpenStack Client interface. Handles the REST calls and responses.
 
 import logging
 
+from debtcollector import removals
 from oslo_serialization import jsonutils
 import pkg_resources
 import requests
@@ -64,10 +65,21 @@ from keystoneclient import utils
 
 _logger = logging.getLogger(__name__)
 
-# These variables are moved and using them via httpclient is deprecated.
+# This variable is moved and using it via httpclient is deprecated.
 # Maintain here for compatibility.
 USER_AGENT = client_session.USER_AGENT
-request = client_session.request
+
+
+@removals.remove(message='Use keystoneclient.session.request instead.',
+                 version='1.7.0', removal_version='2.0.0')
+def request(*args, **kwargs):
+    """Make a request.
+
+    This function is deprecated as of the 1.7.0 release in favor of
+    :func:`keystoneclient.session.request` and may be removed in the
+    2.0.0 release.
+    """
+    return client_session.request(*args, **kwargs)
 
 
 class _FakeRequestSession(object):
