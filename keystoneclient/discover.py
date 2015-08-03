@@ -191,6 +191,10 @@ class Discover(_discover.Discover):
         """
         return self.raw_version_data(**kwargs)
 
+    @removals.removed_kwarg(
+        'unstable',
+        message='Use allow_experimental and allow_unknown instead.',
+        version='1.7.0', removal_version='2.0.0')
     def raw_version_data(self, unstable=False, **kwargs):
         """Get raw version information from URL.
 
@@ -198,8 +202,10 @@ class Discover(_discover.Discover):
         on the data, so what is returned here will be the data in the same
         format it was received from the endpoint.
 
-        :param bool unstable: (deprecated) equates to setting
-                              allow_experimental and allow_unknown.
+        :param bool unstable: equates to setting allow_experimental and
+                              allow_unknown. This argument is deprecated as of
+                              the 1.7.0 release and may be removed in the 2.0.0
+                              release.
         :param bool allow_experimental: Allow experimental version endpoints.
         :param bool allow_deprecated: Allow deprecated version endpoints.
         :param bool allow_unknown: Allow endpoints with an unrecognised status.
