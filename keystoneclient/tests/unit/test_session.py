@@ -251,6 +251,43 @@ class SessionTests(utils.TestCase):
                               self.TEST_URL)
 
 
+class TCPKeepAliveAdapter(utils.TestCase):
+
+    @mock.patch.object(client_session, 'socket')
+    @mock.patch('requests.adapters.HTTPAdapter.init_poolmanager')
+    def test_init_poolmanager_all_options(self, mock_parent_init_poolmanager,
+                                          mock_socket):
+        # properties expected to be in socket.
+        mock_socket.TCP_KEEPIDLE = mock.sentinel.TCP_KEEPIDLE
+        mock_socket.TCP_KEEPCNT = mock.sentinel.TCP_KEEPCNT
+        mock_socket.TCP_KEEPINTVL = mock.sentinel.TCP_KEEPINTVL
+        desired_opts = [mock_socket.TCP_KEEPIDLE, mock_socket.TCP_KEEPCNT,
+                        mock_socket.TCP_KEEPINTVL]
+
+        adapter = client_session.TCPKeepAliveAdapter()
+        adapter.init_poolmanager()
+
+        call_args, call_kwargs = mock_parent_init_poolmanager.call_args
+        called_socket_opts = call_kwargs['socket_options']
+        call_options = [opt for (protocol, opt, value) in called_socket_opts]
+        for opt in desired_opts:
+            self.assertIn(opt, call_options)
+
+    @mock.patch.object(client_session, 'socket')
+    @mock.patch('requests.adapters.HTTPAdapter.init_poolmanager')
+    def test_init_poolmanager(self, mock_parent_init_poolmanager, mock_socket):
+        spec = ['IPPROTO_TCP', 'TCP_NODELAY', 'SOL_SOCKET', 'SO_KEEPALIVE']
+        mock_socket.mock_add_spec(spec)
+        adapter = client_session.TCPKeepAliveAdapter()
+        adapter.init_poolmanager()
+
+        call_args, call_kwargs = mock_parent_init_poolmanager.call_args
+        called_socket_opts = call_kwargs['socket_options']
+        call_options = [opt for (protocol, opt, value) in called_socket_opts]
+        self.assertEqual([mock_socket.TCP_NODELAY, mock_socket.SO_KEEPALIVE],
+                         call_options)
+
+
 class RedirectTests(utils.TestCase):
 
     REDIRECT_CHAIN = ['http://myhost:3445/',

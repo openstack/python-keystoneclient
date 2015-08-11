@@ -934,10 +934,6 @@ class TCPKeepAliveAdapter(requests.adapters.HTTPAdapter):
                 (socket.IPPROTO_TCP, socket.TCP_NODELAY, 1),
                 # Turn on TCP Keep-Alive
                 (socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1),
-                # Set the maximum number of keep-alive probes
-                (socket.IPPROTO_TCP, socket.TCP_KEEPCNT, 4),
-                # Send keep-alive probes every 15 seconds
-                (socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, 15),
             ]
 
             # Some operating systems (e.g., OSX) do not support setting
@@ -946,6 +942,23 @@ class TCPKeepAliveAdapter(requests.adapters.HTTPAdapter):
                 socket_options += [
                     # Wait 60 seconds before sending keep-alive probes
                     (socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, 60)
+                ]
+
+            # TODO(claudiub): Windows does not contain the TCP_KEEPCNT and
+            # TCP_KEEPINTVL socket attributes. Instead, it contains
+            # SIO_KEEPALIVE_VALS, which can be set via ioctl, which should be
+            # set once it is available in requests.
+            # https://msdn.microsoft.com/en-us/library/dd877220%28VS.85%29.aspx
+            if hasattr(socket, 'TCP_KEEPCNT'):
+                socket_options += [
+                    # Set the maximum number of keep-alive probes
+                    (socket.IPPROTO_TCP, socket.TCP_KEEPCNT, 4)
+                ]
+
+            if hasattr(socket, 'TCP_KEEPINTVL'):
+                socket_options += [
+                    # Send keep-alive probes every 15 seconds
+                    (socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, 15)
                 ]
 
             # After waiting 60 seconds, and then sending a probe once every 15
