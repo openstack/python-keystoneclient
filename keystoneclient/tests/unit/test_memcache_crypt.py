@@ -54,7 +54,7 @@ class MemcacheCryptPositiveTests(testtools.TestCase):
                          len(keys['MAC']))
         self.assertNotEqual(keys['ENCRYPTION'],
                             keys['MAC'])
-        self.assertIn('strategy', keys.keys())
+        self.assertIn('strategy', keys)
 
     def test_key_strategy_diff(self):
         k1 = self._setup_keys(b'MAC')

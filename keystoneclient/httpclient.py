@@ -579,7 +579,7 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         Returns a slash-separated string of values ordered by key name.
 
         """
-        return '/'.join([kwargs[k] or '?' for k in sorted(kwargs.keys())])
+        return '/'.join([kwargs[k] or '?' for k in sorted(kwargs)])
 
     def get_auth_ref_from_keyring(self, **kwargs):
         """Retrieve auth_ref from keyring.

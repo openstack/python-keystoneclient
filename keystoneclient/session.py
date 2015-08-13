@@ -130,7 +130,7 @@ class Session(object):
         if not session:
             session = requests.Session()
             # Use TCPKeepAliveAdapter to fix bug 1323862
-            for scheme in session.adapters.keys():
+            for scheme in session.adapters:
                 session.mount(scheme, TCPKeepAliveAdapter())
 
         self.auth = auth
@@ -682,7 +682,7 @@ class Session(object):
                 pass
 
         if params_copy:
-            raise exceptions.UnsupportedParameters(list(params_copy.keys()))
+            raise exceptions.UnsupportedParameters(list(params_copy))
 
         return params
 

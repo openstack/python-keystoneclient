@@ -59,8 +59,8 @@ class SimpleReadOnlyKeystoneClientTest(base.ClientTestBase):
             # check that region and publicURL exists. One might also
             # check for adminURL and internalURL. id seems to be optional
             # and is missing in the catalog backend
-            self.assertIn('publicURL', svc.keys())
-            self.assertIn('region', svc.keys())
+            self.assertIn('publicURL', svc)
+            self.assertIn('region', svc)
 
     def test_admin_endpoint_list(self):
         out = self.keystone('endpoint-list')
