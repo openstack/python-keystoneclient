@@ -187,6 +187,11 @@ EndpointPolicyManager`
 
     def __init__(self, **kwargs):
         """Initialize a new client for the Keystone v3 API."""
+        # NOTE(Roxana Gherle): Keystone V3 APIs has no admin versus public
+        # distinction. They are both going through the same endpoint, so
+        # set a public default here instead of picking up an admin default in
+        # httpclient.HTTPClient
+        kwargs.setdefault('interface', 'public')
         super(Client, self).__init__(**kwargs)
 
         if not kwargs.get('session'):
