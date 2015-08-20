@@ -17,6 +17,7 @@
 # limitations under the License.
 
 import abc
+import warnings
 
 import six
 
@@ -27,11 +28,27 @@ from keystoneclient import utils
 
 @six.add_metaclass(abc.ABCMeta)
 class ServiceCatalog(object):
-    """Helper methods for dealing with a Keystone Service Catalog."""
+    """Helper methods for dealing with a Keystone Service Catalog.
+
+    .. warning::
+
+        Setting region_name is deprecated in favor of passing the region name
+        as a parameter to calls made to the service catalog as of the 1.7.0
+        release and may be removed in the 2.0.0 release.
+
+    """
 
     @classmethod
     def factory(cls, resource_dict, token=None, region_name=None):
-        """Create ServiceCatalog object given an auth token."""
+        """Create ServiceCatalog object given an auth token.
+
+        .. warning::
+
+            Setting region_name is deprecated in favor of passing the region
+            name as a parameter to calls made to the service catalog as of the
+            1.7.0 release and may be removed in the 2.0.0 release.
+
+        """
         if ServiceCatalogV3.is_valid(resource_dict):
             return ServiceCatalogV3(token, resource_dict, region_name)
         elif ServiceCatalogV2.is_valid(resource_dict):
@@ -40,13 +57,32 @@ class ServiceCatalog(object):
             raise NotImplementedError(_('Unrecognized auth response'))
 
     def __init__(self, region_name=None):
+        if region_name:
+            warnings.warn(
+                'Setting region_name on the service catalog is deprecated in '
+                'favor of passing the region name as a parameter to calls '
+                'made to the service catalog as of the 1.7.0 release and may '
+                'be removed in the 2.0.0 release.',
+                DeprecationWarning)
+
         self._region_name = region_name
 
     @property
     def region_name(self):
-        # FIXME(jamielennox): Having region_name set on the service catalog
-        # directly is deprecated. It should instead be provided as a parameter
-        # to calls made to the service_catalog. Provide appropriate warning.
+        """Region name.
+
+        .. warning::
+
+            region_name is deprecated in favor of passing the region name as a
+            parameter to calls made to the service catalog as of the 1.7.0
+            release and may be removed in the 2.0.0 release.
+
+        """
+        warnings.warn(
+            'region_name is deprecated in favor of passing the region name as '
+            'a parameter to calls made to the service catalog as of the 1.7.0 '
+            'release and may be removed in the 2.0.0 release.',
+            DeprecationWarning)
         return self._region_name
 
     def _get_endpoint_region(self, endpoint):

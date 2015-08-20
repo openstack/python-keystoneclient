@@ -191,6 +191,7 @@ class KeystoneClientTest(utils.TestCase):
     def test_client_with_region_name_passes_to_service_catalog(self):
         # NOTE(jamielennox): this is deprecated behaviour that should be
         # removed ASAP, however must remain compatible.
+        self.deprecations.expect_deprecations()
 
         self.stub_auth(json=client_fixtures.auth_response_body())
 
