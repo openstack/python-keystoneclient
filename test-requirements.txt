@@ -23,4 +23,4 @@ testtools>=1.4.0
 WebOb>=1.2.3
 
 # Bandit security code scanner
-bandit>=0.10.1
+bandit>=0.13.2
