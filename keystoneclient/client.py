@@ -57,7 +57,7 @@ def Client(version=None, unstable=False, session=None, **kwargs):
                                                            cannot be found.
     """
     if not session:
-        session = client_session.Session.construct(kwargs)
+        session = client_session.Session._construct(kwargs)
 
     d = discover.Discover(session=session, **kwargs)
     return d.create_client(version=version, unstable=unstable)

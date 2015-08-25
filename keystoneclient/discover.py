@@ -74,7 +74,7 @@ def version_match(required, candidate):
 def available_versions(url, session=None, **kwargs):
     """Retrieve raw version data from a url."""
     if not session:
-        session = client_session.Session.construct(kwargs)
+        session = client_session.Session._construct(kwargs)
 
     return _discover.get_version_data(session, url)
 
@@ -143,7 +143,7 @@ class Discover(_discover.Discover):
     @utils.positional(2)
     def __init__(self, session=None, authenticated=None, **kwargs):
         if not session:
-            session = client_session.Session.construct(kwargs)
+            session = client_session.Session._construct(kwargs)
         kwargs['session'] = session
 
         url = None

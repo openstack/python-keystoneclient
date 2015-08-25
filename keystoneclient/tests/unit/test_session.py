@@ -337,7 +337,8 @@ class ConstructSessionFromArgsTests(utils.TestCase):
 
     def _s(self, k=None, **kwargs):
         k = k or kwargs
-        return client_session.Session.construct(k)
+        with self.deprecations.expect_deprecations_here():
+            return client_session.Session.construct(k)
 
     def test_verify(self):
         self.assertFalse(self._s(insecure=True).verify)

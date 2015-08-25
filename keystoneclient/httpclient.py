@@ -346,7 +346,7 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
 
         if not session:
             kwargs['session'] = _FakeRequestSession()
-            session = client_session.Session.construct(kwargs)
+            session = client_session.Session._construct(kwargs)
             session.auth = self
 
         super(HTTPClient, self).__init__(session=session)
