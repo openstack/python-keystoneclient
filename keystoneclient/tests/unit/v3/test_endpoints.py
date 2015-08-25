@@ -89,3 +89,16 @@ class EndpointTests(utils.TestCase, utils.CrudTests):
         expected_path = 'v3/%s?interface=%s' % (self.collection_key, interface)
         self.assertRaises(exceptions.ValidationError, self.manager.list,
                           expected_path=expected_path, interface=interface)
+
+    def test_list_filtered_by_region(self):
+        region_id = uuid.uuid4().hex
+        ref_list = [self.new_ref(region=region_id),
+                    self.new_ref(region=region_id)]
+        expected_path = 'v3/%s?region_id=%s' % (self.collection_key, region_id)
+        expected_query = {'region_id': region_id}
+
+        # Validate passing either region or region_id result to the API call.
+        self.test_list(ref_list=ref_list, expected_path=expected_path,
+                       expected_query=expected_query, region=region_id)
+        self.test_list(ref_list=ref_list, expected_path=expected_path,
+                       expected_query=expected_query, region_id=region_id)

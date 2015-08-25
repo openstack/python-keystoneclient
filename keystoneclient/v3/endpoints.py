@@ -68,17 +68,20 @@ class EndpointManager(base.CrudManager):
 
     @utils.positional(enforcement=utils.positional.WARN)
     def list(self, service=None, interface=None, region=None, enabled=None,
-             **kwargs):
+             region_id=None, **kwargs):
         """List endpoints.
 
         If ``**kwargs`` are provided, then filter endpoints with
         attributes matching ``**kwargs``.
         """
+        # NOTE(lhcheng): region filter is not supported by keystone,
+        # region_id should be used instead. Consider removing the
+        # region argument in the next release.
         self._validate_interface(interface)
         return super(EndpointManager, self).list(
             service_id=base.getid(service),
             interface=interface,
-            region=region,
+            region_id=region_id or base.getid(region),
             enabled=enabled,
             **kwargs)
 
