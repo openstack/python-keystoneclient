@@ -36,9 +36,11 @@ class BaseTest(utils.TestCase):
         self.assertEqual(base.getid(TmpObject), 4)
 
     def test_resource_lazy_getattr(self):
-        self.client = client.Client(token=self.TEST_TOKEN,
-                                    auth_url='http://127.0.0.1:5000',
-                                    endpoint='http://127.0.0.1:5000')
+        # Creating a Client not using session is deprecated.
+        with self.deprecations.expect_deprecations_here():
+            self.client = client.Client(token=self.TEST_TOKEN,
+                                        auth_url='http://127.0.0.1:5000',
+                                        endpoint='http://127.0.0.1:5000')
 
         self.useFixture(mockpatch.PatchObject(
             self.client._adapter, 'get', side_effect=AttributeError,
@@ -83,9 +85,13 @@ class ManagerTest(utils.TestCase):
 
     def setUp(self):
         super(ManagerTest, self).setUp()
-        self.client = client.Client(token=self.TEST_TOKEN,
-                                    auth_url='http://127.0.0.1:5000',
-                                    endpoint='http://127.0.0.1:5000')
+
+        # Creating a Client not using session is deprecated.
+        with self.deprecations.expect_deprecations_here():
+            self.client = client.Client(token=self.TEST_TOKEN,
+                                        auth_url='http://127.0.0.1:5000',
+                                        endpoint='http://127.0.0.1:5000')
+
         self.mgr = base.Manager(self.client)
         self.mgr.resource_class = base.Resource
 
