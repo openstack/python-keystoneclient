@@ -19,6 +19,7 @@ import socket
 import time
 import warnings
 
+from debtcollector import removals
 from oslo_config import cfg
 from oslo_serialization import jsonutils
 from oslo_utils import importutils
@@ -611,6 +612,8 @@ class Session(object):
         auth = self._auth_required(auth, msg)
         return auth.get_headers(self, **kwargs)
 
+    @removals.remove(message='Use get_auth_headers instead.', version='1.7.0',
+                     removal_version='2.0.0')
     def get_token(self, auth=None):
         """Return a token as provided by the auth plugin.
 
@@ -623,9 +626,12 @@ class Session(object):
         :raises keystoneclient.exceptions.MissingAuthPlugin: if a plugin is not
                                                              available.
 
-        *DEPRECATED*: This assumes that the only header that is used to
-                      authenticate a message is 'X-Auth-Token'. This may not be
-                      correct. Use get_auth_headers instead.
+        .. warning::
+
+             This method is deprecated as of the 1.7.0 release in favor of
+             :meth:`get_auth_headers` and may be removed in the 2.0.0 release.
+             This method assumes that the only header that is used to
+             authenticate a message is 'X-Auth-Token' which may not be correct.
 
         :returns: A valid token.
         :rtype: string

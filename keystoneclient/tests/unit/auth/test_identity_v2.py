@@ -275,11 +275,13 @@ class V2IdentityPlugin(utils.TestCase):
                         password=self.TEST_PASS)
         s = session.Session(auth=a)
 
-        self.assertEqual('token1', s.get_token())
+        with self.deprecations.expect_deprecations_here():
+            self.assertEqual('token1', s.get_token())
         self.assertEqual({'X-Auth-Token': 'token1'}, s.get_auth_headers())
 
         a.invalidate()
-        self.assertEqual('token2', s.get_token())
+        with self.deprecations.expect_deprecations_here():
+            self.assertEqual('token2', s.get_token())
         self.assertEqual({'X-Auth-Token': 'token2'}, s.get_auth_headers())
 
     def test_doesnt_log_password(self):
@@ -289,7 +291,8 @@ class V2IdentityPlugin(utils.TestCase):
         a = v2.Password(self.TEST_URL, username=self.TEST_USER,
                         password=password)
         s = session.Session(auth=a)
-        self.assertEqual(self.TEST_TOKEN, s.get_token())
+        with self.deprecations.expect_deprecations_here():
+            self.assertEqual(self.TEST_TOKEN, s.get_token())
         self.assertEqual({'X-Auth-Token': self.TEST_TOKEN},
                          s.get_auth_headers())
         self.assertNotIn(password, self.logger.output)
