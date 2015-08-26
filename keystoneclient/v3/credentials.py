@@ -14,6 +14,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from debtcollector import renames
+
 from keystoneclient import base
 from keystoneclient.i18n import _
 from keystoneclient import utils
@@ -46,13 +48,13 @@ class CredentialManager(base.CrudManager):
         if blob is not None:
             return blob
         elif data is not None:
-            # FIXME(shardy): Passing data is deprecated. Provide an
-            # appropriate warning.
             return data
         else:
             raise ValueError(
                 _("Credential requires blob to be specified"))
 
+    @renames.renamed_kwarg('data', 'blob', version='1.7.0',
+                           removal_version='2.0.0')
     @utils.positional(1, enforcement=utils.positional.WARN)
     def create(self, user, type, blob=None, data=None, project=None, **kwargs):
         """Create a credential
@@ -61,7 +63,8 @@ class CredentialManager(base.CrudManager):
         :type user: :class:`keystoneclient.v3.users.User` or str
         :param str type: credential type, should be either ``ec2`` or ``cert``
         :param JSON blob: Credential data
-        :param JSON data: Deprecated, use blob instead.
+        :param JSON data: Deprecated as of the 1.7.0 release in favor of blob
+                          and may by removed in the 2.0.0 release.
         :param project: Project, optional
         :type project: :class:`keystoneclient.v3.projects.Project` or str
         :param kwargs: Extra attributes passed to create.
@@ -94,6 +97,8 @@ class CredentialManager(base.CrudManager):
         """
         return super(CredentialManager, self).list(**kwargs)
 
+    @renames.renamed_kwarg('data', 'blob', version='1.7.0',
+                           removal_version='2.0.0')
     @utils.positional(2, enforcement=utils.positional.WARN)
     def update(self, credential, user, type=None, blob=None, data=None,
                project=None, **kwargs):
@@ -105,7 +110,8 @@ class CredentialManager(base.CrudManager):
         :type user: :class:`keystoneclient.v3.users.User` or str
         :param str type: credential type, should be either ``ec2`` or ``cert``
         :param JSON blob: Credential data
-        :param JSON data: Deprecated, use blob instead.
+        :param JSON data: Deprecated as of the 1.7.0 release in favor of blob
+                          and may be removed in the 2.0.0 release.
         :param project: Project
         :type project: :class:`keystoneclient.v3.projects.Project` or str
         :param kwargs: Extra attributes passed to create.

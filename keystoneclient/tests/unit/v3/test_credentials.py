@@ -42,6 +42,7 @@ class CredentialTests(utils.TestCase, utils.CrudTests):
     def test_create_data_not_blob(self):
         # Test create operation with previous, deprecated "data" argument,
         # which should be translated into "blob" at the API call level
+        self.deprecations.expect_deprecations()
         req_ref = self.new_ref()
         api_ref = self._ref_data_not_blob(req_ref)
         req_ref.pop('id')
