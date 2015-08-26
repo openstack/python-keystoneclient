@@ -111,6 +111,7 @@ class UserTests(utils.TestCase, utils.CrudTests):
     def test_create_with_project(self):
         # Can create a user with the deprecated project option rather than
         # default_project_id.
+        self.deprecations.expect_deprecations()
         ref = self.new_ref()
 
         self.stub_entity('POST', [self.collection_key],
@@ -135,6 +136,8 @@ class UserTests(utils.TestCase, utils.CrudTests):
     def test_create_with_project_and_default_project(self):
         # Can create a user with the deprecated project and default_project_id.
         # The backend call should only pass the default_project_id.
+        self.deprecations.expect_deprecations()
+
         ref = self.new_ref()
 
         self.stub_entity('POST',
@@ -180,6 +183,8 @@ class UserTests(utils.TestCase, utils.CrudTests):
     def test_update_with_project(self):
         # Can update a user with the deprecated project option rather than
         # default_project_id.
+        self.deprecations.expect_deprecations()
+
         ref = self.new_ref()
         req_ref = ref.copy()
         req_ref.pop('id')
@@ -203,6 +208,8 @@ class UserTests(utils.TestCase, utils.CrudTests):
         self.assertEntityRequestBodyIs(req_ref)
 
     def test_update_with_project_and_default_project(self, ref=None):
+        self.deprecations.expect_deprecations()
+
         ref = self.new_ref()
         req_ref = ref.copy()
         req_ref.pop('id')
