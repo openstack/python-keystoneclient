@@ -21,6 +21,7 @@ import time
 from oslo_config import cfg
 from oslo_serialization import jsonutils
 from oslo_utils import importutils
+from oslo_utils import strutils
 import requests
 import six
 from six.moves import urllib
@@ -219,7 +220,8 @@ class Session(object):
             for header in six.iteritems(headers):
                 string_parts.append('%s: %s' % Session.process_header(header))
         if text:
-            string_parts.append('\nRESP BODY: %s\n' % text)
+            string_parts.append('\nRESP BODY: %s\n' %
+                                strutils.mask_password(text))
 
         logger.debug(' '.join(string_parts))
 
