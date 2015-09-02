@@ -45,7 +45,9 @@ class ClientTest(utils.TestCase):
     @mock.patch.object(requests, 'request')
     def test_get(self, MOCK_REQUEST):
         MOCK_REQUEST.return_value = FAKE_RESPONSE
-        cl = get_authed_client()
+        # Creating a HTTPClient not using session is deprecated.
+        with self.deprecations.expect_deprecations_here():
+            cl = get_authed_client()
 
         with self.deprecations.expect_deprecations_here():
             resp, body = cl.get("/hi")
@@ -65,7 +67,9 @@ class ClientTest(utils.TestCase):
     @mock.patch.object(requests, 'request')
     def test_post(self, MOCK_REQUEST):
         MOCK_REQUEST.return_value = FAKE_RESPONSE
-        cl = get_authed_client()
+        # Creating a HTTPClient not using session is deprecated.
+        with self.deprecations.expect_deprecations_here():
+            cl = get_authed_client()
 
         with self.deprecations.expect_deprecations_here():
             cl.post("/hi", body=[1, 2, 3])
@@ -83,10 +87,12 @@ class ClientTest(utils.TestCase):
     @mock.patch.object(requests, 'request')
     def test_post_auth(self, MOCK_REQUEST):
         MOCK_REQUEST.return_value = FAKE_RESPONSE
-        cl = httpclient.HTTPClient(
-            username="username", password="password", project_id="tenant",
-            auth_url="auth_test", cacert="ca.pem", cert=('cert.pem', 'key.pem')
-        )
+        # Creating a HTTPClient not using session is deprecated.
+        with self.deprecations.expect_deprecations_here():
+            cl = httpclient.HTTPClient(
+                username="username", password="password", project_id="tenant",
+                auth_url="auth_test", cacert="ca.pem",
+                cert=('cert.pem', 'key.pem'))
         cl.management_url = "https://127.0.0.1:5000"
         cl.auth_token = "token"
         with self.deprecations.expect_deprecations_here():

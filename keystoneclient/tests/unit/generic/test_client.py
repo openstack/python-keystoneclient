@@ -57,7 +57,9 @@ class ClientDiscoveryTests(utils.TestCase):
 
     def test_discover_extensions_v2(self):
         self.requests_mock.get("%s/extensions" % V2_URL, text=EXTENSION_LIST)
-        extensions = client.Client().discover_extensions(url=V2_URL)
+        # Creating a HTTPClient not using session is deprecated.
+        with self.deprecations.expect_deprecations_here():
+            extensions = client.Client().discover_extensions(url=V2_URL)
         self.assertIn(EXTENSION_ALIAS_FOO, extensions)
         self.assertEqual(extensions[EXTENSION_ALIAS_FOO], EXTENSION_NAME_FOO)
         self.assertIn(EXTENSION_ALIAS_BAR, extensions)
