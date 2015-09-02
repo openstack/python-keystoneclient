@@ -118,12 +118,14 @@ class Session(object):
     _REDIRECT_STATUSES = (301, 302, 303, 305, 307)
 
     REDIRECT_STATUSES = _REDIRECT_STATUSES
-    """This property is deprecated."""
+    """This property is deprecated as of the 1.7.0 release and may be removed
+       in the 2.0.0 release."""
 
     _DEFAULT_REDIRECT_LIMIT = 30
 
     DEFAULT_REDIRECT_LIMIT = _DEFAULT_REDIRECT_LIMIT
-    """This property is deprecated."""
+    """This property is deprecated as of the 1.7.0 release and may be removed
+       in the 2.0.0 release."""
 
     @utils.positional(2, enforcement=utils.positional.WARN)
     def __init__(self, auth=None, session=None, original_ip=None, verify=True,
