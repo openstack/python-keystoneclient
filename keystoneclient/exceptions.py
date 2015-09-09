@@ -463,6 +463,7 @@ def from_response(response, method, url):
 # NOTE(akurilin): This alias should be left here to support backwards
 # compatibility until we are sure that usage of these exceptions in
 # projects is correct.
+ConnectionError = ConnectionRefused
 HTTPNotImplemented = HttpNotImplemented
 Timeout = RequestTimeout
 HTTPError = HttpError
