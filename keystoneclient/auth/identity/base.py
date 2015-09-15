@@ -12,6 +12,7 @@
 
 import abc
 import logging
+import threading
 import warnings
 
 from oslo_config import cfg
@@ -54,6 +55,7 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
         self.reauthenticate = reauthenticate
 
         self._endpoint_cache = {}
+        self._lock = threading.Lock()
 
         self._username = username
         self._password = password
@@ -236,8 +238,14 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
         :returns: Valid AccessInfo
         :rtype: :py:class:`keystoneclient.access.AccessInfo`
         """
-        if self._needs_reauthenticate():
-            self.auth_ref = self.get_auth_ref(session)
+        # Hey Kids! Thread safety is important particularly in the case where
+        # a service is creating an admin style plugin that will then proceed
+        # to make calls from many threads. As a token expires all the threads
+        # will try and fetch a new token at once, so we want to ensure that
+        # only one thread tries to actually fetch from keystone at once.
+        with self._lock:
+            if self._needs_reauthenticate():
+                self.auth_ref = self.get_auth_ref(session)
 
         return self.auth_ref
 
