@@ -4,4 +4,4 @@ source = keystoneclient
 omit = keystoneclient/tests/*,keystoneclient/openstack/*
 
 [report]
-ignore-errors = True
+ignore_errors = True
