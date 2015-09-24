@@ -126,7 +126,7 @@ class Saml2UnscopedToken(_BaseSAMLPlugin):
 
     SAML2_HEADER_INDEX = 0
     ECP_SP_EMPTY_REQUEST_HEADERS = {
-        'Accept': 'text/html; application/vnd.paos+xml',
+        'Accept': 'text/html, application/vnd.paos+xml',
         'PAOS': ('ver="urn:liberty:paos:2003-08";"urn:oasis:names:tc:'
                  'SAML:2.0:profiles:SSO:ecp"')
     }
