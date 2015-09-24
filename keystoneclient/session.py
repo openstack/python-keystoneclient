@@ -203,9 +203,10 @@ class Session(object):
 
         text = _remove_service_catalog(response.text)
 
-        string_parts = ['RESP:']
-
-        string_parts.append('[%s]' % response.status_code)
+        string_parts = [
+            'RESP:',
+            '[%s]' % response.status_code
+        ]
         for header in six.iteritems(response.headers):
             string_parts.append('%s: %s' % self._process_header(header))
         if text:
