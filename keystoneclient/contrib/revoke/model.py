@@ -232,9 +232,9 @@ def build_token_values_v2(access, default_domain_id):
         'expires_at': timeutils.normalize_time(
             timeutils.parse_isotime(token_data['expires'])),
         'issued_at': timeutils.normalize_time(
-            timeutils.parse_isotime(token_data['issued_at']))}
-
-    token_values['user_id'] = access.get('user', {}).get('id')
+            timeutils.parse_isotime(token_data['issued_at'])),
+        'user_id': access.get('user', {}).get('id')
+    }
 
     project = token_data.get('tenant')
     if project is not None:
