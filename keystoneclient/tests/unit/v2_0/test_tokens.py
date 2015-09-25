@@ -152,9 +152,11 @@ class TokenTests(utils.TestCase):
         token_fixture = fixture.V2Token()
         self.stub_auth(base_url=new_auth_url, json=token_fixture)
 
-        c = client.Client(username=self.TEST_USER,
-                          auth_url=new_auth_url,
-                          password=uuid.uuid4().hex)
+        # Creating a HTTPClient not using session is deprecated.
+        with self.deprecations.expect_deprecations_here():
+            c = client.Client(username=self.TEST_USER,
+                              auth_url=new_auth_url,
+                              password=uuid.uuid4().hex)
 
         self.assertIsNone(c.management_url)
 

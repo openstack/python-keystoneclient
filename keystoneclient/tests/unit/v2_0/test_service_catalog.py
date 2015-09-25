@@ -57,7 +57,9 @@ class ServiceCatalogTest(utils.TestCase):
         self.assertEqual(url, "https://image.north.host/v1/")
 
         self.AUTH_RESPONSE_BODY['access']['region_name'] = "South"
-        auth_ref = access.AccessInfo.factory(None, self.AUTH_RESPONSE_BODY)
+        # Setting region_name on the catalog is deprecated.
+        with self.deprecations.expect_deprecations_here():
+            auth_ref = access.AccessInfo.factory(None, self.AUTH_RESPONSE_BODY)
         sc = auth_ref.service_catalog
 
         url = sc.url_for(service_type='image', endpoint_type='internalURL')
