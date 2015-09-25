@@ -27,6 +27,14 @@ provides `Identity Service`_, as well as `WSGI Middleware`_.
 .. _`Identity Service`: http://docs.openstack.org/developer/keystone/
 .. _`WSGI Middleware`: http://docs.openstack.org/developer/keystonemiddleware/
 
+Release Notes
+=============
+
+.. toctree::
+   :maxdepth: 1
+
+   history
+
 Contributing
 ============
 
