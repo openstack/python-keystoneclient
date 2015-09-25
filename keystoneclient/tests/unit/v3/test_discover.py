@@ -65,7 +65,9 @@ class DiscoverKeystoneTests(utils.UnauthenticatedTestCase):
                                status_code=300,
                                json=self.TEST_RESPONSE_DICT)
 
-        cs = client.Client()
+        # Creating a HTTPClient not using session is deprecated.
+        with self.deprecations.expect_deprecations_here():
+            cs = client.Client()
         versions = cs.discover()
         self.assertIsInstance(versions, dict)
         self.assertIn('message', versions)

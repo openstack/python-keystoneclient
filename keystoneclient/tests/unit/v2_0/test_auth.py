@@ -67,10 +67,12 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         self.stub_auth(response_list=[{'json': resp_a, 'headers': headers},
                                       {'json': resp_b, 'headers': headers}])
 
-        cs = client.Client(project_id=self.TEST_TENANT_ID,
-                           auth_url=self.TEST_URL,
-                           username=self.TEST_USER,
-                           password=self.TEST_TOKEN)
+        # Creating a HTTPClient not using session is deprecated.
+        with self.deprecations.expect_deprecations_here():
+            cs = client.Client(project_id=self.TEST_TENANT_ID,
+                               auth_url=self.TEST_URL,
+                               username=self.TEST_USER,
+                               password=self.TEST_TOKEN)
 
         self.assertEqual(cs.management_url,
                          self.TEST_RESPONSE_DICT["access"]["serviceCatalog"][3]

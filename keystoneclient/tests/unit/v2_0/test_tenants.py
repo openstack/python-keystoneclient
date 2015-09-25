@@ -351,9 +351,11 @@ class TenantTests(utils.TestCase):
         self.stub_url('GET', ['tenants'], base_url=new_auth_url,
                       json=self.TEST_TENANTS)
 
-        c = client.Client(username=self.TEST_USER,
-                          auth_url=new_auth_url,
-                          password=uuid.uuid4().hex)
+        # Creating a HTTPClient not using session is deprecated.
+        with self.deprecations.expect_deprecations_here():
+            c = client.Client(username=self.TEST_USER,
+                              auth_url=new_auth_url,
+                              password=uuid.uuid4().hex)
 
         self.assertIsNone(c.management_url)
         tenant_list = c.tenants.list()

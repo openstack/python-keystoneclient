@@ -55,7 +55,9 @@ class DiscoverKeystoneTests(utils.UnauthenticatedTestCase):
         self.stub_url('GET', base_url=self.TEST_ROOT_URL,
                       json=self.TEST_RESPONSE_DICT)
 
-        cs = client.Client()
+        # Creating a HTTPClient not using session is deprecated.
+        with self.deprecations.expect_deprecations_here():
+            cs = client.Client()
         versions = cs.discover(self.TEST_ROOT_URL)
         self.assertIsInstance(versions, dict)
         self.assertIn('message', versions)
@@ -69,7 +71,9 @@ class DiscoverKeystoneTests(utils.UnauthenticatedTestCase):
         self.stub_url('GET', base_url="http://localhost:35357/",
                       json=self.TEST_RESPONSE_DICT)
 
-        cs = client.Client()
+        # Creating a HTTPClient not using session is deprecated.
+        with self.deprecations.expect_deprecations_here():
+            cs = client.Client()
         versions = cs.discover()
         self.assertIsInstance(versions, dict)
         self.assertIn('message', versions)
