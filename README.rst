@@ -1,6 +1,14 @@
 Python bindings to the OpenStack Identity API (Keystone)
 ========================================================
 
+.. image:: https://img.shields.io/pypi/v/python-keystoneclient.svg
+    :target: https://pypi.python.org/pypi/python-keystoneclient/
+    :alt: Latest Version
+
+.. image:: https://img.shields.io/pypi/dm/python-keystoneclient.svg
+    :target: https://pypi.python.org/pypi/python-keystoneclient/
+    :alt: Downloads
+
 This is a client for the OpenStack Identity API, implemented by the Keystone
 team; it contains a Python API (the ``keystoneclient`` module) for
 OpenStack's Identity Service. For command line interface support, use
