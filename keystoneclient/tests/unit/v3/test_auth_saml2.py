@@ -283,7 +283,32 @@ class AuthenticateviaSAML2Tests(utils.TestCase):
         self.assertEqual(self.FEDERATION_AUTH_URL,
                          response.headers['location'])
 
-        response = self.saml2plugin._handle_http_302_ecp_redirect(
+        response = self.saml2plugin._handle_http_ecp_redirect(
+            self.session, response, 'GET')
+
+        self.assertEqual(self.FEDERATION_AUTH_URL, response.request.url)
+        self.assertEqual('GET', response.request.method)
+
+    def test_custom_303_redirection(self):
+        self.requests_mock.post(
+            self.SHIB_CONSUMER_URL,
+            text='BODY',
+            headers={'location': self.FEDERATION_AUTH_URL},
+            status_code=303)
+
+        self.requests_mock.get(
+            self.FEDERATION_AUTH_URL,
+            json=saml2_fixtures.UNSCOPED_TOKEN,
+            headers={'X-Subject-Token': saml2_fixtures.UNSCOPED_TOKEN_HEADER})
+
+        self.session.redirect = False
+        response = self.session.post(
+            self.SHIB_CONSUMER_URL, data='CLIENT BODY')
+        self.assertEqual(303, response.status_code)
+        self.assertEqual(self.FEDERATION_AUTH_URL,
+                         response.headers['location'])
+
+        response = self.saml2plugin._handle_http_ecp_redirect(
             self.session, response, 'GET')
 
         self.assertEqual(self.FEDERATION_AUTH_URL, response.request.url)
