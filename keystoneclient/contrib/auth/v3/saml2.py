@@ -26,6 +26,8 @@ from keystoneclient.i18n import _
 class _BaseSAMLPlugin(v3.AuthConstructor):
 
     HTTP_MOVED_TEMPORARILY = 302
+    HTTP_SEE_OTHER = 303
+
     PROTOCOL = 'saml2'
 
     @staticmethod
@@ -172,9 +174,9 @@ class Saml2UnscopedToken(_BaseSAMLPlugin):
         self.identity_provider_url = identity_provider_url
         self.username, self.password = username, password
 
-    def _handle_http_302_ecp_redirect(self, session, response, method,
-                                      **kwargs):
-        if response.status_code != self.HTTP_MOVED_TEMPORARILY:
+    def _handle_http_ecp_redirect(self, session, response, method, **kwargs):
+        if response.status_code not in (self.HTTP_MOVED_TEMPORARILY,
+                                        self.HTTP_SEE_OTHER):
             return response
 
         location = response.headers['location']
@@ -307,7 +309,7 @@ class Saml2UnscopedToken(_BaseSAMLPlugin):
         managed URL, for instance: ``https://<host>:<port>/Shibboleth.sso/
         SAML2/ECP``.
         Upon success the there's a session created and access to the protected
-        resource is granted. Many implementations of the SP return HTTP 302
+        resource is granted. Many implementations of the SP return HTTP 302/303
         status code pointing to the protected URL (``https://<host>:<port>/v3/
         OS-FEDERATION/identity_providers/{identity_provider}/protocols/
         {protocol_id}/auth`` in this case). Saml2 plugin should point to that
@@ -324,11 +326,11 @@ class Saml2UnscopedToken(_BaseSAMLPlugin):
             data=etree.tostring(self.saml2_idp_authn_response),
             authenticated=False, redirect=False)
 
-        # Don't follow HTTP specs - after the HTTP 302 response don't repeat
-        # the call directed to the Location URL. In this case, this is an
-        # indication that saml2 session is now active and protected resource
+        # Don't follow HTTP specs - after the HTTP 302/303 response don't
+        # repeat the call directed to the Location URL. In this case, this is
+        # an indication that saml2 session is now active and protected resource
         # can be accessed.
-        response = self._handle_http_302_ecp_redirect(
+        response = self._handle_http_ecp_redirect(
             session, response, method='GET',
             headers=self.ECP_SP_SAML2_REQUEST_HEADERS)
 
