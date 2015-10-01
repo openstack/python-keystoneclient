@@ -24,7 +24,7 @@ from keystoneclient import utils
 
 _logger = logging.getLogger(__name__)
 
-__all__ = ['Auth', 'AuthMethod', 'AuthConstructor', 'BaseAuth']
+__all__ = ('Auth', 'AuthMethod', 'AuthConstructor', 'BaseAuth')
 
 
 @six.add_metaclass(abc.ABCMeta)

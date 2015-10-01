@@ -16,7 +16,7 @@ from keystoneclient.auth.cli import *  # noqa
 from keystoneclient.auth.conf import *  # noqa
 
 
-__all__ = [
+__all__ = (
     # auth.base
     'AUTH_INTERFACE',
     'BaseAuthPlugin',
@@ -35,4 +35,4 @@ __all__ = [
     'get_plugin_options',
     'load_from_conf_options',
     'register_conf_options',
-]
+)

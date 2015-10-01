@@ -18,7 +18,7 @@ import six
 from keystoneclient.auth.identity.v3 import base
 from keystoneclient.auth.identity.v3 import token
 
-__all__ = ['FederatedBaseAuth']
+__all__ = ('FederatedBaseAuth',)
 
 
 @six.add_metaclass(abc.ABCMeta)

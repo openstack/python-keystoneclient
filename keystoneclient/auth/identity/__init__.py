@@ -28,10 +28,10 @@ Password = generic.Password
 Token = generic.Token
 
 
-__all__ = ['BaseIdentityPlugin',
+__all__ = ('BaseIdentityPlugin',
            'Password',
            'Token',
            'V2Password',
            'V2Token',
            'V3Password',
-           'V3Token']
+           'V3Token')

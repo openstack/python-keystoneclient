@@ -16,10 +16,10 @@ from oslo_utils import timeutils
 
 from keystoneclient import utils
 
-__all__ = ['DiscoveryList',
+__all__ = ('DiscoveryList',
            'V2Discovery',
            'V3Discovery',
-           ]
+           )
 
 _DEFAULT_DAYS_AGO = 30
 

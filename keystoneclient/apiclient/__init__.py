@@ -36,6 +36,6 @@ removals.removed_module('keystoneclient.apiclient',
                         version='0.7.1',
                         removal_version='2.0')
 
-__all__ = [
+__all__ = (
     'exceptions',
-]
+)

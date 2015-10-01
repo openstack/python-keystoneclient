@@ -15,7 +15,7 @@ from keystoneclient.auth.identity.generic.password import Password  # noqa
 from keystoneclient.auth.identity.generic.token import Token  # noqa
 
 
-__all__ = ['BaseGenericPlugin',
+__all__ = ('BaseGenericPlugin',
            'Password',
            'Token',
-           ]
+           )
