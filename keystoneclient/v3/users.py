@@ -160,8 +160,7 @@ class UserManager(base.CrudManager):
 
         base_url = '/users/%s/password' % self.client.user_id
 
-        return self._update(base_url, params, method='POST', log=False,
-                            endpoint_filter={'interface': 'public'})
+        return self._update(base_url, params, method='POST', log=False)
 
     def add_to_group(self, user, group):
         self._require_user_and_group(user, group)

@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import mock
 import uuid
 
 from keystoneclient import exceptions
@@ -253,6 +254,27 @@ class UserTests(utils.TestCase, utils.CrudTests):
         self.assertRequestBodyIs(json=exp_req_body)
         self.assertNotIn(old_password, self.logger.output)
         self.assertNotIn(new_password, self.logger.output)
+
+    def test_update_password_with_no_hardcoded_endpoint_filter(self):
+        # test to ensure the 'endpoint_filter' parameter is not being
+        # passed from the manager. Endpoint filtering should be done at
+        # the Session, not the individual managers.
+        old_password = uuid.uuid4().hex
+        new_password = uuid.uuid4().hex
+        expected_params = {'user': {'password': new_password,
+                                    'original_password': old_password}}
+        user_password_update_path = '/users/%s/password' % self.TEST_USER_ID
+
+        self.client.user_id = self.TEST_USER_ID
+        # NOTE(gyee): user manager subclass keystoneclient.base.Manager
+        # and utilize the _update() method in the base class to interface
+        # with the client session to perform the update. In the case, we
+        # just need to make sure the 'endpoint_filter' parameter is not
+        # there.
+        with mock.patch('keystoneclient.base.Manager._update') as m:
+            self.manager.update_password(old_password, new_password)
+            m.assert_called_with(user_password_update_path, expected_params,
+                                 method='POST', log=False)
 
     def test_update_password_with_bad_inputs(self):
         old_password = uuid.uuid4().hex
