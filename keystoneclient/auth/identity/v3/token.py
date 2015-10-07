@@ -15,7 +15,7 @@ from oslo_config import cfg
 from keystoneclient.auth.identity.v3 import base
 
 
-__all__ = ['TokenMethod', 'Token']
+__all__ = ('TokenMethod', 'Token')
 
 
 class TokenMethod(base.AuthMethod):

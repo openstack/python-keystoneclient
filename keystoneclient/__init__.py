@@ -34,7 +34,7 @@ import pbr.version
 
 __version__ = pbr.version.VersionInfo('python-keystoneclient').version_string()
 
-__all__ = [
+__all__ = (
     # Modules
     'generic',
     'v2_0',
@@ -46,7 +46,7 @@ __all__ = [
     'exceptions',
     'httpclient',
     'service_catalog',
-]
+)
 
 
 class _LazyImporter(object):

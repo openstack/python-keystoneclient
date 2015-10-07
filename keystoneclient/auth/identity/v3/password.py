@@ -16,7 +16,7 @@ from keystoneclient.auth.identity.v3 import base
 from keystoneclient import utils
 
 
-__all__ = ['PasswordMethod', 'Password']
+__all__ = ('PasswordMethod', 'Password')
 
 
 class PasswordMethod(base.AuthMethod):
