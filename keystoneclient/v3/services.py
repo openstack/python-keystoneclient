@@ -38,10 +38,12 @@ class ServiceManager(base.CrudManager):
     key = 'service'
 
     @utils.positional(1, enforcement=utils.positional.WARN)
-    def create(self, name, type, enabled=True, description=None, **kwargs):
+    def create(self, name, type=None,
+               enabled=True, description=None, **kwargs):
+        type_arg = type or kwargs.pop('service_type', None)
         return super(ServiceManager, self).create(
             name=name,
-            type=type,
+            type=type_arg,
             description=description,
             enabled=enabled,
             **kwargs)
@@ -52,22 +54,28 @@ class ServiceManager(base.CrudManager):
 
     @utils.positional(enforcement=utils.positional.WARN)
     def list(self, name=None, type=None, **kwargs):
+        type_arg = type or kwargs.pop('service_type', None)
         return super(ServiceManager, self).list(
             name=name,
-            type=type,
+            type=type_arg,
             **kwargs)
 
     @utils.positional(enforcement=utils.positional.WARN)
     def update(self, service, name=None, type=None, enabled=None,
                description=None, **kwargs):
+        type_arg = type or kwargs.pop('service_type', None)
         return super(ServiceManager, self).update(
             service_id=base.getid(service),
             name=name,
-            type=type,
+            type=type_arg,
             description=description,
             enabled=enabled,
             **kwargs)
 
-    def delete(self, service):
+    def delete(self, service=None, id=None):
+        if service:
+            service_id = base.getid(service)
+        else:
+            service_id = id
         return super(ServiceManager, self).delete(
-            service_id=base.getid(service))
+            service_id=service_id)
