@@ -1671,7 +1671,7 @@ class v3AuthTokenMiddlewareTest(BaseAuthTokenMiddlewareTest,
                 # no point checking everything, just that it's in v2 format
                 self.assertIn('adminURL', endpoint)
                 self.assertIn('publicURL', endpoint)
-                self.assertIn('adminURL', endpoint)
+                self.assertIn('internalURL', endpoint)
 
 
 class TokenEncodingTest(testtools.TestCase):
