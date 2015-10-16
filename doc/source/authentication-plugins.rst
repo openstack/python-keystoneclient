@@ -54,7 +54,7 @@ this V3 defines a number of different
 - :py:class:`~keystoneclient.auth.identity.v3.PasswordMethod`: Authenticate
   against a V3 identity service using a username and password.
 - :py:class:`~keystoneclient.auth.identity.v3.TokenMethod`: Authenticate against
-  a V2 identity service using an existing token.
+  a V3 identity service using an existing token.
 
 The :py:class:`~keystoneclient.auth.identity.v3.AuthMethod` objects are then
 passed to the :py:class:`~keystoneclient.auth.identity.v3.Auth` plugin::
