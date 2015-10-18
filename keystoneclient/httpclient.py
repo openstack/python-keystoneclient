@@ -196,9 +196,6 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
     :param string original_ip: This argument is deprecated as of the 1.7.0
                                release in favor of session and may be removed
                                in the 2.0.0 release. (optional)
-    :param boolean debug: This argument is deprecated as of the 1.7.0 release
-                          in favor of logging configuration and may be removed
-                          in the 2.0.0 release. (optional)
     :param dict auth_ref: To allow for consumers of the client to manage their
                           own caching strategy, you may initialize a client
                           with a previously captured auth_reference (token). If
@@ -249,7 +246,7 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
     @positional(enforcement=positional.WARN)
     def __init__(self, username=None, tenant_id=None, tenant_name=None,
                  password=None, auth_url=None, region_name=None, endpoint=None,
-                 token=None, debug=False, auth_ref=None, use_keyring=False,
+                 token=None, auth_ref=None, use_keyring=False,
                  force_new_token=False, stale_duration=None, user_id=None,
                  user_domain_id=None, user_domain_name=None, domain_id=None,
                  domain_name=None, project_id=None, project_name=None,
@@ -378,7 +375,6 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
 
         self.session = session
         self.domain = ''
-        self.debug_log = debug
 
         # NOTE(jamielennox): unfortunately we can't just use **kwargs here as
         # it would incompatibly limit the kwargs that can be passed to __init__
