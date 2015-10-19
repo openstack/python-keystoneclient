@@ -39,18 +39,6 @@ def get_authed_client():
     return cl
 
 
-class FakeLog(object):
-    def __init__(self):
-        self.warn_log = str()
-        self.debug_log = str()
-
-    def warn(self, msg=None, *args, **kwargs):
-        self.warn_log = "%s\n%s" % (self.warn_log, (msg % args))
-
-    def debug(self, msg=None, *args, **kwargs):
-        self.debug_log = "%s\n%s" % (self.debug_log, (msg % args))
-
-
 class ClientTest(utils.TestCase):
 
     TEST_URL = 'http://127.0.0.1:5000/hi'
