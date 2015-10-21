@@ -85,7 +85,7 @@ class BaseAuth(base.BaseIdentityPlugin):
 
     @abc.abstractmethod
     def get_auth_ref(self, session, **kwargs):
-        return None
+        return None  # pragma: no cover
 
     @classmethod
     def get_options(cls):
@@ -240,7 +240,7 @@ class AuthMethod(object):
                  data for the auth type.
         :rtype: tuple(string, dict)
         """
-        pass
+        pass  # pragma: no cover
 
 
 @six.add_metaclass(abc.ABCMeta)

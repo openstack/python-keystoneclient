@@ -184,7 +184,7 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
         :returns: Token access information.
         :rtype: :py:class:`keystoneclient.access.AccessInfo`
         """
-        pass
+        pass  # pragma: no cover
 
     def get_token(self, session, **kwargs):
         """Return a valid auth token.

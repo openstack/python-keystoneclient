@@ -116,3 +116,4 @@ class FederatedBaseAuth(base.BaseAuth):
     @abc.abstractmethod
     def get_unscoped_auth_ref(self, session, **kwargs):
         """Fetch unscoped federated token."""
+        pass  # pragma: no cover
