@@ -164,13 +164,13 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
 
         This method is overridden by the various token version plugins.
 
-        This function should not be called independently and is expected to be
-        invoked via the do_authenticate function.
+        This method should not be called independently and is expected to be
+        invoked via the do_authenticate() method.
 
-        This function will be invoked if the AcessInfo object cached by the
+        This method will be invoked if the AccessInfo object cached by the
         plugin is not valid. Thus plugins should always fetch a new AccessInfo
-        when invoked. If you are looking to just retrieve the current auth
-        data then you should use get_access.
+        when invoked. If you are looking to just retrieve the current auth data
+        then you should use get_access().
 
         :param session: A session object that can be used for communication.
         :type session: keystoneclient.session.Session

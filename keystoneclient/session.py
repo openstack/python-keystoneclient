@@ -668,7 +668,7 @@ class Session(object):
 
         We restrict the values that may be returned from this function to
         prevent an auth plugin overriding values unrelated to connection
-        parmeters. The values that are currently accepted are:
+        parameters. The values that are currently accepted are:
 
         - `cert`: a path to a client certificate, or tuple of client
           certificate and key pair that are used with this request.
