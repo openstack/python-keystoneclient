@@ -103,6 +103,7 @@ class Auth(base.BaseIdentityPlugin):
         :return: A dict of authentication data for the auth type.
         :rtype: dict
         """
+        pass
 
 
 _NOT_PASSED = object()

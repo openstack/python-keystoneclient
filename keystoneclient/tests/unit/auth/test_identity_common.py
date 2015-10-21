@@ -55,6 +55,7 @@ class CommonIdentityTests(object):
         It doesn't really matter what auth mechanism is used but it should be
         appropriate to the API version.
         """
+        pass
 
     @abc.abstractmethod
     def get_auth_data(self, **kwargs):
@@ -63,6 +64,7 @@ class CommonIdentityTests(object):
         This should register a valid token response and ensure that the compute
         endpoints are set to TEST_COMPUTE_PUBLIC, _INTERNAL and _ADMIN.
         """
+        pass
 
     def stub_auth_data(self, **kwargs):
         token = self.get_auth_data(**kwargs)

@@ -204,8 +204,8 @@ class BaseAuthPlugin(object):
 
     @abc.abstractmethod
     def _do_authenticate(self, http_client):
-        """Protected method for authentication.
-        """
+        """Protected method for authentication."""
+        pass
 
     def sufficient_options(self):
         """Check if all required options are present.
@@ -232,3 +232,4 @@ class BaseAuthPlugin(object):
         :returns: tuple of token and endpoint strings
         :raises: EndpointException
         """
+        pass

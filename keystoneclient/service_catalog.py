@@ -110,6 +110,7 @@ class ServiceCatalog(object):
         :returns: True if the provided endpoint matches the required
         endpoint_type otherwise False.
         """
+        pass
 
     @abc.abstractmethod
     def _normalize_endpoint_type(self, endpoint_type):
@@ -122,6 +123,7 @@ class ServiceCatalog(object):
         :returns: the endpoint string in the format appropriate for this
                   service catalog.
         """
+        pass
 
     def get_endpoints(self, service_type=None, endpoint_type=None,
                       region_name=None, service_name=None):

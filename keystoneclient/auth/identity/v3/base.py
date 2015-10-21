@@ -240,6 +240,7 @@ class AuthMethod(object):
                  data for the auth type.
         :rtype: tuple(string, dict)
         """
+        pass
 
 
 @six.add_metaclass(abc.ABCMeta)
