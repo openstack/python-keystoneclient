@@ -101,7 +101,7 @@ class ServiceCatalog(object):
         - `domain_id`: Authorized domain's ID
 
         """
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     @abc.abstractmethod
     def _is_endpoint_type_match(self, endpoint, endpoint_type):
@@ -110,7 +110,7 @@ class ServiceCatalog(object):
         :returns: True if the provided endpoint matches the required
         endpoint_type otherwise False.
         """
-        pass
+        pass  # pragma: no cover
 
     @abc.abstractmethod
     def _normalize_endpoint_type(self, endpoint_type):
@@ -123,7 +123,7 @@ class ServiceCatalog(object):
         :returns: the endpoint string in the format appropriate for this
                   service catalog.
         """
-        pass
+        pass  # pragma: no cover
 
     def get_endpoints(self, service_type=None, endpoint_type=None,
                       region_name=None, service_name=None):
@@ -229,7 +229,7 @@ class ServiceCatalog(object):
 
         :returns: tuple of urls or None (if no match found)
         """
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     @utils.positional(3, enforcement=utils.positional.WARN)
     def url_for(self, attr=None, filter_value=None,
@@ -303,7 +303,7 @@ class ServiceCatalog(object):
 
         :returns: list containing raw catalog data entries or None
         """
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
 
 class ServiceCatalogV2(ServiceCatalog):

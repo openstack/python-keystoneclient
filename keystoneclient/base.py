@@ -242,7 +242,7 @@ class ManagerWithFind(Manager):
 
     @abc.abstractmethod
     def list(self):
-        pass
+        pass  # pragma: no cover
 
     def find(self, **kwargs):
         """Find a single item with attributes matching ``**kwargs``.

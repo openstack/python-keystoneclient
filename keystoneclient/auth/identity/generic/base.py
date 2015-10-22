@@ -99,7 +99,7 @@ class BaseGenericPlugin(base.BaseIdentityPlugin):
 
         :returns: A plugin that can match the parameters or None if nothing.
         """
-        return None
+        return None  # pragma: no cover
 
     @property
     def _has_domain_scope(self):
