@@ -12,6 +12,7 @@
 
 import os
 
+from keystoneauth1 import plugin
 import six
 import stevedore
 
@@ -21,7 +22,7 @@ from keystoneclient import exceptions
 # NOTE(jamielennox): The AUTH_INTERFACE is a special value that can be
 # requested from get_endpoint. If a plugin receives this as the value of
 # 'interface' it should return the initial URL that was passed to the plugin.
-AUTH_INTERFACE = object()
+AUTH_INTERFACE = plugin.AUTH_INTERFACE
 
 PLUGIN_NAMESPACE = 'keystoneclient.auth.plugin'
 IDENTITY_AUTH_HEADER_NAME = 'X-Auth-Token'

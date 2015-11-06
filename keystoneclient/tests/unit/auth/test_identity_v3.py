@@ -216,7 +216,7 @@ class V3IdentityPlugin(utils.TestCase):
                         username=self.TEST_USER,
                         password=self.TEST_PASS)
         s = session.Session(auth=a)
-        cs = client.Client(session=s, auth_url=self.TEST_URL)
+        cs = client.Client(session=s)
 
         # As a sanity check on the auth_ref, make sure client has the
         # proper user id, that it fetches the right project response

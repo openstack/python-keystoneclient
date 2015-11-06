@@ -17,6 +17,7 @@ from debtcollector import removals
 import six
 
 from keystoneclient import _discover
+from keystoneclient.auth import base
 from keystoneclient import exceptions
 from keystoneclient.i18n import _
 from keystoneclient import session as client_session
@@ -170,11 +171,14 @@ class Discover(_discover.Discover):
         elif auth_url:
             self._use_endpoint = False
             url = auth_url
+        elif session.auth:
+            self._use_endpoint = False
+            url = session.get_endpoint(interface=base.AUTH_INTERFACE)
 
         if not url:
             raise exceptions.DiscoveryFailure(
-                _('Not enough information to determine URL. Provide either '
-                  'auth_url or endpoint'))
+                _('Not enough information to determine URL. Provide'
+                  ' either a Session, or auth_url or endpoint'))
 
         self._client_kwargs = kwargs
         super(Discover, self).__init__(session, url,
