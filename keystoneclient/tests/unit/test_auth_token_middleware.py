@@ -15,6 +15,7 @@
 import calendar
 import datetime
 import json
+import logging
 import os
 import shutil
 import stat
@@ -209,6 +210,7 @@ class BaseAuthTokenMiddlewareTest(testtools.TestCase):
         super(BaseAuthTokenMiddlewareTest, self).setUp()
 
         self.useFixture(client_fixtures.Deprecations())
+        self.logger = self.useFixture(fixtures.FakeLogger(level=logging.DEBUG))
 
         self.expected_env = expected_env or dict()
         self.fake_app = fake_app or FakeApp
@@ -1678,6 +1680,7 @@ class TokenEncodingTest(testtools.TestCase):
     def setUp(self):
         super(TokenEncodingTest, self).setUp()
         self.useFixture(client_fixtures.Deprecations())
+        self.logger = self.useFixture(fixtures.FakeLogger(level=logging.DEBUG))
 
     def test_unquoted_token(self):
         self.assertEqual('foo%20bar', auth_token.safe_quote('foo bar'))
