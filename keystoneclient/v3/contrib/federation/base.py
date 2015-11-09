@@ -33,7 +33,7 @@ class EntityManager(base.Manager):
         url = '/OS-FEDERATION/%s' % self.object_type
         try:
             tenant_list = self._list(url, self.object_type)
-        except exceptions.EndpointNotFound:
+        except exceptions.EndpointException:
             endpoint_filter = {'interface': base_auth.AUTH_INTERFACE}
             tenant_list = self._list(url, self.object_type,
                                      endpoint_filter=endpoint_filter)
