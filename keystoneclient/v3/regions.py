@@ -29,7 +29,7 @@ class Region(base.Resource):
 
 
 class RegionManager(base.CrudManager):
-    """Manager class for manipulating Identity endpoints."""
+    """Manager class for manipulating Identity regions."""
     resource_class = Region
     collection_key = 'regions'
     key = 'region'
