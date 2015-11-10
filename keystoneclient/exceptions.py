@@ -14,18 +14,40 @@
 #    under the License.
 """Exception definitions."""
 
-import inspect
-import sys
-
-import six
+from keystoneauth1 import exceptions as _exc
 
 from keystoneclient.i18n import _
 
 
-class ClientException(Exception):
-    """The base exception class for all exceptions this library raises.
-    """
-    pass
+ClientException = _exc.ClientException
+"""The base exception class for all exceptions this library raises.
+
+An alias of :py:exc:`keystoneauth1.exceptions.base.ClientException`
+"""
+
+ConnectionError = _exc.ConnectionError
+"""Cannot connect to API service.
+
+An alias of :py:exc:`keystoneauth1.exceptions.connection.ConnectionError`
+"""
+
+ConnectionRefused = _exc.ConnectFailure
+"""Connection refused while trying to connect to API service.
+
+An alias of :py:exc:`keystoneauth1.exceptions.connection.ConnectFailure`
+"""
+
+SSLError = _exc.SSLError
+"""An SSL error occurred.
+
+An alias of :py:exc:`keystoneauth1.exceptions.connection.SSLError`
+"""
+
+AuthorizationFailure = _exc.AuthorizationFailure
+"""Cannot authorize API client.
+
+An alias of :py:exc:`keystoneauth1.exceptions.auth.AuthorizationFailure`
+"""
 
 
 class ValidationError(ClientException):
@@ -40,21 +62,6 @@ class UnsupportedVersion(ClientException):
 
 class CommandError(ClientException):
     """Error in CLI tool."""
-    pass
-
-
-class AuthorizationFailure(ClientException):
-    """Cannot authorize API client."""
-    pass
-
-
-class ConnectionError(ClientException):
-    """Cannot connect to API service."""
-    pass
-
-
-class ConnectionRefused(ConnectionError):
-    """Connection refused while trying to connect to API service."""
     pass
 
 
@@ -80,14 +87,17 @@ class NoUniqueMatch(ClientException):
     pass
 
 
-class EndpointException(ClientException):
-    """Something is rotten in Service Catalog."""
-    pass
+EndpointException = _exc.CatalogException
+"""Something is rotten in Service Catalog.
 
+An alias of :py:exc:`keystoneauth1.exceptions.catalog.CatalogException`
+"""
 
-class EndpointNotFound(EndpointException):
-    """Could not find requested endpoint in Service Catalog."""
-    pass
+EndpointNotFound = _exc.EndpointNotFound
+"""Could not find requested endpoint in Service Catalog.
+
+An alias of :py:exc:`keystoneauth1.exceptions.catalog.EndpointNotFound`
+"""
 
 
 class AmbiguousEndpoints(EndpointException):
@@ -98,48 +108,31 @@ class AmbiguousEndpoints(EndpointException):
         self.endpoints = endpoints
 
 
-class HttpError(ClientException):
-    """The base exception class for all HTTP exceptions.
-    """
-    http_status = 0
-    message = _("HTTP Error")
+HttpError = _exc.HttpError
+"""The base exception class for all HTTP exceptions.
 
-    def __init__(self, message=None, details=None,
-                 response=None, request_id=None,
-                 url=None, method=None, http_status=None):
-        self.http_status = http_status or self.http_status
-        self.message = message or self.message
-        self.details = details
-        self.request_id = request_id
-        self.response = response
-        self.url = url
-        self.method = method
-        formatted_string = "%s (HTTP %s)" % (self.message, self.http_status)
-        if request_id:
-            formatted_string += " (Request-ID: %s)" % request_id
-        super(HttpError, self).__init__(formatted_string)
+An alias of :py:exc:`keystoneauth1.exceptions.http.HttpError`
+"""
+
+HTTPClientError = _exc.HTTPClientError
+"""Client-side HTTP error.
+
+Exception for cases in which the client seems to have erred.
+An alias of :py:exc:`keystoneauth1.exceptions.http.HTTPClientError`
+"""
+
+HttpServerError = _exc.HttpServerError
+"""Server-side HTTP error.
+
+Exception for cases in which the server is aware that it has
+erred or is incapable of performing the request.
+An alias of :py:exc:`keystoneauth1.exceptions.http.HttpServerError`
+"""
 
 
 class HTTPRedirection(HttpError):
     """HTTP Redirection."""
     message = _("HTTP Redirection")
-
-
-class HTTPClientError(HttpError):
-    """Client-side HTTP error.
-
-    Exception for cases in which the client seems to have erred.
-    """
-    message = _("HTTP Client Error")
-
-
-class HttpServerError(HttpError):
-    """Server-side HTTP error.
-
-    Exception for cases in which the server is aware that it has
-    erred or is incapable of performing the request.
-    """
-    message = _("HTTP Server Error")
 
 
 class MultipleChoices(HTTPRedirection):
@@ -152,318 +145,207 @@ class MultipleChoices(HTTPRedirection):
     message = _("Multiple Choices")
 
 
-class BadRequest(HTTPClientError):
-    """HTTP 400 - Bad Request.
+BadRequest = _exc.BadRequest
+"""HTTP 400 - Bad Request.
 
-    The request cannot be fulfilled due to bad syntax.
-    """
-    http_status = 400
-    message = _("Bad Request")
+The request cannot be fulfilled due to bad syntax.
+An alias of :py:exc:`keystoneauth1.exceptions.http.BadRequest`
+"""
 
+Unauthorized = _exc.Unauthorized
+"""HTTP 401 - Unauthorized.
 
-class Unauthorized(HTTPClientError):
-    """HTTP 401 - Unauthorized.
+Similar to 403 Forbidden, but specifically for use when authentication
+is required and has failed or has not yet been provided.
+An alias of :py:exc:`keystoneauth1.exceptions.http.Unauthorized`
+"""
 
-    Similar to 403 Forbidden, but specifically for use when authentication
-    is required and has failed or has not yet been provided.
-    """
-    http_status = 401
-    message = _("Unauthorized")
+PaymentRequired = _exc.PaymentRequired
+"""HTTP 402 - Payment Required.
 
+Reserved for future use.
+An alias of :py:exc:`keystoneauth1.exceptions.http.PaymentRequired`
+"""
 
-class PaymentRequired(HTTPClientError):
-    """HTTP 402 - Payment Required.
+Forbidden = _exc.Forbidden
+"""HTTP 403 - Forbidden.
 
-    Reserved for future use.
-    """
-    http_status = 402
-    message = _("Payment Required")
+The request was a valid request, but the server is refusing to respond
+to it.
+An alias of :py:exc:`keystoneauth1.exceptions.http.Forbidden`
+"""
 
+NotFound = _exc.NotFound
+"""HTTP 404 - Not Found.
 
-class Forbidden(HTTPClientError):
-    """HTTP 403 - Forbidden.
+The requested resource could not be found but may be available again
+in the future.
+An alias of :py:exc:`keystoneauth1.exceptions.http.NotFound`
+"""
 
-    The request was a valid request, but the server is refusing to respond
-    to it.
-    """
-    http_status = 403
-    message = _("Forbidden")
+MethodNotAllowed = _exc.MethodNotAllowed
+"""HTTP 405 - Method Not Allowed.
 
+A request was made of a resource using a request method not supported
+by that resource.
+An alias of :py:exc:`keystoneauth1.exceptions.http.MethodNotAllowed`
+"""
 
-class NotFound(HTTPClientError):
-    """HTTP 404 - Not Found.
+NotAcceptable = _exc.NotAcceptable
+"""HTTP 406 - Not Acceptable.
 
-    The requested resource could not be found but may be available again
-    in the future.
-    """
-    http_status = 404
-    message = _("Not Found")
+The requested resource is only capable of generating content not
+acceptable according to the Accept headers sent in the request.
+An alias of :py:exc:`keystoneauth1.exceptions.http.NotAcceptable`
+"""
 
+ProxyAuthenticationRequired = _exc.ProxyAuthenticationRequired
+"""HTTP 407 - Proxy Authentication Required.
 
-class MethodNotAllowed(HTTPClientError):
-    """HTTP 405 - Method Not Allowed.
+The client must first authenticate itself with the proxy.
+An alias of :py:exc:`keystoneauth1.exceptions.http.ProxyAuthenticationRequired`
+"""
 
-    A request was made of a resource using a request method not supported
-    by that resource.
-    """
-    http_status = 405
-    message = _("Method Not Allowed")
+RequestTimeout = _exc.RequestTimeout
+"""HTTP 408 - Request Timeout.
 
+The server timed out waiting for the request.
+An alias of :py:exc:`keystoneauth1.exceptions.http.RequestTimeout`
+"""
 
-class NotAcceptable(HTTPClientError):
-    """HTTP 406 - Not Acceptable.
+Conflict = _exc.Conflict
+"""HTTP 409 - Conflict.
 
-    The requested resource is only capable of generating content not
-    acceptable according to the Accept headers sent in the request.
-    """
-    http_status = 406
-    message = _("Not Acceptable")
+Indicates that the request could not be processed because of conflict
+in the request, such as an edit conflict.
+An alias of :py:exc:`keystoneauth1.exceptions.http.Conflict`
+"""
 
+Gone = _exc.Gone
+"""HTTP 410 - Gone.
 
-class ProxyAuthenticationRequired(HTTPClientError):
-    """HTTP 407 - Proxy Authentication Required.
+Indicates that the resource requested is no longer available and will
+not be available again.
+An alias of :py:exc:`keystoneauth1.exceptions.http.Gone`
+"""
 
-    The client must first authenticate itself with the proxy.
-    """
-    http_status = 407
-    message = _("Proxy Authentication Required")
+LengthRequired = _exc.LengthRequired
+"""HTTP 411 - Length Required.
 
+The request did not specify the length of its content, which is
+required by the requested resource.
+An alias of :py:exc:`keystoneauth1.exceptions.http.LengthRequired`
+"""
 
-class RequestTimeout(HTTPClientError):
-    """HTTP 408 - Request Timeout.
+PreconditionFailed = _exc.PreconditionFailed
+"""HTTP 412 - Precondition Failed.
 
-    The server timed out waiting for the request.
-    """
-    http_status = 408
-    message = _("Request Timeout")
+The server does not meet one of the preconditions that the requester
+put on the request.
+An alias of :py:exc:`keystoneauth1.exceptions.http.PreconditionFailed`
+"""
 
+RequestEntityTooLarge = _exc.RequestEntityTooLarge
+"""HTTP 413 - Request Entity Too Large.
 
-class Conflict(HTTPClientError):
-    """HTTP 409 - Conflict.
+The request is larger than the server is willing or able to process.
+An alias of :py:exc:`keystoneauth1.exceptions.http.RequestEntityTooLarge`
+"""
 
-    Indicates that the request could not be processed because of conflict
-    in the request, such as an edit conflict.
-    """
-    http_status = 409
-    message = _("Conflict")
+RequestUriTooLong = _exc.RequestUriTooLong
+"""HTTP 414 - Request-URI Too Long.
 
+The URI provided was too long for the server to process.
+An alias of :py:exc:`keystoneauth1.exceptions.http.RequestUriTooLong`
+"""
 
-class Gone(HTTPClientError):
-    """HTTP 410 - Gone.
+UnsupportedMediaType = _exc.UnsupportedMediaType
+"""HTTP 415 - Unsupported Media Type.
 
-    Indicates that the resource requested is no longer available and will
-    not be available again.
-    """
-    http_status = 410
-    message = _("Gone")
+The request entity has a media type which the server or resource does
+not support.
+An alias of :py:exc:`keystoneauth1.exceptions.http.UnsupportedMediaType`
+"""
 
+RequestedRangeNotSatisfiable = _exc.RequestedRangeNotSatisfiable
+"""HTTP 416 - Requested Range Not Satisfiable.
 
-class LengthRequired(HTTPClientError):
-    """HTTP 411 - Length Required.
+The client has asked for a portion of the file, but the server cannot
+supply that portion.
+An alias of
+:py:exc:`keystoneauth1.exceptions.http.RequestedRangeNotSatisfiable`
+"""
 
-    The request did not specify the length of its content, which is
-    required by the requested resource.
-    """
-    http_status = 411
-    message = _("Length Required")
+ExpectationFailed = _exc.ExpectationFailed
+"""HTTP 417 - Expectation Failed.
 
+The server cannot meet the requirements of the Expect request-header field.
+An alias of :py:exc:`keystoneauth1.exceptions.http.ExpectationFailed`
+"""
 
-class PreconditionFailed(HTTPClientError):
-    """HTTP 412 - Precondition Failed.
+UnprocessableEntity = _exc.UnprocessableEntity
+"""HTTP 422 - Unprocessable Entity.
 
-    The server does not meet one of the preconditions that the requester
-    put on the request.
-    """
-    http_status = 412
-    message = _("Precondition Failed")
+The request was well-formed but was unable to be followed due to semantic
+errors.
+An alias of :py:exc:`keystoneauth1.exceptions.http.UnprocessableEntity`
+"""
 
+InternalServerError = _exc.InternalServerError
+"""HTTP 500 - Internal Server Error.
 
-class RequestEntityTooLarge(HTTPClientError):
-    """HTTP 413 - Request Entity Too Large.
+A generic error message, given when no more specific message is suitable.
+An alias of :py:exc:`keystoneauth1.exceptions.http.InternalServerError`
+"""
 
-    The request is larger than the server is willing or able to process.
-    """
-    http_status = 413
-    message = _("Request Entity Too Large")
+HttpNotImplemented = _exc.HttpNotImplemented
+"""HTTP 501 - Not Implemented.
 
-    def __init__(self, *args, **kwargs):
-        try:
-            self.retry_after = int(kwargs.pop('retry_after'))
-        except (KeyError, ValueError):
-            self.retry_after = 0
+The server either does not recognize the request method, or it lacks
+the ability to fulfill the request.
+An alias of :py:exc:`keystoneauth1.exceptions.http.HttpNotImplemented`
+"""
 
-        super(RequestEntityTooLarge, self).__init__(*args, **kwargs)
+BadGateway = _exc.BadGateway
+"""HTTP 502 - Bad Gateway.
 
+The server was acting as a gateway or proxy and received an invalid
+response from the upstream server.
+An alias of :py:exc:`keystoneauth1.exceptions.http.BadGateway`
+"""
 
-class RequestUriTooLong(HTTPClientError):
-    """HTTP 414 - Request-URI Too Long.
+ServiceUnavailable = _exc.ServiceUnavailable
+"""HTTP 503 - Service Unavailable.
 
-    The URI provided was too long for the server to process.
-    """
-    http_status = 414
-    message = _("Request-URI Too Long")
+The server is currently unavailable.
+An alias of :py:exc:`keystoneauth1.exceptions.http.ServiceUnavailable`
+"""
 
+GatewayTimeout = _exc.GatewayTimeout
+"""HTTP 504 - Gateway Timeout.
 
-class UnsupportedMediaType(HTTPClientError):
-    """HTTP 415 - Unsupported Media Type.
+The server was acting as a gateway or proxy and did not receive a timely
+response from the upstream server.
+An alias of :py:exc:`keystoneauth1.exceptions.http.GatewayTimeout`
+"""
 
-    The request entity has a media type which the server or resource does
-    not support.
-    """
-    http_status = 415
-    message = _("Unsupported Media Type")
+HttpVersionNotSupported = _exc.HttpVersionNotSupported
+"""HTTP 505 - HttpVersion Not Supported.
 
+The server does not support the HTTP protocol version used in the request.
+An alias of :py:exc:`keystoneauth1.exceptions.http.HttpVersionNotSupported`
+"""
 
-class RequestedRangeNotSatisfiable(HTTPClientError):
-    """HTTP 416 - Requested Range Not Satisfiable.
+from_response = _exc.from_response
+"""Returns an instance of :class:`HttpError` or subclass based on response.
 
-    The client has asked for a portion of the file, but the server cannot
-    supply that portion.
-    """
-    http_status = 416
-    message = _("Requested Range Not Satisfiable")
-
-
-class ExpectationFailed(HTTPClientError):
-    """HTTP 417 - Expectation Failed.
-
-    The server cannot meet the requirements of the Expect request-header field.
-    """
-    http_status = 417
-    message = _("Expectation Failed")
-
-
-class UnprocessableEntity(HTTPClientError):
-    """HTTP 422 - Unprocessable Entity.
-
-    The request was well-formed but was unable to be followed due to semantic
-    errors.
-    """
-    http_status = 422
-    message = _("Unprocessable Entity")
-
-
-class InternalServerError(HttpServerError):
-    """HTTP 500 - Internal Server Error.
-
-    A generic error message, given when no more specific message is suitable.
-    """
-    http_status = 500
-    message = _("Internal Server Error")
-
-
-# NotImplemented is a python keyword.
-class HttpNotImplemented(HttpServerError):
-    """HTTP 501 - Not Implemented.
-
-    The server either does not recognize the request method, or it lacks
-    the ability to fulfill the request.
-    """
-    http_status = 501
-    message = _("Not Implemented")
-
-
-class BadGateway(HttpServerError):
-    """HTTP 502 - Bad Gateway.
-
-    The server was acting as a gateway or proxy and received an invalid
-    response from the upstream server.
-    """
-    http_status = 502
-    message = _("Bad Gateway")
-
-
-class ServiceUnavailable(HttpServerError):
-    """HTTP 503 - Service Unavailable.
-
-    The server is currently unavailable.
-    """
-    http_status = 503
-    message = _("Service Unavailable")
-
-
-class GatewayTimeout(HttpServerError):
-    """HTTP 504 - Gateway Timeout.
-
-    The server was acting as a gateway or proxy and did not receive a timely
-    response from the upstream server.
-    """
-    http_status = 504
-    message = _("Gateway Timeout")
-
-
-class HttpVersionNotSupported(HttpServerError):
-    """HTTP 505 - HttpVersion Not Supported.
-
-    The server does not support the HTTP protocol version used in the request.
-    """
-    http_status = 505
-    message = _("HTTP Version Not Supported")
-
-
-# _code_map contains all the classes that have http_status attribute.
-_code_map = dict(
-    (getattr(obj, 'http_status', None), obj)
-    for name, obj in six.iteritems(vars(sys.modules[__name__]))
-    if inspect.isclass(obj) and getattr(obj, 'http_status', False)
-)
-
-
-def from_response(response, method, url):
-    """Returns an instance of :class:`HttpError` or subclass based on response.
-
-    :param response: instance of `requests.Response` class
-    :param method: HTTP method used for request
-    :param url: URL used for request
-    """
-
-    req_id = response.headers.get("x-openstack-request-id")
-    # NOTE(hdd) true for older versions of nova and cinder
-    if not req_id:
-        req_id = response.headers.get("x-compute-request-id")
-    kwargs = {
-        "http_status": response.status_code,
-        "response": response,
-        "method": method,
-        "url": url,
-        "request_id": req_id,
-    }
-    if "retry-after" in response.headers:
-        kwargs["retry_after"] = response.headers["retry-after"]
-
-    content_type = response.headers.get("Content-Type", "")
-    if content_type.startswith("application/json"):
-        try:
-            body = response.json()
-        except ValueError:
-            pass
-        else:
-            if isinstance(body, dict):
-                error = body.get(list(body)[0])
-                if isinstance(error, dict):
-                    kwargs["message"] = (error.get("message") or
-                                         error.get("faultstring"))
-                    kwargs["details"] = (error.get("details") or
-                                         six.text_type(body))
-    elif content_type.startswith("text/"):
-        kwargs["details"] = getattr(response, 'text', '')
-
-    try:
-        cls = _code_map[response.status_code]
-    except KeyError:
-        if 500 <= response.status_code < 600:
-            cls = HttpServerError
-        elif 400 <= response.status_code < 500:
-            cls = HTTPClientError
-        else:
-            cls = HttpError
-    return cls(**kwargs)
+An alias of :py:func:`keystoneauth1.exceptions.http.from_response`
+"""
 
 
 # NOTE(akurilin): This alias should be left here to support backwards
 # compatibility until we are sure that usage of these exceptions in
 # projects is correct.
-ConnectionError = ConnectionRefused
 HTTPNotImplemented = HttpNotImplemented
 Timeout = RequestTimeout
 HTTPError = HttpError
@@ -484,47 +366,40 @@ class CMSError(Exception):
         msg = _('Unable to sign or verify data.')
         super(CMSError, self).__init__(msg)
 
+EmptyCatalog = _exc.EmptyCatalog
+"""The service catalog is empty.
 
-class EmptyCatalog(EndpointNotFound):
-    """The service catalog is empty."""
-    pass
+An alias of :py:exc:`keystoneauth1.exceptions.catalog.EmptyCatalog`
+"""
 
+DiscoveryFailure = _exc.DiscoveryFailure
+"""Discovery of client versions failed.
 
-class SSLError(ConnectionRefused):
-    """An SSL error occurred."""
+An alias of :py:exc:`keystoneauth1.exceptions.discovery.DiscoveryFailure`
+"""
 
+VersionNotAvailable = _exc.VersionNotAvailable
+"""Discovery failed as the version you requested is not available.
 
-class DiscoveryFailure(ClientException):
-    """Discovery of client versions failed."""
-
-
-class VersionNotAvailable(DiscoveryFailure):
-    """Discovery failed as the version you requested is not available."""
+An alias of :py:exc:`keystoneauth1.exceptions.discovery.VersionNotAvailable`
+"""
 
 
 class MethodNotImplemented(ClientException):
     """Method not implemented by the keystoneclient API."""
 
+MissingAuthPlugin = _exc.MissingAuthPlugin
+"""An authenticated request is required but no plugin available.
 
-class MissingAuthPlugin(ClientException):
-    """An authenticated request is required but no plugin available."""
+An alias of :py:exc:`keystoneauth1.exceptions.auth_plugins.MissingAuthPlugin`
+"""
 
+NoMatchingPlugin = _exc.NoMatchingPlugin
+"""There were no auth plugins that could be created from the parameters
+provided.
 
-class NoMatchingPlugin(ClientException):
-    """There were no auth plugins that could be created from the parameters
-    provided.
-
-    :param str name: The name of the plugin that was attempted to load.
-
-    .. py:attribute:: name
-
-        The name of the plugin that was attempted to load.
-    """
-
-    def __init__(self, name):
-        self.name = name
-        msg = _('The plugin %s could not be found') % name
-        super(NoMatchingPlugin, self).__init__(msg)
+An alias of :py:exc:`keystoneauth1.exceptions.auth_plugins.NoMatchingPlugin`
+"""
 
 
 class UnsupportedParameters(ClientException):
