@@ -59,7 +59,7 @@ An example from keystoneclient::
     >>> from keystoneclient import session
     >>> from keystoneclient.v3 import client
 
-    >>> auth = v3.Password(auth_url='https://my.keystone.com:5000/v3,
+    >>> auth = v3.Password(auth_url='https://my.keystone.com:5000/v3',
     ...                    username='myuser',
     ...                    password='mypassword',
     ...                    project_id='proj',
