@@ -18,6 +18,7 @@
 
 import copy
 
+from debtcollector import removals
 from oslo_config import cfg
 from oslo_utils import timeutils
 
@@ -28,6 +29,11 @@ memcache_opts = [
 
 CONF = cfg.CONF
 CONF.register_opts(memcache_opts)
+
+
+# Indicate that this module is deprecated for removal and oslo.cache should
+# be used instead.
+removals.removed_module(__name__, 'oslo.cache')
 
 
 def list_opts():
