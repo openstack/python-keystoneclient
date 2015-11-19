@@ -72,8 +72,8 @@ class _BaseSAMLPlugin(v3.AuthConstructor):
             cfg.StrOpt('identity-provider', help="Identity Provider's name"),
             cfg.StrOpt('identity-provider-url',
                        help="Identity Provider's URL"),
-            cfg.StrOpt('user-name', dest='username', help='Username',
-                       deprecated_name='username'),
+            cfg.StrOpt('username', dest='username', help='Username',
+                       deprecated_name='user-name'),
             cfg.StrOpt('password', help='Password')
         ])
         return options

@@ -79,8 +79,8 @@ class Password(base.AuthConstructor):
 
         options.extend([
             cfg.StrOpt('user-id', help='User ID'),
-            cfg.StrOpt('user-name', dest='username', help='Username',
-                       deprecated_name='username'),
+            cfg.StrOpt('username', dest='username', help='Username',
+                       deprecated_name='user-name'),
             cfg.StrOpt('user-domain-id', help="User's domain id"),
             cfg.StrOpt('user-domain-name', help="User's domain name"),
             cfg.StrOpt('password', secret=True, help="User's password"),
