@@ -188,9 +188,9 @@ class Password(Auth):
         options = super(Password, cls).get_options()
 
         options.extend([
-            cfg.StrOpt('user-name',
+            cfg.StrOpt('username',
                        dest='username',
-                       deprecated_name='username',
+                       deprecated_name='user-name',
                        help='Username to login with'),
             cfg.StrOpt('user-id', help='User ID to login with'),
             cfg.StrOpt('password', secret=True, help='Password to use'),

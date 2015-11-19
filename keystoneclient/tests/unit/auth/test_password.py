@@ -46,7 +46,7 @@ class PasswordTests(utils.GenericPluginTestCase):
     def test_options(self):
         opts = [o.name for o in self.PLUGIN_CLASS.get_options()]
 
-        allowed_opts = ['user-name',
+        allowed_opts = ['username',
                         'user-domain-id',
                         'user-domain-name',
                         'user-id',
