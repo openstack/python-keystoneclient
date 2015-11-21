@@ -60,7 +60,7 @@ class ProjectManager(base.CrudManager):
     collection_key = 'projects'
     key = 'project'
 
-    @utils.positional(1, enforcement=utils.positional.WARN)
+    @utils.positional(3, enforcement=utils.positional.WARN)
     def create(self, name, domain, description=None,
                enabled=True, parent=None, **kwargs):
         """Create a project.
