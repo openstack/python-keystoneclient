@@ -27,6 +27,7 @@ Identity V2 and V3 clients can also be created directly. See
 
 """
 
+import importlib
 import sys
 
 import pbr.version
@@ -67,10 +68,9 @@ class _LazyImporter(object):
             'v2_0',
             'v3',
         ]
-        # __import__ rather than importlib for Python 2.6.
         if name in lazy_submodules:
-            __import__('keystoneclient.%s' % name)
-            return getattr(self, name)
+            return importlib.import_module('keystoneclient.%s' % name)
+
         # Return module attributes like __all__ etc.
         return getattr(self._module, name)
 

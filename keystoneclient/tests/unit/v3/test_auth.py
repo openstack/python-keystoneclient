@@ -11,6 +11,7 @@
 #    under the License.
 
 from oslo_serialization import jsonutils
+from testtools import testcase
 
 from keystoneclient import exceptions
 from keystoneclient.tests.unit.v3 import utils
@@ -103,11 +104,7 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
 
         self.stub_auth(status_code=401, json=error)
 
-        # Workaround for issue with assertRaises on python2.6
-        # where with assertRaises(exceptions.Unauthorized): doesn't work
-        # right
-        def client_create_wrapper():
-            # Creating a HTTPClient not using session is deprecated.
+        with testcase.ExpectedException(exceptions.Unauthorized):
             with self.deprecations.expect_deprecations_here():
                 client.Client(user_domain_name=self.TEST_DOMAIN_NAME,
                               username=self.TEST_USER,
@@ -115,7 +112,6 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
                               project_id=self.TEST_TENANT_ID,
                               auth_url=self.TEST_URL)
 
-        self.assertRaises(exceptions.Unauthorized, client_create_wrapper)
         self.assertRequestBodyIs(json=self.TEST_REQUEST_BODY)
 
     def test_auth_redirect(self):
