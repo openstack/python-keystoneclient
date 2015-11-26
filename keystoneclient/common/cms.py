@@ -101,7 +101,7 @@ def _process_communicate_handle_oserror(process, data, files):
     except OSError as e:
         if e.errno != errno.EPIPE:
             raise
-        # OSError with EPIPE only occurs with Python 2.6.x/old 2.7.x
+        # OSError with EPIPE only occurs with old Python 2.7.x versions
         # http://bugs.python.org/issue10963
 
         # The quick exit is typically caused by the openssl command not being
@@ -191,11 +191,7 @@ def cms_verify(formatted, signing_cert_file_name, ca_file_name,
         else:
             raise exceptions.CertificateConfigError(err)
     elif retcode != OpensslCmsExitStatus.SUCCESS:
-        # NOTE(dmllr): Python 2.6 compatibility:
-        # CalledProcessError did not have output keyword argument
-        e = subprocess.CalledProcessError(retcode, 'openssl')
-        e.output = err
-        raise e
+        raise subprocess.CalledProcessError(retcode, 'openssl', output=err)
     return output
 
 
