@@ -48,6 +48,7 @@ class S3TokenMiddlewareTestBase(utils.TestCase):
     def setUp(self):
         super(S3TokenMiddlewareTestBase, self).setUp()
 
+        self.useFixture(client_fixtures.Deprecations())
         self.conf = {
             'auth_host': self.TEST_HOST,
             'auth_port': self.TEST_PORT,

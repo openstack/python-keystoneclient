@@ -607,15 +607,28 @@ class Deprecations(fixtures.Fixture):
         # exception.
         warnings.filterwarnings('error', category=DeprecationWarning,
                                 module='^keystoneclient\\.')
+        warnings.filterwarnings('ignore', category=DeprecationWarning,
+                                module='^debtcollector\\.')
         self.addCleanup(warnings.resetwarnings)
 
     def expect_deprecations(self):
         """Call this if the test expects to call deprecated function."""
         warnings.resetwarnings()
+        warnings.filterwarnings('ignore', category=DeprecationWarning,
+                                module='^keystoneclient\\.')
+        warnings.filterwarnings('ignore', category=DeprecationWarning,
+                                module='^debtcollector\\.')
 
     @contextlib.contextmanager
     def expect_deprecations_here(self):
         warnings.resetwarnings()
+        warnings.filterwarnings('ignore', category=DeprecationWarning,
+                                module='^keystoneclient\\.')
+        warnings.filterwarnings('ignore', category=DeprecationWarning,
+                                module='^debtcollector\\.')
         yield
+        warnings.resetwarnings()
         warnings.filterwarnings('error', category=DeprecationWarning,
                                 module='^keystoneclient\\.')
+        warnings.filterwarnings('ignore', category=DeprecationWarning,
+                                module='^debtcollector\\.')
