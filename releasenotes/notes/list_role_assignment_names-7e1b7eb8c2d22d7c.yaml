@@ -1,0 +1,6 @@
+---
+features:
+  - >
+    [`bug 1479569 <https://bugs.launchpad.net/python-keystoneclient/+bug/1479569>`_]
+    With the ``include_names`` parameter set to True the names of the role assignments
+    are returned with the entities IDs. (GET /role_assignments?include_names=True)
