@@ -20,7 +20,6 @@ tempest-lib>=0.11.0
 testrepository>=0.0.18
 testresources>=0.2.4
 testtools>=1.4.0
-WebOb>=1.2.3
 
 # Bandit security code scanner
 bandit>=0.13.2
