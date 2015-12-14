@@ -328,7 +328,9 @@ class RedirectTests(utils.TestCase):
     DEFAULT_RESP_BODY = 'Found'
 
     def setup_redirects(self, method='GET', status_code=305,
-                        redirect_kwargs={}, final_kwargs={}):
+                        redirect_kwargs=None, final_kwargs=None):
+        redirect_kwargs = redirect_kwargs or {}
+        final_kwargs = final_kwargs or {}
         redirect_kwargs.setdefault('text', self.DEFAULT_REDIRECT_BODY)
 
         for s, d in zip(self.REDIRECT_CHAIN, self.REDIRECT_CHAIN[1:]):
