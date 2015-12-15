@@ -16,7 +16,7 @@ import mock
 import pep8
 import testtools
 
-from keystoneclient.hacking import checks
+from keystoneclient.tests.hacking import checks
 from keystoneclient.tests.unit import client_fixtures
 
 
