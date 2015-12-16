@@ -50,6 +50,11 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
 
         super(BaseIdentityPlugin, self).__init__()
 
+        warnings.warn(
+            'keystoneclient auth plugins are deprecated as of the 2.1.0 '
+            'release in favor of keystoneauth1 plugins. They will be removed '
+            'in future releases.', DeprecationWarning)
+
         self.auth_url = auth_url
         self.auth_ref = None
         self.reauthenticate = reauthenticate

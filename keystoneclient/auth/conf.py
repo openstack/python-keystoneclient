@@ -10,6 +10,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from debtcollector import removals
 from oslo_config import cfg
 
 from keystoneclient.auth import base
@@ -20,6 +21,11 @@ _section_help = 'Config Section from which to load plugin specific options'
 _AUTH_SECTION_OPT = cfg.StrOpt('auth_section', help=_section_help)
 
 
+@removals.remove(
+    message='keystoneclient auth plugins are deprecated. Use keystoneauth.',
+    version='2.1.0',
+    removal_version='3.0.0'
+)
 def get_common_conf_options():
     """Get the oslo_config options common for all auth plugins.
 
@@ -35,6 +41,11 @@ def get_common_conf_options():
     return [_AUTH_PLUGIN_OPT, _AUTH_SECTION_OPT]
 
 
+@removals.remove(
+    message='keystoneclient auth plugins are deprecated. Use keystoneauth.',
+    version='2.1.0',
+    removal_version='3.0.0'
+)
 def get_plugin_options(name):
     """Get the oslo_config options for a specific plugin.
 
@@ -46,6 +57,11 @@ def get_plugin_options(name):
     return base.get_plugin_class(name).get_options()
 
 
+@removals.remove(
+    message='keystoneclient auth plugins are deprecated. Use keystoneauth.',
+    version='2.1.0',
+    removal_version='3.0.0'
+)
 def register_conf_options(conf, group):
     """Register the oslo_config options that are needed for a plugin.
 
@@ -77,6 +93,11 @@ def register_conf_options(conf, group):
     conf.register_opt(_AUTH_PLUGIN_OPT, group=group)
 
 
+@removals.remove(
+    message='keystoneclient auth plugins are deprecated. Use keystoneauth.',
+    version='2.1.0',
+    removal_version='3.0.0'
+)
 def load_from_conf_options(conf, group, **kwargs):
     """Load a plugin from an oslo_config CONF object.
 

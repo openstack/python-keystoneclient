@@ -550,9 +550,9 @@ class ClientDiscoveryTests(utils.TestCase):
             token = uuid.uuid4().hex
 
         url = 'http://testurl'
-        a = token_endpoint.Token(url, token)
 
         with self.deprecations.expect_deprecations_here():
+            a = token_endpoint.Token(url, token)
             s = session.Session(auth=a)
 
         # will default to true as there is a plugin on the session

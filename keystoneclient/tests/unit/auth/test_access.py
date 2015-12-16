@@ -35,7 +35,8 @@ class AccessInfoPluginTests(utils.TestCase):
 
         auth_ref = access.AccessInfo.factory(body=token,
                                              auth_token=self.auth_token)
-        return access_plugin.AccessInfoPlugin(auth_ref, **kwargs)
+        with self.deprecations.expect_deprecations_here():
+            return access_plugin.AccessInfoPlugin(auth_ref, **kwargs)
 
     def test_auth_ref(self):
         plugin = self._plugin()

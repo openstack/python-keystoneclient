@@ -42,6 +42,7 @@ class CliTests(utils.TestCase):
 
     def setUp(self):
         super(CliTests, self).setUp()
+        self.deprecations.expect_deprecations()
         self.p = argparse.ArgumentParser()
 
     def env(self, name, value=None):

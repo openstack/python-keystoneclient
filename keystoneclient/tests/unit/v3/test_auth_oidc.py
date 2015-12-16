@@ -61,11 +61,12 @@ class AuthenticateOIDCTests(utils.TestCase):
     def setUp(self):
         super(AuthenticateOIDCTests, self).setUp()
 
+        self.deprecations.expect_deprecations()
+
         self.conf_fixture = self.useFixture(config.Config())
         conf.register_conf_options(self.conf_fixture.conf, group=self.GROUP)
 
-        with self.deprecations.expect_deprecations_here():
-            self.session = session.Session()
+        self.session = session.Session()
 
         self.IDENTITY_PROVIDER = 'bluepages'
         self.PROTOCOL = 'oidc'

@@ -12,6 +12,7 @@
 
 import os
 
+from debtcollector import removals
 from keystoneauth1 import plugin
 import six
 import stevedore
@@ -28,6 +29,11 @@ PLUGIN_NAMESPACE = 'keystoneclient.auth.plugin'
 IDENTITY_AUTH_HEADER_NAME = 'X-Auth-Token'
 
 
+@removals.remove(
+    message='keystoneclient auth plugins are deprecated. Use keystoneauth.',
+    version='2.1.0',
+    removal_version='3.0.0'
+)
 def get_available_plugin_names():
     """Get the names of all the plugins that are available on the system.
 
@@ -42,6 +48,11 @@ def get_available_plugin_names():
     return frozenset(mgr.names())
 
 
+@removals.remove(
+    message='keystoneclient auth plugins are deprecated. Use keystoneauth.',
+    version='2.1.0',
+    removal_version='3.0.0'
+)
 def get_available_plugin_classes():
     """Retrieve all the plugin classes available on the system.
 
@@ -56,6 +67,11 @@ def get_available_plugin_classes():
     return dict(mgr.map(lambda ext: (ext.entry_point.name, ext.plugin)))
 
 
+@removals.remove(
+    message='keystoneclient auth plugins are deprecated. Use keystoneauth.',
+    version='2.1.0',
+    removal_version='3.0.0'
+)
 def get_plugin_class(name):
     """Retrieve a plugin class by its entrypoint name.
 

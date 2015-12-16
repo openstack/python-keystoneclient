@@ -13,11 +13,17 @@
 import argparse
 import os
 
+from debtcollector import removals
 from positional import positional
 
 from keystoneclient.auth import base
 
 
+@removals.remove(
+    message='keystoneclient auth plugins are deprecated. Use keystoneauth.',
+    version='2.1.0',
+    removal_version='3.0.0'
+)
 @positional()
 def register_argparse_arguments(parser, argv, default=None):
     """Register CLI options needed to create a plugin.
@@ -61,6 +67,11 @@ def register_argparse_arguments(parser, argv, default=None):
     return plugin
 
 
+@removals.remove(
+    message='keystoneclient auth plugins are deprecated. Use keystoneauth.',
+    version='2.1.0',
+    removal_version='3.0.0'
+)
 def load_from_argparse_arguments(namespace, **kwargs):
     """Retrieve the created plugin from the completed argparse results.
 
