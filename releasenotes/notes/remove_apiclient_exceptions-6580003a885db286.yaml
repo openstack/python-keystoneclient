@@ -1,0 +1,10 @@
+---
+prelude: >
+    keystoneclient.apiclient has been removed.
+critical:
+  - >
+    [`bug 1526651 <https://bugs.launchpad.net/python-keystoneclient/+bug/1526651>`_]
+    The `keystoneclient.apiclient` module has been removed in favor of
+    `keystoneclient.exceptions`. The aforementioned module has been deprecated
+    since keystoneclient v0.7.1 which was inclued in the Juno release
+    of OpenStack.
