@@ -190,6 +190,9 @@ class KeystoneClientTest(utils.TestCase):
                               auth_url=self.TEST_URL)
 
     def test_client_params(self):
+        with self.deprecations.expect_deprecations_here():
+            sess = session.Session()
+
         opts = {'auth': token_endpoint.Token('a', 'b'),
                 'connect_retries': 50,
                 'endpoint_override': uuid.uuid4().hex,
@@ -199,7 +202,6 @@ class KeystoneClientTest(utils.TestCase):
                 'user_agent': uuid.uuid4().hex,
                 }
 
-        sess = session.Session()
         cl = client.Client(session=sess, **opts)
 
         for k, v in six.iteritems(opts):

@@ -251,8 +251,8 @@ class AuthenticateWithOAuthTests(utils.TestCase, TokenTests):
                        consumer_secret=consumer_secret,
                        access_key=access_key,
                        access_secret=access_secret)
-        s = session.Session(auth=a)
         with self.deprecations.expect_deprecations_here():
+            s = session.Session(auth=a)
             t = s.get_token()
         self.assertEqual(self.TEST_TOKEN, t)
 

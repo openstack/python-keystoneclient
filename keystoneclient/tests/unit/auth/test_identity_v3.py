@@ -120,6 +120,8 @@ class V3IdentityPlugin(utils.TestCase):
         self.TEST_DISCOVERY_RESPONSE = {
             'versions': {'values': [fixture.V3Discovery(self.TEST_URL)]}}
 
+        self.deprecations.expect_deprecations()
+
         self.TEST_RESPONSE_DICT = {
             "token": {
                 "methods": [

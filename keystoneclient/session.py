@@ -132,6 +132,12 @@ class Session(object):
     def __init__(self, auth=None, session=None, original_ip=None, verify=True,
                  cert=None, timeout=None, user_agent=None,
                  redirect=_DEFAULT_REDIRECT_LIMIT):
+        warnings.warn(
+            'keystoneclient.session.Session is deprecated as of the 2.1.0 '
+            'release in favor of keystoneauth1.session.Session. It will be '
+            'removed in future releases.',
+            DeprecationWarning)
+
         if not session:
             session = requests.Session()
             # Use TCPKeepAliveAdapter to fix bug 1323862

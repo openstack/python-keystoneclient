@@ -22,6 +22,10 @@ class TokenEndpointTest(utils.TestCase):
     TEST_TOKEN = 'aToken'
     TEST_URL = 'http://server/prefix'
 
+    def setUp(self):
+        super(TokenEndpointTest, self).setUp()
+        self.deprecations.expect_deprecations()
+
     def test_basic_case(self):
         self.requests_mock.get(self.TEST_URL, text='body')
 

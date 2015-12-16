@@ -95,7 +95,10 @@ class KscSessionV2(BaseV2):
         a = ksc_identity.V2Password(username=uuid.uuid4().hex,
                                     password=uuid.uuid4().hex,
                                     auth_url=self.TEST_URL)
-        s = ksc_session.Session(auth=a)
+
+        with self.deprecations.expect_deprecations_here():
+            s = ksc_session.Session(auth=a)
+
         return v2_client.Client(session=s)
 
 
@@ -166,7 +169,10 @@ class KscSessionV3(BaseV3):
                                     password=uuid.uuid4().hex,
                                     user_domain_id=uuid.uuid4().hex,
                                     auth_url=self.TEST_URL)
-        s = ksc_session.Session(auth=a)
+
+        with self.deprecations.expect_deprecations_here():
+            s = ksc_session.Session(auth=a)
+
         return v3_client.Client(session=s)
 
 

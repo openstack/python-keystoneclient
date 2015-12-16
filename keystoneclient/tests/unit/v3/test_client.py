@@ -249,7 +249,9 @@ class KeystoneClientTest(utils.TestCase):
                 'user_agent': uuid.uuid4().hex,
                 }
 
-        sess = session.Session()
+        with self.deprecations.expect_deprecations_here():
+            sess = session.Session()
+
         cl = client.Client(session=sess, **opts)
 
         for k, v in six.iteritems(opts):
