@@ -20,7 +20,7 @@ from keystoneclient.v2_0 import tenants
 from keystoneclient.v2_0 import users
 
 
-class TenantTests(utils.TestCase):
+class TenantTests(utils.ClientTestCase):
     def setUp(self):
         super(TenantTests, self).setUp()
 

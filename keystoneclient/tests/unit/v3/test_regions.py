@@ -18,7 +18,7 @@ from keystoneclient.tests.unit.v3 import utils
 from keystoneclient.v3 import regions
 
 
-class RegionTests(utils.TestCase, utils.CrudTests):
+class RegionTests(utils.ClientTestCase, utils.CrudTests):
     def setUp(self):
         super(RegionTests, self).setUp()
         self.key = 'region'

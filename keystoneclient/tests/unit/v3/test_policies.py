@@ -16,7 +16,7 @@ from keystoneclient.tests.unit.v3 import utils
 from keystoneclient.v3 import policies
 
 
-class PolicyTests(utils.TestCase, utils.CrudTests):
+class PolicyTests(utils.ClientTestCase, utils.CrudTests):
     def setUp(self):
         super(PolicyTests, self).setUp()
         self.key = 'policy'

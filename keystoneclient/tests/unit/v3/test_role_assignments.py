@@ -15,7 +15,7 @@ from keystoneclient.tests.unit.v3 import utils
 from keystoneclient.v3 import role_assignments
 
 
-class RoleAssignmentsTests(utils.TestCase, utils.CrudTests):
+class RoleAssignmentsTests(utils.ClientTestCase, utils.CrudTests):
 
     def setUp(self):
         super(RoleAssignmentsTests, self).setUp()

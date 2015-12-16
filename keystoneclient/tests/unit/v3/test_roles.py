@@ -20,7 +20,7 @@ from keystoneclient.v3 import roles
 from testtools import matchers
 
 
-class RoleTests(utils.TestCase, utils.CrudTests):
+class RoleTests(utils.ClientTestCase, utils.CrudTests):
     def setUp(self):
         super(RoleTests, self).setUp()
         self.key = 'role'

@@ -16,7 +16,7 @@ from keystoneclient.tests.unit.v3 import utils
 from keystoneclient.v3 import domains
 
 
-class DomainTests(utils.TestCase, utils.CrudTests):
+class DomainTests(utils.ClientTestCase, utils.CrudTests):
     def setUp(self):
         super(DomainTests, self).setUp()
         self.key = 'domain'

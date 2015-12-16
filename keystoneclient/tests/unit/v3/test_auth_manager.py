@@ -12,15 +12,12 @@
 
 import uuid
 
-from keystoneclient.auth.identity import v3
 from keystoneclient import fixture
-from keystoneclient import session
 from keystoneclient.tests.unit.v3 import utils
 from keystoneclient.v3 import auth
-from keystoneclient.v3 import client
 
 
-class AuthProjectsTest(utils.TestCase):
+class AuthProjectsTest(utils.ClientTestCase):
 
     def setUp(self):
         super(AuthProjectsTest, self).setUp()
@@ -31,12 +28,6 @@ class AuthProjectsTest(utils.TestCase):
         self.stub_url('GET',
                       [],
                       json={'version': fixture.V3Discovery(self.TEST_URL)})
-
-        self.auth = v3.Password(auth_url=self.TEST_URL,
-                                user_id=self.v3token.user_id,
-                                password=uuid.uuid4().hex)
-        self.session = session.Session(auth=self.auth)
-        self.client = client.Client(session=self.session)
 
     def create_resource(self, id=None, name=None, **kwargs):
         kwargs['id'] = id or uuid.uuid4().hex

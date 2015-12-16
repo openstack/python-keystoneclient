@@ -76,14 +76,17 @@ class TestCase(UnauthenticatedTestCase):
         "name": "swift"
     }]
 
+    def stub_auth(self, **kwargs):
+        self.stub_url('POST', ['tokens'], **kwargs)
+
+
+class ClientTestCase(TestCase):
+
     def setUp(self):
-        super(TestCase, self).setUp()
+        super(ClientTestCase, self).setUp()
 
         # Creating a Client not using session is deprecated.
         with self.deprecations.expect_deprecations_here():
             self.client = client.Client(token=self.TEST_TOKEN,
                                         auth_url=self.TEST_URL,
                                         endpoint=self.TEST_URL)
-
-    def stub_auth(self, **kwargs):
-        self.stub_url('POST', ['tokens'], **kwargs)

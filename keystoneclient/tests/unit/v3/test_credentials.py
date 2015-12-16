@@ -16,7 +16,7 @@ from keystoneclient.tests.unit.v3 import utils
 from keystoneclient.v3 import credentials
 
 
-class CredentialTests(utils.TestCase, utils.CrudTests):
+class CredentialTests(utils.ClientTestCase, utils.CrudTests):
     def setUp(self):
         super(CredentialTests, self).setUp()
         self.key = 'credential'

@@ -33,15 +33,11 @@ except ImportError:
     oauth1 = None
 
 
-class BaseTest(utils.TestCase):
+class ConsumerTests(utils.ClientTestCase, utils.CrudTests):
     def setUp(self):
-        super(BaseTest, self).setUp()
         if oauth1 is None:
             self.skipTest('oauthlib package not available')
 
-
-class ConsumerTests(BaseTest, utils.CrudTests):
-    def setUp(self):
         super(ConsumerTests, self).setUp()
         self.key = 'consumer'
         self.collection_key = 'consumers'
@@ -79,7 +75,7 @@ class ConsumerTests(BaseTest, utils.CrudTests):
         self.assertEqual(consumer_id, consumer.id)
 
 
-class TokenTests(BaseTest):
+class TokenTests(object):
     def _new_oauth_token(self):
         key = uuid.uuid4().hex
         secret = uuid.uuid4().hex
@@ -122,8 +118,11 @@ class TokenTests(BaseTest):
         return parameters
 
 
-class RequestTokenTests(TokenTests):
+class RequestTokenTests(utils.ClientTestCase, TokenTests):
     def setUp(self):
+        if oauth1 is None:
+            self.skipTest('oauthlib package not available')
+
         super(RequestTokenTests, self).setUp()
         self.model = request_tokens.RequestToken
         self.manager = self.client.oauth1.request_tokens
@@ -181,8 +180,11 @@ class RequestTokenTests(TokenTests):
                                      oauth_client)
 
 
-class AccessTokenTests(TokenTests):
+class AccessTokenTests(utils.ClientTestCase, TokenTests):
     def setUp(self):
+        if oauth1 is None:
+            self.skipTest('oauthlib package not available')
+
         super(AccessTokenTests, self).setUp()
         self.manager = self.client.oauth1.access_tokens
         self.model = access_tokens.AccessToken
@@ -223,7 +225,7 @@ class AccessTokenTests(TokenTests):
                                      oauth_client)
 
 
-class AuthenticateWithOAuthTests(TokenTests):
+class AuthenticateWithOAuthTests(utils.TestCase, TokenTests):
     def setUp(self):
         super(AuthenticateWithOAuthTests, self).setUp()
         if oauth1 is None:

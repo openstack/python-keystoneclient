@@ -20,7 +20,7 @@ from keystoneclient.v2_0 import client
 from keystoneclient.v2_0 import tokens
 
 
-class TokenTests(utils.TestCase):
+class TokenTests(utils.ClientTestCase):
 
     def test_delete(self):
         id_ = uuid.uuid4().hex

@@ -17,7 +17,7 @@ from keystoneclient.tests.unit.v3 import utils
 from keystoneclient.v3 import projects
 
 
-class ProjectTests(utils.TestCase, utils.CrudTests):
+class ProjectTests(utils.ClientTestCase, utils.CrudTests):
     def setUp(self):
         super(ProjectTests, self).setUp()
         self.key = 'project'

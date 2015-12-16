@@ -20,7 +20,7 @@ from keystoneclient.tests.unit.v3 import utils
 from keystoneclient.v3.contrib import trusts
 
 
-class TrustTests(utils.TestCase, utils.CrudTests):
+class TrustTests(utils.ClientTestCase, utils.CrudTests):
     def setUp(self):
         super(TrustTests, self).setUp()
         self.key = 'trust'

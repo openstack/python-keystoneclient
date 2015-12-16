@@ -37,7 +37,7 @@ class EndpointTestUtils(object):
         return kwargs
 
 
-class EndpointFilterTests(utils.TestCase, EndpointTestUtils):
+class EndpointFilterTests(utils.ClientTestCase, EndpointTestUtils):
     """Test project-endpoint associations (a.k.a. EndpointFilter Extension).
 
     Endpoint filter provides associations between service endpoints and

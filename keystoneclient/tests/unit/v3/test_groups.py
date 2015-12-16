@@ -18,7 +18,7 @@ from keystoneclient.tests.unit.v3 import utils
 from keystoneclient.v3 import groups
 
 
-class GroupTests(utils.TestCase, utils.CrudTests):
+class GroupTests(utils.ClientTestCase, utils.CrudTests):
     def setUp(self):
         super(GroupTests, self).setUp()
         self.key = 'group'

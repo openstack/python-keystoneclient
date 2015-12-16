@@ -14,7 +14,7 @@ from keystoneclient.tests.unit.v2_0 import utils
 from keystoneclient.v2_0 import extensions
 
 
-class ExtensionTests(utils.TestCase):
+class ExtensionTests(utils.ClientTestCase):
     def setUp(self):
         super(ExtensionTests, self).setUp()
         self.TEST_EXTENSIONS = {

@@ -18,7 +18,7 @@ from keystoneclient.tests.unit.v3 import test_endpoint_filter
 from keystoneclient.tests.unit.v3 import utils
 
 
-class EndpointPolicyTests(utils.TestCase,
+class EndpointPolicyTests(utils.ClientTestCase,
                           test_endpoint_filter.EndpointTestUtils):
     """Test policy-endpoint associations (a.k.a. EndpointPolicy Extension)."""
 

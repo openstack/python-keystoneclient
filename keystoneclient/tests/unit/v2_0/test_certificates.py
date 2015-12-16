@@ -17,7 +17,7 @@ from keystoneclient.tests.unit import client_fixtures
 from keystoneclient.tests.unit.v2_0 import utils
 
 
-class CertificateTests(utils.TestCase, testresources.ResourcedTestCase):
+class CertificateTests(utils.ClientTestCase, testresources.ResourcedTestCase):
 
     resources = [('examples', client_fixtures.EXAMPLES_RESOURCE)]
 

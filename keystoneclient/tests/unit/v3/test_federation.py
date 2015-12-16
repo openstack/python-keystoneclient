@@ -26,7 +26,7 @@ from keystoneclient.v3 import domains
 from keystoneclient.v3 import projects
 
 
-class IdentityProviderTests(utils.TestCase, utils.CrudTests):
+class IdentityProviderTests(utils.ClientTestCase, utils.CrudTests):
     def setUp(self):
         super(IdentityProviderTests, self).setUp()
         self.key = 'identity_provider'
@@ -88,7 +88,7 @@ class IdentityProviderTests(utils.TestCase, utils.CrudTests):
         self.assertEntityRequestBodyIs(req_ref)
 
 
-class MappingTests(utils.TestCase, utils.CrudTests):
+class MappingTests(utils.ClientTestCase, utils.CrudTests):
     def setUp(self):
         super(MappingTests, self).setUp()
         self.key = 'mapping'
@@ -122,7 +122,7 @@ class MappingTests(utils.TestCase, utils.CrudTests):
         self.assertEntityRequestBodyIs(manager_ref)
 
 
-class ProtocolTests(utils.TestCase, utils.CrudTests):
+class ProtocolTests(utils.ClientTestCase, utils.CrudTests):
     def setUp(self):
         super(ProtocolTests, self).setUp()
         self.key = 'protocol'
@@ -327,14 +327,14 @@ class ProtocolTests(utils.TestCase, utils.CrudTests):
         self.assertEntityRequestBodyIs(request_body)
 
 
-class EntityManagerTests(utils.TestCase):
+class EntityManagerTests(utils.ClientTestCase):
     def test_create_object_expect_fail(self):
         self.assertRaises(TypeError,
                           base.EntityManager,
                           self.client)
 
 
-class FederationProjectTests(utils.TestCase):
+class FederationProjectTests(utils.ClientTestCase):
 
     def setUp(self):
         super(FederationProjectTests, self).setUp()
@@ -364,7 +364,7 @@ class FederationProjectTests(utils.TestCase):
             self.assertIsInstance(project, self.model)
 
 
-class FederationDomainTests(utils.TestCase):
+class FederationDomainTests(utils.ClientTestCase):
 
     def setUp(self):
         super(FederationDomainTests, self).setUp()
@@ -394,7 +394,7 @@ class FederationDomainTests(utils.TestCase):
             self.assertIsInstance(domain, self.model)
 
 
-class FederatedTokenTests(utils.TestCase):
+class FederatedTokenTests(utils.ClientTestCase):
 
     def setUp(self):
         super(FederatedTokenTests, self).setUp()
@@ -416,7 +416,7 @@ class FederatedTokenTests(utils.TestCase):
         self.assertIsNone(self.federated_token.user_domain_id)
 
 
-class ServiceProviderTests(utils.TestCase, utils.CrudTests):
+class ServiceProviderTests(utils.ClientTestCase, utils.CrudTests):
     def setUp(self):
         super(ServiceProviderTests, self).setUp()
         self.key = 'service_provider'

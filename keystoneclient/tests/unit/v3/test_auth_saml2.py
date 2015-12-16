@@ -655,7 +655,7 @@ class AuthenticateviaADFSTests(utils.TestCase):
         self.assertEqual(saml2_fixtures.UNSCOPED_TOKEN['token'], token_json)
 
 
-class SAMLGenerationTests(utils.TestCase):
+class SAMLGenerationTests(utils.ClientTestCase):
 
     def setUp(self):
         super(SAMLGenerationTests, self).setUp()

@@ -16,7 +16,7 @@ from keystoneclient.tests.unit.v2_0 import utils
 from keystoneclient.v2_0 import roles
 
 
-class RoleTests(utils.TestCase):
+class RoleTests(utils.ClientTestCase):
     def setUp(self):
         super(RoleTests, self).setUp()
 

@@ -14,7 +14,7 @@ from keystoneclient.tests.unit.v3 import utils
 from keystoneclient.v3 import ec2
 
 
-class EC2Tests(utils.TestCase):
+class EC2Tests(utils.ClientTestCase):
 
     def test_create(self):
         user_id = 'usr'

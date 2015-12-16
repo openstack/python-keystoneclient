@@ -16,7 +16,7 @@ from keystoneclient.tests.unit.v3 import utils
 from keystoneclient.v3 import services
 
 
-class ServiceTests(utils.TestCase, utils.CrudTests):
+class ServiceTests(utils.ClientTestCase, utils.CrudTests):
     def setUp(self):
         super(ServiceTests, self).setUp()
         self.key = 'service'

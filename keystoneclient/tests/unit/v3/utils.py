@@ -127,15 +127,6 @@ class TestCase(UnauthenticatedTestCase):
         "type": "object-store"
     }]
 
-    def setUp(self):
-        super(TestCase, self).setUp()
-
-        # Creating a Client not using session is deprecated.
-        with self.deprecations.expect_deprecations_here():
-            self.client = client.Client(token=self.TEST_TOKEN,
-                                        auth_url=self.TEST_URL,
-                                        endpoint=self.TEST_URL)
-
     def stub_auth(self, subject_token=None, **kwargs):
         if not subject_token:
             subject_token = self.TEST_TOKEN
@@ -151,6 +142,18 @@ class TestCase(UnauthenticatedTestCase):
                 headers['X-Subject-Token'] = subject_token
 
         self.stub_url('POST', ['auth', 'tokens'], **kwargs)
+
+
+class ClientTestCase(TestCase):
+
+    def setUp(self):
+        super(TestCase, self).setUp()
+
+        # Creating a Client not using session is deprecated.
+        with self.deprecations.expect_deprecations_here():
+            self.client = client.Client(token=self.TEST_TOKEN,
+                                        auth_url=self.TEST_URL,
+                                        endpoint=self.TEST_URL)
 
 
 class CrudTests(object):

@@ -20,7 +20,7 @@ from keystoneclient.tests.unit import client_fixtures
 from keystoneclient.tests.unit.v3 import utils
 
 
-class TokenTests(utils.TestCase, testresources.ResourcedTestCase):
+class TokenTests(utils.ClientTestCase, testresources.ResourcedTestCase):
 
     resources = [('examples', client_fixtures.EXAMPLES_RESOURCE)]
 

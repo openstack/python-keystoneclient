@@ -17,7 +17,7 @@ from keystoneclient.v2_0 import roles
 from keystoneclient.v2_0 import users
 
 
-class UserTests(utils.TestCase):
+class UserTests(utils.ClientTestCase):
     def setUp(self):
         super(UserTests, self).setUp()
         self.ADMIN_USER_ID = uuid.uuid4().hex
