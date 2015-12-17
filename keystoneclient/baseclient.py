@@ -10,10 +10,17 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import warnings
+
 
 class Client(object):
 
     def __init__(self, session):
+        warnings.warn(
+            'keystoneclient.baseclient.Client is deprecated as of the 2.1.0 '
+            'release. It will be removed in future releases.',
+            DeprecationWarning)
+
         self.session = session
 
     def request(self, url, method, **kwargs):
