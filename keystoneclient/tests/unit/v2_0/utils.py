@@ -13,8 +13,6 @@
 from keystoneclient.tests.unit import client_fixtures
 from keystoneclient.tests.unit import utils
 
-TestResponse = utils.TestResponse
-
 
 class UnauthenticatedTestCase(utils.TestCase):
     """Class used as base for unauthenticated calls."""

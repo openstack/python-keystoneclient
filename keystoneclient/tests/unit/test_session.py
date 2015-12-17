@@ -113,7 +113,7 @@ class SessionTests(utils.TestCase):
         session = client_session.Session(cert='cert.pem', timeout=5,
                                          verify='certs')
 
-        FAKE_RESP = utils.TestResponse({'status_code': 200, 'text': 'resp'})
+        FAKE_RESP = utils.test_response(text='resp')
         RESP = mock.Mock(return_value=FAKE_RESP)
 
         with mock.patch.object(session.session, 'request', RESP) as mocked:
@@ -622,7 +622,7 @@ class SessionAuthTests(utils.TestCase):
 
         requests_auth = object()
 
-        FAKE_RESP = utils.TestResponse({'status_code': 200, 'text': 'resp'})
+        FAKE_RESP = utils.test_response(text='resp')
         RESP = mock.Mock(return_value=FAKE_RESP)
 
         with mock.patch.object(sess.session, 'request', RESP) as mocked:

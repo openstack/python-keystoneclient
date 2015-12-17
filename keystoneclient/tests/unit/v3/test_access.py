@@ -17,13 +17,14 @@ from oslo_utils import timeutils
 
 from keystoneclient import access
 from keystoneclient import fixture
+from keystoneclient.tests.unit import utils as test_utils
 from keystoneclient.tests.unit.v3 import client_fixtures
 from keystoneclient.tests.unit.v3 import utils
 
 
-TOKEN_RESPONSE = utils.TestResponse({
-    "headers": client_fixtures.AUTH_RESPONSE_HEADERS
-})
+TOKEN_RESPONSE = test_utils.test_response(
+    headers=client_fixtures.AUTH_RESPONSE_HEADERS
+)
 UNSCOPED_TOKEN = client_fixtures.unscoped_token()
 DOMAIN_SCOPED_TOKEN = client_fixtures.domain_scoped_token()
 PROJECT_SCOPED_TOKEN = client_fixtures.project_scoped_token()
