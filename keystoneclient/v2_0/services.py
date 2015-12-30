@@ -40,7 +40,7 @@ class ServiceManager(base.ManagerWithFind):
         body = {"OS-KSADM:service": {'name': name,
                                      'type': service_type,
                                      'description': description}}
-        return self._create("/OS-KSADM/services", body, "OS-KSADM:service")
+        return self._post("/OS-KSADM/services", body, "OS-KSADM:service")
 
     def delete(self, id):
         """Delete a service."""
