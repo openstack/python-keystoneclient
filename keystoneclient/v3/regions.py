@@ -19,7 +19,7 @@ class Region(base.Resource):
     Attributes:
         * id: a string that identifies the region.
         * description: a string that describes the region. Optional.
-        * parent_region_id: string that is the id field for an pre-existing
+        * parent_region_id: string that is the id field for a pre-existing
           region in the backend.  Allows for hierarchical region
           organization
         * enabled: determines whether the endpoint appears in the catalog.
