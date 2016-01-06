@@ -40,7 +40,7 @@ def Client(version=None, unstable=False, session=None, **kwargs):
                           specified the client will be selected such that the
                           major version is equivalent and an endpoint provides
                           at least the specified minor version. For example to
-                          specify the 3.1 API use ``(3, 1)``.
+                          specify the 3.1 API use ``(3, 1)``. (optional)
     :param bool unstable: Accept endpoints not marked as 'stable'. (optional)
     :param session: A session object to be used for communication. If one is
                     not provided it will be constructed from the provided
