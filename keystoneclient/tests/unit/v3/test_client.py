@@ -257,3 +257,13 @@ class KeystoneClientTest(utils.TestCase):
 
         self.assertEqual('identity', cl._adapter.service_type)
         self.assertEqual((3, 0), cl._adapter.version)
+
+    def test_client_params_default_interface(self):
+        opts = {'auth': token_endpoint.Token('a', 'b'),
+                'service_name': uuid.uuid4().hex,
+                }
+
+        sess = session.Session()
+        cl = client.Client(session=sess, **opts)
+
+        self.assertEqual('public', cl._adapter.interface)
