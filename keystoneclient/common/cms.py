@@ -23,7 +23,6 @@ import base64
 import errno
 import hashlib
 import logging
-import textwrap
 import zlib
 
 from debtcollector import removals
@@ -242,7 +241,7 @@ def token_to_cms(signed_text):
     copy_of_text = signed_text.replace('-', '/')
 
     lines = ['-----BEGIN CMS-----']
-    lines += textwrap.wrap(copy_of_text, 64)
+    lines += [copy_of_text[n:n + 64] for n in range(0, len(copy_of_text), 64)]
     lines.append('-----END CMS-----\n')
     return '\n'.join(lines)
 
