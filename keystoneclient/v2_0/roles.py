@@ -36,7 +36,7 @@ class RoleManager(base.ManagerWithFind):
     def create(self, name):
         """Create a role."""
         params = {"role": {"name": name}}
-        return self._create('/OS-KSADM/roles', params, "role")
+        return self._post('/OS-KSADM/roles', params, "role")
 
     def delete(self, role):
         """Delete a role."""

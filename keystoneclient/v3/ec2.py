@@ -31,9 +31,9 @@ class EC2Manager(base.ManagerWithFind):
 
         # NOTE(jamielennox): Yes, this uses tenant_id as a key even though we
         # are in the v3 API.
-        return self._create('/users/%s/credentials/OS-EC2' % user_id,
-                            body={'tenant_id': project_id},
-                            response_key="credential")
+        return self._post('/users/%s/credentials/OS-EC2' % user_id,
+                          body={'tenant_id': project_id},
+                          response_key="credential")
 
     def list(self, user_id):
         """Get a list of access/secret pairs for a user_id.

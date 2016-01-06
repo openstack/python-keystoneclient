@@ -100,7 +100,7 @@ class UserManager(base.ManagerWithFind):
                            "tenantId": tenant_id,
                            "email": email,
                            "enabled": enabled}}
-        return self._create('/users', params, "user", log=not bool(password))
+        return self._post('/users', params, "user", log=not bool(password))
 
     def delete(self, user):
         """Delete a user."""

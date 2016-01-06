@@ -93,7 +93,7 @@ class TenantManager(base.ManagerWithFind):
             if k not in params['tenant']:
                 params['tenant'][k] = v
 
-        return self._create('/tenants', params, "tenant")
+        return self._post('/tenants', params, "tenant")
 
     def list(self, limit=None, marker=None):
         """Get a list of tenants.
@@ -145,7 +145,7 @@ class TenantManager(base.ManagerWithFind):
                 body['tenant'][k] = v
 
         # Keystone's API uses a POST rather than a PUT here.
-        return self._create("/tenants/%s" % tenant_id, body, "tenant")
+        return self._post("/tenants/%s" % tenant_id, body, "tenant")
 
     def delete(self, tenant):
         """Delete a tenant."""

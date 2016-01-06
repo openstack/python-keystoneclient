@@ -35,8 +35,8 @@ class CredentialsManager(base.ManagerWithFind):
 
         params = {'tenant_id': tenant_id}
 
-        return self._create('/users/%s/credentials/OS-EC2' % user_id,
-                            params, "credential")
+        return self._post('/users/%s/credentials/OS-EC2' % user_id,
+                          params, "credential")
 
     def list(self, user_id):
         """Get a list of access/secret pairs for a user_id.

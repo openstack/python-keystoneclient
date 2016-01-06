@@ -61,10 +61,10 @@ class TokenManager(base.Manager):
         # no endpoint that can satisfy the request (eg an unscoped token) then
         # issue it against the auth_url.
         try:
-            token_ref = self._create(*args, **kwargs)
+            token_ref = self._post(*args, **kwargs)
         except exceptions.EndpointNotFound:
             kwargs['endpoint_filter'] = {'interface': auth.AUTH_INTERFACE}
-            token_ref = self._create(*args, **kwargs)
+            token_ref = self._post(*args, **kwargs)
 
         return token_ref
 

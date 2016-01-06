@@ -39,7 +39,7 @@ class EndpointManager(base.ManagerWithFind):
                              'publicurl': publicurl,
                              'adminurl': adminurl,
                              'internalurl': internalurl}}
-        return self._create('/endpoints', body, 'endpoint')
+        return self._post('/endpoints', body, 'endpoint')
 
     def delete(self, id):
         """Delete an endpoint."""

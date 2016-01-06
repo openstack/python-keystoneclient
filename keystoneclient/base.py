@@ -156,11 +156,6 @@ class Manager(object):
         resp, body = self.client.head(url, **kwargs)
         return resp.status_code == 204
 
-    def _create(self, url, body, response_key, return_raw=False, **kwargs):
-        """Deprecated. Use `_post` instead.
-        """
-        return self._post(url, body, response_key, return_raw, **kwargs)
-
     def _post(self, url, body, response_key, return_raw=False, **kwargs):
         """Create an object.
 
@@ -338,7 +333,7 @@ class CrudManager(Manager):
     @filter_kwargs
     def create(self, **kwargs):
         url = self.build_url(dict_args_in_out=kwargs)
-        return self._create(
+        return self._post(
             url,
             {self.key: kwargs},
             self.key)

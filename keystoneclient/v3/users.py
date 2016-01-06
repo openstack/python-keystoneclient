@@ -73,8 +73,8 @@ class UserManager(base.CrudManager):
                                      enabled=enabled,
                                      **kwargs)
 
-        return self._create('/users', {'user': user_data}, 'user',
-                            log=not bool(password))
+        return self._post('/users', {'user': user_data}, 'user',
+                          log=not bool(password))
 
     @renames.renamed_kwarg('project', 'default_project', version='1.7.0',
                            removal_version='2.0.0')
