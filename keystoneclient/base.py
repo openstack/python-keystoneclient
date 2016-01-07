@@ -20,6 +20,7 @@ Base utilities to build API operation managers and objects on top of.
 """
 
 import abc
+import collections
 import copy
 import functools
 import warnings
@@ -76,6 +77,23 @@ def filter_kwargs(f):
     return func
 
 
+class KeystoneReturnedList(collections.Sequence):
+    """A list of entities with additional attributes."""
+
+    def __init__(self, collection, truncated=False):
+        self.collection = collection
+        self.truncated = truncated
+
+    def __getitem__(self, i):
+        return self.collection[i]
+
+    def __len__(self):
+        return len(self.collection)
+
+    def sort(self, *args, **kwargs):
+        return self.collection.sort(*args, **kwargs)
+
+
 class Manager(object):
     """Basic manager type providing common operations.
 
@@ -127,6 +145,7 @@ class Manager(object):
             obj_class = self.resource_class
 
         data = body[response_key]
+        truncated = body.get('truncated', False)
         # NOTE(ja): keystone returns values as list as {'values': [ ... ]}
         #           unlike other services which just return the list...
         try:
@@ -134,7 +153,8 @@ class Manager(object):
         except (KeyError, TypeError):
             pass
 
-        return [obj_class(self, res, loaded=True) for res in data if res]
+        objects = [obj_class(self, res, loaded=True) for res in data if res]
+        return KeystoneReturnedList(objects, truncated=truncated)
 
     def _get(self, url, response_key, **kwargs):
         """Get an object from collection.
