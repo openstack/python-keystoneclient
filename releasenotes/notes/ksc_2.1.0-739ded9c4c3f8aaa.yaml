@@ -1,0 +1,17 @@
+---
+fixes:
+  - >
+    [`bug 1462694 <https://bugs.launchpad.net/python-keystoneclient/+bug/1462694>`_]
+    Add support for `include_subtree` in list_role_assignments.
+  - >
+    [`bug 1526686 <https://bugs.launchpad.net/python-keystoneclient/+bug/1526686>`_]
+    Replace textwrap with faster code in cms functions.
+  - >
+    [`bug 1457702 <https://bugs.launchpad.net/python-keystoneclient/+bug/1457702>`_]
+    Change default endpoint to public for keystone v3.
+  - >
+    [`bug 1520244 <https://bugs.launchpad.net/python-keystoneclient/+bug/1520244>`_]
+    Support `truncated` flag returned from server.
+other:
+  - >
+    Support v2 parameters for the v3 service create method.
