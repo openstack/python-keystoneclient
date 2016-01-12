@@ -1,7 +1,0 @@
-include README.rst
-include AUTHORS HACKING LICENSE
-include ChangeLog
-include run_tests.sh tox.ini
-recursive-include doc *
-recursive-include tests *
-recursive-include tools *
