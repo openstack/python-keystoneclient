@@ -28,8 +28,10 @@ from keystoneclient.i18n import _
 
 
 class Ec2Signer(object):
-    """Utility class which allows a request to be signed with an AWS style
-    signature, which can then be used for authentication via the keystone ec2
+    """Utility class for EC2 signing of request.
+
+    This allows a request to be signed with an AWS style signature,
+    which can then be used for authentication via the keystone ec2
     authentication extension.
     """
 
@@ -40,8 +42,10 @@ class Ec2Signer(object):
             self.hmac_256 = hmac.new(self.secret_key, digestmod=hashlib.sha256)
 
     def _v4_creds(self, credentials):
-        """Detect if the credentials are for a v4 signed request, since AWS
-        removed the SignatureVersion field from the v4 request spec...
+        """Detect if the credentials are for a v4 signed request.
+
+        Check is needed since AWS removed the SignatureVersion field from
+        the v4 request spec...
 
         This expects a dict of the request headers to be passed in the
         credentials dict, since the recommended way to pass v4 creds is
@@ -126,8 +130,9 @@ class Ec2Signer(object):
 
     @staticmethod
     def _canonical_qs(params):
-        """Construct a sorted, correctly encoded query string as required for
-        _calc_signature_2 and _calc_signature_4.
+        """Construct a sorted, correctly encoded query string.
+
+        This is required for _calc_signature_2 and _calc_signature_4.
         """
         keys = list(params)
         keys.sort()
@@ -162,8 +167,9 @@ class Ec2Signer(object):
                             hashlib.sha256).digest()
 
         def signature_key(datestamp, region_name, service_name):
-            """Signature key derivation, see
-            http://docs.aws.amazon.com/general/latest/gr/
+            """Signature key derivation.
+
+            See http://docs.aws.amazon.com/general/latest/gr/
             signature-v4-examples.html#signature-v4-examples-python
             """
             k_date = sign(self._get_utf8_value(b"AWS4" + self.secret_key),
@@ -189,8 +195,9 @@ class Ec2Signer(object):
             return param_str
 
         def date_param():
-            """Get the X-Amz-Date' value, which can be either a header
-            or parameter.
+            """Get the X-Amz-Date' value.
+
+            The value can be either a header or parameter.
 
             Note AWS supports parsing the Date header also, but this is not
             currently supported here as it will require some format mangling

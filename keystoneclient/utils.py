@@ -134,7 +134,9 @@ def unauthenticated(f):
 
 
 def isunauthenticated(f):
-    """Checks to see if the function is marked as not requiring authentication
+    """Check if function requires authentication.
+
+    Checks to see if the function is marked as not requiring authentication
     with the @unauthenticated decorator.
 
     Returns True if decorator is set to True, False otherwise.
@@ -167,8 +169,10 @@ def prompt_user_password():
 
 
 def prompt_for_password():
-    """Prompt user for password if not provided so the password
-    doesn't show up in the bash history.
+    """Prompt user for password if not provided.
+
+    Prompt is used so the password doesn't show up in the
+    bash history.
     """
     if not (hasattr(sys.stdin, 'isatty') and sys.stdin.isatty()):
         # nothing to do

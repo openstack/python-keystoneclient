@@ -330,8 +330,10 @@ class ShellTest(utils.TestCase):
             assert do_tenant_mock.called
 
     def test_shell_tenant_id_args(self):
-        """Test a corner case where --tenant_id appears on the
-           command-line twice.
+        """Test where tenant_id is passed twice.
+
+        Test a corner case where --tenant_id appears on the
+        command-line twice.
         """
         do_ec2_mock = mock.MagicMock()
         # grab the decorators for do_ec2_create_credentials

@@ -64,8 +64,9 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
 
     @property
     def username(self):
-        """Deprecated as of the 1.7.0 release and may be removed in the 2.0.0
-        release.
+        """Deprecated as of the 1.7.0 release.
+
+        It may be removed in the 2.0.0 release.
         """
 
         warnings.warn(
@@ -76,8 +77,9 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
 
     @username.setter
     def username(self, value):
-        """Deprecated as of the 1.7.0 release and may be removed in the 2.0.0
-        release.
+        """Deprecated as of the 1.7.0 release.
+
+        It may be removed in the 2.0.0 release.
         """
 
         warnings.warn(
@@ -88,8 +90,9 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
 
     @property
     def password(self):
-        """Deprecated as of the 1.7.0 release and may be removed in the 2.0.0
-        release.
+        """Deprecated as of the 1.7.0 release.
+
+        It may be removed in the 2.0.0 release.
         """
 
         warnings.warn(
@@ -100,8 +103,9 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
 
     @password.setter
     def password(self, value):
-        """Deprecated as of the 1.7.0 release and may be removed in the 2.0.0
-        release.
+        """Deprecated as of the 1.7.0 release.
+
+        It may be removed in the 2.0.0 release.
         """
 
         warnings.warn(
@@ -112,8 +116,9 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
 
     @property
     def token(self):
-        """Deprecated as of the 1.7.0 release and may be removed in the 2.0.0
-        release.
+        """Deprecated as of the 1.7.0 release.
+
+        It may be removed in the 2.0.0 release.
         """
 
         warnings.warn(
@@ -124,8 +129,9 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
 
     @token.setter
     def token(self, value):
-        """Deprecated as of the 1.7.0 release and may be removed in the 2.0.0
-        release.
+        """Deprecated as of the 1.7.0 release.
+
+        It may be removed in the 2.0.0 release.
         """
 
         warnings.warn(
@@ -136,8 +142,9 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
 
     @property
     def trust_id(self):
-        """Deprecated as of the 1.7.0 release and may be removed in the 2.0.0
-        release.
+        """Deprecated as of the 1.7.0 release.
+
+        It may be removed in the 2.0.0 release.
         """
 
         warnings.warn(
@@ -148,8 +155,9 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
 
     @trust_id.setter
     def trust_id(self, value):
-        """Deprecated as of the 1.7.0 release and may be removed in the 2.0.0
-        release.
+        """Deprecated as of the 1.7.0 release.
+
+        It may be removed in the 2.0.0 release.
         """
 
         warnings.warn(

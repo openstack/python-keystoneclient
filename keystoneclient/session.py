@@ -530,7 +530,9 @@ class Session(object):
 
     @classmethod
     def construct(cls, kwargs):
-        """Handles constructing a session from the older
+        """Handles constructing a session from both old and new arguments.
+
+        Support constructing a session from the old
         :py:class:`~keystoneclient.httpclient.HTTPClient` args as well as the
         new request-style arguments.
 
@@ -766,8 +768,7 @@ class Session(object):
 
     @utils.positional.classmethod()
     def get_conf_options(cls, deprecated_opts=None):
-        """Get the oslo_config options that are needed for a
-        :py:class:`.Session`.
+        """Get oslo_config options that are needed for a :py:class:`.Session`.
 
         These may be useful without being registered for config file generation
         or to manipulate the options before registering them yourself.

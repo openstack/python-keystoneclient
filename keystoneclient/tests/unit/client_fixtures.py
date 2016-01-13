@@ -704,8 +704,9 @@ EXAMPLES_RESOURCE = testresources.FixtureResource(Examples())
 
 
 class HackingCode(fixtures.Fixture):
-    """A fixture to house the various code examples for the keystoneclient
-    hacking style checks.
+    """A fixture to house the various code examples.
+
+    Examples contains various keystoneclient hacking style checks.
     """
 
     oslo_namespace_imports = {

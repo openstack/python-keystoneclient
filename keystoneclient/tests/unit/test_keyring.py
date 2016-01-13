@@ -84,7 +84,9 @@ class KeyringTest(utils.TestCase):
         keyring.set_keyring(self.memory_keyring)
 
     def test_no_keyring_key(self):
-        """Ensure that if we don't have use_keyring set in the client that
+        """Test case when no keyring set.
+
+        Ensure that if we don't have use_keyring set in the client that
         the keyring is never accessed.
         """
         # Creating a HTTPClient not using session is deprecated.
