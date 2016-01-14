@@ -38,6 +38,7 @@ class DefaultCLI(password.Password):
         options.extend([cfg.StrOpt('endpoint',
                                    help='A URL to use instead of a catalog'),
                         cfg.StrOpt('token',
+                                   secret=True,
                                    help='Always use the specified token')])
         return options
 

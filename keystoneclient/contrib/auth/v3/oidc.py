@@ -31,9 +31,10 @@ class OidcPassword(federated.FederatedBaseAuth):
         options = super(OidcPassword, cls).get_options()
         options.extend([
             cfg.StrOpt('username', help='Username'),
-            cfg.StrOpt('password', help='Password'),
+            cfg.StrOpt('password', secret=True, help='Password'),
             cfg.StrOpt('client-id', help='OAuth 2.0 Client ID'),
-            cfg.StrOpt('client-secret', help='OAuth 2.0 Client Secret'),
+            cfg.StrOpt('client-secret', secret=True,
+                       help='OAuth 2.0 Client Secret'),
             cfg.StrOpt('access-token-endpoint',
                        help='OpenID Connect Provider Token Endpoint'),
             cfg.StrOpt('scope', default="profile",
