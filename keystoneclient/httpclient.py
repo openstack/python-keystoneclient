@@ -379,7 +379,7 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
             session = client_session.Session._construct(kwargs)
             session.auth = self
 
-        super(HTTPClient, self).__init__(session=session)
+        self.session = session
         self.domain = ''
         self.debug_log = debug
 
