@@ -24,7 +24,7 @@ LOG = logging.getLogger(__name__)
 
 def get_options():
     return [
-        cfg.StrOpt('token', help='Token to authenticate with'),
+        cfg.StrOpt('token', secret=True, help='Token to authenticate with'),
     ]
 
 

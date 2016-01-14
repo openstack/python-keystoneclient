@@ -30,7 +30,7 @@ def get_options():
                    deprecated_name='user-name'),
         cfg.StrOpt('user-domain-id', help="User's domain id"),
         cfg.StrOpt('user-domain-name', help="User's domain name"),
-        cfg.StrOpt('password', help="User's password"),
+        cfg.StrOpt('password', secret=True, help="User's password"),
     ]
 
 
