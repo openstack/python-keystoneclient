@@ -3,24 +3,24 @@
 # process, which may cause wedges in the gate later.
 
 hacking<0.11,>=0.10.0
-flake8-docstrings==0.2.1.post1
+flake8-docstrings==0.2.1.post1 # MIT
 
-coverage>=3.6
-fixtures>=1.3.1
-keyring>=5.5.1
-lxml>=2.3
-mock>=1.2
-oauthlib>=0.6
+coverage>=3.6 # Apache-2.0
+fixtures>=1.3.1 # Apache-2.0/BSD
+keyring>=5.5.1 # MIT/PSF
+lxml>=2.3 # BSD
+mock>=1.2 # BSD
+oauthlib>=0.6 # BSD
 oslosphinx!=3.4.0,>=2.5.0 # Apache-2.0
 oslotest>=1.10.0 # Apache-2.0
 reno>=0.1.1 # Apache2
 requests-mock>=0.7.0 # Apache-2.0
-sphinx!=1.2.0,!=1.3b1,<1.3,>=1.1.2
-tempest-lib>=0.13.0
-testrepository>=0.0.18
-testresources>=0.2.4
-testscenarios>=0.4
-testtools>=1.4.0
+sphinx!=1.2.0,!=1.3b1,<1.3,>=1.1.2 # BSD
+tempest-lib>=0.13.0 # Apache-2.0
+testrepository>=0.0.18 # Apache-2.0/BSD
+testresources>=0.2.4 # Apache-2.0/BSD
+testscenarios>=0.4 # Apache-2.0/BSD
+testtools>=1.4.0 # MIT
 
 # Bandit security code scanner
-bandit>=0.13.2
+bandit>=0.13.2 # Apache-2.0
