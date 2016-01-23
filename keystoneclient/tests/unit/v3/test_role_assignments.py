@@ -189,6 +189,18 @@ class RoleAssignmentsTests(utils.ClientTestCase, utils.CrudTests):
         kwargs = {'effective': 'True'}
         self.assertQueryStringContains(**kwargs)
 
+    def test_include_names_assignments_list(self):
+        ref_list = self.TEST_ALL_RESPONSE_LIST
+        self.stub_entity('GET',
+                         [self.collection_key,
+                          '?include_names'],
+                         entity=ref_list)
+
+        returned_list = self.manager.list(include_names=True)
+        self._assert_returned_list(ref_list, returned_list)
+        kwargs = {'include_names': 'True'}
+        self.assertQueryStringContains(**kwargs)
+
     def test_role_assignments_list(self):
         ref_list = self.TEST_ALL_RESPONSE_LIST
         self.stub_entity('GET',
