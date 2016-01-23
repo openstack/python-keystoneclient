@@ -189,9 +189,10 @@ class Ec2SignerTest(testtools.TestCase):
         self.assertEqual(signature, expected)
 
     def test_generate_v4_port_strip(self):
-        """Test v4 generator with host:port format, but for an old
-        (<2.9.3) version of boto, where the port should be stripped
-        to match boto behavior.
+        """Test v4 generator with host:port format for old boto version.
+
+        Validate for old (<2.9.3) version of boto, where the port should
+        be stripped to match boto behavior.
         """
         # Create a new signer object with the AWS example key
         secret = 'wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY'
@@ -227,8 +228,10 @@ class Ec2SignerTest(testtools.TestCase):
         self.assertEqual(expected, signature)
 
     def test_generate_v4_port_nostrip(self):
-        """Test v4 generator with host:port format, but for an new
-        (>=2.9.3) version of boto, where the port should not be stripped.
+        """Test v4 generator with host:port format for new boto version.
+
+        Validate for new (>=2.9.3) version of boto, where the port should
+        not be stripped.
         """
         # Create a new signer object with the AWS example key
         secret = 'wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY'

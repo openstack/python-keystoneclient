@@ -56,8 +56,7 @@ def normalize_version_number(version):
 
 
 def version_match(required, candidate):
-    """Test that an available version is a suitable match for a required
-    version.
+    """Test that an available version satisfies the required version.
 
     To be suitable a version must be of the same major version as required
     and be at least a match in minor/patch level.
@@ -82,8 +81,9 @@ def available_versions(url, session=None, **kwargs):
 
 
 class Discover(_discover.Discover):
-    """A means to discover and create clients depending on the supported API
-    versions on the server.
+    """A means to discover and create clients.
+
+    Clients are created depending on the supported API versions on the server.
 
     Querying the server is done on object creation and every subsequent method
     operates upon the data that was retrieved.
@@ -187,8 +187,9 @@ class Discover(_discover.Discover):
     @removals.remove(message='Use raw_version_data instead.', version='1.7.0',
                      removal_version='2.0.0')
     def available_versions(self, **kwargs):
-        """Return a list of identity APIs available on the server and the data
-        associated with them.
+        """Return a list of identity APIs available on the server.
+
+        The list returned includes the data associated with them.
 
         .. warning::
 

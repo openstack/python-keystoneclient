@@ -93,7 +93,9 @@ class TokenTests(object):
         return (key, secret, expires_at, token)
 
     def _validate_oauth_headers(self, auth_header, oauth_client):
-        """Assert that the data in the headers matches the data
+        """Validate data in the headers.
+
+        Assert that the data in the headers matches the data
         that is produced from oauthlib.
         """
 

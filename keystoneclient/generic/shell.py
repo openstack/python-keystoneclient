@@ -25,8 +25,7 @@ CLIENT_CLASS = client.Client
 
 @utils.unauthenticated
 def do_discover(cs, args):
-    """Discover Keystone servers, supported API versions and extensions.
-    """
+    """Discover Keystone servers, supported API versions and extensions."""
     if cs.endpoint:
         versions = cs.discover(cs.endpoint)
     elif cs.auth_url:

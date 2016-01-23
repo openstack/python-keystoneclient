@@ -38,8 +38,10 @@ class AccessInfo(dict):
     @classmethod
     def factory(cls, resp=None, body=None, region_name=None, auth_token=None,
                 **kwargs):
-        """Create AccessInfo object given a successful auth response & body
-           or a user-provided dict.
+        """Factory function to create a new AccessInfo object.
+
+        Create AccessInfo object given a successful auth response & body
+        or a user-provided dict.
 
         .. warning::
 
@@ -112,8 +114,9 @@ class AccessInfo(dict):
 
     @classmethod
     def is_valid(cls, body, **kwargs):
-        """Determines if processing v2 or v3 token given a successful
-        auth body or a user-provided dict.
+        """Determines if processing valid v2 or v3 token.
+
+        Validates from the auth body or a user-provided dict.
 
         :returns: true if auth body matches implementing class
         :rtype: boolean
@@ -129,8 +132,9 @@ class AccessInfo(dict):
 
     @property
     def auth_token(self):
-        """Returns the token_id associated with the auth request, to be used
-        in headers for authenticating OpenStack API requests.
+        """Returns the token_id associated with the auth request.
+
+        To be used in headers for authenticating OpenStack API requests.
 
         :returns: str
         """
@@ -165,7 +169,8 @@ class AccessInfo(dict):
 
     @property
     def username(self):
-        """Returns the username associated with the authentication request.
+        """Returns the username associated with the auth request.
+
         Follows the pattern defined in the V2 API of first looking for 'name',
         returning that if available, and falling back to 'username' if name
         is unavailable.
@@ -176,7 +181,7 @@ class AccessInfo(dict):
 
     @property
     def user_id(self):
-        """Returns the user id associated with the authentication request.
+        """Returns the user id associated with the auth request.
 
         :returns: str
         """
@@ -184,8 +189,7 @@ class AccessInfo(dict):
 
     @property
     def user_domain_id(self):
-        """Returns the domain id of the user associated with the authentication
-        request.
+        """Returns the user's domain id associated with the auth request.
 
         For v2, it always returns 'default' which may be different from the
         Keystone configuration.
@@ -196,8 +200,7 @@ class AccessInfo(dict):
 
     @property
     def user_domain_name(self):
-        """Returns the domain name of the user associated with the
-        authentication request.
+        """Returns the user's  domain name associated with the auth request.
 
         For v2, it always returns 'Default' which may be different from the
         Keystone configuration.
@@ -208,8 +211,7 @@ class AccessInfo(dict):
 
     @property
     def role_ids(self):
-        """Returns a list of role ids of the user associated with the
-        authentication request.
+        """Returns a list of user's role ids associated with the auth request.
 
         :returns: a list of strings of role ids
         """
@@ -217,8 +219,7 @@ class AccessInfo(dict):
 
     @property
     def role_names(self):
-        """Returns a list of role names of the user associated with the
-        authentication request.
+        """Returns a list of user's role names associated with the auth request.
 
         :returns: a list of strings of role names
         """
@@ -226,7 +227,7 @@ class AccessInfo(dict):
 
     @property
     def domain_name(self):
-        """Returns the domain name associated with the authentication token.
+        """Returns the domain name associated with the auth request.
 
         :returns: str or None (if no domain associated with the token)
         """
@@ -234,7 +235,7 @@ class AccessInfo(dict):
 
     @property
     def domain_id(self):
-        """Returns the domain id associated with the authentication token.
+        """Returns the domain id associated with the auth request.
 
         :returns: str or None (if no domain associated with the token)
         """
@@ -242,7 +243,7 @@ class AccessInfo(dict):
 
     @property
     def project_name(self):
-        """Returns the project name associated with the authentication request.
+        """Returns the project name associated with the auth request.
 
         :returns: str or None (if no project associated with the token)
         """
@@ -255,8 +256,10 @@ class AccessInfo(dict):
 
     @property
     def scoped(self):
-        """Returns true if the authorization token was scoped to a tenant
-           (project), and contains a populated service catalog.
+        """Returns true if the auth token was scoped.
+
+        Returns true if scoped to a tenant(project) or domain,
+        and contains a populated service catalog.
 
         .. warning::
 
@@ -269,8 +272,7 @@ class AccessInfo(dict):
 
     @property
     def project_scoped(self):
-        """Returns true if the authorization token was scoped to a tenant
-           (project).
+        """Returns true if the auth token was scoped to a tenant(project).
 
         :returns: bool
         """
@@ -278,7 +280,7 @@ class AccessInfo(dict):
 
     @property
     def domain_scoped(self):
-        """Returns true if the authorization token was scoped to a domain.
+        """Returns true if the auth token was scoped to a domain.
 
         :returns: bool
         """
@@ -286,7 +288,7 @@ class AccessInfo(dict):
 
     @property
     def trust_id(self):
-        """Returns the trust id associated with the authentication token.
+        """Returns the trust id associated with the auth request.
 
         :returns: str or None (if no trust associated with the token)
         """
@@ -294,8 +296,9 @@ class AccessInfo(dict):
 
     @property
     def trust_scoped(self):
-        """Returns true if the authorization token was scoped as delegated in a
-        trust, via the OS-TRUST v3 extension.
+        """Returns true if the auth token was scoped from a delegated trust.
+
+        The trust delegation is via the OS-TRUST v3 extension.
 
         :returns: bool
         """
@@ -319,9 +322,9 @@ class AccessInfo(dict):
 
     @property
     def project_id(self):
-        """Returns the project ID associated with the authentication
-        request, or None if the authentication request wasn't scoped to a
-        project.
+        """Returns the project ID associated with the auth request.
+
+        This returns None if the auth token wasn't scoped to a project.
 
         :returns: str or None (if no project associated with the token)
         """
@@ -334,8 +337,7 @@ class AccessInfo(dict):
 
     @property
     def project_domain_id(self):
-        """Returns the domain id of the project associated with the
-        authentication request.
+        """Returns the project's domain id associated with the auth request.
 
         For v2, it returns 'default' if a project is scoped or None which may
         be different from the keystone configuration.
@@ -346,8 +348,7 @@ class AccessInfo(dict):
 
     @property
     def project_domain_name(self):
-        """Returns the domain name of the project associated with the
-        authentication request.
+        """Returns the project's domain name associated with the auth request.
 
         For v2, it returns 'Default' if a project is scoped or None  which may
         be different from the keystone configuration.
@@ -358,7 +359,9 @@ class AccessInfo(dict):
 
     @property
     def auth_url(self):
-        """Returns a tuple of URLs from publicURL and adminURL for the service
+        """Returns a tuple of identity URLs.
+
+        The identity URLs are from publicURL and adminURL for the service
         'identity' from the service catalog associated with the authorization
         request. If the authentication request wasn't scoped to a tenant
         (project), this property will return None.
@@ -373,7 +376,9 @@ class AccessInfo(dict):
 
     @property
     def management_url(self):
-        """Returns the first adminURL for 'identity' from the service catalog
+        """Returns the first adminURL of the identity endpoint.
+
+        The identity endpoint is from the service catalog
         associated with the authorization request, or None if the
         authentication request wasn't scoped to a tenant (project).
 
@@ -448,9 +453,7 @@ class AccessInfo(dict):
 
 
 class AccessInfoV2(AccessInfo):
-    """An object for encapsulating a raw v2 auth token from identity
-       service.
-    """
+    """An object for encapsulating raw v2 auth token from identity service."""
 
     def __init__(self, *args, **kwargs):
         super(AccessInfo, self).__init__(*args, **kwargs)
@@ -542,8 +545,10 @@ class AccessInfoV2(AccessInfo):
 
     @property
     def scoped(self):
-        """Deprecated as of the 1.7.0 release in favor of project_scoped and
-        may be removed in the 2.0.0 release.
+        """Deprecated as of the 1.7.0 release.
+
+        Use project_scoped instead. It may be removed in the
+        2.0.0 release.
         """
         warnings.warn(
             'scoped is deprecated as of the 1.7.0 release in favor of '
@@ -613,8 +618,10 @@ class AccessInfoV2(AccessInfo):
 
     @property
     def auth_url(self):
-        """Deprecated as of the 1.7.0 release in favor of
-        service_catalog.get_urls() and may be removed in the 2.0.0 release.
+        """Deprecated as of the 1.7.0 release.
+
+        Use service_catalog.get_urls() instead. It may be removed in the
+        2.0.0 release.
         """
         warnings.warn(
             'auth_url is deprecated as of the 1.7.0 release in favor of '
@@ -629,8 +636,10 @@ class AccessInfoV2(AccessInfo):
 
     @property
     def management_url(self):
-        """Deprecated as of the 1.7.0 release in favor of
-        service_catalog.get_urls() and may be removed in the 2.0.0 release.
+        """Deprecated as of the 1.7.0 release.
+
+        Use service_catalog.get_urls() instead. It may be removed in the
+        2.0.0 release.
         """
         warnings.warn(
             'management_url is deprecated as of the 1.7.0 release in favor of '
@@ -671,9 +680,7 @@ class AccessInfoV2(AccessInfo):
 
 
 class AccessInfoV3(AccessInfo):
-    """An object for encapsulating a raw v3 auth token from identity
-       service.
-    """
+    """An object encapsulating raw v3 auth token from identity service."""
 
     def __init__(self, token, *args, **kwargs):
         super(AccessInfo, self).__init__(*args, **kwargs)
@@ -781,8 +788,10 @@ class AccessInfoV3(AccessInfo):
 
     @property
     def scoped(self):
-        """Deprecated as of the 1.7.0 release in favor of project_scoped and
-        may be removed in the 2.0.0 release.
+        """Deprecated as of the 1.7.0 release.
+
+        Use project_scoped instead. It may be removed in the
+        2.0.0 release.
         """
         warnings.warn(
             'scoped is deprecated as of the 1.7.0 release in favor of '
@@ -816,8 +825,10 @@ class AccessInfoV3(AccessInfo):
 
     @property
     def auth_url(self):
-        """Deprecated as of the 1.7.0 release in favor of
-        service_catalog.get_urls() and may be removed in the 2.0.0 release.
+        """Deprecated as of the 1.7.0 release.
+
+        Use service_catalog.get_urls() instead. It may be removed in the
+        2.0.0 release.
         """
         warnings.warn(
             'auth_url is deprecated as of the 1.7.0 release in favor of '
@@ -832,8 +843,10 @@ class AccessInfoV3(AccessInfo):
 
     @property
     def management_url(self):
-        """Deprecated as of the 1.7.0 release in favor of
-        service_catalog.get_urls() and may be removed in the 2.0.0 release.
+        """Deprecated as of the 1.7.0 release.
+
+        Use service_catalog.get_urls() instead. It may be removed in the
+        2.0.0 release.
         """
         warnings.warn(
             'management_url is deprecated as of the 1.7.0 release in favor of '

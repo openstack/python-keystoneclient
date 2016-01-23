@@ -67,6 +67,7 @@ def _ensure_subprocess():
 
 def set_subprocess(_subprocess=None):
     """Set subprocess module to use.
+
     The subprocess could be eventlet.green.subprocess if using eventlet,
     or Python's subprocess otherwise.
     """

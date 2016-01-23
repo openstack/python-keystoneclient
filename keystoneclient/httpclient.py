@@ -752,8 +752,10 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         return self._adapter.request(*args, **kwargs)
 
     def _cs_request(self, url, method, management=True, **kwargs):
-        """Makes an authenticated request to keystone endpoint by
-        concatenating self.management_url and url and passing in method and
+        """Makes an authenticated request to keystone endpoint.
+
+        Request are made to keystone endpoint by concatenating
+        self.management_url and url and passing in method and
         any associated kwargs.
         """
         if not management:

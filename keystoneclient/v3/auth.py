@@ -53,8 +53,7 @@ class AuthManager(base.Manager):
     _DOMAINS_URL = '/auth/domains'
 
     def projects(self):
-        """List projects that this token can be rescoped to.
-        """
+        """List projects that this token can be rescoped to."""
         try:
             return self._list(self._PROJECTS_URL,
                               'projects',
@@ -67,8 +66,7 @@ class AuthManager(base.Manager):
                               endpoint_filter=endpoint_filter)
 
     def domains(self):
-        """List Domains that this token can be rescoped to.
-        """
+        """List Domains that this token can be rescoped to."""
         try:
             return self._list(self._DOMAINS_URL,
                               'domains',

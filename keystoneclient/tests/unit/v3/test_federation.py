@@ -132,10 +132,7 @@ class ProtocolTests(utils.ClientTestCase, utils.CrudTests):
         self.path_prefix = 'OS-FEDERATION/identity_providers'
 
     def _transform_to_response(self, ref):
-        """Rebuild dictionary so it can be used as a
-        reference response body.
-
-        """
+        """Construct a response body from a dictionary."""
         response = copy.deepcopy(ref)
         del response['identity_provider']
         return response
