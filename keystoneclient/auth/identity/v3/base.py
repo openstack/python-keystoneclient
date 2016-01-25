@@ -14,13 +14,13 @@ import abc
 import logging
 
 from oslo_config import cfg
+from positional import positional
 import six
 
 from keystoneclient import access
 from keystoneclient.auth.identity import base
 from keystoneclient import exceptions
 from keystoneclient.i18n import _
-from keystoneclient import utils
 
 _logger = logging.getLogger(__name__)
 
@@ -46,7 +46,7 @@ class BaseAuth(base.BaseIdentityPlugin):
                                  token. (optional) default True.
     """
 
-    @utils.positional()
+    @positional()
     def __init__(self, auth_url,
                  trust_id=None,
                  domain_id=None,

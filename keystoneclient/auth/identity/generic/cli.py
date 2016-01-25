@@ -11,11 +11,11 @@
 # under the License.
 
 from oslo_config import cfg
+from positional import positional
 
 from keystoneclient.auth.identity.generic import password
 from keystoneclient import exceptions as exc
 from keystoneclient.i18n import _
-from keystoneclient import utils
 
 
 class DefaultCLI(password.Password):
@@ -25,7 +25,7 @@ class DefaultCLI(password.Password):
     as well as allowing users to override with a custom token and endpoint.
     """
 
-    @utils.positional()
+    @positional()
     def __init__(self, endpoint=None, token=None, **kwargs):
         super(DefaultCLI, self).__init__(**kwargs)
 

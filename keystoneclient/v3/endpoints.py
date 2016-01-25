@@ -14,10 +14,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from positional import positional
+
 from keystoneclient import base
 from keystoneclient import exceptions
 from keystoneclient.i18n import _
-from keystoneclient import utils
 
 
 VALID_INTERFACES = ['public', 'admin', 'internal']
@@ -50,7 +51,7 @@ class EndpointManager(base.CrudManager):
             msg = msg % ', '.join(VALID_INTERFACES)
             raise exceptions.ValidationError(msg)
 
-    @utils.positional(1, enforcement=utils.positional.WARN)
+    @positional(1, enforcement=positional.WARN)
     def create(self, service, url, interface=None, region=None, enabled=True,
                **kwargs):
         self._validate_interface(interface)
@@ -66,7 +67,7 @@ class EndpointManager(base.CrudManager):
         return super(EndpointManager, self).get(
             endpoint_id=base.getid(endpoint))
 
-    @utils.positional(enforcement=utils.positional.WARN)
+    @positional(enforcement=positional.WARN)
     def list(self, service=None, interface=None, region=None, enabled=None,
              region_id=None, **kwargs):
         """List endpoints.
@@ -85,7 +86,7 @@ class EndpointManager(base.CrudManager):
             enabled=enabled,
             **kwargs)
 
-    @utils.positional(enforcement=utils.positional.WARN)
+    @positional(enforcement=positional.WARN)
     def update(self, endpoint, service=None, url=None, interface=None,
                region=None, enabled=None, **kwargs):
         self._validate_interface(interface)

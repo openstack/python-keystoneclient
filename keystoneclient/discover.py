@@ -14,6 +14,7 @@ import logging
 import warnings
 
 from debtcollector import removals
+from positional import positional
 import six
 
 from keystoneclient import _discover
@@ -21,7 +22,6 @@ from keystoneclient.auth import base
 from keystoneclient import exceptions
 from keystoneclient.i18n import _
 from keystoneclient import session as client_session
-from keystoneclient import utils
 from keystoneclient.v2_0 import client as v2_client
 from keystoneclient.v3 import client as v3_client
 
@@ -151,7 +151,7 @@ class Discover(_discover.Discover):
 
     """
 
-    @utils.positional(2)
+    @positional(2)
     def __init__(self, session=None, authenticated=None, **kwargs):
         if not session:
             warnings.warn(

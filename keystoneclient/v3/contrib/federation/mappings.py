@@ -10,8 +10,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from positional import positional
+
 from keystoneclient import base
-from keystoneclient import utils
 
 
 class Mapping(base.Resource):
@@ -39,7 +40,7 @@ class MappingManager(base.CrudManager):
                             response_key=self.key,
                             method='PUT')
 
-    @utils.positional.method(0)
+    @positional.method(0)
     def create(self, mapping_id, **kwargs):
         """Create federation mapping.
 

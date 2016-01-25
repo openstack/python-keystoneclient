@@ -15,10 +15,10 @@
 #    under the License.
 
 from debtcollector import renames
+from positional import positional
 
 from keystoneclient import base
 from keystoneclient.i18n import _
-from keystoneclient import utils
 
 
 class Credential(base.Resource):
@@ -55,7 +55,7 @@ class CredentialManager(base.CrudManager):
 
     @renames.renamed_kwarg('data', 'blob', version='1.7.0',
                            removal_version='2.0.0')
-    @utils.positional(1, enforcement=utils.positional.WARN)
+    @positional(1, enforcement=positional.WARN)
     def create(self, user, type, blob=None, data=None, project=None, **kwargs):
         """Create a credential
 
@@ -99,7 +99,7 @@ class CredentialManager(base.CrudManager):
 
     @renames.renamed_kwarg('data', 'blob', version='1.7.0',
                            removal_version='2.0.0')
-    @utils.positional(2, enforcement=utils.positional.WARN)
+    @positional(2, enforcement=positional.WARN)
     def update(self, credential, user, type=None, blob=None, data=None,
                project=None, **kwargs):
         """Update a credential

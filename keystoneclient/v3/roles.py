@@ -14,10 +14,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from positional import positional
+
 from keystoneclient import base
 from keystoneclient import exceptions
 from keystoneclient.i18n import _
-from keystoneclient import utils
 
 
 class Role(base.Resource):
@@ -78,7 +79,7 @@ class RoleManager(base.CrudManager):
             msg = _('Must specify either a user or group')
             raise exceptions.ValidationError(msg)
 
-    @utils.positional(1, enforcement=utils.positional.WARN)
+    @positional(1, enforcement=positional.WARN)
     def create(self, name, **kwargs):
         return super(RoleManager, self).create(
             name=name,
@@ -88,7 +89,7 @@ class RoleManager(base.CrudManager):
         return super(RoleManager, self).get(
             role_id=base.getid(role))
 
-    @utils.positional(enforcement=utils.positional.WARN)
+    @positional(enforcement=positional.WARN)
     def list(self, user=None, group=None, domain=None,
              project=None, os_inherit_extension_inherited=False, **kwargs):
         """Lists roles and role grants.
@@ -119,7 +120,7 @@ class RoleManager(base.CrudManager):
 
         return super(RoleManager, self).list(**kwargs)
 
-    @utils.positional(enforcement=utils.positional.WARN)
+    @positional(enforcement=positional.WARN)
     def update(self, role, name=None, **kwargs):
         return super(RoleManager, self).update(
             role_id=base.getid(role),
@@ -130,7 +131,7 @@ class RoleManager(base.CrudManager):
         return super(RoleManager, self).delete(
             role_id=base.getid(role))
 
-    @utils.positional(enforcement=utils.positional.WARN)
+    @positional(enforcement=positional.WARN)
     def grant(self, role, user=None, group=None, domain=None, project=None,
               os_inherit_extension_inherited=False, **kwargs):
         """Grants a role to a user or group on a domain or project.
@@ -151,7 +152,7 @@ class RoleManager(base.CrudManager):
                                             role_id=base.getid(role),
                                             **kwargs)
 
-    @utils.positional(enforcement=utils.positional.WARN)
+    @positional(enforcement=positional.WARN)
     def check(self, role, user=None, group=None, domain=None, project=None,
               os_inherit_extension_inherited=False, **kwargs):
         """Checks if a user or group has a role on a domain or project.
@@ -174,7 +175,7 @@ class RoleManager(base.CrudManager):
             os_inherit_extension_inherited=os_inherit_extension_inherited,
             **kwargs)
 
-    @utils.positional(enforcement=utils.positional.WARN)
+    @positional(enforcement=positional.WARN)
     def revoke(self, role, user=None, group=None, domain=None, project=None,
                os_inherit_extension_inherited=False, **kwargs):
         """Revokes a role from a user or group on a domain or project.

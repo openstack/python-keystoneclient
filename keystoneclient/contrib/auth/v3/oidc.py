@@ -11,10 +11,10 @@
 # under the License.
 
 from oslo_config import cfg
+from positional import positional
 
 from keystoneclient import access
 from keystoneclient.auth.identity.v3 import federated
-from keystoneclient import utils
 
 
 class OidcPassword(federated.FederatedBaseAuth):
@@ -42,7 +42,7 @@ class OidcPassword(federated.FederatedBaseAuth):
         ])
         return options
 
-    @utils.positional(4)
+    @positional(4)
     def __init__(self, auth_url, identity_provider, protocol,
                  username, password, client_id, client_secret,
                  access_token_endpoint, scope='profile',

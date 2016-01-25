@@ -16,13 +16,13 @@ import threading
 import warnings
 
 from oslo_config import cfg
+from positional import positional
 import six
 
 from keystoneclient import _discover
 from keystoneclient.auth import base
 from keystoneclient import exceptions
 from keystoneclient.i18n import _LW
-from keystoneclient import utils
 
 LOG = logging.getLogger(__name__)
 
@@ -371,7 +371,7 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
     def get_project_id(self, session, **kwargs):
         return self.get_access(session).project_id
 
-    @utils.positional()
+    @positional()
     def get_discovery(self, session, url, authenticated=None):
         """Return the discovery object for a URL.
 

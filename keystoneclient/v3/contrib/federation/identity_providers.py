@@ -10,8 +10,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from positional import positional
+
 from keystoneclient import base
-from keystoneclient import utils
 
 
 class IdentityProvider(base.Resource):
@@ -38,7 +39,7 @@ class IdentityProviderManager(base.CrudManager):
         return self._update(url, body=body, response_key=self.key,
                             method='PUT')
 
-    @utils.positional.method(0)
+    @positional.method(0)
     def create(self, id, **kwargs):
         """Create Identity Provider object.
 

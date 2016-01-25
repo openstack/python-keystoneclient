@@ -13,6 +13,7 @@
 import logging
 
 from oslo_config import cfg
+from positional import positional
 
 from keystoneclient import _discover
 from keystoneclient.auth.identity.generic import base
@@ -45,7 +46,7 @@ class Password(base.BaseGenericPlugin):
 
     """
 
-    @utils.positional()
+    @positional()
     def __init__(self, auth_url, username=None, user_id=None, password=None,
                  user_domain_id=None, user_domain_name=None, **kwargs):
         super(Password, self).__init__(auth_url=auth_url, **kwargs)

@@ -10,9 +10,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from positional import positional
+
 from keystoneclient import access
 from keystoneclient import base
-from keystoneclient import utils
 
 
 def _calc_id(token):
@@ -51,7 +52,7 @@ class TokenManager(object):
         resp, body = self._client.get('/auth/tokens/OS-PKI/revoked')
         return body
 
-    @utils.positional.method(1)
+    @positional.method(1)
     def get_token_data(self, token, include_catalog=True):
         """Fetch the data about a token from the identity server.
 
@@ -70,7 +71,7 @@ class TokenManager(object):
         resp, body = self._client.get(url, headers=headers)
         return body
 
-    @utils.positional.method(1)
+    @positional.method(1)
     def validate(self, token, include_catalog=True):
         """Validate a token.
 

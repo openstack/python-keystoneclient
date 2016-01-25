@@ -13,6 +13,7 @@
 import datetime
 
 from oslo_utils import timeutils
+from positional import positional
 
 from keystoneclient import utils
 
@@ -34,7 +35,7 @@ class DiscoveryBase(dict):
     :param DateTime updated: When the API was last updated.
     """
 
-    @utils.positional()
+    @positional()
     def __init__(self, id, status=None, updated=None):
         super(DiscoveryBase, self).__init__()
 
@@ -79,7 +80,7 @@ class DiscoveryBase(dict):
     def updated(self, value):
         self.updated_str = utils.isotime(value)
 
-    @utils.positional()
+    @positional()
     def add_link(self, href, rel='self', type=None):
         link = {'href': href, 'rel': rel}
         if type:
@@ -91,7 +92,7 @@ class DiscoveryBase(dict):
     def media_types(self):
         return self.setdefault('media-types', [])
 
-    @utils.positional(1)
+    @positional(1)
     def add_media_type(self, base, type):
         mt = {'base': base, 'type': type}
         self.media_types.append(mt)
@@ -115,7 +116,7 @@ class V2Discovery(DiscoveryBase):
 
     _DESC_URL = 'http://docs.openstack.org/api/openstack-identity-service/2.0/'
 
-    @utils.positional()
+    @positional()
     def __init__(self, href, id=None, html=True, pdf=True, **kwargs):
         super(V2Discovery, self).__init__(id or 'v2.0', **kwargs)
 
@@ -161,7 +162,7 @@ class V3Discovery(DiscoveryBase):
     :param bool xml: Add XML media-type elements to the structure.
     """
 
-    @utils.positional()
+    @positional()
     def __init__(self, href, id=None, json=True, xml=True, **kwargs):
         super(V3Discovery, self).__init__(id or 'v3.0', **kwargs)
 
@@ -212,7 +213,7 @@ class DiscoveryList(dict):
 
     TEST_URL = 'http://keystone.host:5000/'
 
-    @utils.positional(2)
+    @positional(2)
     def __init__(self, href=None, v2=True, v3=True, v2_id=None, v3_id=None,
                  v2_status=None, v2_updated=None, v2_html=True, v2_pdf=True,
                  v3_status=None, v3_updated=None, v3_json=True, v3_xml=True):

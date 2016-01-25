@@ -13,11 +13,12 @@
 import argparse
 import os
 
+from positional import positional
+
 from keystoneclient.auth import base
-from keystoneclient import utils
 
 
-@utils.positional()
+@positional()
 def register_argparse_arguments(parser, argv, default=None):
     """Register CLI options needed to create a plugin.
 

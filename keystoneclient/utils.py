@@ -17,6 +17,8 @@ import sys
 
 from oslo_utils import encodeutils
 from oslo_utils import timeutils
+# NOTE(stevemar): do not remove positional. We need this to stay for a while
+# since versions of auth_token require it here.
 from positional import positional  # noqa
 import prettytable
 import six
