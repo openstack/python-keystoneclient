@@ -19,9 +19,6 @@ from keystoneclient.tests.unit import client_fixtures
 from keystoneclient.tests.unit import utils
 
 
-TestResponse = utils.TestResponse
-
-
 def parameterize(ref):
     """Rewrites attributes to match the kwarg naming convention in client.
 

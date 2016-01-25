@@ -17,6 +17,7 @@ import uuid
 import fixtures
 from oslo_serialization import jsonutils
 import requests
+import requests_mock
 from requests_mock.contrib import fixture
 import six
 from six.moves.urllib import parse as urlparse
@@ -127,32 +128,9 @@ if tuple(sys.version_info)[0:2] < (2, 7):
     TestCase.assertDictEqual = assertDictEqual
 
 
-class TestResponse(requests.Response):
-    """Class used to wrap requests.Response.
-
-    It also provides convenience to initialize with a dict.
-    """
-
-    def __init__(self, data):
-        self._text = None
-        super(TestResponse, self).__init__()
-        if isinstance(data, dict):
-            self.status_code = data.get('status_code', 200)
-            headers = data.get('headers')
-            if headers:
-                self.headers.update(headers)
-            # Fake the text attribute to streamline Response creation
-            # _content is defined by requests.Response
-            self._content = data.get('text')
-        else:
-            self.status_code = data
-
-    def __eq__(self, other):
-        return self.__dict__ == other.__dict__
-
-    @property
-    def text(self):
-        return self.content
+def test_response(**kwargs):
+    r = requests.Request(method='GET', url='http://localhost:5000').prepare()
+    return requests_mock.create_response(r, **kwargs)
 
 
 class DisableModuleFixture(fixtures.Fixture):

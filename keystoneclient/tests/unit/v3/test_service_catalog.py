@@ -13,6 +13,7 @@
 from keystoneclient import access
 from keystoneclient import exceptions
 from keystoneclient import fixture
+from keystoneclient.tests.unit import utils as test_utils
 from keystoneclient.tests.unit.v3 import client_fixtures
 from keystoneclient.tests.unit.v3 import utils
 
@@ -21,9 +22,9 @@ class ServiceCatalogTest(utils.TestCase):
     def setUp(self):
         super(ServiceCatalogTest, self).setUp()
         self.AUTH_RESPONSE_BODY = client_fixtures.auth_response_body()
-        self.RESPONSE = utils.TestResponse({
-            "headers": client_fixtures.AUTH_RESPONSE_HEADERS
-        })
+        self.RESPONSE = test_utils.test_response(
+            headers=client_fixtures.AUTH_RESPONSE_HEADERS
+        )
 
         self.north_endpoints = {'public':
                                 'http://glance.north.host/glanceapi/public',

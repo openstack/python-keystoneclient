@@ -17,10 +17,7 @@ from keystoneclient import httpclient
 from keystoneclient.tests.unit import utils
 
 
-FAKE_RESPONSE = utils.TestResponse({
-    "status_code": 200,
-    "text": '{"hi": "there"}',
-})
+FAKE_RESPONSE = utils.test_response(json={'hi': 'there'})
 
 REQUEST_URL = 'https://127.0.0.1:5000/hi'
 RESPONSE_BODY = '{"hi": "there"}'

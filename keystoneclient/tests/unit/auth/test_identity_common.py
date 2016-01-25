@@ -467,8 +467,7 @@ class GenericAuthPluginTests(utils.TestCase):
         text = uuid.uuid4().hex
 
         with mock.patch.object(self.session.session, 'request') as mocked:
-            mocked.return_value = utils.TestResponse({'status_code': 200,
-                                                      'text': text})
+            mocked.return_value = utils.test_response(text=text)
             resp = self.session.get('prefix',
                                     endpoint_filter=self.ENDPOINT_FILTER)
 
