@@ -35,7 +35,7 @@ class ServiceManager(base.ManagerWithFind):
         """Retrieve a service by id."""
         return self._get("/OS-KSADM/services/%s" % id, "OS-KSADM:service")
 
-    def create(self, name, service_type, description):
+    def create(self, name, service_type, description=None):
         """Create a new service."""
         body = {"OS-KSADM:service": {'name': name,
                                      'type': service_type,
