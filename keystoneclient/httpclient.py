@@ -38,8 +38,9 @@ try:
     # requirements. Update _min and _bad when that changes.
     keyring_v = pkg_resources.parse_version(
         pkg_resources.get_distribution("keyring").version)
-    keyring_min = pkg_resources.parse_version('2.1')
-    keyring_bad = (pkg_resources.parse_version('3.3'),)
+    keyring_min = pkg_resources.parse_version('5.5.1')
+    # This is a list of versions, e.g., pkg_resources.parse_version('3.3')
+    keyring_bad = []
 
     if keyring_v >= keyring_min and keyring_v not in keyring_bad:
         import keyring
