@@ -28,7 +28,6 @@ from oslo_serialization import jsonutils
 import pkg_resources
 from positional import positional
 import requests
-from six.moves.urllib import parse as urlparse
 
 try:
     import pickle
@@ -49,11 +48,6 @@ try:
 except (ImportError, pkg_resources.DistributionNotFound):
     keyring = None
     pickle = None
-
-# Python 2.5 compat fix
-if not hasattr(urlparse, 'parse_qsl'):
-    import cgi
-    urlparse.parse_qsl = cgi.parse_qsl
 
 
 from keystoneclient import _discover
