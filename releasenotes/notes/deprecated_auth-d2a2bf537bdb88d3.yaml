@@ -1,0 +1,12 @@
+---
+deprecations:
+  - >
+    [`blueprint deprecate-to-ksa <https://blueprints.launchpad.net/python-keystoneclient/+spec/deprecate-to-ksa>`_]
+    Several modules related to authentication in keystoneclient have been
+    deprecated in favor of [`keystoneauth <http://docs.openstack.org/developer/keystoneauth/>`_]
+    These modules include: ``keystoneclient.session``, ``keystoneclient.adapter``,
+    ``keystoneclient.httpclient``, ``keystoneclient.auth.base``,
+    ``keystoneclient.auth.cli``, ``keystoneclient.auth.conf``,
+    ``keystoneclient.auth.identity.base``, and ``keystoneclient.auth.token_endpoint``.
+    Tips for migrating to `keystoneauth` have been
+    [`documented <http://docs.openstack.org/developer/keystoneauth/migrating.html>`_].
