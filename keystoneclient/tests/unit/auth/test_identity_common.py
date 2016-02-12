@@ -41,6 +41,7 @@ class CommonIdentityTests(object):
 
     def setUp(self):
         super(CommonIdentityTests, self).setUp()
+        self.deprecations.expect_deprecations()
 
         self.TEST_URL = '%s%s' % (self.TEST_ROOT_URL, self.version)
         self.TEST_ADMIN_URL = '%s%s' % (self.TEST_ROOT_ADMIN_URL, self.version)
@@ -316,6 +317,10 @@ class CatalogHackTests(utils.TestCase):
     V2_URL = BASE_URL + 'v2.0'
     V3_URL = BASE_URL + 'v3'
 
+    def setUp(self):
+        super(CatalogHackTests, self).setUp()
+        self.deprecations.expect_deprecations()
+
     def test_getting_endpoints(self):
         disc = fixture.DiscoveryList(href=self.BASE_URL)
         self.stub_url('GET',
@@ -443,7 +448,9 @@ class GenericAuthPluginTests(utils.TestCase):
     def setUp(self):
         super(GenericAuthPluginTests, self).setUp()
         self.auth = GenericPlugin()
-        self.session = session.Session(auth=self.auth)
+
+        with self.deprecations.expect_deprecations_here():
+            self.session = session.Session(auth=self.auth)
 
     def test_setting_headers(self):
         text = uuid.uuid4().hex

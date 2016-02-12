@@ -24,7 +24,8 @@ class AccessInfoPluginTests(utils.TestCase):
 
     def setUp(self):
         super(AccessInfoPluginTests, self).setUp()
-        self.session = session.Session()
+        with self.deprecations.expect_deprecations_here():
+            self.session = session.Session()
         self.auth_token = uuid.uuid4().hex
 
     def _plugin(self, **kwargs):

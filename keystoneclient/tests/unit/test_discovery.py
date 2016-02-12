@@ -234,6 +234,10 @@ V2_VERSION_ENTRY = _create_single_version(V2_VERSION)
 
 class AvailableVersionsTests(utils.TestCase):
 
+    def setUp(self):
+        super(AvailableVersionsTests, self).setUp()
+        self.deprecations.expect_deprecations()
+
     def test_available_versions_basics(self):
         examples = {'keystone': V3_VERSION_LIST,
                     'cinder': jsonutils.dumps(CINDER_EXAMPLES),
@@ -309,6 +313,10 @@ class AvailableVersionsTests(utils.TestCase):
 
 
 class ClientDiscoveryTests(utils.TestCase):
+
+    def setUp(self):
+        super(ClientDiscoveryTests, self).setUp()
+        self.deprecations.expect_deprecations()
 
     def assertCreatesV3(self, **kwargs):
         self.requests_mock.post('%s/auth/tokens' % V3_URL,
@@ -543,7 +551,9 @@ class ClientDiscoveryTests(utils.TestCase):
 
         url = 'http://testurl'
         a = token_endpoint.Token(url, token)
-        s = session.Session(auth=a)
+
+        with self.deprecations.expect_deprecations_here():
+            s = session.Session(auth=a)
 
         # will default to true as there is a plugin on the session
         discover.Discover(s, auth_url=BASE_URL, **kwargs)

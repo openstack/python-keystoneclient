@@ -80,6 +80,7 @@ class V2IdentityPlugin(utils.TestCase):
 
     def setUp(self):
         super(V2IdentityPlugin, self).setUp()
+        self.deprecations.expect_deprecations()
         self.TEST_RESPONSE_DICT = {
             "access": {
                 "token": {

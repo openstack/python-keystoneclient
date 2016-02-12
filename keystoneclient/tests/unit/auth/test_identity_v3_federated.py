@@ -75,8 +75,8 @@ class V3FederatedPlugin(utils.TestCase):
         self.assertEqual(self.token_url, plugin.federated_token_url)
 
     def test_unscoped_behaviour(self):
-        sess = session.Session(auth=self.get_plugin())
         with self.deprecations.expect_deprecations_here():
+            sess = session.Session(auth=self.get_plugin())
             self.assertEqual(self.unscoped_token_id, sess.get_token())
 
         self.assertTrue(self.unscoped_mock.called)
@@ -84,8 +84,8 @@ class V3FederatedPlugin(utils.TestCase):
 
     def test_scoped_behaviour(self):
         auth = self.get_plugin(project_id=self.scoped_token.project_id)
-        sess = session.Session(auth=auth)
         with self.deprecations.expect_deprecations_here():
+            sess = session.Session(auth=auth)
             self.assertEqual(self.scoped_token_id, sess.get_token())
 
         self.assertTrue(self.unscoped_mock.called)
