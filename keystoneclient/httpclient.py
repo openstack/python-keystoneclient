@@ -24,6 +24,7 @@ import warnings
 
 from debtcollector import removals
 from debtcollector import renames
+from keystoneauth1 import adapter
 from oslo_serialization import jsonutils
 import pkg_resources
 from positional import positional
@@ -52,7 +53,6 @@ except (ImportError, pkg_resources.DistributionNotFound):
 
 from keystoneclient import _discover
 from keystoneclient import access
-from keystoneclient import adapter
 from keystoneclient.auth import base
 from keystoneclient import baseclient
 from keystoneclient import exceptions

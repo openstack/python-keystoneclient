@@ -10,6 +10,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import warnings
+
 from oslo_serialization import jsonutils
 from positional import positional
 
@@ -49,6 +51,11 @@ class Adapter(object):
                  interface=None, region_name=None, endpoint_override=None,
                  version=None, auth=None, user_agent=None,
                  connect_retries=None, logger=None):
+        warnings.warn(
+            'keystoneclient.adapter.Adapter is deprecated as of the 2.1.0 '
+            'release in favor of keystoneauth1.adapter.Adapter. It will be '
+            'removed in future releases.', DeprecationWarning)
+
         # NOTE(jamielennox): when adding new parameters to adapter please also
         # add them to the adapter call in httpclient.HTTPClient.__init__
         self.session = session
