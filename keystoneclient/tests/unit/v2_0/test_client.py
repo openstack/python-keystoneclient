@@ -153,7 +153,8 @@ class KeystoneClientTest(utils.TestCase):
                                auth_url=self.TEST_URL)
         self.assertEqual(cl.management_url, admin_url)
 
-        cl.authenticate()
+        with self.deprecations.expect_deprecations_here():
+            cl.authenticate()
         self.assertEqual(cl.management_url, second_url)
 
     def test_client_with_region_name_passes_to_service_catalog(self):
@@ -192,8 +193,9 @@ class KeystoneClientTest(utils.TestCase):
     def test_client_params(self):
         with self.deprecations.expect_deprecations_here():
             sess = session.Session()
+            auth = token_endpoint.Token('a', 'b')
 
-        opts = {'auth': token_endpoint.Token('a', 'b'),
+        opts = {'auth': auth,
                 'connect_retries': 50,
                 'endpoint_override': uuid.uuid4().hex,
                 'interface': uuid.uuid4().hex,

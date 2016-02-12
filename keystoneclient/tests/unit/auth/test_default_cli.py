@@ -22,6 +22,10 @@ from keystoneclient.tests.unit import utils
 
 class DefaultCliTests(utils.TestCase):
 
+    def setUp(self):
+        super(DefaultCliTests, self).setUp()
+        self.deprecations.expect_deprecations()
+
     def new_plugin(self, argv):
         parser = argparse.ArgumentParser()
         cli.DefaultCLI.register_argparse_arguments(parser)

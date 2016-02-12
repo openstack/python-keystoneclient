@@ -29,6 +29,7 @@ class ConfTests(utils.TestCase):
 
     def setUp(self):
         super(ConfTests, self).setUp()
+        self.deprecations.expect_deprecations()
         self.conf_fixture = self.useFixture(config.Config())
 
         # NOTE(jamielennox): we register the basic config options first because

@@ -35,6 +35,8 @@ class V3FederatedPlugin(utils.TestCase):
     def setUp(self):
         super(V3FederatedPlugin, self).setUp()
 
+        self.deprecations.expect_deprecations()
+
         self.unscoped_token = fixture.V3Token()
         self.unscoped_token_id = uuid.uuid4().hex
         self.scoped_token = copy.deepcopy(self.unscoped_token)
@@ -75,18 +77,16 @@ class V3FederatedPlugin(utils.TestCase):
         self.assertEqual(self.token_url, plugin.federated_token_url)
 
     def test_unscoped_behaviour(self):
-        with self.deprecations.expect_deprecations_here():
-            sess = session.Session(auth=self.get_plugin())
-            self.assertEqual(self.unscoped_token_id, sess.get_token())
+        sess = session.Session(auth=self.get_plugin())
+        self.assertEqual(self.unscoped_token_id, sess.get_token())
 
         self.assertTrue(self.unscoped_mock.called)
         self.assertFalse(self.scoped_mock.called)
 
     def test_scoped_behaviour(self):
         auth = self.get_plugin(project_id=self.scoped_token.project_id)
-        with self.deprecations.expect_deprecations_here():
-            sess = session.Session(auth=auth)
-            self.assertEqual(self.scoped_token_id, sess.get_token())
+        sess = session.Session(auth=auth)
+        self.assertEqual(self.scoped_token_id, sess.get_token())
 
         self.assertTrue(self.unscoped_mock.called)
         self.assertTrue(self.scoped_mock.called)

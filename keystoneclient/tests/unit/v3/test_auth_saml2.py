@@ -63,11 +63,12 @@ class AuthenticateviaSAML2Tests(utils.TestCase):
     def setUp(self):
         super(AuthenticateviaSAML2Tests, self).setUp()
 
+        self.deprecations.expect_deprecations()
+
         self.conf_fixture = self.useFixture(config.Config())
         conf.register_conf_options(self.conf_fixture.conf, group=self.GROUP)
 
-        with self.deprecations.expect_deprecations_here():
-            self.session = session.Session()
+        self.session = session.Session()
 
         self.ECP_SP_EMPTY_REQUEST_HEADERS = {
             'Accept': 'text/html; application/vnd.paos+xml',
@@ -439,11 +440,12 @@ class AuthenticateviaADFSTests(utils.TestCase):
     def setUp(self):
         super(AuthenticateviaADFSTests, self).setUp()
 
+        self.deprecations.expect_deprecations()
+
         self.conf_fixture = self.useFixture(config.Config())
         conf.register_conf_options(self.conf_fixture.conf, group=self.GROUP)
 
-        with self.deprecations.expect_deprecations_here():
-            self.session = session.Session(session=requests.Session())
+        self.session = session.Session(session=requests.Session())
 
         self.IDENTITY_PROVIDER = 'adfs'
         self.IDENTITY_PROVIDER_URL = ('http://adfs.local/adfs/service/trust/13'

@@ -79,7 +79,8 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
                          self.TEST_RESPONSE_DICT["access"]["serviceCatalog"][3]
                          ['endpoints'][0]["adminURL"])
 
-        self.assertEqual(cs.auth_token, TEST_TOKEN)
+        with self.deprecations.expect_deprecations_here():
+            self.assertEqual(cs.auth_token, TEST_TOKEN)
         self.assertRequestBodyIs(json=self.TEST_REQUEST_BODY)
 
     def test_authenticate_failure(self):

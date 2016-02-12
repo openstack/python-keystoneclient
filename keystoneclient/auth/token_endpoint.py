@@ -10,6 +10,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import warnings
+
 from oslo_config import cfg
 
 from keystoneclient.auth import base
@@ -25,6 +27,12 @@ class Token(base.BaseAuthPlugin):
     def __init__(self, endpoint, token):
         # NOTE(jamielennox): endpoint is reserved for when plugins
         # can be used to provide that information
+        warnings.warn(
+            'TokenEndpoint plugin is deprecated as of the 2.1.0 release in '
+            'favor of keystoneauth1.token_endpoint.Token. It will be removed '
+            'in future releases.',
+            DeprecationWarning)
+
         self.endpoint = endpoint
         self.token = token
 

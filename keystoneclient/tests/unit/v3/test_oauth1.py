@@ -247,11 +247,11 @@ class AuthenticateWithOAuthTests(utils.TestCase, TokenTests):
                                     "access_token_id": access_key}
         self.stub_auth(json=oauth_token)
 
-        a = auth.OAuth(self.TEST_URL, consumer_key=consumer_key,
-                       consumer_secret=consumer_secret,
-                       access_key=access_key,
-                       access_secret=access_secret)
         with self.deprecations.expect_deprecations_here():
+            a = auth.OAuth(self.TEST_URL, consumer_key=consumer_key,
+                           consumer_secret=consumer_secret,
+                           access_key=access_key,
+                           access_secret=access_secret)
             s = session.Session(auth=a)
             t = s.get_token()
         self.assertEqual(self.TEST_TOKEN, t)

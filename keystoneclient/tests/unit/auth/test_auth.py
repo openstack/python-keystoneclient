@@ -18,14 +18,16 @@ from keystoneclient.tests.unit.auth import utils
 class AuthTests(utils.TestCase):
 
     def test_plugin_names_in_available(self):
-        plugins = auth.get_available_plugin_names()
+        with self.deprecations.expect_deprecations_here():
+            plugins = auth.get_available_plugin_names()
 
         for p in ('password', 'v2password', 'v3password',
                   'token', 'v2token', 'v3token'):
             self.assertIn(p, plugins)
 
     def test_plugin_classes_in_available(self):
-        plugins = auth.get_available_plugin_classes()
+        with self.deprecations.expect_deprecations_here():
+            plugins = auth.get_available_plugin_classes()
 
         self.assertIs(plugins['password'], identity.Password)
         self.assertIs(plugins['v2password'], identity.V2Password)
