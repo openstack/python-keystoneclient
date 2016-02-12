@@ -22,6 +22,7 @@ import warnings
 from debtcollector import removals
 from oslo_config import cfg
 from oslo_serialization import jsonutils
+from oslo_utils import encodeutils
 from oslo_utils import importutils
 from oslo_utils import strutils
 from positional import positional
@@ -198,10 +199,18 @@ class Session(object):
             for header in six.iteritems(headers):
                 string_parts.append('-H "%s: %s"'
                                     % self._process_header(header))
+
         if data:
             string_parts.append("-d '%s'" % data)
-
-        logger.debug(' '.join(string_parts))
+        try:
+            logger.debug(' '.join(string_parts))
+        except UnicodeDecodeError:
+            logger.debug("Replaced characters that could not be decoded"
+                         " in log output, original caused UnicodeDecodeError")
+            string_parts = [
+                encodeutils.safe_decode(
+                    part, errors='replace') for part in string_parts]
+            logger.debug(' '.join(string_parts))
 
     def _http_log_response(self, response, logger):
         if not logger.isEnabledFor(logging.DEBUG):

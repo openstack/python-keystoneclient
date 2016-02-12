@@ -190,6 +190,45 @@ class SessionTests(utils.TestCase):
         self.assertEqual(resp.status_code, 400)
         self.assertIn(body, self.logger.output)
 
+    def test_unicode_data_in_debug_output(self):
+        """Verify that ascii-encodable data is logged without modification."""
+
+        session = client_session.Session(verify=False)
+
+        body = 'RESP'
+        data = u'unicode_data'
+        self.stub_url('POST', text=body)
+        session.post(self.TEST_URL, data=data)
+
+        self.assertIn("'%s'" % data, self.logger.output)
+
+    def test_binary_data_not_in_debug_output(self):
+        """Verify that non-ascii-encodable data causes replacement."""
+
+        if six.PY2:
+            data = "my data" + chr(255)
+        else:
+            # Python 3 logging handles binary data well.
+            return
+
+        session = client_session.Session(verify=False)
+
+        body = 'RESP'
+        self.stub_url('POST', text=body)
+
+        # Forced mixed unicode and byte strings in request
+        # elements to make sure that all joins are appropriately
+        # handled (any join of unicode and byte strings should
+        # raise a UnicodeDecodeError)
+        session.post(unicode(self.TEST_URL), data=data)
+
+        self.assertIn("Replaced characters that could not be decoded"
+                      " in log output", self.logger.output)
+
+        # Our data payload should have changed to
+        # include the replacement char
+        self.assertIn(u"-d 'my data\ufffd'", self.logger.output)
+
     def test_logging_cacerts(self):
         path_to_certs = '/path/to/certs'
         session = client_session.Session(verify=path_to_certs)
