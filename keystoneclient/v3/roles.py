@@ -32,6 +32,17 @@ class Role(base.Resource):
     pass
 
 
+class InferenceRule(base.Resource):
+    """Represents an Rule that states one ROle implies another
+
+    Attributes:
+        * prior_role: this role implies the other
+        * implied_role: this role is implied by the other
+
+    """
+    pass
+
+
 class RoleManager(base.CrudManager):
     """Manager class for manipulating Identity roles."""
     resource_class = Role
@@ -84,6 +95,34 @@ class RoleManager(base.CrudManager):
         return super(RoleManager, self).create(
             name=name,
             **kwargs)
+
+    def _implied_role_url_tail(self, prior_role, implied_role):
+        base_url = ('/%(prior_role_id)s/implies/%(implied_role_id)s' %
+                    {'prior_role_id': base.getid(prior_role),
+                     'implied_role_id': base.getid(implied_role)})
+        return base_url
+
+    def create_implied(self, prior_role, implied_role, **kwargs):
+        url_tail = self._implied_role_url_tail(prior_role, implied_role)
+        self.client.put("/roles" + url_tail, **kwargs)
+
+    def delete_implied(self, prior_role, implied_role, **kwargs):
+        url_tail = self._implied_role_url_tail(prior_role, implied_role)
+        return super(RoleManager, self).delete(tail=url_tail, **kwargs)
+
+    def get_implied(self, prior_role, implied_role, **kwargs):
+        url_tail = self._implied_role_url_tail(prior_role, implied_role)
+        return super(RoleManager, self).get(tail=url_tail, **kwargs)
+
+    def check_implied(self, prior_role, implied_role, **kwargs):
+        url_tail = self._implied_role_url_tail(prior_role, implied_role)
+        return super(RoleManager, self).head(tail=url_tail, **kwargs)
+
+    def list_role_inferences(self, **kwargs):
+        resp, body = self.client.get('/role_inferences/', **kwargs)
+        obj_class = InferenceRule
+        return [obj_class(self, res, loaded=True)
+                for res in body['role_inferences']]
 
     def get(self, role):
         return super(RoleManager, self).get(
