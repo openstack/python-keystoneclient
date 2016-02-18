@@ -27,6 +27,7 @@ class Role(base.Resource):
     Attributes:
         * id: a uuid that identifies the role
         * name: user-facing identifier
+        * domain: optional domain for the role
 
     """
     pass
@@ -91,9 +92,14 @@ class RoleManager(base.CrudManager):
             raise exceptions.ValidationError(msg)
 
     @positional(1, enforcement=positional.WARN)
-    def create(self, name, **kwargs):
+    def create(self, name, domain=None, **kwargs):
+        domain_id = None
+        if domain:
+            domain_id = base.getid(domain)
+
         return super(RoleManager, self).create(
             name=name,
+            domain_id=domain_id,
             **kwargs)
 
     def _implied_role_url_tail(self, prior_role, implied_role):
