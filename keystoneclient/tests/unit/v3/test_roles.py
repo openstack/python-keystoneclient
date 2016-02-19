@@ -572,3 +572,48 @@ class RoleTests(utils.ClientTestCase, utils.CrudTests):
             project=project_id,
             group=group_id,
             user=user_id)
+
+    def test_implied_role_check(self):
+        prior_role_id = uuid.uuid4().hex
+        implied_role_id = uuid.uuid4().hex
+        self.stub_url('HEAD',
+                      ['roles', prior_role_id, 'implies', implied_role_id],
+                      status_code=200)
+
+        self.manager.check_implied(prior_role_id, implied_role_id)
+
+    def test_implied_role_get(self):
+        prior_role_id = uuid.uuid4().hex
+        implied_role_id = uuid.uuid4().hex
+        self.stub_url('GET',
+                      ['roles', prior_role_id, 'implies', implied_role_id],
+                      json={'role': {}},
+                      status_code=204)
+
+        self.manager.get_implied(prior_role_id, implied_role_id)
+
+    def test_implied_role_create(self):
+        prior_role_id = uuid.uuid4().hex
+        implied_role_id = uuid.uuid4().hex
+        self.stub_url('PUT',
+                      ['roles', prior_role_id, 'implies', implied_role_id],
+                      status_code=200)
+
+        self.manager.create_implied(prior_role_id, implied_role_id)
+
+    def test_implied_role_delete(self):
+        prior_role_id = uuid.uuid4().hex
+        implied_role_id = uuid.uuid4().hex
+        self.stub_url('DELETE',
+                      ['roles', prior_role_id, 'implies', implied_role_id],
+                      status_code=200)
+
+        self.manager.delete_implied(prior_role_id, implied_role_id)
+
+    def test_list_role_inferences(self, **kwargs):
+        self.stub_url('GET',
+                      ['role_inferences', ''],
+                      json={'role_inferences': {}},
+                      status_code=204)
+
+        self.manager.list_role_inferences()
