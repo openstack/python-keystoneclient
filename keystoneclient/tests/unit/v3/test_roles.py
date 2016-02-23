@@ -33,6 +33,32 @@ class RoleTests(utils.ClientTestCase, utils.CrudTests):
         kwargs.setdefault('name', uuid.uuid4().hex)
         return kwargs
 
+    def _new_domain_ref(self, **kwargs):
+        kwargs.setdefault('enabled', True)
+        kwargs.setdefault('name', uuid.uuid4().hex)
+        return kwargs
+
+    def test_create_with_domain_id(self):
+        ref = self.new_ref()
+        ref['domain_id'] = uuid.uuid4().hex
+        self.test_create(ref=ref)
+
+    def test_create_with_domain(self):
+        ref = self.new_ref()
+        domain_ref = self._new_domain_ref()
+        domain_ref['id'] = uuid.uuid4().hex
+        ref['domain_id'] = domain_ref['id']
+
+        self.stub_entity('POST', entity=ref, status_code=201)
+        returned = self.manager.create(name=ref['name'],
+                                       domain=domain_ref)
+        self.assertIsInstance(returned, self.model)
+        for attr in ref:
+            self.assertEqual(
+                getattr(returned, attr),
+                ref[attr],
+                'Expected different %s' % attr)
+
     def test_domain_role_grant(self):
         user_id = uuid.uuid4().hex
         domain_id = uuid.uuid4().hex
