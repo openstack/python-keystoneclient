@@ -192,16 +192,11 @@ class CrudTests(object):
         kwargs.setdefault(uuid.uuid4().hex, uuid.uuid4().hex)
         return kwargs
 
-    def encode(self, entity, truncated=None):
-        encoded = {}
-        if truncated is not None:
-            encoded['truncated'] = truncated
+    def encode(self, entity):
         if isinstance(entity, dict):
-            encoded[self.key] = entity
-            return encoded
+            return {self.key: entity}
         if isinstance(entity, list):
-            encoded[self.collection_key] = entity
-            return encoded
+            return {self.collection_key: entity}
         raise NotImplementedError('Are you sure you want to encode that?')
 
     def stub_entity(self, method, parts=None, entity=None, id=None, **kwargs):
@@ -292,22 +287,14 @@ class CrudTests(object):
 
         self.assertRaises(TypeError, self.manager.list, **filter_kwargs)
 
-    def _test_list(self, ref_list=None, expected_path=None,
-                   expected_query=None, truncated=None, **filter_kwargs):
+    def test_list(self, ref_list=None, expected_path=None,
+                  expected_query=None, **filter_kwargs):
         ref_list = ref_list or [self.new_ref(), self.new_ref()]
         expected_path = self._get_expected_path(expected_path)
 
-        # We want to catch all cases: when `truncated` is not returned by the
-        # server, when it's False and when it's True.
-        # Attribute `truncated` of the returned list-like object should exist
-        # in all these cases. It should be False if the server returned a list
-        # without the flag.
-        expected_truncated = False
-        if truncated:
-            expected_truncated = truncated
-
         self.requests_mock.get(urlparse.urljoin(self.TEST_URL, expected_path),
-                               json=self.encode(ref_list, truncated=truncated))
+                               json=self.encode(ref_list))
+
         returned_list = self.manager.list(**filter_kwargs)
         self.assertEqual(len(ref_list), len(returned_list))
         [self.assertIsInstance(r, self.model) for r in returned_list]
@@ -325,20 +312,6 @@ class CrudTests(object):
         # Also check that no query string args exist which are not expected
         for key in qs_args:
             self.assertIn(key, qs_args_expected)
-
-        self.assertEqual(expected_truncated, returned_list.truncated)
-
-    def test_list(self, ref_list=None, expected_path=None,
-                  expected_query=None, **filter_kwargs):
-        # test simple list, without any truncation
-        self._test_list(ref_list, expected_path, expected_query,
-                        **filter_kwargs)
-        # test when a server returned a list with truncated=False
-        self._test_list(ref_list, expected_path, expected_query,
-                        truncated=False, **filter_kwargs)
-        # test when a server returned a list with truncated=True
-        self._test_list(ref_list, expected_path, expected_query,
-                        truncated=True, **filter_kwargs)
 
     def test_list_params(self):
         ref_list = [self.new_ref()]
