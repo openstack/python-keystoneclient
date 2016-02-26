@@ -76,6 +76,36 @@ def filter_kwargs(f):
     return func
 
 
+class TruncatedList(list):
+    """List with attribute `truncated`.
+
+    The main purpose of this class is to handle flag `truncated` returned
+    by Identity Service. It subclasses standard Python list and overrides
+    only equality operators.
+
+    :param bool truncated: whether the list is truncated or not.
+    """
+    def __init__(self, collection, truncated=False):
+        super(TruncatedList, self).__init__(collection)
+        self.truncated = truncated
+
+    def __eq__(self, other):
+        """Compare this list with another one.
+
+        Two TruncatedLists are equal if the lists they carry are equal
+        and their attributes `truncated` are equal.
+
+        If another value has not attribute `truncated`, it is assumed to
+        be False.
+        """
+        values_eq = super(TruncatedList, self).__eq__(other)
+        truncated_eq = self.truncated == getattr(other, 'truncated', False)
+        return values_eq and truncated_eq
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+
 class Manager(object):
     """Basic manager type providing common operations.
 
@@ -117,6 +147,8 @@ class Manager(object):
         :param body: data that will be encoded as JSON and passed in POST
             request (GET will be sent by default)
         :param kwargs: Additional arguments will be passed to the request.
+        :returns: list of objects with indication of truncation
+        :rtype: :py:class:`keystoneclient.base.TruncatedList`
         """
         if body:
             resp, body = self.client.post(url, body=body, **kwargs)
@@ -127,6 +159,7 @@ class Manager(object):
             obj_class = self.resource_class
 
         data = body[response_key]
+        truncated = body.get('truncated', False)
         # NOTE(ja): keystone returns values as list as {'values': [ ... ]}
         #           unlike other services which just return the list...
         try:
@@ -134,7 +167,8 @@ class Manager(object):
         except (KeyError, TypeError):
             pass
 
-        return [obj_class(self, res, loaded=True) for res in data if res]
+        objects = [obj_class(self, res, loaded=True) for res in data if res]
+        return TruncatedList(objects, truncated=truncated)
 
     def _get(self, url, response_key, **kwargs):
         """Get an object from collection.

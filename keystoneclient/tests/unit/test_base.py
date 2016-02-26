@@ -180,3 +180,29 @@ class ManagerTest(utils.TestCase):
             management=True)
         put_mock.assert_called_once_with(self.url, management=True, body=None)
         self.assertEqual(rsrc.hi, 1)
+
+
+class TruncatedListTest(utils.TestCase):
+    """Test that TruncatedList will not break existing checks
+
+    A lot of code assumes that the value returned from list() is a python
+    list, not an iterable object. Because of that, they perform various
+    list-specific checks. This code should not be broken.
+    """
+
+    def test_eq(self):
+        # flag `truncated` doesn't affect the check if it's False
+        self.assertEqual([], base.TruncatedList([], truncated=False))
+        self.assertEqual([1, 2, 3], base.TruncatedList([1, 2, 3],
+                                                       truncated=False))
+
+        # flag `truncated` affects the check if it's True
+        self.assertNotEqual([], base.TruncatedList([], truncated=True))
+        self.assertNotEqual([1, 2, 3], base.TruncatedList([1, 2, 3],
+                                                          truncated=True))
+
+        # flag `truncated` affects the equality check
+        self.assertNotEqual(base.TruncatedList([], truncated=True),
+                            base.TruncatedList([], truncated=False))
+        self.assertNotEqual(base.TruncatedList([1, 2, 3], truncated=True),
+                            base.TruncatedList([1, 2, 3], truncated=False))
