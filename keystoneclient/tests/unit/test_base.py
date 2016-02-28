@@ -10,6 +10,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from keystoneauth1.identity import v2
+from keystoneauth1 import session
 from oslotest import mockpatch
 
 from keystoneclient import base
@@ -36,11 +38,10 @@ class BaseTest(utils.TestCase):
         self.assertEqual(base.getid(TmpObject), 4)
 
     def test_resource_lazy_getattr(self):
-        # Creating a Client not using session is deprecated.
-        with self.deprecations.expect_deprecations_here():
-            self.client = client.Client(token=self.TEST_TOKEN,
-                                        auth_url='http://127.0.0.1:5000',
-                                        endpoint='http://127.0.0.1:5000')
+        auth = v2.Token(token=self.TEST_TOKEN,
+                        auth_url='http://127.0.0.1:5000')
+        session_ = session.Session(auth=auth)
+        self.client = client.Client(session=session_)
 
         self.useFixture(mockpatch.PatchObject(
             self.client._adapter, 'get', side_effect=AttributeError,
@@ -91,11 +92,10 @@ class ManagerTest(utils.TestCase):
     def setUp(self):
         super(ManagerTest, self).setUp()
 
-        # Creating a Client not using session is deprecated.
-        with self.deprecations.expect_deprecations_here():
-            self.client = client.Client(token=self.TEST_TOKEN,
-                                        auth_url='http://127.0.0.1:5000',
-                                        endpoint='http://127.0.0.1:5000')
+        auth = v2.Token(auth_url='http://127.0.0.1:5000',
+                        token=self.TEST_TOKEN)
+        session_ = session.Session(auth=auth)
+        self.client = client.Client(session=session_)
 
         self.mgr = base.Manager(self.client)
         self.mgr.resource_class = base.Resource
