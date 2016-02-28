@@ -78,8 +78,7 @@ examples of common tasks are provided below.
 
 You can generally expect that when the client needs to propagate an
 exception it will raise an instance of subclass of
-``keystoneclient.exceptions.ClientException`` (see
-:py:class:`keystoneclient.openstack.common.apiclient.exceptions.ClientException`)
+:class:`keystoneclient.exceptions.ClientException`.
 
 Authenticating Using Sessions
 =============================
