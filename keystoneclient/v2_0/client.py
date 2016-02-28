@@ -93,11 +93,15 @@ class Client(httpclient.HTTPClient):
 
     Example::
 
+        >>> from keystoneauth1.identity import v2
+        >>> from keystoneauth1 import session
         >>> from keystoneclient.v2_0 import client
-        >>> keystone = client.Client(username=USER,
-        ...                          password=PASS,
-        ...                          tenant_name=TENANT_NAME,
-        ...                          auth_url=KEYSTONE_URL)
+        >>> auth = v2.Password(auth_url=KEYSTONE_URL,
+        ...                    username=USER,
+        ...                    password=PASS,
+        ...                    tenant_name=TENANT_NAME)
+        >>> sess = session.Session(auth=auth)
+        >>> keystone = client.Client(session=sess)
         >>> keystone.tenants.list()
         ...
         >>> user = keystone.users.get(USER_ID)
@@ -108,11 +112,15 @@ class Client(httpclient.HTTPClient):
     returns as a dictionary-like-object so that you can export and
     cache it, re-using it when initiating another client::
 
+        >>> from keystoneauth1.identity import v2
+        >>> from keystoneauth1 import session
         >>> from keystoneclient.v2_0 import client
-        >>> keystone = client.Client(username=USER,
-        ...                          password=PASS,
-        ...                          tenant_name=TENANT_NAME,
-        ...                          auth_url=KEYSTONE_URL)
+        >>> auth = v2.Password(auth_url=KEYSTONE_URL,
+        ...                    username=USER,
+        ...                    password=PASS,
+        ...                    tenant_name=TENANT_NAME)
+        >>> sess = session.Session(auth=auth)
+        >>> keystone = client.Client(session=sess)
         >>> auth_ref = keystone.auth_ref
         >>> # pickle or whatever you like here
         >>> new_client = client.Client(auth_ref=auth_ref)
@@ -124,11 +132,14 @@ class Client(httpclient.HTTPClient):
 
     Example::
 
+        >>> from keystoneauth1.identity import v2
+        >>> from keystoneauth1 import session
         >>> from keystoneclient.v2_0 import client
-        >>> admin_client = client.Client(
-        ...     token='12345secret7890',
-        ...     endpoint='http://localhost:35357/v2.0')
-        >>> admin_client.tenants.list()
+        >>> auth = v2.Token(auth_url='http://localhost:35357/v2.0',
+        ...                 token='12345secret7890')
+        >>> sess = session.Session(auth=auth)
+        >>> keystone = client.Client(session=sess)
+        >>> keystone.tenants.list()
 
     """
 

@@ -92,14 +92,17 @@ class Client(httpclient.HTTPClient):
 
     Example::
 
+        >>> from keystoneauth1.identity import v3
+        >>> from keystoneauth1 import session
         >>> from keystoneclient.v3 import client
-        >>> keystone = client.Client(user_domain_name=DOMAIN_NAME,
-        ...                          username=USER,
-        ...                          password=PASS,
-        ...                          project_domain_name=PROJECT_DOMAIN_NAME,
-        ...                          project_name=PROJECT_NAME,
-        ...                          auth_url=KEYSTONE_URL)
-        ...
+        >>> auth = v3.Password(user_domain_name=DOMAIN_NAME,
+        ...                    username=USER,
+        ...                    password=PASS,
+        ...                    project_domain_name=PROJECT_DOMAIN_NAME,
+        ...                    project_name=PROJECT_NAME,
+        ...                    auth_url=KEYSTONE_URL)
+        >>> sess = session.Session(auth=auth)
+        >>> keystone = client.Client(session=sess)
         >>> keystone.projects.list()
         ...
         >>> user = keystone.users.get(USER_ID)
