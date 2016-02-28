@@ -26,8 +26,8 @@ attribute of the ``Client`` class is a tenant manager::
     >>> keystone.tenants.list() # List tenants
 
 You create a valid ``keystoneclient.v2_0.client.Client`` object by passing
-authentication data to the constructor. Authentication and examples of common
-tasks are provided below.
+a :class:`~keystoneauth1.session.Session` to the constructor. Authentication
+and examples of common tasks are provided below.
 
 You can generally expect that when the client needs to propagate an exception
 it will raise an instance of subclass of
@@ -45,22 +45,30 @@ endpoint and using the admin token (sometimes referred to as the service
 token). The token is specified as the ``admin_token`` configuration option in
 your keystone.conf config file, which is typically in /etc/keystone::
 
+    >>> from keystoneauth1.identity import v2
+    >>> from keystoneauth1 import session
     >>> from keystoneclient.v2_0 import client
     >>> token = '012345SECRET99TOKEN012345'
     >>> endpoint = 'http://192.168.206.130:35357/v2.0'
-    >>> keystone = client.Client(token=token, endpoint=endpoint)
+    >>> auth = v2.Token(auth_url=endpoint, token=token)
+    >>> sess = session.Session(auth=auth)
+    >>> keystone = client.Client(session=sess)
 
 If you have a username and password, authentication is done against the
 public endpoint. You must also specify a tenant that is associated with the
 user::
 
+    >>> from keystoneauth1.identity import v2
+    >>> from keystoneauth1 import session
     >>> from keystoneclient.v2_0 import client
     >>> username='adminUser'
     >>> password='secretword'
     >>> tenant_name='openstackDemo'
     >>> auth_url='http://192.168.206.130:5000/v2.0'
-    >>> keystone = client.Client(username=username, password=password,
-    ...                          tenant_name=tenant_name, auth_url=auth_url)
+    >>> auth = v2.Password(username=username, password=password,
+    ...                    tenant_name=tenant_name, auth_url=auth_url)
+    >>> sess = session.Session(auth=auth)
+    >>> keystone = client.Client(session=sess)
 
 Creating tenants
 ================
