@@ -243,8 +243,7 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         self.assertEqual(cl.auth_token, self.TEST_TOKEN)
 
         # the token returned from the authentication will be used
-        with self.deprecations.expect_deprecations_here():
-            resp, body = cl.get(fake_url)
+        resp, body = cl._adapter.get(fake_url)
         self.assertEqual(fake_resp, body)
 
         token = self.requests_mock.last_request.headers.get('X-Auth-Token')
@@ -253,8 +252,7 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         # then override that token and the new token shall be used
         cl.auth_token = fake_token
 
-        with self.deprecations.expect_deprecations_here():
-            resp, body = cl.get(fake_url)
+        resp, body = cl._adapter.get(fake_url)
         self.assertEqual(fake_resp, body)
 
         token = self.requests_mock.last_request.headers.get('X-Auth-Token')
@@ -263,8 +261,7 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         # if we clear that overridden token then we fall back to the original
         del cl.auth_token
 
-        with self.deprecations.expect_deprecations_here():
-            resp, body = cl.get(fake_url)
+        resp, body = cl._adapter.get(fake_url)
         self.assertEqual(fake_resp, body)
 
         token = self.requests_mock.last_request.headers.get('X-Auth-Token')
