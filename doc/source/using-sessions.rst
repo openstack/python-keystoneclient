@@ -5,7 +5,7 @@ Using Sessions
 Introduction
 ============
 
-The :py:class:`keystoneclient.session.Session` class was introduced into
+The :py:class:`keystoneauth1.session.Session` class was introduced into
 keystoneclient as an attempt to bring a unified interface to the various
 OpenStack clients that share common authentication and request parameters
 between a variety of services.
@@ -55,8 +55,8 @@ service and fetch a new one.
 
 An example from keystoneclient::
 
-    >>> from keystoneclient.auth.identity import v3
-    >>> from keystoneclient import session
+    >>> from keystoneauth1.identity import v3
+    >>> from keystoneauth1 import session
     >>> from keystoneclient.v3 import client
 
     >>> auth = v3.Password(auth_url='https://my.keystone.com:5000/v3',
@@ -189,11 +189,12 @@ While authentication plugins will endeavour to maintain a consistent set of
 arguments for an ``endpoint_filter`` the concept of an authentication plugin is
 purposefully generic and a specific mechanism may not know how to interpret
 certain arguments and ignore them. For example the
-:py:class:`keystoneclient.auth.token_endpoint.Token` plugin (which is used when
-you want to always use a specific endpoint and token combination) will always
-return the same endpoint regardless of the parameters to ``endpoint_filter`` or
-a custom OpenStack authentication mechanism may not have the concept of
-multiple ``interface`` options and choose to ignore that parameter.
+:py:class:`keystoneauth1.identity.generic.token.Token` plugin (which is used
+when you want to always use a specific endpoint and token combination) will
+always return the same endpoint regardless of the parameters to
+``endpoint_filter`` or a custom OpenStack authentication mechanism may not have
+the concept of multiple ``interface`` options and choose to ignore that
+parameter.
 
 There is some expectation on the user that they understand the limitations of
 the authentication system they are using.

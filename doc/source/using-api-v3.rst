@@ -84,11 +84,11 @@ Authenticating Using Sessions
 =============================
 
 Instantiate a :py:class:`keystoneclient.v3.client.Client` using a
-:py:class:`~keystoneclient.session.Session` to provide the authentication
+:py:class:`~keystoneauth1.session.Session` to provide the authentication
 plugin, SSL/TLS certificates, and other data::
 
-    >>> from keystoneclient.auth.identity import v3
-    >>> from keystoneclient import session
+    >>> from keystoneauth1.identity import v3
+    >>> from keystoneauth1 import session
     >>> from keystoneclient.v3 import client
     >>> auth = v3.Password(auth_url='https://my.keystone.com:5000/v3',
     ...                    user_id='myuserid',
@@ -117,7 +117,7 @@ password::
     ...                          username=username, password=password,
     ...                          user_domain_name=user_domain_name)
 
-A :py:class:`~keystoneclient.session.Session` should be passed to the Client
+A :py:class:`~keystoneauth1.session.Session` should be passed to the Client
 instead. Using a Session you're not limited to authentication using a username
 and password but can take advantage of other more secure authentication
 methods.
