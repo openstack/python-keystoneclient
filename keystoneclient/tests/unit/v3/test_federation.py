@@ -410,7 +410,7 @@ class FederatedTokenTests(utils.ClientTestCase):
 
     def test_get_user_domain_id(self):
         """Ensure a federated user's domain ID does not exist."""
-        self.assertIsNone(self.federated_token.user_domain_id)
+        self.assertEqual('Federated', self.federated_token.user_domain_id)
 
 
 class ServiceProviderTests(utils.ClientTestCase, utils.CrudTests):

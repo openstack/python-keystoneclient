@@ -19,12 +19,25 @@ upon to generate test tokens for other clients. However they should never be
 imported into the main client (keystoneclient or other). Because of this there
 may be dependencies from this module on libraries that are only available in
 testing.
+
+.. warning::
+
+   The keystoneclient.fixture package is deprecated in favor of
+   keystoneauth1.fixture and will not be supported.
+
 """
+
+import warnings
 
 from keystoneclient.fixture.discovery import *  # noqa
 from keystoneclient.fixture import exception
 from keystoneclient.fixture import v2
 from keystoneclient.fixture import v3
+
+
+warnings.warn(
+    "The keystoneclient.fixture package is deprecated in favor of "
+    "keystoneauth1.fixture and will not be supported.", DeprecationWarning)
 
 
 FixtureValidationError = exception.FixtureValidationError
