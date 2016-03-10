@@ -10,8 +10,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import sys
-
 import six
 import testresources
 from testtools import matchers
@@ -101,39 +99,6 @@ class FindResourceTestCase(test_utils.TestCase):
 class FakeObject(object):
     def __init__(self, name):
         self.name = name
-
-
-class PrintTestCase(test_utils.TestCase):
-    def setUp(self):
-        super(PrintTestCase, self).setUp()
-        self.old_stdout = sys.stdout
-        self.stdout = six.moves.cStringIO()
-        self.addCleanup(setattr, self, 'stdout', None)
-        sys.stdout = self.stdout
-        self.addCleanup(setattr, sys, 'stdout', self.old_stdout)
-
-    def test_print_list_unicode(self):
-        name = six.u('\u540d\u5b57')
-        objs = [FakeObject(name)]
-        # NOTE(Jeffrey4l) If the text's encode is proper, this method will not
-        # raise UnicodeEncodeError exceptions
-        utils.print_list(objs, ['name'])
-        output = self.stdout.getvalue()
-        # In Python 2, output will be bytes, while in Python 3, it will not.
-        # Let's decode the value if needed.
-        if isinstance(output, six.binary_type):
-            output = output.decode('utf-8')
-        self.assertIn(name, output)
-
-    def test_print_dict_unicode(self):
-        name = six.u('\u540d\u5b57')
-        utils.print_dict({'name': name})
-        output = self.stdout.getvalue()
-        # In Python 2, output will be bytes, while in Python 3, it will not.
-        # Let's decode the value if needed.
-        if isinstance(output, six.binary_type):
-            output = output.decode('utf-8')
-        self.assertIn(name, output)
 
 
 class HashSignedTokenTestCase(test_utils.TestCase,

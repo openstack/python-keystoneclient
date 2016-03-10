@@ -1,0 +1,7 @@
+---
+prelude: >
+    The ``keystone`` CLI has been removed.
+other:
+  - The ``keystone`` CLI has been removed, using the ``openstack``
+    CLI is recommended. This feature has been deprecated since the
+    Liberty release of Keystone.
