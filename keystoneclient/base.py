@@ -42,7 +42,8 @@ def getid(obj):
     try:
         if obj.uuid:
             return obj.uuid
-    except AttributeError:
+    except AttributeError:  # nosec(cjschaef): 'obj' doesn't contain attribute
+        # 'uuid', return attribute 'id' or the 'obj'
         pass
     try:
         return obj.id
@@ -131,7 +132,9 @@ class Manager(object):
         #           unlike other services which just return the list...
         try:
             data = data['values']
-        except (KeyError, TypeError):
+        except (KeyError, TypeError):  # nosec(cjschaef): keystone data values
+            # not as expected (see comment above), assumption is that values
+            # are already returned in a list (so simply utilize that list)
             pass
 
         return [obj_class(self, res, loaded=True) for res in data if res]
@@ -477,8 +480,8 @@ class Resource(object):
             try:
                 setattr(self, k, v)
                 self._info[k] = v
-            except AttributeError:
-                # In this case we already defined the attribute on the class
+            except AttributeError:  # nosec(cjschaef): we already defined the
+                # attribute on the class
                 pass
 
     def __getattr__(self, k):

@@ -13,7 +13,7 @@
 import datetime
 import uuid
 
-from lxml import etree
+from lxml import etree  # nosec(cjschaef): used to create xml, not parse it
 from oslo_config import cfg
 from six.moves import urllib
 
@@ -559,7 +559,8 @@ class ADFSUnscopedToken(_BaseSAMLPlugin):
         """
         try:
             return bool(session.cookies)
-        except AttributeError:
+        except AttributeError:  # nosec(cjschaef): fetch cookies from
+            # underylying requests.Session object, or fail trying
             pass
 
         return bool(session.session.cookies)

@@ -157,7 +157,7 @@ class ServiceCatalog(object):
             if service_name:
                 try:
                     sn = service['name']
-                except KeyError:
+                except KeyError:  # nosec(cjschaef)
                     # assume that we're in v3.0-v3.2 and don't have the name in
                     # the catalog. Skip the check.
                     pass
@@ -268,33 +268,33 @@ class ServiceCatalog(object):
         try:
             return urls[0]
         except Exception:
-            pass
+            if service_name and region_name:
+                msg = (_('%(endpoint_type)s endpoint for %(service_type)s '
+                         'service named %(service_name)s in %(region_name)s '
+                         'region not found') %
+                       {'endpoint_type': endpoint_type,
+                        'service_type': service_type,
+                        'service_name': service_name,
+                        'region_name': region_name})
+            elif service_name:
+                msg = (_('%(endpoint_type)s endpoint for %(service_type)s '
+                         'service named %(service_name)s not found') %
+                       {'endpoint_type': endpoint_type,
+                        'service_type': service_type,
+                        'service_name': service_name})
+            elif region_name:
+                msg = (_('%(endpoint_type)s endpoint for %(service_type)s '
+                         'service in %(region_name)s region not found') %
+                       {'endpoint_type': endpoint_type,
+                        'service_type': service_type,
+                        'region_name': region_name})
+            else:
+                msg = (_('%(endpoint_type)s endpoint for %(service_type)s '
+                         'service not found') %
+                       {'endpoint_type': endpoint_type,
+                        'service_type': service_type})
 
-        if service_name and region_name:
-            msg = (_('%(endpoint_type)s endpoint for %(service_type)s service '
-                     'named %(service_name)s in %(region_name)s region not '
-                     'found') %
-                   {'endpoint_type': endpoint_type,
-                    'service_type': service_type, 'service_name': service_name,
-                    'region_name': region_name})
-        elif service_name:
-            msg = (_('%(endpoint_type)s endpoint for %(service_type)s service '
-                     'named %(service_name)s not found') %
-                   {'endpoint_type': endpoint_type,
-                    'service_type': service_type,
-                    'service_name': service_name})
-        elif region_name:
-            msg = (_('%(endpoint_type)s endpoint for %(service_type)s service '
-                     'in %(region_name)s region not found') %
-                   {'endpoint_type': endpoint_type,
-                    'service_type': service_type, 'region_name': region_name})
-        else:
-            msg = (_('%(endpoint_type)s endpoint for %(service_type)s service '
-                     'not found') %
-                   {'endpoint_type': endpoint_type,
-                    'service_type': service_type})
-
-        raise exceptions.EndpointNotFound(msg)
+            raise exceptions.EndpointNotFound(msg)
 
     @abc.abstractmethod
     def get_data(self):
@@ -343,7 +343,7 @@ class ServiceCatalogV2(ServiceCatalog):
         try:
             token['user_id'] = self.catalog['user']['id']
             token['tenant_id'] = self.catalog['token']['tenant']['id']
-        except Exception:
+        except KeyError:  # nosec(cjschaef)
             # just leave the tenant and user out if it doesn't exist
             pass
         return token
@@ -410,7 +410,7 @@ class ServiceCatalogV3(ServiceCatalog):
             project = self.catalog.get('project')
             if project:
                 token['tenant_id'] = project['id']
-        except Exception:
+        except KeyError:  # nosec(cjschaef)
             # just leave the domain, project and user out if it doesn't exist
             pass
         return token

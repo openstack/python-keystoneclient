@@ -42,28 +42,30 @@ def get_version_data(session, url, authenticated=None):
 
     try:
         body_resp = resp.json()
-    except ValueError:
+    except ValueError:  # nosec(cjschaef): raise a DiscoveryFailure below
         pass
     else:
         # In the event of querying a root URL we will get back a list of
         # available versions.
         try:
             return body_resp['versions']['values']
-        except (KeyError, TypeError):
+        except (KeyError, TypeError):  # nosec(cjschaef): attempt to return
+            # versions dict or query the endpoint or raise a DiscoveryFailure
             pass
 
         # Most servers don't have a 'values' element so accept a simple
         # versions dict if available.
         try:
             return body_resp['versions']
-        except KeyError:
+        except KeyError:  # nosec(cjschaef): query the endpoint or raise a
+            # DiscoveryFailure
             pass
 
         # Otherwise if we query an endpoint like /v2.0 then we will get back
         # just the one available version.
         try:
             return [body_resp['version']]
-        except KeyError:
+        except KeyError:  # nosec(cjschaef): raise a DiscoveryFailure
             pass
 
     err_text = resp.text[:50] + '...' if len(resp.text) > 50 else resp.text
@@ -77,14 +79,16 @@ def normalize_version_number(version):
     # trim the v from a 'v2.0' or similar
     try:
         version = version.lstrip('v')
-    except AttributeError:
+    except AttributeError:  # nosec(cjschaef): 'version' is not a str, try a
+        # different type or raise a TypeError
         pass
 
     # if it's an integer or a numeric as a string then normalize it
     # to a string, this ensures 1 decimal point
     try:
         num = float(version)
-    except Exception:
+    except Exception:  # nosec(cjschaef): 'version' is not a float, try a
+        # different type or raise a TypeError
         pass
     else:
         version = str(num)
@@ -92,13 +96,15 @@ def normalize_version_number(version):
     # if it's a string (or an integer) from above break it on .
     try:
         return tuple(map(int, version.split('.')))
-    except Exception:
+    except Exception:  # nosec(cjschaef): 'version' is not str (or an int),
+        # try a different type or raise a TypeError
         pass
 
     # last attempt, maybe it's a list or iterable.
     try:
         return tuple(map(int, version))
-    except Exception:
+    except Exception:  # nosec(cjschaef): 'version' is not an expected type,
+        # raise a TypeError
         pass
 
     raise TypeError(_('Invalid version specified: %s') % version)

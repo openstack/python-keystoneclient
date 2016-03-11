@@ -148,7 +148,7 @@ class AccessInfo(dict):
     def auth_token(self):
         try:
             del self['auth_token']
-        except KeyError:
+        except KeyError:  # nosec(cjschaef): 'auth_token' is not in the dict
             pass
 
     @property
@@ -526,7 +526,8 @@ class AccessInfoV2(AccessInfo):
     def project_name(self):
         try:
             tenant_dict = self['token']['tenant']
-        except KeyError:
+        except KeyError:  # nosec(cjschaef): no 'token' key or 'tenant' key in
+            # token, return the name of the tenant or None
             pass
         else:
             return tenant_dict.get('name')
@@ -534,13 +535,15 @@ class AccessInfoV2(AccessInfo):
         # pre grizzly
         try:
             return self['user']['tenantName']
-        except KeyError:
+        except KeyError:  # nosec(cjschaef): no 'user' key or 'tenantName' in
+            # 'user', attempt 'tenantId' or return None
             pass
 
         # pre diablo, keystone only provided a tenantId
         try:
             return self['token']['tenantId']
-        except KeyError:
+        except KeyError:  # nosec(cjschaef): no 'token' key or 'tenantName' or
+            # 'tenantId' could be found, return None
             pass
 
     @property
@@ -589,7 +592,8 @@ class AccessInfoV2(AccessInfo):
     def project_id(self):
         try:
             tenant_dict = self['token']['tenant']
-        except KeyError:
+        except KeyError:  # nosec(cjschaef): no 'token' key or 'tenant' dict,
+            # attempt to return 'tenantId' or return None
             pass
         else:
             return tenant_dict.get('id')
@@ -597,13 +601,15 @@ class AccessInfoV2(AccessInfo):
         # pre grizzly
         try:
             return self['user']['tenantId']
-        except KeyError:
+        except KeyError:  # nosec(cjschaef): no 'user' key or 'tenantId' in
+            # 'user', attempt to retrive from 'token' or return None
             pass
 
         # pre diablo
         try:
             return self['token']['tenantId']
-        except KeyError:
+        except KeyError:  # nosec(cjschaef): no 'token' key or 'tenantId'
+            # could be found, return None
             pass
 
     @property

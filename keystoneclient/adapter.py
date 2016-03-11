@@ -206,7 +206,8 @@ class LegacyJsonAdapter(Adapter):
 
         try:
             kwargs['json'] = kwargs.pop('body')
-        except KeyError:
+        except KeyError:  # nosec(cjschaef): kwargs doesn't contain a 'body'
+            # key, while 'json' is an optional argument for Session.request
             pass
 
         resp = super(LegacyJsonAdapter, self).request(*args, **kwargs)
@@ -215,7 +216,8 @@ class LegacyJsonAdapter(Adapter):
         if resp.text:
             try:
                 body = jsonutils.loads(resp.text)
-            except ValueError:
+            except ValueError:  # nosec(cjschaef): return None for body as
+                # expected
                 pass
 
         return resp, body

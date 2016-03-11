@@ -71,7 +71,8 @@ class Ec2Signer(object):
                 if (credentials['params']['X-Amz-Algorithm'] ==
                         'AWS4-HMAC-SHA256'):
                     return True
-            except KeyError:
+            except KeyError:  # nosec(cjschaef): in cases of not finding
+                # entries, simply return False
                 pass
 
         return False

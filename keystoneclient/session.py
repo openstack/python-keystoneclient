@@ -72,7 +72,7 @@ def _remove_service_catalog(body):
             data['access']['serviceCatalog'] = '<removed>'
             return jsonutils.dumps(data)
 
-    except Exception:
+    except Exception:  # nosec(cjschaef): multiple exceptions can be raised
         # Don't fail trying to clean up the request body.
         pass
     return body
@@ -392,7 +392,7 @@ class Session(object):
 
         try:
             connection_params = self.get_auth_connection_params(auth=auth)
-        except exceptions.MissingAuthPlugin:
+        except exceptions.MissingAuthPlugin:  # nosec(cjschaef)
             # NOTE(jamielennox): If we've gotten this far without an auth
             # plugin then we should be happy with allowing no additional
             # connection params. This will be the typical case for plugins
@@ -579,7 +579,8 @@ class Session(object):
                      'timeout', 'session', 'original_ip', 'user_agent'):
             try:
                 params[attr] = kwargs.pop(attr)
-            except KeyError:
+            except KeyError:  # nosec(cjschaef): we are brute force
+                # identifying possible attributes for kwargs
                 pass
 
         return cls._make(**params)
@@ -725,7 +726,8 @@ class Session(object):
         for arg in ('cert', 'verify'):
             try:
                 kwargs[arg] = params_copy.pop(arg)
-            except KeyError:
+            except KeyError:  # nosec(cjschaef): we are brute force
+                # identifying and removing values in params_copy
                 pass
 
         if params_copy:
