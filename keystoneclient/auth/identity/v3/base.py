@@ -11,6 +11,7 @@
 # under the License.
 
 import abc
+import json
 import logging
 
 from oslo_config import cfg
@@ -190,6 +191,7 @@ class Auth(BaseAuth):
                             authenticated=False, log=False, **rkwargs)
 
         try:
+            _logger.debug(json.dumps(resp.json()))
             resp_data = resp.json()['token']
         except (KeyError, ValueError):
             raise exceptions.InvalidResponse(response=resp)
