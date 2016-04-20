@@ -42,8 +42,12 @@ Python API
 By way of a quick-start::
 
     # use v2.0 auth with http://example.com:5000/v2.0
+    >>> from keystoneauth1.identity import v2
+    >>> from keystoneauth1 import session
     >>> from keystoneclient.v2_0 import client
-    >>> keystone = client.Client(username=USERNAME, password=PASSWORD, tenant_name=TENANT, auth_url=AUTH_URL)
+    >>> auth = v2.Password(username=USERNAME, password=PASSWORD, tenant_name=TENANT, auth_url=AUTH_URL)
+    >>> sess = session.Session(auth=auth)
+    >>> keystone = client.Client(session=sess)
     >>> keystone.tenants.list()
     >>> tenant = keystone.tenants.create(tenant_name="test", description="My new tenant!", enabled=True)
     >>> tenant.delete()
