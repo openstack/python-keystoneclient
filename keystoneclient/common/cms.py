@@ -60,9 +60,15 @@ def _ensure_subprocess():
             if patcher.already_patched:
                 from eventlet.green import subprocess
             else:
-                import subprocess
+                import subprocess  # nosec(cjschaef): we must be careful when
+                # using subprocess.Popen with possibly untrusted data,
+                # assumption is that the certificate/key files provided are
+                # trustworthy
         except ImportError:
-            import subprocess  # noqa
+            import subprocess  # noqa # nosec(cjschaef): we must be careful
+            # when using subprocess.Popen with possibly untrusted data,
+            # assumption is that the certificate/key files provided are
+            # trustworthy
 
 
 def set_subprocess(_subprocess=None):

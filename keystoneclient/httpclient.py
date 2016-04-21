@@ -31,7 +31,7 @@ from positional import positional
 import requests
 
 try:
-    import pickle
+    import pickle  # nosec(cjschaef): see bug 1534288 for details
 
     # NOTE(sdague): The conditional keyring import needs to only
     # trigger if it's a version of keyring that's supported in global
@@ -129,7 +129,8 @@ class _KeystoneAdapter(adapter.LegacyJsonAdapter):
         # the identity plugin case
         try:
             return self.session.auth.get_access(self.session).user_id
-        except AttributeError:
+        except AttributeError:  # nosec(cjschaef): attempt legacy retrival, or
+            # return None
             pass
 
         # there is a case that we explicity allow (tested by our unit tests)
@@ -138,7 +139,8 @@ class _KeystoneAdapter(adapter.LegacyJsonAdapter):
         # a legacy then self.session.auth is a client and we retrieve user_id.
         try:
             return self.session.auth.user_id
-        except AttributeError:
+        except AttributeError:  # nosec(cjschaef): retrivals failed, return
+            # None
             pass
 
         return None
@@ -629,7 +631,8 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
                 auth_ref = keyring.get_password("keystoneclient_auth",
                                                 keyring_key)
                 if auth_ref:
-                    auth_ref = pickle.loads(auth_ref)  # nosec
+                    auth_ref = pickle.loads(auth_ref)  # nosec(cjschaef): see
+                    # bug 1534288
                     if auth_ref.will_expire_soon(self.stale_duration):
                         # token has expired, don't use it
                         auth_ref = None
@@ -647,7 +650,8 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
             try:
                 keyring.set_password("keystoneclient_auth",
                                      keyring_key,
-                                     pickle.dumps(self.auth_ref))
+                                     pickle.dumps(self.auth_ref))  # nosec
+                # (cjschaef): see bug 1534288
             except Exception as e:
                 _logger.warning(
                     _LW("Failed to store token into keyring %s"), e)
@@ -658,8 +662,8 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
                 service_type='identity',
                 endpoint_type='admin',
                 region_name=region_name)
-        except exceptions.EndpointNotFound:
-            pass
+        except exceptions.EndpointNotFound as e:
+            _logger.debug("Failed to find endpoint for management url %s", e)
 
     def process_token(self, region_name=None):
         """Extract and process information from the new auth_ref.
@@ -872,7 +876,8 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
     def __getattr__(self, name):
         try:
             var_name = self.deprecated_session_variables[name]
-        except KeyError:
+        except KeyError:  # nosec(cjschaef): try adapter variable or raise
+            # an AttributeError
             pass
         else:
             warnings.warn(
@@ -883,7 +888,7 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
 
         try:
             var_name = self.deprecated_adapter_variables[name]
-        except KeyError:
+        except KeyError:  # nosec(cjschaef): raise an AttributeError
             pass
         else:
             warnings.warn(
@@ -897,7 +902,8 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
     def __setattr__(self, name, val):
         try:
             var_name = self.deprecated_session_variables[name]
-        except KeyError:
+        except KeyError:  # nosec(cjschaef): try adapter variable or call
+            # parent class's __setattr__
             pass
         else:
             warnings.warn(
@@ -908,7 +914,7 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
 
         try:
             var_name = self.deprecated_adapter_variables[name]
-        except KeyError:
+        except KeyError:  # nosec(cjschaef): call parent class's __setattr__
             pass
         else:
             warnings.warn(

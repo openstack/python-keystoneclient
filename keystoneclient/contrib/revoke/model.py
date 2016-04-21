@@ -219,8 +219,9 @@ class RevokeTree(object):
             try:
                 if leaf['issued_before'] > token_data['issued_at']:
                     return True
-            except KeyError:
-                pass
+            except KeyError:  # nosec(cjschaef): 'issued_before' or
+                # 'issued_at' key doesn't exist, try next leaf
+                continue
         # If we made it out of the loop then no element in revocation tree
         # corresponds to our token and it is good.
         return False

@@ -33,7 +33,8 @@ def find_resource(manager, name_or_id):
     # first try the entity as a string
     try:
         return manager.get(name_or_id)
-    except (exceptions.NotFound):
+    except (exceptions.NotFound):  # nosec(cjschaef): try to find 'name_or_id'
+        # as a six.binary_type instead
         pass
 
     # finally try to find entity by name
@@ -94,7 +95,8 @@ def prompt_user_password():
         # Check for Ctl-D
         try:
             password = getpass.getpass('Password: ')
-        except EOFError:
+        except EOFError:  # nosec(cjschaef): return password, which is None if
+            # password was not found
             pass
 
     return password
