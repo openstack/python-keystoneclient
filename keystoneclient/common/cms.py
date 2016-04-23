@@ -202,7 +202,7 @@ def cms_verify(formatted, signing_cert_file_name, ca_file_name,
 
 
 def is_pkiz(token_text):
-    """Determine if a token a cmsz token
+    """Determine if a token is PKIZ.
 
     Checks if the string has the prefix that indicates it is a
     Crypto Message Syntax, Z compressed token.

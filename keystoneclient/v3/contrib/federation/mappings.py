@@ -16,7 +16,7 @@ from keystoneclient import base
 
 
 class Mapping(base.Resource):
-    """An object representing mapping container
+    """An object representing mapping container.
 
     Attributes:
         * id: user defined unique string identifying mapping.

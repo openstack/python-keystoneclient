@@ -166,7 +166,7 @@ class ProtocolTests(utils.ClientTestCase, utils.CrudTests):
         self.assertEqual('/'.join([base_url, self.collection_key]), url)
 
     def test_build_url_w_idp_id(self):
-        """Test whether kwargs ``base_url`` discards object's base_url
+        """Test whether kwargs ``base_url`` discards object's base_url.
 
         This test shows, that when ``base_url`` is specified in the
         dict_args_in_out dictionary,  values like ``identity_provider_id``
@@ -299,7 +299,7 @@ class ProtocolTests(utils.ClientTestCase, utils.CrudTests):
         self.assertQueryStringContains(**filter_kwargs)
 
     def test_update(self):
-        """Test updating federation protocol
+        """Test updating federation protocol.
 
         URL to be tested: PATCH /OS-FEDERATION/identity_providers/
         $identity_provider/protocols/$protocol

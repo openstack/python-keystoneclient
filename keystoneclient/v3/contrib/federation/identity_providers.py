@@ -16,7 +16,7 @@ from keystoneclient import base
 
 
 class IdentityProvider(base.Resource):
-    """Object representing Identity Provider container
+    """Object representing Identity Provider container.
 
     Attributes:
         * id: user-defined unique string identifying Identity Provider.
@@ -53,7 +53,7 @@ class IdentityProviderManager(base.CrudManager):
                                        **kwargs)
 
     def get(self, identity_provider):
-        """Fetch Identity Provider object
+        """Fetch Identity Provider object.
 
         Utilize Keystone URI:
         GET /OS-FEDERATION/identity_providers/$identity_provider

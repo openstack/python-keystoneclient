@@ -144,7 +144,7 @@ class SessionTests(utils.TestCase):
                           session.get, self.TEST_URL)
 
     def test_session_debug_output(self):
-        """Test request and response headers in debug logs
+        """Test request and response headers in debug logs.
 
         in order to redact secure headers while debug is true.
         """
@@ -179,7 +179,7 @@ class SessionTests(utils.TestCase):
             self.assertNotIn(v, self.logger.output)
 
     def test_logs_failed_output(self):
-        """Test that output is logged even for failed requests"""
+        """Test that output is logged even for failed requests."""
 
         session = client_session.Session()
         body = uuid.uuid4().hex

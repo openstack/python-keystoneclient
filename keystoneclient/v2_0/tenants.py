@@ -23,7 +23,7 @@ from keystoneclient import exceptions
 
 
 class Tenant(base.Resource):
-    """Represents a Keystone tenant
+    """Represents a Keystone tenant.
 
     Attributes:
         * id: a uuid that identifies the tenant

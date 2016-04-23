@@ -84,7 +84,7 @@ def hash_signed_token(signed_text, mode='md5'):
 
 
 def prompt_user_password():
-    """Prompt user for a password
+    """Prompt user for a password.
 
     Prompt for a password if stdin is a tty.
     """

@@ -153,7 +153,7 @@ class AccessInfo(dict):
 
     @property
     def expires(self):
-        """Return the token expiration (as datetime object)
+        """Return the token expiration (as datetime object).
 
         :returns: datetime
         """
@@ -161,7 +161,7 @@ class AccessInfo(dict):
 
     @property
     def issued(self):
-        """Return the token issue time (as datetime object)
+        """Return the token issue time (as datetime object).
 
         :returns: datetime
         """

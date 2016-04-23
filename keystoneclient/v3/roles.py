@@ -34,7 +34,7 @@ class Role(base.Resource):
 
 
 class InferenceRule(base.Resource):
-    """Represents an Rule that states one ROle implies another
+    """Represents an Rule that states one ROle implies another.
 
     Attributes:
         * prior_role: this role implies the other

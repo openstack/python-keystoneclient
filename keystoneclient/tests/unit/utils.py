@@ -102,7 +102,7 @@ class TestCase(testtools.TestCase):
             self.assertIn(v, qs[k])
 
     def assertRequestHeaderEqual(self, name, val):
-        """Verify that the last request made contains a header and its value
+        """Verify that the last request made contains a header and its value.
 
         The request must have already been made.
         """

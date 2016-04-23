@@ -147,7 +147,7 @@ class _KeystoneAdapter(adapter.LegacyJsonAdapter):
 
 
 class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
-    """HTTP client
+    """HTTP client.
 
     .. warning::
 

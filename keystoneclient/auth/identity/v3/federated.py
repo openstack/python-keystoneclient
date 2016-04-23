@@ -27,7 +27,9 @@ class FederatedBaseAuth(base.BaseAuth):
     rescoping_plugin = token.Token
 
     def __init__(self, auth_url, identity_provider, protocol, **kwargs):
-        """Class constructor accepting following parameters:
+        """Class constructor for federated authentication plugins.
+
+        Accepting following parameters:
 
         :param auth_url: URL of the Identity Service
         :type auth_url: string

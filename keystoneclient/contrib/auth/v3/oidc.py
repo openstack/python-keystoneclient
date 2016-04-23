@@ -47,7 +47,9 @@ class OidcPassword(federated.FederatedBaseAuth):
                  username, password, client_id, client_secret,
                  access_token_endpoint, scope='profile',
                  grant_type='password'):
-        """The OpenID Connect plugin expects the following:
+        """The OpenID Connect plugin.
+
+        It expects the following:
 
         :param auth_url: URL of the Identity Service
         :type auth_url: string
