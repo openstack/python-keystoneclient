@@ -447,11 +447,11 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
 
     @property
     def service_catalog(self):
-        """Returns this client's service catalog."""
+        """Return this client's service catalog."""
         return self.auth_ref.service_catalog
 
     def has_service_catalog(self):
-        """Returns True if this client provides a service catalog."""
+        """Return True if this client provides a service catalog."""
         return self.auth_ref and self.auth_ref.has_service_catalog()
 
     @property
@@ -608,7 +608,7 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
 
         Used to store and retrieve auth_ref from keyring.
 
-        Returns a slash-separated string of values ordered by key name.
+        Return a slash-separated string of values ordered by key name.
 
         """
         return '/'.join([kwargs[k] or '?' for k in sorted(kwargs)])
@@ -751,7 +751,7 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         return self._adapter.request(*args, **kwargs)
 
     def _cs_request(self, url, method, management=True, **kwargs):
-        """Makes an authenticated request to keystone endpoint.
+        """Make an authenticated request to keystone endpoint.
 
         Request are made to keystone endpoint by concatenating
         self.management_url and url and passing in method and

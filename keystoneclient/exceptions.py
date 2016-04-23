@@ -337,7 +337,7 @@ An alias of :py:exc:`keystoneauth1.exceptions.http.HttpVersionNotSupported`
 """
 
 from_response = _exc.from_response
-"""Returns an instance of :class:`HttpError` or subclass based on response.
+"""Return an instance of :class:`HttpError` or subclass based on response.
 
 An alias of :py:func:`keystoneauth1.exceptions.http.from_response`
 """

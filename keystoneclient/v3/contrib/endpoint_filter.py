@@ -58,7 +58,7 @@ class EndpointFilterManager(base.Manager):
         return super(EndpointFilterManager, self)._delete(url=base_url)
 
     def check_endpoint_in_project(self, project, endpoint):
-        """Checks if project-endpoint association exist."""
+        """Check if project-endpoint association exist."""
         if not (project and endpoint):
             raise ValueError(_('project and endpoint are required'))
 

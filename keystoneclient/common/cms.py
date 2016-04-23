@@ -153,7 +153,7 @@ def _encoding_for_form(inform):
 
 def cms_verify(formatted, signing_cert_file_name, ca_file_name,
                inform=PKI_ASN1_FORM):
-    """Verifies the signature of the contents IAW CMS syntax.
+    """Verify the signature of the contents IAW CMS syntax.
 
     :raises subprocess.CalledProcessError:
     :raises keystoneclient.exceptions.CertificateConfigError: if certificate
@@ -241,7 +241,7 @@ def pkiz_verify(signed_text, signing_cert_file_name, ca_file_name):
 
 
 def token_to_cms(signed_text):
-    """Converts a custom formatted token to a PEM-formatted token.
+    """Convert a custom formatted token to a PEM-formatted token.
 
     See documentation for cms_to_token() for details on the custom formatting.
     """
@@ -329,7 +329,7 @@ def cms_sign_text(data_to_sign, signing_cert_file_name, signing_key_file_name,
 def cms_sign_data(data_to_sign, signing_cert_file_name, signing_key_file_name,
                   outform=PKI_ASN1_FORM,
                   message_digest=DEFAULT_TOKEN_DIGEST_ALGORITHM):
-    """Uses OpenSSL to sign a document.
+    """Use OpenSSL to sign a document.
 
     Produces a Base64 encoding of a DER formatted CMS Document
     http://en.wikipedia.org/wiki/Cryptographic_Message_Syntax
@@ -386,7 +386,7 @@ def cms_sign_token(text, signing_cert_file_name, signing_key_file_name,
 
 
 def cms_to_token(cms_text):
-    """Converts a CMS-signed token in PEM format to a custom URL-safe format.
+    """Convert a CMS-signed token in PEM format to a custom URL-safe format.
 
     The conversion consists of replacing '/' char in the PEM-formatted token
     with the '-' char and doing other such textual replacements to make the

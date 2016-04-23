@@ -298,7 +298,7 @@ class CrudManager(Manager):
     base_url = None
 
     def build_url(self, dict_args_in_out=None):
-        """Builds a resource URL for the given kwargs.
+        """Build a resource URL for the given kwargs.
 
         Given an example collection where `collection_key = 'entities'` and
         `key = 'entity'`, the following URL's could be generated.
@@ -355,7 +355,7 @@ class CrudManager(Manager):
         return '?%s' % urllib.parse.urlencode(params) if params else ''
 
     def build_key_only_query(self, params_list):
-        """Builds a query that does not include values, just keys.
+        """Build a query that does not include values, just keys.
 
         The Identity API has some calls that define queries without values,
         this can not be accomplished by using urllib.parse.urlencode(). This

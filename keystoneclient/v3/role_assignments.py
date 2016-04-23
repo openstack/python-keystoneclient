@@ -49,7 +49,7 @@ class RoleAssignmentManager(base.CrudManager):
     def list(self, user=None, group=None, project=None, domain=None, role=None,
              effective=False, os_inherit_extension_inherited_to=None,
              include_subtree=False, include_names=False):
-        """Lists role assignments.
+        """List role assignments.
 
         If no arguments are provided, all role assignments in the
         system will be listed.

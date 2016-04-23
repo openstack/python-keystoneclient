@@ -124,7 +124,7 @@ class ProjectTests(utils.ClientTestCase, utils.CrudTests):
         self.assertEntityRequestBodyIs(ref)
 
     def _create_projects_hierarchy(self, hierarchy_size=3):
-        """Creates a project hierarchy with specified size.
+        """Create a project hierarchy with specified size.
 
         :param hierarchy_size: the desired hierarchy size, default is 3.
 

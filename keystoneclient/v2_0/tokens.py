@@ -117,7 +117,7 @@ class TokenManager(base.Manager):
         return access.AccessInfo.factory(auth_token=token_id, body=body)
 
     def get_revoked(self):
-        """Returns the revoked tokens response.
+        """Return the revoked tokens response.
 
         The response will be a dict containing 'signed' which is a CMS-encoded
         document.

@@ -114,14 +114,14 @@ class BaseGenericPlugin(base.BaseIdentityPlugin):
 
     @property
     def _v2_params(self):
-        """Parameters that are common to v2 plugins."""
+        """Return parameters that are common to v2 plugins."""
         return {'trust_id': self._trust_id,
                 'tenant_id': self._project_id,
                 'tenant_name': self._project_name}
 
     @property
     def _v3_params(self):
-        """Parameters that are common to v3 plugins."""
+        """Return parameters that are common to v3 plugins."""
         return {'trust_id': self._trust_id,
                 'project_id': self._project_id,
                 'project_name': self._project_name,

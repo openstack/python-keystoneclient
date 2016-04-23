@@ -20,7 +20,7 @@ from keystoneclient.tests.unit import utils
 
 
 def parameterize(ref):
-    """Rewrites attributes to match the kwarg naming convention in client.
+    """Rewrite attributes to match the kwarg naming convention in client.
 
     >>> parameterize({'project_id': 0})
     {'project': 0}

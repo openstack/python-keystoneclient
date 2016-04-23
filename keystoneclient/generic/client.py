@@ -75,14 +75,14 @@ class Client(httpclient.HTTPClient):
             return self._local_keystone_exists()
 
     def _local_keystone_exists(self):
-        """Checks if Keystone is available on default local port 35357."""
+        """Check if Keystone is available on default local port 35357."""
         results = self._check_keystone_versions("http://localhost:35357")
         if results is None:
             results = self._check_keystone_versions("https://localhost:35357")
         return results
 
     def _check_keystone_versions(self, url):
-        """Calls Keystone URL and detects the available API versions."""
+        """Call Keystone URL and detects the available API versions."""
         try:
             resp, body = self._request(url, "GET",
                                        headers={'Accept':
@@ -144,7 +144,7 @@ class Client(httpclient.HTTPClient):
             return self._check_keystone_extensions(url)
 
     def _check_keystone_extensions(self, url):
-        """Calls Keystone URL and detects the available extensions."""
+        """Call Keystone URL and detects the available extensions."""
         try:
             if not url.endswith("/"):
                 url += '/'
@@ -173,7 +173,7 @@ class Client(httpclient.HTTPClient):
 
     @staticmethod
     def _get_version_info(version, root_url):
-        """Parses version information.
+        """Parse version information.
 
         :param version: a dict of a Keystone version response
         :param root_url: string url used to construct
@@ -192,7 +192,7 @@ class Client(httpclient.HTTPClient):
 
     @staticmethod
     def _get_extension_info(extension):
-        """Parses extension information.
+        """Parse extension information.
 
         :param extension: a dict of a Keystone extension response
         :returns: tuple - (alias, name)

@@ -137,7 +137,7 @@ class RoleManager(base.CrudManager):
     @positional(enforcement=positional.WARN)
     def list(self, user=None, group=None, domain=None,
              project=None, os_inherit_extension_inherited=False, **kwargs):
-        """Lists roles and role grants.
+        """List roles and role grants.
 
         If no arguments are provided, all roles in the system will be
         listed.
@@ -179,7 +179,7 @@ class RoleManager(base.CrudManager):
     @positional(enforcement=positional.WARN)
     def grant(self, role, user=None, group=None, domain=None, project=None,
               os_inherit_extension_inherited=False, **kwargs):
-        """Grants a role to a user or group on a domain or project.
+        """Grant a role to a user or group on a domain or project.
 
         If 'os_inherit_extension_inherited' is passed, then OS-INHERIT will be
         used. It provides the ability for projects to inherit role assignments
@@ -200,7 +200,7 @@ class RoleManager(base.CrudManager):
     @positional(enforcement=positional.WARN)
     def check(self, role, user=None, group=None, domain=None, project=None,
               os_inherit_extension_inherited=False, **kwargs):
-        """Checks if a user or group has a role on a domain or project.
+        """Check if a user or group has a role on a domain or project.
 
         If 'os_inherit_extension_inherited' is passed, then OS-INHERIT will be
         used. It provides the ability for projects to inherit role assignments
@@ -223,7 +223,7 @@ class RoleManager(base.CrudManager):
     @positional(enforcement=positional.WARN)
     def revoke(self, role, user=None, group=None, domain=None, project=None,
                os_inherit_extension_inherited=False, **kwargs):
-        """Revokes a role from a user or group on a domain or project.
+        """Revoke a role from a user or group on a domain or project.
 
         If 'os_inherit_extension_inherited' is passed, then OS-INHERIT will be
         used. It provides the ability for projects to inherit role assignments
