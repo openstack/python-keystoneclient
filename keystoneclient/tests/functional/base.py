@@ -22,13 +22,13 @@ OPENSTACK_CLOUDS = ('functional_admin', 'devstack-admin', 'envvars')
 def get_client(version):
     """Create a keystoneclient instance to run functional tests.
 
-        The client is instantiated via os-client-config either based on a
-        clouds.yaml config file or from the environment variables.
+    The client is instantiated via os-client-config either based on a
+    clouds.yaml config file or from the environment variables.
 
-        First, look for a 'functional_admin' cloud, as this is a cloud that the
-        user may have defined for functional testing with admin credentials. If
-        that is not found, check for the 'devstack-admin' cloud. Finally, fall
-        back to looking for environment variables.
+    First, look for a 'functional_admin' cloud, as this is a cloud that the
+    user may have defined for functional testing with admin credentials. If
+    that is not found, check for the 'devstack-admin' cloud. Finally, fall
+    back to looking for environment variables.
 
     """
     for cloud in OPENSTACK_CLOUDS:
