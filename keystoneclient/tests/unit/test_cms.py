@@ -25,7 +25,6 @@ from keystoneclient.tests.unit import utils
 
 
 class CMSTest(utils.TestCase, testresources.ResourcedTestCase):
-
     """Unit tests for the keystoneclient.common.cms module."""
 
     resources = [('examples', client_fixtures.EXAMPLES_RESOURCE)]

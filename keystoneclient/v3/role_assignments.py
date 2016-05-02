@@ -16,7 +16,6 @@ from keystoneclient.i18n import _
 
 
 class RoleAssignment(base.Resource):
-
     """Represents an Identity role assignment.
 
     Attributes:
@@ -30,7 +29,6 @@ class RoleAssignment(base.Resource):
 
 
 class RoleAssignmentManager(base.CrudManager):
-
     """Manager class for manipulating Identity roles assignments."""
     resource_class = RoleAssignment
     collection_key = 'role_assignments'
