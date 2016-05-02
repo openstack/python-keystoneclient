@@ -48,7 +48,7 @@ _logger = logging.getLogger(__name__)
 
 
 class Client(httpclient.HTTPClient):
-    """Client for the OpenStack Identity API v3.
+    r"""Client for the OpenStack Identity API v3.
 
     :param session: Session for requests. (optional)
     :type session: keystoneauth1.session.Session

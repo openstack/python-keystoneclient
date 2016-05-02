@@ -75,7 +75,7 @@ class TestCase(testtools.TestCase):
             self.assertEqual(body, last_request_body)
 
     def assertQueryStringIs(self, qs=''):
-        """Verify the QueryString matches what is expected.
+        r"""Verify the QueryString matches what is expected.
 
         The qs parameter should be of the format \'foo=bar&abc=xyz\'
         """
