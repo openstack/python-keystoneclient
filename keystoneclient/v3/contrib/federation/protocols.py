@@ -23,6 +23,7 @@ class Protocol(base.Resource):
               federation protocol.
 
     """
+
     pass
 
 

@@ -28,6 +28,7 @@ class Group(base.Resource):
         * description: group description
 
     """
+
     @positional(enforcement=positional.WARN)
     def update(self, name=None, description=None):
         kwargs = {
@@ -48,6 +49,7 @@ class Group(base.Resource):
 
 class GroupManager(base.CrudManager):
     """Manager class for manipulating Identity groups."""
+
     resource_class = Group
     collection_key = 'groups'
     key = 'group'

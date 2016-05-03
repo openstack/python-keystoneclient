@@ -29,6 +29,7 @@ class AccessToken(base.Resource):
 
 class AccessTokenManager(base.CrudManager):
     """Manager class for manipulating identity OAuth access tokens."""
+
     resource_class = AccessToken
 
     def create(self, consumer_key, consumer_secret, request_key,

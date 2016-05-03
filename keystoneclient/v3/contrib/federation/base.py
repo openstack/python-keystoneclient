@@ -22,6 +22,7 @@ from keystoneclient import exceptions
 @six.add_metaclass(abc.ABCMeta)
 class EntityManager(base.Manager):
     """Manager class for listing federated accessible objects."""
+
     resource_class = None
 
     @abc.abstractproperty

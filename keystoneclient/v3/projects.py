@@ -36,6 +36,7 @@ class Project(base.Resource):
                    project in the hierarchy
 
     """
+
     @positional(enforcement=positional.WARN)
     def update(self, name=None, description=None, enabled=None):
         kwargs = {
@@ -57,6 +58,7 @@ class Project(base.Resource):
 
 class ProjectManager(base.CrudManager):
     """Manager class for manipulating Identity projects."""
+
     resource_class = Project
     collection_key = 'projects'
     key = 'project'

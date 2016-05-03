@@ -22,6 +22,7 @@ class Mapping(base.Resource):
         * id: user defined unique string identifying mapping.
 
     """
+
     pass
 
 

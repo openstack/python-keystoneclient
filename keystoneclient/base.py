@@ -86,6 +86,7 @@ class Manager(object):
     :param client: instance of BaseClient descendant for HTTP requests
 
     """
+
     resource_class = None
 
     def __init__(self, client):
@@ -293,6 +294,7 @@ class CrudManager(Manager):
       refer to an individual member of the collection.
 
     """
+
     collection_key = None
     key = None
     base_url = None

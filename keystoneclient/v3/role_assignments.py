@@ -25,11 +25,13 @@ class RoleAssignment(base.Resource):
         * scope: an object which has either a project or domain object
                  containing an uuid
     """
+
     pass
 
 
 class RoleAssignmentManager(base.CrudManager):
     """Manager class for manipulating Identity roles assignments."""
+
     resource_class = RoleAssignment
     collection_key = 'role_assignments'
     key = 'role_assignment'

@@ -33,11 +33,13 @@ class User(base.Resource):
         * id: a uuid that identifies the user
 
     """
+
     pass
 
 
 class UserManager(base.CrudManager):
     """Manager class for manipulating Identity users."""
+
     resource_class = User
     collection_key = 'users'
     key = 'user'

@@ -32,11 +32,13 @@ class Credential(base.Resource):
         * project_id: project ID (optional)
 
     """
+
     pass
 
 
 class CredentialManager(base.CrudManager):
     """Manager class for manipulating Identity credentials."""
+
     resource_class = Credential
     collection_key = 'credentials'
     key = 'credential'

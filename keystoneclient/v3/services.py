@@ -29,11 +29,13 @@ class Service(base.Resource):
         * enabled: determines whether the service appears in the catalog
 
     """
+
     pass
 
 
 class ServiceManager(base.CrudManager):
     """Manager class for manipulating Identity services."""
+
     resource_class = Service
     collection_key = 'services'
     key = 'service'

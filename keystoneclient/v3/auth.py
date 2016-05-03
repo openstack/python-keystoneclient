@@ -39,6 +39,7 @@ class Domain(base.Resource):
         * id: a uuid that identifies the domain
 
     """
+
     pass
 
 

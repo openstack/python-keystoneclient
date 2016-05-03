@@ -26,11 +26,13 @@ class Trust(base.Resource):
         * trustee_user_id: a uuid that identifies the trustee
         * trustor_user_id: a uuid that identifies the trustor
     """
+
     pass
 
 
 class TrustManager(base.CrudManager):
     """Manager class for manipulating Trusts."""
+
     resource_class = Trust
     collection_key = 'trusts'
     key = 'trust'

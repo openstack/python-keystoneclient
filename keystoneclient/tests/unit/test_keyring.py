@@ -54,6 +54,7 @@ class KeyringTest(utils.TestCase):
             setting password, and allows easy password and key retrieval. Also
             records if a password was retrieved.
             """
+
             def __init__(self):
                 self.key = None
                 self.password = None

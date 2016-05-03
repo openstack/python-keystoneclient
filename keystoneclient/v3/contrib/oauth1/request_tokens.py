@@ -38,6 +38,7 @@ class RequestToken(base.Resource):
 
 class RequestTokenManager(base.CrudManager):
     """Manager class for manipulating identity OAuth request tokens."""
+
     resource_class = RequestToken
 
     def authorize(self, request_token, roles):

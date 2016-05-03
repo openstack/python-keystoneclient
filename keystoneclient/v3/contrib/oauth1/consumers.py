@@ -22,11 +22,13 @@ class Consumer(base.Resource):
         * id: a uuid that identifies the consumer
         * description: a short description of the consumer
     """
+
     pass
 
 
 class ConsumerManager(base.CrudManager):
     """Manager class for manipulating identity consumers."""
+
     resource_class = Consumer
     collection_key = 'consumers'
     key = 'consumer'

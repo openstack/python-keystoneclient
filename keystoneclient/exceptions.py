@@ -52,21 +52,25 @@ An alias of :py:exc:`keystoneauth1.exceptions.auth.AuthorizationFailure`
 
 class ValidationError(ClientException):
     """Error in validation on API client side."""
+
     pass
 
 
 class UnsupportedVersion(ClientException):
     """User is trying to use an unsupported version of the API."""
+
     pass
 
 
 class CommandError(ClientException):
     """Error in CLI tool."""
+
     pass
 
 
 class AuthPluginOptionsMissing(AuthorizationFailure):
     """Auth plugin misses some options."""
+
     def __init__(self, opt_names):
         super(AuthPluginOptionsMissing, self).__init__(
             _("Authentication failed. Missing options: %s") %
@@ -76,6 +80,7 @@ class AuthPluginOptionsMissing(AuthorizationFailure):
 
 class AuthSystemNotFound(AuthorizationFailure):
     """User has specified an AuthSystem that is not installed."""
+
     def __init__(self, auth_system):
         super(AuthSystemNotFound, self).__init__(
             _("AuthSystemNotFound: %r") % auth_system)
@@ -84,6 +89,7 @@ class AuthSystemNotFound(AuthorizationFailure):
 
 class NoUniqueMatch(ClientException):
     """Multiple entities found instead of one."""
+
     pass
 
 
@@ -102,6 +108,7 @@ An alias of :py:exc:`keystoneauth1.exceptions.catalog.EndpointNotFound`
 
 class AmbiguousEndpoints(EndpointException):
     """Found more than one matching endpoint in Service Catalog."""
+
     def __init__(self, endpoints=None):
         super(AmbiguousEndpoints, self).__init__(
             _("AmbiguousEndpoints: %r") % endpoints)
@@ -132,6 +139,7 @@ An alias of :py:exc:`keystoneauth1.exceptions.http.HttpServerError`
 
 class HTTPRedirection(HttpError):
     """HTTP Redirection."""
+
     message = _("HTTP Redirection")
 
 
@@ -353,6 +361,7 @@ HTTPError = HttpError
 
 class CertificateConfigError(Exception):
     """Error reading the certificate."""
+
     def __init__(self, output):
         self.output = output
         msg = _('Unable to load certificate.')
@@ -361,6 +370,7 @@ class CertificateConfigError(Exception):
 
 class CMSError(Exception):
     """Error reading the certificate."""
+
     def __init__(self, output):
         self.output = output
         msg = _('Unable to sign or verify data.')
