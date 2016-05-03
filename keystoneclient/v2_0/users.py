@@ -113,7 +113,6 @@ class UserManager(base.ManagerWithFind):
 
         :rtype: list of :class:`User`
         """
-
         params = {}
         if limit:
             params['limit'] = int(limit)

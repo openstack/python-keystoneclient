@@ -25,7 +25,6 @@ def get_oauth_token_from_body(body):
     'oauth_token=12345&oauth_token_secret=67890' with
     'oauth_expires_at=2013-03-30T05:27:19.463201' possibly there, too.
     """
-
     if six.PY3:
         body = body.decode('utf-8')
 

@@ -74,7 +74,6 @@ class RoleAssignmentManager(base.CrudManager):
         :param boolean include_names: Display names instead
                                       of IDs. (optional)
         """
-
         self._check_not_user_and_group(user, group)
         self._check_not_domain_and_project(domain, project)
 

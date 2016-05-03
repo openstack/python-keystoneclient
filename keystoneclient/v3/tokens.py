@@ -36,7 +36,6 @@ class TokenManager(object):
                       :py:class:`keystoneclient.access.AccessInfo` or a string
                       token_id.
         """
-
         token_id = _calc_id(token)
         headers = {'X-Subject-Token': token_id}
         return self._client.delete('/auth/tokens', headers=headers)
@@ -92,7 +91,6 @@ class TokenManager(object):
         :rtype: :py:class:`keystoneclient.access.AccessInfoV3`
 
         """
-
         token_id = _calc_id(token)
         body = self.get_token_data(token_id, include_catalog=include_catalog)
         return access.AccessInfo.factory(auth_token=token_id, body=body)

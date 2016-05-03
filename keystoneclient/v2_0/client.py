@@ -147,7 +147,6 @@ class Client(httpclient.HTTPClient):
 
     def __init__(self, **kwargs):
         """Initialize a new client for the Keystone v2.0 API."""
-
         if not kwargs.get('session'):
             warnings.warn(
                 'Constructing an instance of the '

@@ -463,7 +463,6 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
             This is deprecated as of the 1.7.0 release in favor of project_id
             and may be removed in the 2.0.0 release.
         """
-
         warnings.warn(
             'tenant_id is deprecated as of the 1.7.0 release in favor of '
             'project_id and may be removed in the 2.0.0 release.',
@@ -480,7 +479,6 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
             This is deprecated as of the 1.7.0 release in favor of project_name
             and may be removed in the 2.0.0 release.
         """
-
         warnings.warn(
             'tenant_name is deprecated as of the 1.7.0 release in favor of '
             'project_name and may be removed in the 2.0.0 release.',

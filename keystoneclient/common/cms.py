@@ -101,7 +101,6 @@ def _check_files_accessible(files):
 
 def _process_communicate_handle_oserror(process, data, files):
     """Wrapper around process.communicate that checks for OSError."""
-
     try:
         output, err = process.communicate(data)
     except OSError as e:

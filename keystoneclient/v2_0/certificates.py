@@ -25,7 +25,6 @@ class CertificatesManager(object):
         :rtype: str
 
         """
-
         resp, body = self._client.get('/certificates/ca', authenticated=False)
         return resp.text
 
@@ -36,7 +35,6 @@ class CertificatesManager(object):
         :rtype: str
 
         """
-
         resp, body = self._client.get('/certificates/signing',
                                       authenticated=False)
         return resp.text

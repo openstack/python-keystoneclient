@@ -75,7 +75,6 @@ def get_version_data(session, url, authenticated=None):
 
 def normalize_version_number(version):
     """Turn a version representation into a tuple."""
-
     # trim the v from a 'v2.0' or similar
     try:
         version = version.lstrip('v')

@@ -32,7 +32,6 @@ class CredentialsManager(base.ManagerWithFind):
 
         :rtype: object of type :class:`EC2`
         """
-
         params = {'tenant_id': tenant_id}
 
         return self._post('/users/%s/credentials/OS-EC2' % user_id,

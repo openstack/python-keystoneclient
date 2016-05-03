@@ -49,7 +49,6 @@ class AccessInfo(dict):
             release and may be removed in the 2.0.0 release.
 
         """
-
         if region_name:
             warnings.warn(
                 'Use of the region_name argument is deprecated as of the '

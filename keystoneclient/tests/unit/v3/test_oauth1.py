@@ -98,7 +98,6 @@ class TokenTests(object):
         Assert that the data in the headers matches the data
         that is produced from oauthlib.
         """
-
         self.assertThat(auth_header, matchers.StartsWith('OAuth '))
         parameters = dict(
             oauth1.rfc5849.utils.parse_authorization_header(auth_header))

@@ -138,7 +138,6 @@ class OidcPassword(federated.FederatedBaseAuth):
         :returns: a token data representation
         :rtype: :py:class:`keystoneclient.access.AccessInfo`
         """
-
         # get an access token
         client_auth = (self.client_id, self.client_secret)
         payload = {'grant_type': self.grant_type, 'username': self.username,

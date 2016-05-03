@@ -34,7 +34,6 @@ class SamlManager(base.Manager):
         :returns: SAML representation of token_id
         :rtype: string
         """
-
         headers, body = self._create_common_request(service_provider, token_id)
         resp, body = self.client.post(SAML2_ENDPOINT, json=body,
                                       headers=headers)
@@ -54,7 +53,6 @@ class SamlManager(base.Manager):
         :returns: SAML representation of token_id, wrapped in ECP envelope
         :rtype: string
         """
-
         headers, body = self._create_common_request(service_provider, token_id)
         resp, body = self.client.post(ECP_ENDPOINT, json=body,
                                       headers=headers)
