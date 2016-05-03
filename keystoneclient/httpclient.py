@@ -15,9 +15,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-"""
-OpenStack Client interface. Handles the REST calls and responses.
-"""
+"""OpenStack Client interface. Handles the REST calls and responses."""
 
 import logging
 import warnings
@@ -641,9 +639,7 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         return (keyring_key, auth_ref)
 
     def store_auth_ref_into_keyring(self, keyring_key):
-        """Store auth_ref into keyring.
-
-        """
+        """Store auth_ref into keyring."""
         if self.use_keyring:
             try:
                 keyring.set_password("keystoneclient_auth",

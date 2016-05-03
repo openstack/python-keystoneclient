@@ -15,9 +15,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-"""
-Base utilities to build API operation managers and objects on top of.
-"""
+"""Base utilities to build API operation managers and objects on top of."""
 
 import abc
 import copy
