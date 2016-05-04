@@ -460,6 +460,7 @@ class Resource(object):
         self._loaded = loaded
 
     def __repr__(self):
+        """Return string representation of resource attributes."""
         reprkeys = sorted(k
                           for k in self.__dict__.keys()
                           if k[0] != '_' and k != 'manager')
@@ -485,6 +486,7 @@ class Resource(object):
                 pass
 
     def __getattr__(self, k):
+        """Checking attrbiute existence."""
         if k not in self.__dict__:
             # NOTE(bcwaldon): disallow lazy-loading if already loaded once
             if not self.is_loaded():
@@ -513,6 +515,7 @@ class Resource(object):
                 {'x_request_id': self.manager.client.last_request_id})
 
     def __eq__(self, other):
+        """Define equality for resources."""
         if not isinstance(other, Resource):
             return NotImplemented
         # two resources of different types are not equal

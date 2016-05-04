@@ -20,6 +20,7 @@ class Endpoint(base.Resource):
     """Represents a Keystone endpoint."""
 
     def __repr__(self):
+        """Return string representation of endpoint resource information."""
         return "<Endpoint %s>" % self._info
 
 

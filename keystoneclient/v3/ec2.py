@@ -16,6 +16,7 @@ from keystoneclient import base
 class EC2(base.Resource):
 
     def __repr__(self):
+        """Return string representation of EC2 resource information."""
         return "<EC2 %s>" % self._info
 
 

@@ -21,6 +21,7 @@ class Service(base.Resource):
     """Represents a Keystone service."""
 
     def __repr__(self):
+        """Return string representation of service resource information."""
         return "<Service %s>" % self._info
 
 

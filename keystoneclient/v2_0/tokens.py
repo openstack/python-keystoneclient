@@ -21,6 +21,7 @@ from keystoneclient.i18n import _
 
 class Token(base.Resource):
     def __repr__(self):
+        """Return string representation of resource information."""
         return "<Token %s>" % self._info
 
     @property
