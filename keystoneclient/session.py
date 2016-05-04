@@ -310,7 +310,6 @@ class Session(object):
 
         :returns: The response to the request.
         """
-
         headers = kwargs.setdefault('headers', dict())
 
         if authenticated is None:
@@ -563,12 +562,10 @@ class Session(object):
         functions without session arguments.
 
         """
-
         warnings.warn(
             'Session.construct() is deprecated as of the 1.7.0 release  in '
             'favor of using session constructor and may be removed in the '
             '2.0.0 release.', DeprecationWarning)
-
         return cls._construct(kwargs)
 
     @classmethod

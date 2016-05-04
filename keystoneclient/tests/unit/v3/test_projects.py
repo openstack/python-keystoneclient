@@ -131,7 +131,6 @@ class ProjectTests(utils.ClientTestCase, utils.CrudTests):
         :returns: a list of the projects in the created hierarchy.
 
         """
-
         ref = self.new_ref()
         project_id = ref['id']
         projects = [ref]

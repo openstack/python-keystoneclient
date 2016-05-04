@@ -276,7 +276,6 @@ class BaseAuthPlugin(object):
         :param parser: the parser to attach argparse options.
         :type parser: argparse.ArgumentParser
         """
-
         # NOTE(jamielennox): ideally oslo_config would be smart enough to
         # handle all the Opt manipulation that goes on in this file. However it
         # is currently not.  Options are handled in as similar a way as
@@ -313,7 +312,6 @@ class BaseAuthPlugin(object):
         :returns: An auth plugin, or None if a name is not provided.
         :rtype: :py:class:`keystoneclient.auth.BaseAuthPlugin`
         """
-
         def _getter(opt):
             return getattr(namespace, 'os_%s' % opt.dest)
 
@@ -343,7 +341,6 @@ class BaseAuthPlugin(object):
         :returns: An authentication Plugin.
         :rtype: :py:class:`keystoneclient.auth.BaseAuthPlugin`
         """
-
         def _getter(opt):
             return conf[group][opt.dest]
 
@@ -366,7 +363,6 @@ class BaseAuthPlugin(object):
         :returns: An authentication Plugin.
         :rtype: :py:class:`keystoneclient.auth.BaseAuthPlugin`
         """
-
         plugin_opts = cls.get_options()
 
         for opt in plugin_opts:

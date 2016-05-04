@@ -73,7 +73,6 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
 
         It may be removed in the 2.0.0 release.
         """
-
         warnings.warn(
             'username is deprecated as of the 1.7.0 release and may be '
             'removed in the 2.0.0 release.', DeprecationWarning)
@@ -86,7 +85,6 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
 
         It may be removed in the 2.0.0 release.
         """
-
         warnings.warn(
             'username is deprecated as of the 1.7.0 release and may be '
             'removed in the 2.0.0 release.', DeprecationWarning)
@@ -99,7 +97,6 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
 
         It may be removed in the 2.0.0 release.
         """
-
         warnings.warn(
             'password is deprecated as of the 1.7.0 release and may be '
             'removed in the 2.0.0 release.', DeprecationWarning)
@@ -112,7 +109,6 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
 
         It may be removed in the 2.0.0 release.
         """
-
         warnings.warn(
             'password is deprecated as of the 1.7.0 release and may be '
             'removed in the 2.0.0 release.', DeprecationWarning)
@@ -125,7 +121,6 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
 
         It may be removed in the 2.0.0 release.
         """
-
         warnings.warn(
             'token is deprecated as of the 1.7.0 release and may be '
             'removed in the 2.0.0 release.', DeprecationWarning)
@@ -138,7 +133,6 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
 
         It may be removed in the 2.0.0 release.
         """
-
         warnings.warn(
             'token is deprecated as of the 1.7.0 release and may be '
             'removed in the 2.0.0 release.', DeprecationWarning)
@@ -151,7 +145,6 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
 
         It may be removed in the 2.0.0 release.
         """
-
         warnings.warn(
             'trust_id is deprecated as of the 1.7.0 release and may be '
             'removed in the 2.0.0 release.', DeprecationWarning)
@@ -164,7 +157,6 @@ class BaseIdentityPlugin(base.BaseAuthPlugin):
 
         It may be removed in the 2.0.0 release.
         """
-
         warnings.warn(
             'trust_id is deprecated as of the 1.7.0 release and may be '
             'removed in the 2.0.0 release.', DeprecationWarning)

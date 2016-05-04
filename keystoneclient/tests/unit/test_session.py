@@ -180,7 +180,6 @@ class SessionTests(utils.TestCase):
 
     def test_logs_failed_output(self):
         """Test that output is logged even for failed requests."""
-
         session = client_session.Session()
         body = uuid.uuid4().hex
 
@@ -192,7 +191,6 @@ class SessionTests(utils.TestCase):
 
     def test_unicode_data_in_debug_output(self):
         """Verify that ascii-encodable data is logged without modification."""
-
         session = client_session.Session(verify=False)
 
         body = 'RESP'
@@ -204,7 +202,6 @@ class SessionTests(utils.TestCase):
 
     def test_binary_data_not_in_debug_output(self):
         """Verify that non-ascii-encodable data causes replacement."""
-
         if six.PY2:
             data = "my data" + chr(255)
         else:

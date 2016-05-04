@@ -136,6 +136,5 @@ class CredentialManager(base.CrudManager):
         :type credential: :class:`Credential` or str
 
         """
-
         return super(CredentialManager, self).delete(
             credential_id=base.getid(credential))

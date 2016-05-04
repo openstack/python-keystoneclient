@@ -25,7 +25,6 @@ class SimpleCertManager(object):
         :rtype: str
 
         """
-
         resp, body = self._client.get('/OS-SIMPLE-CERT/ca',
                                       authenticated=False)
         return resp.text
@@ -37,7 +36,6 @@ class SimpleCertManager(object):
         :rtype: str
 
         """
-
         resp, body = self._client.get('/OS-SIMPLE-CERT/certificates',
                                       authenticated=False)
         return resp.text

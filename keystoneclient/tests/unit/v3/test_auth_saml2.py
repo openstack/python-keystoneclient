@@ -493,7 +493,6 @@ class AuthenticateviaADFSTests(utils.TestCase):
 
     def test_get_adfs_security_token(self):
         """Test ADFSUnscopedToken._get_adfs_security_token()."""
-
         self.requests_mock.post(
             self.IDENTITY_PROVIDER_URL,
             content=make_oneline(self.ADFS_SECURITY_TOKEN_RESPONSE),
@@ -672,7 +671,6 @@ class SAMLGenerationTests(utils.ClientTestCase):
 
     def test_saml_create(self):
         """Test that a token can be exchanged for a SAML assertion."""
-
         token_id = uuid.uuid4().hex
         service_provider_id = uuid.uuid4().hex
 
@@ -695,7 +693,6 @@ class SAMLGenerationTests(utils.ClientTestCase):
 
     def test_ecp_create(self):
         """Test that a token can be exchanged for an ECP wrapped assertion."""
-
         token_id = uuid.uuid4().hex
         service_provider_id = uuid.uuid4().hex
 

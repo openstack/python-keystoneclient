@@ -154,7 +154,6 @@ class RoleManager(base.CrudManager):
         used. It provides the ability for projects to inherit role assignments
         from their domains or from projects in the hierarchy.
         """
-
         if os_inherit_extension_inherited:
             kwargs['tail'] = '/inherited_to_projects'
         if user or group:

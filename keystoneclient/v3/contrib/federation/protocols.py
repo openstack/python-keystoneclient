@@ -37,7 +37,6 @@ class ProtocolManager(base.CrudManager):
 
     def build_url(self, dict_args_in_out=None):
         """Build URL for federation protocols."""
-
         if dict_args_in_out is None:
             dict_args_in_out = {}
 

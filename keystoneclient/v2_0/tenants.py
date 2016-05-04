@@ -107,7 +107,6 @@ class TenantManager(base.ManagerWithFind):
         :rtype: list of :class:`Tenant`
 
         """
-
         params = {}
         if limit:
             params['limit'] = limit

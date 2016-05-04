@@ -162,7 +162,6 @@ class Ec2Signer(object):
     def _calc_signature_4(self, params, verb, server_string, path, headers,
                           body_hash):
         """Generate AWS signature version 4 string."""
-
         def sign(key, msg):
             return hmac.new(key, self._get_utf8_value(msg),
                             hashlib.sha256).digest()

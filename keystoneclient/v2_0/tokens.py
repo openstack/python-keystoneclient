@@ -106,7 +106,6 @@ class TokenManager(base.Manager):
         :rtype: :py:class:`keystoneclient.access.AccessInfoV2`
 
         """
-
         def calc_id(token):
             if isinstance(token, access.AccessInfo):
                 return token.auth_token

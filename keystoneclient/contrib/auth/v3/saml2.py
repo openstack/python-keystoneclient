@@ -293,7 +293,6 @@ class Saml2UnscopedToken(_BaseSAMLPlugin):
 
     def _send_idp_saml2_authn_request(self, session):
         """Present modified SAML2 authn assertion from the Service Provider."""
-
         self._prepare_idp_saml2_request(self.saml2_authn_request)
         idp_saml2_authn_request = self.saml2_authn_request
 
@@ -581,7 +580,6 @@ class ADFSUnscopedToken(_BaseSAMLPlugin):
         :type fmt: string
 
         """
-
         date_created = datetime.datetime.utcnow()
         date_expires = date_created + datetime.timedelta(
             seconds=self.DEFAULT_ADFS_TOKEN_EXPIRATION)
@@ -593,7 +591,6 @@ class ADFSUnscopedToken(_BaseSAMLPlugin):
         Some values like username or password are inserted in the request.
 
         """
-
         WSS_SECURITY_NAMESPACE = {
             'o': ('http://docs.oasis-open.org/wss/2004/01/oasis-200401-'
                   'wss-wssecurity-secext-1.0.xsd')
@@ -905,7 +902,6 @@ class Saml2ScopedTokenMethod(v3.TokenMethod):
 
     def get_auth_data(self, session, auth, headers, **kwargs):
         """Build and return request body for token scoping step."""
-
         t = super(Saml2ScopedTokenMethod, self).get_auth_data(
             session, auth, headers, **kwargs)
         _token_method, token = t

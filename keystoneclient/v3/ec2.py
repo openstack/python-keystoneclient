@@ -28,7 +28,6 @@ class EC2Manager(base.ManagerWithFind):
 
         :rtype: object of type :class:`EC2`
         """
-
         # NOTE(jamielennox): Yes, this uses tenant_id as a key even though we
         # are in the v3 API.
         return self._post('/users/%s/credentials/OS-EC2' % user_id,
