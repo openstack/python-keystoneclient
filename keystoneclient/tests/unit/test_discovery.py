@@ -499,7 +499,6 @@ class ClientDiscoveryTests(utils.TestCase):
         client = disc.create_client(debug=True, password='bar')
 
         self.assertIsInstance(client, v3_client.Client)
-        self.assertTrue(client.debug_log)
         self.assertFalse(disc._client_kwargs['debug'])
         self.assertEqual(client.username, 'foo')
         self.assertEqual(client.password, 'bar')
