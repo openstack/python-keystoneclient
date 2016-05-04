@@ -21,6 +21,7 @@ class Role(base.Resource):
     """Represents a Keystone role."""
 
     def __repr__(self):
+        """Return string representation of role resource information."""
         return "<Role %s>" % self._info
 
     def delete(self):

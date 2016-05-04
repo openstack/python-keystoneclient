@@ -17,6 +17,7 @@ class Extension(base.Resource):
     """Represents an Identity API extension."""
 
     def __repr__(self):
+        """Return string representation of extension resource information."""
         return "<Extension %s>" % self._info
 
 

@@ -23,6 +23,7 @@ class User(base.Resource):
     """Represents a Keystone user."""
 
     def __repr__(self):
+        """Return string representation of user resource information."""
         return "<User %s>" % self._info
 
     def delete(self):

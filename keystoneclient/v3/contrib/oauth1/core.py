@@ -58,6 +58,7 @@ class OAuthManagerOptionalImportProxy(object):
     """
 
     def __getattribute__(self, name):
+        """Return error when name is related to oauthlib and not exist."""
         if name in ('access_tokens', 'consumers', 'request_tokens'):
             raise NotImplementedError(
                 _('To use %r oauthlib must be installed') % name)

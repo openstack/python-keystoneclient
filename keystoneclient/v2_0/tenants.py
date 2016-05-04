@@ -34,6 +34,7 @@ class Tenant(base.Resource):
     """
 
     def __repr__(self):
+        """Return string representation of tenant resource information."""
         return "<Tenant %s>" % self._info
 
     def delete(self):

@@ -37,6 +37,7 @@ class MockPlugin(base.BaseAuthPlugin):
         self._data = kwargs
 
     def __getitem__(self, key):
+        """Get the data of the key."""
         return self._data[key]
 
     def get_token(self, *args, **kwargs):

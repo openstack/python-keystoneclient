@@ -864,6 +864,7 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
     deprecated_adapter_variables = {'region_name': None}
 
     def __getattr__(self, name):
+        """Fetch deprecated session variables."""
         try:
             var_name = self.deprecated_session_variables[name]
         except KeyError:  # nosec(cjschaef): try adapter variable or raise
@@ -890,6 +891,7 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         raise AttributeError(_("Unknown Attribute: %s") % name)
 
     def __setattr__(self, name, val):
+        """Assign value to deprecated seesion variables."""
         try:
             var_name = self.deprecated_session_variables[name]
         except KeyError:  # nosec(cjschaef): try adapter variable or call
