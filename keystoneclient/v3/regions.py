@@ -25,11 +25,13 @@ class Region(base.Resource):
         * enabled: determines whether the endpoint appears in the catalog.
         Defaults to True
     """
+
     pass
 
 
 class RegionManager(base.CrudManager):
     """Manager class for manipulating Identity regions."""
+
     resource_class = Region
     collection_key = 'regions'
     key = 'region'

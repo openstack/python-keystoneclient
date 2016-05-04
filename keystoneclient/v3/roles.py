@@ -30,6 +30,7 @@ class Role(base.Resource):
         * domain: optional domain for the role
 
     """
+
     pass
 
 
@@ -41,11 +42,13 @@ class InferenceRule(base.Resource):
         * implied_role: this role is implied by the other
 
     """
+
     pass
 
 
 class RoleManager(base.CrudManager):
     """Manager class for manipulating Identity roles."""
+
     resource_class = Role
     collection_key = 'roles'
     key = 'role'

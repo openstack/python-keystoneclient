@@ -19,12 +19,14 @@ from keystoneclient import base
 
 class Service(base.Resource):
     """Represents a Keystone service."""
+
     def __repr__(self):
         return "<Service %s>" % self._info
 
 
 class ServiceManager(base.ManagerWithFind):
     """Manager class for manipulating Keystone services."""
+
     resource_class = Service
 
     def list(self):

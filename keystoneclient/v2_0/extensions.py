@@ -15,6 +15,7 @@ from keystoneclient import base
 
 class Extension(base.Resource):
     """Represents an Identity API extension."""
+
     def __repr__(self):
         return "<Extension %s>" % self._info
 

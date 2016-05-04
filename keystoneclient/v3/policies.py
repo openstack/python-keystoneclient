@@ -28,6 +28,7 @@ class Policy(base.Resource):
         * type: the mime type of the policy blob
 
     """
+
     @positional(enforcement=positional.WARN)
     def update(self, blob=None, type=None):
         kwargs = {
@@ -46,6 +47,7 @@ class Policy(base.Resource):
 
 class PolicyManager(base.CrudManager):
     """Manager class for manipulating Identity policies."""
+
     resource_class = Policy
     collection_key = 'policies'
     key = 'policy'

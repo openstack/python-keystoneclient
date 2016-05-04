@@ -123,12 +123,12 @@ class Client(httpclient.HTTPClient):
     .. py:attribute:: endpoint_filter
 
         :py:class:`keystoneclient.v3.contrib.endpoint_filter.\
-EndpointFilterManager`
+        EndpointFilterManager`
 
     .. py:attribute:: endpoint_policy
 
         :py:class:`keystoneclient.v3.contrib.endpoint_policy.\
-EndpointPolicyManager`
+        EndpointPolicyManager`
 
     .. py:attribute:: endpoints
 

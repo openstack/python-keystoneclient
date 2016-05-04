@@ -22,6 +22,7 @@ class IdentityProvider(base.Resource):
         * id: user-defined unique string identifying Identity Provider.
 
     """
+
     pass
 
 

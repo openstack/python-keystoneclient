@@ -36,11 +36,13 @@ class Endpoint(base.Resource):
         * enabled: determines whether the endpoint appears in the catalog
 
     """
+
     pass
 
 
 class EndpointManager(base.CrudManager):
     """Manager class for manipulating Identity endpoints."""
+
     resource_class = Endpoint
     collection_key = 'endpoints'
     key = 'endpoint'

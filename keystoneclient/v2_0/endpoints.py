@@ -18,6 +18,7 @@ from keystoneclient import base
 
 class Endpoint(base.Resource):
     """Represents a Keystone endpoint."""
+
     def __repr__(self):
         return "<Endpoint %s>" % self._info
 

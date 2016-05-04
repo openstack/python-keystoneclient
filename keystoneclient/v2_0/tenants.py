@@ -32,6 +32,7 @@ class Tenant(base.Resource):
         * enabled: boolean to indicate if tenant is enabled
 
     """
+
     def __repr__(self):
         return "<Tenant %s>" % self._info
 
@@ -72,6 +73,7 @@ class Tenant(base.Resource):
 
 class TenantManager(base.ManagerWithFind):
     """Manager class for manipulating Keystone tenants."""
+
     resource_class = Tenant
 
     def __init__(self, client, role_manager, user_manager):

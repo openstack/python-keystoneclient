@@ -21,6 +21,7 @@ from keystoneclient.v3 import projects
 
 class EndpointFilterManager(base.Manager):
     """Manager class for manipulating project-endpoint associations."""
+
     OS_EP_FILTER_EXT = '/OS-EP-FILTER'
 
     def _build_base_url(self, project=None, endpoint=None):

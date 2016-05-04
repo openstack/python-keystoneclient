@@ -24,6 +24,7 @@ class ServiceProvider(base.Resource):
         * auth_url: the authentication url of Service Provider.
 
     """
+
     pass
 
 

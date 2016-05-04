@@ -26,11 +26,13 @@ class Domain(base.Resource):
         * id: a uuid that identifies the domain
 
     """
+
     pass
 
 
 class DomainManager(base.CrudManager):
     """Manager class for manipulating Identity domains."""
+
     resource_class = Domain
     collection_key = 'domains'
     key = 'domain'
