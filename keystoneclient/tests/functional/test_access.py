@@ -14,7 +14,7 @@ import os
 
 from keystoneclient.auth.identity import v2
 from keystoneclient import session
-from tempest_lib import base
+from tempest.lib import base
 
 
 class TestV2AccessInfo(base.BaseTestCase):
