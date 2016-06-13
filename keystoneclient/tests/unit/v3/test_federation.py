@@ -347,7 +347,7 @@ class FederationProjectTests(utils.ClientTestCase):
         self.collection_key = 'projects'
         self.model = projects.Project
         self.manager = self.client.federation.projects
-        self.URL = "%s%s" % (self.TEST_URL, '/OS-FEDERATION/projects')
+        self.URL = "%s%s" % (self.TEST_URL, '/auth/projects')
 
     def new_ref(self, **kwargs):
         kwargs.setdefault('id', uuid.uuid4().hex)
@@ -391,7 +391,7 @@ class K2KFederatedProjectTests(utils.TestCase):
         self.session = session.Session()
         self.collection_key = 'projects'
         self.model = projects.Project
-        self.URL = '%s%s' % (self.SP_ROOT_URL, '/OS-FEDERATION/projects')
+        self.URL = '%s%s' % (self.SP_ROOT_URL, '/auth/projects')
         self.k2kplugin = self.get_plugin()
         self._mock_k2k_flow_urls()
 
@@ -473,7 +473,7 @@ class FederationDomainTests(utils.ClientTestCase):
         self.model = domains.Domain
         self.manager = self.client.federation.domains
 
-        self.URL = "%s%s" % (self.TEST_URL, '/OS-FEDERATION/domains')
+        self.URL = "%s%s" % (self.TEST_URL, '/auth/domains')
 
     def new_ref(self, **kwargs):
         kwargs.setdefault('id', uuid.uuid4().hex)

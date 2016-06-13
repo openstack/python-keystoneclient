@@ -145,7 +145,7 @@ PROJECTS = {
         }
     ],
     "links": {
-        "self": "http://identity:35357/v3/OS-FEDERATION/projects",
+        "self": "http://identity:35357/v3/auth/projects",
         "previous": 'null',
         "next": 'null'
     }
@@ -164,7 +164,7 @@ DOMAINS = {
         }
     ],
     "links": {
-        "self": "http://identity:35357/v3/OS-FEDERATION/domains",
+        "self": "http://identity:35357/v3/auth/domains",
         "previous": 'null',
         "next": 'null'
     }

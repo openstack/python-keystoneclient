@@ -30,7 +30,7 @@ class EntityManager(base.Manager):
         raise exceptions.MethodNotImplemented
 
     def list(self):
-        url = '/OS-FEDERATION/%s' % self.object_type
+        url = '/auth/%s' % self.object_type
         try:
             tenant_list = self._list(url, self.object_type)
         except exceptions.EndpointException:
