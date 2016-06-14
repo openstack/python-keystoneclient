@@ -53,3 +53,18 @@ class Group(Base):
                     'domain': self.domain_id}
         self.entity = self.client.groups.create(**self.ref)
         self.addCleanup(self.client.groups.delete, self.entity)
+
+
+class Domain(Base):
+
+    def setUp(self):
+        super(Domain, self).setUp()
+
+        self.ref = {'name': RESOURCE_NAME_PREFIX + uuid.uuid4().hex,
+                    'description': uuid.uuid4().hex,
+                    'enabled': True}
+        self.entity = self.client.domains.create(**self.ref)
+
+        # Only disabled domains can be deleted
+        self.addCleanup(self.client.domains.delete, self.entity)
+        self.addCleanup(self.client.domains.update, self.entity, enabled=False)
