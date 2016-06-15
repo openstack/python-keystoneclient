@@ -32,6 +32,23 @@ from keystoneclient import exceptions as ksc_exceptions
 from keystoneclient.i18n import _
 
 
+class Response(object):
+
+    def __init__(self, http_response, data):
+        self.request_ids = []
+        if isinstance(http_response, list):
+            # http_response is a list of <requests.Response> in case
+            # of pagination
+            for resp_obj in http_response:
+                # Extract 'x-openstack-request-id' from headers
+                self.request_ids.append(resp_obj.headers.get(
+                    'x-openstack-request-id'))
+        else:
+            self.request_ids.append(http_response.headers.get(
+                'x-openstack-request-id'))
+        self.data = data
+
+
 def getid(obj):
     """Return id if argument is a Resource.
 
@@ -107,6 +124,11 @@ class Manager(object):
             'may be removed in the 2.0.0 release', DeprecationWarning)
         return self.client
 
+    def _prepare_return_value(self, http_response, data):
+        if self.client.include_metadata:
+            return Response(http_response, data)
+        return data
+
     def _list(self, url, response_key, obj_class=None, body=None, **kwargs):
         """List the collection.
 
@@ -137,7 +159,8 @@ class Manager(object):
             # are already returned in a list (so simply utilize that list)
             pass
 
-        return [obj_class(self, res, loaded=True) for res in data if res]
+        return self._prepare_return_value(
+            resp, [obj_class(self, res, loaded=True) for res in data if res])
 
     def _get(self, url, response_key, **kwargs):
         """Get an object from collection.
@@ -148,7 +171,8 @@ class Manager(object):
         :param kwargs: Additional arguments will be passed to the request.
         """
         resp, body = self.client.get(url, **kwargs)
-        return self.resource_class(self, body[response_key], loaded=True)
+        return self._prepare_return_value(
+            resp, self.resource_class(self, body[response_key], loaded=True))
 
     def _head(self, url, **kwargs):
         """Retrieve request headers for an object.
@@ -157,7 +181,7 @@ class Manager(object):
         :param kwargs: Additional arguments will be passed to the request.
         """
         resp, body = self.client.head(url, **kwargs)
-        return resp.status_code == 204
+        return self._prepare_return_value(resp, resp.status_code == 204)
 
     def _post(self, url, body, response_key, return_raw=False, **kwargs):
         """Create an object.
@@ -174,7 +198,8 @@ class Manager(object):
         resp, body = self.client.post(url, body=body, **kwargs)
         if return_raw:
             return body[response_key]
-        return self.resource_class(self, body[response_key])
+        return self._prepare_return_value(
+            resp, self.resource_class(self, body[response_key]))
 
     def _put(self, url, body=None, response_key=None, **kwargs):
         """Update an object with PUT method.
@@ -190,9 +215,11 @@ class Manager(object):
         # PUT requests may not return a body
         if body is not None:
             if response_key is not None:
-                return self.resource_class(self, body[response_key])
+                return self._prepare_return_value(
+                    resp, self.resource_class(self, body[response_key]))
             else:
-                return self.resource_class(self, body)
+                return self._prepare_return_value(
+                    resp, self.resource_class(self, body))
 
     def _patch(self, url, body=None, response_key=None, **kwargs):
         """Update an object with PATCH method.
@@ -206,9 +233,11 @@ class Manager(object):
         """
         resp, body = self.client.patch(url, body=body, **kwargs)
         if response_key is not None:
-            return self.resource_class(self, body[response_key])
+            return self._prepare_return_value(
+                resp, self.resource_class(self, body[response_key]))
         else:
-            return self.resource_class(self, body)
+            return self._prepare_return_value(
+                resp, self.resource_class(self, body))
 
     def _delete(self, url, **kwargs):
         """Delete an object.
@@ -216,7 +245,8 @@ class Manager(object):
         :param url: a partial URL, e.g., '/servers/my-server'
         :param kwargs: Additional arguments will be passed to the request.
         """
-        return self.client.delete(url, **kwargs)
+        resp, body = self.client.delete(url, **kwargs)
+        return resp, self._prepare_return_value(resp, body)
 
     def _update(self, url, body=None, response_key=None, method="PUT",
                 **kwargs):
@@ -231,7 +261,10 @@ class Manager(object):
                                                  % method)
         # PUT requests may not return a body
         if body:
-            return self.resource_class(self, body[response_key])
+            return self._prepare_return_value(
+                resp, self.resource_class(self, body[response_key]))
+        else:
+            return self._prepare_return_value(resp, body)
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -249,16 +282,20 @@ class ManagerWithFind(Manager):
         the Python side.
         """
         rl = self.findall(**kwargs)
-        num = len(rl)
 
-        if num == 0:
+        if self.client.include_metadata:
+            base_response = rl
+            rl = rl.data
+            base_response.data = rl[0]
+
+        if len(rl) == 0:
             msg = _("No %(name)s matching %(kwargs)s.") % {
                 'name': self.resource_class.__name__, 'kwargs': kwargs}
             raise ksa_exceptions.NotFound(404, msg)
-        elif num > 1:
+        elif len(rl) > 1:
             raise ksc_exceptions.NoUniqueMatch
         else:
-            return rl[0]
+            return base_response if self.client.include_metadata else rl[0]
 
     def findall(self, **kwargs):
         """Find all items with attributes matching ``**kwargs``.
@@ -269,15 +306,23 @@ class ManagerWithFind(Manager):
         found = []
         searches = kwargs.items()
 
-        for obj in self.list():
-            try:
-                if all(getattr(obj, attr) == value
-                       for (attr, value) in searches):
-                    found.append(obj)
-            except AttributeError:
-                continue
+        def _extract_data(objs, response_data):
+            for obj in objs:
+                try:
+                    if all(getattr(obj, attr) == value
+                           for (attr, value) in searches):
+                        response_data.append(obj)
+                except AttributeError:
+                    continue
+            return response_data
 
-        return found
+        objs = self.list()
+        if self.client.include_metadata:
+            # 'objs' is the object of 'Response' class.
+            objs.data = _extract_data(objs.data, found)
+            return objs
+
+        return _extract_data(objs, found)
 
 
 class CrudManager(Manager):
@@ -376,6 +421,16 @@ class CrudManager(Manager):
 
     @filter_kwargs
     def list(self, fallback_to_auth=False, **kwargs):
+
+        def return_resp(resp, include_metadata=False):
+            base_response = None
+            list_data = resp
+            if include_metadata:
+                base_response = resp
+                list_data = resp.data
+                base_response.data = list_data
+            return base_response if include_metadata else list_data
+
         if 'id' in kwargs.keys():
             # Ensure that users are not trying to call things like
             # ``domains.list(id='default')`` when they should have used
@@ -392,15 +447,16 @@ class CrudManager(Manager):
         try:
             query = self._build_query(kwargs)
             url_query = '%(url)s%(query)s' % {'url': url, 'query': query}
-            return self._list(
-                url_query,
-                self.collection_key)
+            list_resp = self._list(url_query, self.collection_key)
+            return return_resp(list_resp,
+                               include_metadata=self.client.include_metadata)
         except ksa_exceptions.EmptyCatalog:
             if fallback_to_auth:
-                return self._list(
-                    url_query,
-                    self.collection_key,
-                    endpoint_filter={'interface': plugin.AUTH_INTERFACE})
+                list_resp = self._list(url_query, self.collection_key,
+                                       endpoint_filter={
+                                           'interface': plugin.AUTH_INTERFACE})
+                return return_resp(
+                    list_resp, include_metadata=self.client.include_metadata)
             else:
                 raise
 
@@ -439,6 +495,11 @@ class CrudManager(Manager):
             url_query,
             self.collection_key)
 
+        if self.client.include_metadata:
+            base_response = elements
+            elements = elements.data
+            base_response.data = elements[0]
+
         if not elements:
             msg = _("No %(name)s matching %(kwargs)s.") % {
                 'name': self.resource_class.__name__, 'kwargs': kwargs}
@@ -446,7 +507,8 @@ class CrudManager(Manager):
         elif len(elements) > 1:
             raise ksc_exceptions.NoUniqueMatch
         else:
-            return elements[0]
+            return (base_response if self.client.include_metadata
+                    else elements[0])
 
 
 class Resource(object):

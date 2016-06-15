@@ -389,6 +389,11 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
                                          user_agent=user_agent,
                                          connect_retries=connect_retries)
 
+        # NOTE(dstanek): This allows me to not have to change keystoneauth or
+        # to write an adapter to the adapter here. Splitting thing into
+        # multiple project isn't always all sunshine and roses.
+        self._adapter.include_metadata = kwargs.pop('include_metadata', False)
+
         # keyring setup
         if use_keyring and keyring is None:
             _logger.warning('Failed to load keyring modules.')
