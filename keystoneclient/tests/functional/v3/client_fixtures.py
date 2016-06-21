@@ -19,12 +19,11 @@ RESOURCE_NAME_PREFIX = 'keystoneclient-functional-'
 
 class Base(fixtures.Fixture):
 
-    def __init__(self, client, domain_id):
+    def __init__(self, client, domain_id=None):
         super(Base, self).__init__()
 
         self.client = client
         self.domain_id = domain_id
-
         self.ref = None
         self.entity = None
 

@@ -54,10 +54,10 @@ class DomainsTestCase(base.V3ClientTestCase):
         self.check_domain(domain_ret)
 
     def test_list_domains(self):
-        domain_one = fixtures.Domain(self.client, self.project_domain_id)
+        domain_one = fixtures.Domain(self.client)
         self.useFixture(domain_one)
 
-        domain_two = fixtures.Domain(self.client, self.project_domain_id)
+        domain_two = fixtures.Domain(self.client)
         self.useFixture(domain_two)
 
         domains = self.client.domains.list()
@@ -70,7 +70,7 @@ class DomainsTestCase(base.V3ClientTestCase):
         self.assertIn(domain_two.entity, domains)
 
     def test_update_domain(self):
-        domain = fixtures.Domain(self.client, self.project_domain_id)
+        domain = fixtures.Domain(self.client)
         self.useFixture(domain)
 
         new_description = uuid.uuid4().hex
