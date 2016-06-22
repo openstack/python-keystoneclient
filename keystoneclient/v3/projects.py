@@ -68,13 +68,19 @@ class ProjectManager(base.CrudManager):
                enabled=True, parent=None, **kwargs):
         """Create a project.
 
-        :param str name: project name.
-        :param domain: the project domain.
-        :type domain: :py:class:`keystoneclient.v3.domains.Domain` or str
-        :param str description: the project description. (optional)
-        :param boolean enabled: if the project is enabled. (optional)
-        :param parent: the project's parent in the hierarchy. (optional)
-        :type parent: :py:class:`keystoneclient.v3.projects.Project` or str
+        :param str name: the name of the project.
+        :param domain: the domain of the project.
+        :type domain: str or :class:`keystoneclient.v3.domains.Domain`
+        :param str description: the description of the project.
+        :param bool enabled: whether the project is enabled.
+        :param parent: the parent of the project in the hierarchy.
+        :type parent: str or :class:`keystoneclient.v3.projects.Project`
+        :param kwargs: any other attribute provided will be passed to the
+                       server.
+
+        :returns: the created project returned from server.
+        :rtype: :class:`keystoneclient.v3.projects.Project`
+
         """
         # NOTE(rodrigods): the API must be backwards compatible, so if an
         # application was passing a 'parent_id' before as kwargs, the call
@@ -94,11 +100,16 @@ class ProjectManager(base.CrudManager):
     def list(self, domain=None, user=None, **kwargs):
         """List projects.
 
-        If domain or user are provided, then filter projects with
-        those attributes.
+        :param domain: the domain of the projects to be filtered on.
+        :type domain: str or :class:`keystoneclient.v3.domains.Domain`
+        :param user: filter in projects the specified user has role
+                     assignments on.
+        :type user: str or :class:`keystoneclient.v3.users.User`
+        :param kwargs: any other attribute provided will filter projects on.
 
-        If ``**kwargs`` are provided, then filter projects with
-        attributes matching ``**kwargs``.
+        :returns: a list of projects.
+        :rtype: list of :class:`keystoneclient.v3.projects.Project`
+
         """
         base_url = '/users/%s' % base.getid(user) if user else None
         return super(ProjectManager, self).list(
@@ -124,26 +135,27 @@ class ProjectManager(base.CrudManager):
     @positional()
     def get(self, project, subtree_as_list=False, parents_as_list=False,
             subtree_as_ids=False, parents_as_ids=False):
-        """Get a project.
+        """Retrieve a project.
 
-        :param project: project to be retrieved.
-        :type project: :py:class:`keystoneclient.v3.projects.Project` or str
-        :param boolean subtree_as_list: retrieve projects below this project
-                                        in the hierarchy as a flat list.
-                                        (optional)
-        :param boolean parents_as_list: retrieve projects above this project
-                                        in the hierarchy as a flat list.
-                                        (optional)
-        :param boolean subtree_as_ids: retrieve the IDs from the projects below
-                                       this project in the hierarchy as a
-                                       structured dictionary. (optional)
-        :param boolean parents_as_ids: retrieve the IDs from the projects above
-                                       this project in the hierarchy as a
-                                       structured dictionary. (optional)
+        :param project: the project to be retrieved from the server.
+        :type project: str or :class:`keystoneclient.v3.projects.Project`
+        :param bool subtree_as_list: retrieve projects below this project
+                                     in the hierarchy as a flat list.
+        :param bool parents_as_list: retrieve projects above this project
+                                     in the hierarchy as a flat list.
+        :param bool subtree_as_ids: retrieve the IDs from the projects below
+                                    this project in the hierarchy as a
+                                    structured dictionary.
+        :param bool parents_as_ids: retrieve the IDs from the projects above
+                                    this project in the hierarchy as a
+                                    structured dictionary.
+        :returns: the specified project returned from server.
+        :rtype: :class:`keystoneclient.v3.projects.Project`
 
         :raises keystoneclient.exceptions.ValidationError: if subtree_as_list
             and subtree_as_ids or parents_as_list and parents_as_ids are
             included at the same time in the call.
+
         """
         self._check_not_parents_as_ids_and_parents_as_list(
             parents_as_ids, parents_as_list)
@@ -169,6 +181,21 @@ class ProjectManager(base.CrudManager):
     @positional(enforcement=positional.WARN)
     def update(self, project, name=None, domain=None, description=None,
                enabled=None, **kwargs):
+        """Update a project.
+
+        :param project: the project to be updated on the server.
+        :type project: str or :class:`keystoneclient.v3.projects.Project`
+        :param str name: the new name of the project.
+        :param domain: the new domain of the project.
+        :type domain: str or :class:`keystoneclient.v3.domains.Domain`
+        :param str description: the new description of the project.
+        :param bool enabled: whether the project is enabled.
+        :param kwargs: any other attribute provided will be passed to server.
+
+        :returns: the updated project returned from server.
+        :rtype: :class:`keystoneclient.v3.projects.Project`
+
+        """
         return super(ProjectManager, self).update(
             project_id=base.getid(project),
             domain_id=base.getid(domain),
@@ -178,5 +205,13 @@ class ProjectManager(base.CrudManager):
             **kwargs)
 
     def delete(self, project):
+        """Delete a project.
+
+        :param project: the project to be deleted on the server.
+        :type project: str or :class:`keystoneclient.v3.projects.Project`
+
+        :returns: 204 No Content.
+
+        """
         return super(ProjectManager, self).delete(
             project_id=base.getid(project))
