@@ -139,10 +139,14 @@ class ProjectManager(base.CrudManager):
 
         :param project: the project to be retrieved from the server.
         :type project: str or :class:`keystoneclient.v3.projects.Project`
-        :param bool subtree_as_list: retrieve projects below this project
-                                     in the hierarchy as a flat list.
-        :param bool parents_as_list: retrieve projects above this project
-                                     in the hierarchy as a flat list.
+        :param bool subtree_as_list: retrieve projects below this project in
+                                     the hierarchy as a flat list. It only
+                                     includes the projects in which the current
+                                     user has role assignments on.
+        :param bool parents_as_list: retrieve projects above this project in
+                                     the hierarchy as a flat list. It only
+                                     includes the projects in which the current
+                                     user has role assignments on.
         :param bool subtree_as_ids: retrieve the IDs from the projects below
                                     this project in the hierarchy as a
                                     structured dictionary.
