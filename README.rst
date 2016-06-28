@@ -41,13 +41,15 @@ Python API
 
 By way of a quick-start::
 
-    # use v2.0 auth with http://example.com:5000/v2.0
-    >>> from keystoneauth1.identity import v2
+    >>> from keystoneauth1.identity import v3
     >>> from keystoneauth1 import session
-    >>> from keystoneclient.v2_0 import client
-    >>> auth = v2.Password(username=USERNAME, password=PASSWORD, tenant_name=TENANT, auth_url=AUTH_URL)
+    >>> from keystoneclient.v3 import client
+    >>> auth = v3.Password(auth_url="http://example.com:5000/v3", username="admin",
+    ...                     password="password", project_name="admin",
+    ...                     user_domain_id="default", project_domain_id="default")
     >>> sess = session.Session(auth=auth)
     >>> keystone = client.Client(session=sess)
-    >>> keystone.tenants.list()
-    >>> tenant = keystone.tenants.create(tenant_name="test", description="My new tenant!", enabled=True)
-    >>> tenant.delete()
+    >>> keystone.projects.list()
+        [...]
+    >>> project = keystone.projects.create(name="test", description="My new Project!", domain="default", enabled=True)
+    >>> project.delete()
