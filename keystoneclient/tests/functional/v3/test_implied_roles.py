@@ -79,7 +79,6 @@ class TestImpliedRoles(base.V3ClientTestCase):
     def delete_roles(self):
         roles = self.role_dict()
         for role_def in role_defs:
-            print ("role %s" % role_def)
             try:
                 self.client.roles.delete(roles[role_def])
             except KeyError:
