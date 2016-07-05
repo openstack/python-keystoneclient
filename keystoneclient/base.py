@@ -523,6 +523,10 @@ class Resource(object):
             return False
         return self._info == other._info
 
+    def __ne__(self, other):
+        """Define inequality for resources."""
+        return not self == other
+
     def is_loaded(self):
         return self._loaded
 
