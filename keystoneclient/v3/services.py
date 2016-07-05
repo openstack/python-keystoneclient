@@ -43,6 +43,19 @@ class ServiceManager(base.CrudManager):
     @positional(1, enforcement=positional.WARN)
     def create(self, name, type=None,
                enabled=True, description=None, **kwargs):
+        """Create a service.
+
+        :param str name: the name of the service.
+        :param str type: the type of the service.
+        :param bool enabled: whether the service appears in the catalog.
+        :param str description: the description of the service.
+        :param kwargs: any other attribute provided will be passed to the
+                       server.
+
+        :returns: the created service returned from server.
+        :rtype: :class:`keystoneclient.v3.services.Service`
+
+        """
         type_arg = type or kwargs.pop('service_type', None)
         return super(ServiceManager, self).create(
             name=name,
@@ -52,11 +65,30 @@ class ServiceManager(base.CrudManager):
             **kwargs)
 
     def get(self, service):
+        """Retrieve a service.
+
+        :param service: the service to be retrieved from the server.
+        :type service: str or :class:`keystoneclient.v3.services.Service`
+
+        :returns: the specified service returned from server.
+        :rtype: :class:`keystoneclient.v3.services.Service`
+
+        """
         return super(ServiceManager, self).get(
             service_id=base.getid(service))
 
     @positional(enforcement=positional.WARN)
     def list(self, name=None, type=None, **kwargs):
+        """List services.
+
+        :param str name: the name of the services to be filtered on.
+        :param str type: the type of the services to be filtered on.
+        :param kwargs: any other attribute provided will filter services on.
+
+        :returns: a list of services.
+        :rtype: list of :class:`keystoneclient.v3.services.Service`
+
+        """
         type_arg = type or kwargs.pop('service_type', None)
         return super(ServiceManager, self).list(
             name=name,
@@ -66,6 +98,20 @@ class ServiceManager(base.CrudManager):
     @positional(enforcement=positional.WARN)
     def update(self, service, name=None, type=None, enabled=None,
                description=None, **kwargs):
+        """Update a service.
+
+        :param service: the service to be updated on the server.
+        :type service: str or :class:`keystoneclient.v3.services.Service`
+        :param str name: the new name of the service.
+        :param str type: the new type of the service.
+        :param bool enabled: whether the service appears in the catalog.
+        :param str description: the new description of the service.
+        :param kwargs: any other attribute provided will be passed to server.
+
+        :returns: the updated service returned from server.
+        :rtype: :class:`keystoneclient.v3.services.Service`
+
+        """
         type_arg = type or kwargs.pop('service_type', None)
         return super(ServiceManager, self).update(
             service_id=base.getid(service),
@@ -76,6 +122,14 @@ class ServiceManager(base.CrudManager):
             **kwargs)
 
     def delete(self, service=None, id=None):
+        """Delete a service.
+
+        :param service: the service to be deleted on the server.
+        :type service: str or :class:`keystoneclient.v3.services.Service`
+
+        :returns: Request object with 204 status and None as data.
+
+        """
         if service:
             service_id = base.getid(service)
         else:
