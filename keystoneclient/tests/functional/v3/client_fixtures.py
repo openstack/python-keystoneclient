@@ -107,3 +107,14 @@ class Service(Base):
                     'description': uuid.uuid4().hex}
         self.entity = self.client.services.create(**self.ref)
         self.addCleanup(self.client.services.delete, self.entity)
+
+
+class Policy(Base):
+
+    def setUp(self):
+        super(Policy, self).setUp()
+
+        self.ref = {'blob': uuid.uuid4().hex,
+                    'type': uuid.uuid4().hex}
+        self.entity = self.client.policies.create(**self.ref)
+        self.addCleanup(self.client.policies.delete, self.entity)
