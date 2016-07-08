@@ -18,12 +18,10 @@ class Region(base.Resource):
 
     Attributes:
         * id: a string that identifies the region.
-        * description: a string that describes the region. Optional.
-        * parent_region_id: string that is the id field for a pre-existing
-                            region in the backend. Allows for hierarchical
-                            region organization.
+        * description: a string that describes the region.
+        * parent_region_id: a pre-existing region in the backend or its ID
+                            field. Allows for hierarchical region organization.
         * enabled: determines whether the endpoint appears in the catalog.
-        Defaults to True
     """
 
     pass
@@ -38,15 +36,20 @@ class RegionManager(base.CrudManager):
 
     def create(self, id=None, description=None, enabled=True,
                parent_region=None, **kwargs):
-        """Create a Catalog region.
+        """Create a region.
 
-        :param id: a string that identifies the region. If not specified a
-                   unique identifier will be assigned to the region.
-        :param description: a string that describes the region.
-        :param parent_region: string that is the id field for a pre-existing
-                              region in the backend. Allows for hierarchical
-                              region organization.
-        :param enabled: determines whether the endpoint appears in the catalog.
+        :param str id: the unique identifier of the region. If not specified an
+                       ID will be created by the server.
+        :param str description: the description of the region.
+        :param bool enabled: whether the region is enabled or not, determining
+                             if it appears in the catalog.
+        :param parent_region: the parent of the region in the hierarchy.
+        :type parent_region: str or :class:`keystoneclient.v3.regions.Region`
+        :param kwargs: any other attribute provided will be passed to the
+                       server.
+
+        :returns: the created region returned from server.
+        :rtype: :class:`keystoneclient.v3.regions.Region`
 
         """
         return super(RegionManager, self).create(
@@ -54,28 +57,45 @@ class RegionManager(base.CrudManager):
             parent_region_id=base.getid(parent_region), **kwargs)
 
     def get(self, region):
+        """Retrieve a region.
+
+        :param region: the region to be retrieved from the server.
+        :type region: str or :class:`keystoneclient.v3.regions.Region`
+
+        :returns: the specified region returned from server.
+        :rtype: :class:`keystoneclient.v3.regions.Region`
+
+        """
         return super(RegionManager, self).get(
             region_id=base.getid(region))
 
     def list(self, **kwargs):
         """List regions.
 
-        If ``**kwargs`` are provided, then filter regions with
-        attributes matching ``**kwargs``.
+        :param kwargs: any attributes provided will filter regions on.
+
+        :returns: a list of regions.
+        :rtype: list of :class:`keystoneclient.v3.regions.Region`.
+
         """
         return super(RegionManager, self).list(
             **kwargs)
 
     def update(self, region, description=None, enabled=None,
                parent_region=None, **kwargs):
-        """Update a Catalog region.
+        """Update a region.
 
-        :param region: a string that identifies the region.
-        :param description: a string that describes the region.
-        :param parent_region: string that is the id field for a pre-existing
-                              region in the backend.  Allows for hierarchical
-                              region organization.
-        :param enabled: determines whether the endpoint appears in the catalog.
+        :param region: the region to be updated on the server.
+        :type region: str or :class:`keystoneclient.v3.regions.Region`
+        :param str description: the new description of the region.
+        :param bool enabled: determining if the region appears in the catalog
+                             by enabling or disabling it.
+        :param parent_region: the new parent of the region in the hierarchy.
+        :type parent_region: str or :class:`keystoneclient.v3.regions.Region`
+        :param kwargs: any other attribute provided will be passed to server.
+
+        :returns: the updated region returned from server.
+        :rtype: :class:`keystoneclient.v3.regions.Region`
 
         """
         return super(RegionManager, self).update(
@@ -86,5 +106,14 @@ class RegionManager(base.CrudManager):
             **kwargs)
 
     def delete(self, region):
+        """Delete a region.
+
+        :param region: the region to be deleted on the server.
+        :type region: str or :class:`keystoneclient.v3.regions.Region`
+
+        :returns: Response object with 204 status.
+        :rtype: :class:`requests.models.Response`
+
+        """
         return super(RegionManager, self).delete(
             region_id=base.getid(region))
