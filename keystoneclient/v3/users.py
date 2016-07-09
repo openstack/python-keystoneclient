@@ -14,16 +14,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import logging
-
 from debtcollector import renames
 from positional import positional
 
 from keystoneclient import base
 from keystoneclient import exceptions
 from keystoneclient.i18n import _
-
-LOG = logging.getLogger(__name__)
 
 
 class User(base.Resource):
