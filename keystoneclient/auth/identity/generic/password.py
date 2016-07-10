@@ -10,8 +10,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import logging
-
 from oslo_config import cfg
 from positional import positional
 
@@ -20,8 +18,6 @@ from keystoneclient.auth.identity.generic import base
 from keystoneclient.auth.identity import v2
 from keystoneclient.auth.identity import v3
 from keystoneclient import utils
-
-LOG = logging.getLogger(__name__)
 
 
 def get_options():
