@@ -156,3 +156,23 @@ class Region(Base):
                     'parent_region': self.parent_region}
         self.entity = self.client.regions.create(**self.ref)
         self.addCleanup(self.client.regions.delete, self.entity)
+
+
+class Endpoint(Base):
+
+    def __init__(self, client, service, interface, region=None):
+        super(Endpoint, self).__init__(client)
+        self.service = service
+        self.interface = interface
+        self.region = region
+
+    def setUp(self):
+        super(Endpoint, self).setUp()
+
+        self.ref = {'service': self.service,
+                    'url': 'http://' + uuid.uuid4().hex,
+                    'enabled': True,
+                    'interface': self.interface,
+                    'region': self.region}
+        self.entity = self.client.endpoints.create(**self.ref)
+        self.addCleanup(self.client.endpoints.delete, self.entity)
