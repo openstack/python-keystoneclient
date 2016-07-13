@@ -88,12 +88,35 @@ class Project(Base):
 
 class Role(Base):
 
+    def __init__(self, client, name=None, domain=None):
+        super(Role, self).__init__(client)
+        self.name = name or RESOURCE_NAME_PREFIX + uuid.uuid4().hex
+        self.domain = domain
+
     def setUp(self):
         super(Role, self).setUp()
 
-        self.ref = {'name': RESOURCE_NAME_PREFIX + uuid.uuid4().hex}
+        self.ref = {'name': self.name,
+                    'domain': self.domain}
         self.entity = self.client.roles.create(**self.ref)
         self.addCleanup(self.client.roles.delete, self.entity)
+
+
+class InferenceRule(Base):
+
+    def __init__(self, client, prior_role, implied_role):
+        super(InferenceRule, self).__init__(client)
+        self.prior_role = prior_role
+        self.implied_role = implied_role
+
+    def setUp(self):
+        super(InferenceRule, self).setUp()
+
+        self.ref = {'prior_role': self.prior_role,
+                    'implied_role': self.implied_role}
+        self.entity = self.client.roles.create_implied(**self.ref)
+        self.addCleanup(self.client.roles.delete_implied, self.prior_role,
+                        self.implied_role)
 
 
 class Service(Base):
