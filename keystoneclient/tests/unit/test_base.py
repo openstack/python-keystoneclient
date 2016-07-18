@@ -95,7 +95,7 @@ class ManagerTest(utils.TestCase):
         auth = v2.Token(auth_url='http://127.0.0.1:5000',
                         token=self.TEST_TOKEN)
         session_ = session.Session(auth=auth)
-        self.client = client.Client(session=session_)
+        self.client = client.Client(session=session_)._adapter
 
         self.mgr = base.Manager(self.client)
         self.mgr.resource_class = base.Resource
