@@ -164,7 +164,7 @@ class ProjectTests(utils.ClientTestCase, utils.CrudTests):
 
         returned = self.manager.get(ref['id'], subtree_as_ids=True)
         self.assertQueryStringIs('subtree_as_ids')
-        self.assertDictEqual(ref['subtree'], returned.subtree)
+        self.assertEqual(ref['subtree'], returned.subtree)
 
     def test_get_with_parents_as_ids(self):
         projects = self._create_projects_hierarchy()
@@ -187,7 +187,7 @@ class ProjectTests(utils.ClientTestCase, utils.CrudTests):
 
         returned = self.manager.get(ref['id'], parents_as_ids=True)
         self.assertQueryStringIs('parents_as_ids')
-        self.assertDictEqual(ref['parents'], returned.parents)
+        self.assertEqual(ref['parents'], returned.parents)
 
     def test_get_with_parents_as_ids_and_subtree_as_ids(self):
         ref = self.new_ref()
@@ -209,8 +209,8 @@ class ProjectTests(utils.ClientTestCase, utils.CrudTests):
                                     parents_as_ids=True,
                                     subtree_as_ids=True)
         self.assertQueryStringIs('subtree_as_ids&parents_as_ids')
-        self.assertDictEqual(ref['parents'], returned.parents)
-        self.assertDictEqual(ref['subtree'], returned.subtree)
+        self.assertEqual(ref['parents'], returned.parents)
+        self.assertEqual(ref['subtree'], returned.subtree)
 
     def test_get_with_subtree_as_list(self):
         projects = self._create_projects_hierarchy()

@@ -563,7 +563,7 @@ class SessionAuthTests(utils.TestCase):
         auth = AuthPlugin()
         sess = client_session.Session(auth=auth)
         resp = sess.get(self.TEST_URL)
-        self.assertDictEqual(resp.json(), self.TEST_JSON)
+        self.assertEqual(resp.json(), self.TEST_JSON)
 
         self.assertRequestHeaderEqual('X-Auth-Token', AuthPlugin.TEST_TOKEN)
 
@@ -573,7 +573,7 @@ class SessionAuthTests(utils.TestCase):
         auth = AuthPlugin()
         sess = client_session.Session(auth=auth)
         resp = sess.get(self.TEST_URL, authenticated=False)
-        self.assertDictEqual(resp.json(), self.TEST_JSON)
+        self.assertEqual(resp.json(), self.TEST_JSON)
 
         self.assertRequestHeaderEqual('X-Auth-Token', None)
 
