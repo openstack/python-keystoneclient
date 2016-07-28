@@ -11,6 +11,8 @@
 # under the License.
 
 from keystoneclient.tests.functional import base
+from keystoneclient.tests.functional.v3 import client_fixtures as fixtures
+
 
 role_defs = ["test_admin",
              "test_id_manager",
@@ -44,8 +46,6 @@ class TestImpliedRoles(base.V3ClientTestCase):
 
     def setUp(self):
         super(TestImpliedRoles, self).setUp()
-        self.delete_rules()
-        self.delete_roles()
 
     def test_implied_roles(self):
 
@@ -61,38 +61,18 @@ class TestImpliedRoles(base.V3ClientTestCase):
         self.assertEqual(initial_rule_count + len(inference_rules),
                          rule_count)
 
-        self.delete_rules()
-        self.delete_roles()
-        role_count = len(self.client.roles.list())
-        self.assertEqual(initial_role_count, role_count)
-        rule_count = len(self.client.roles.list_role_inferences())
-        self.assertEqual(initial_rule_count, rule_count)
-
     def role_dict(self):
         roles = {role.name: role.id for role in self.client.roles.list()}
         return roles
 
     def create_roles(self):
         for role_def in role_defs:
-            self.client.roles.create(role_def)
-
-    def delete_roles(self):
-        roles = self.role_dict()
-        for role_def in role_defs:
-            try:
-                self.client.roles.delete(roles[role_def])
-            except KeyError:
-                pass
+            role = fixtures.Role(self.client, name=role_def)
+            self.useFixture(role)
 
     def create_rules(self):
         roles = self.role_dict()
         for prior, implied in inference_rules.items():
-            self.client.roles.create_implied(roles[prior], roles[implied])
-
-    def delete_rules(self):
-        roles = self.role_dict()
-        for prior, implied in inference_rules.items():
-            try:
-                self.client.roles.delete_implied(roles[prior], roles[implied])
-            except KeyError:
-                pass
+            rule = fixtures.InferenceRule(self.client, roles[prior],
+                                          roles[implied])
+            self.useFixture(rule)
