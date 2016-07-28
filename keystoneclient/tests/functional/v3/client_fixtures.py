@@ -141,3 +141,18 @@ class Policy(Base):
                     'type': uuid.uuid4().hex}
         self.entity = self.client.policies.create(**self.ref)
         self.addCleanup(self.client.policies.delete, self.entity)
+
+
+class Region(Base):
+
+    def __init__(self, client, parent_region=None):
+        super(Region, self).__init__(client)
+        self.parent_region = parent_region
+
+    def setUp(self):
+        super(Region, self).setUp()
+
+        self.ref = {'description': uuid.uuid4().hex,
+                    'parent_region': self.parent_region}
+        self.entity = self.client.regions.create(**self.ref)
+        self.addCleanup(self.client.regions.delete, self.entity)
