@@ -191,7 +191,6 @@ class UserTests(utils.ClientTestCase):
     def test_update(self):
         req_1 = {
             "user": {
-                "id": self.DEMO_USER_ID,
                 "email": "gabriel@example.com",
                 "name": "gabriel",
             }
@@ -199,20 +198,17 @@ class UserTests(utils.ClientTestCase):
         password = uuid.uuid4().hex
         req_2 = {
             "user": {
-                "id": self.DEMO_USER_ID,
                 "password": password,
             }
         }
         tenant_id = uuid.uuid4().hex
         req_3 = {
             "user": {
-                "id": self.DEMO_USER_ID,
                 "tenantId": tenant_id,
             }
         }
         req_4 = {
             "user": {
-                "id": self.DEMO_USER_ID,
                 "enabled": False,
             }
         }

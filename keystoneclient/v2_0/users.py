@@ -53,22 +53,19 @@ class UserManager(base.ManagerWithFind):
         # FIXME(gabriel): "tenantId" seems to be accepted by the API but
         #                 fails to actually update the default tenant.
         params = {"user": kwargs}
-        params['user']['id'] = base.getid(user)
         url = "/users/%s" % base.getid(user)
         return self._update(url, params, "user")
 
     def update_enabled(self, user, enabled):
         """Update enabled-ness."""
-        params = {"user": {"id": base.getid(user),
-                           "enabled": enabled}}
+        params = {"user": {"enabled": enabled}}
 
         self._update("/users/%s/OS-KSADM/enabled" % base.getid(user), params,
                      "user")
 
     def update_password(self, user, password):
         """Update password."""
-        params = {"user": {"id": base.getid(user),
-                           "password": password}}
+        params = {"user": {"password": password}}
 
         return self._update("/users/%s/OS-KSADM/password" % base.getid(user),
                             params, "user", log=False)
@@ -87,8 +84,7 @@ class UserManager(base.ManagerWithFind):
 
     def update_tenant(self, user, tenant):
         """Update default tenant."""
-        params = {"user": {"id": base.getid(user),
-                           "tenantId": base.getid(tenant)}}
+        params = {"user": {"tenantId": base.getid(tenant)}}
 
         # FIXME(ja): seems like a bad url - default tenant is an attribute
         #            not a subresource!???
