@@ -48,15 +48,10 @@ class TestImpliedRoles(base.V3ClientTestCase):
         super(TestImpliedRoles, self).setUp()
 
     def test_implied_roles(self):
-
-        initial_role_count = len(self.client.roles.list())
         initial_rule_count = len(self.client.roles.list_role_inferences())
 
         self.create_roles()
         self.create_rules()
-        role_count = len(self.client.roles.list())
-        self.assertEqual(initial_role_count + len(role_defs),
-                         role_count)
         rule_count = len(self.client.roles.list_role_inferences())
         self.assertEqual(initial_rule_count + len(inference_rules),
                          rule_count)
