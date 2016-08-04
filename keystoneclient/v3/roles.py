@@ -134,7 +134,6 @@ class RoleManager(base.CrudManager):
         :param kwargs: any other attribute provided will be passed to the
                        server.
 
-
         """
         url_tail = self._implied_role_url_tail(prior_role, implied_role)
         self.client.put("/roles" + url_tail, **kwargs)
