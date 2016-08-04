@@ -96,6 +96,19 @@ class RoleManager(base.CrudManager):
 
     @positional(1, enforcement=positional.WARN)
     def create(self, name, domain=None, **kwargs):
+        """Create a role.
+
+        :param str name: the name of the role.
+        :param domain: the domain of the role. If a value is passed it is a
+                       domain-scoped role, otherwise it's a global role.
+        :type domain: str or :class:`keystoneclient.v3.domains.Domain`
+        :param kwargs: any other attribute provided will be passed to the
+                       server.
+
+        :returns: the created role returned from server.
+        :rtype: :class:`keystoneclient.v3.roles.Role`
+
+        """
         domain_id = None
         if domain:
             domain_id = base.getid(domain)
@@ -112,47 +125,129 @@ class RoleManager(base.CrudManager):
         return base_url
 
     def create_implied(self, prior_role, implied_role, **kwargs):
+        """Create an inference rule.
+
+        :param prior_role: the role which implies ``implied_role``.
+        :type role: str or :class:`keystoneclient.v3.roles.Role`
+        :param implied_role: the role which is implied by ``prior_role``.
+        :type role: str or :class:`keystoneclient.v3.roles.Role`
+        :param kwargs: any other attribute provided will be passed to the
+                       server.
+
+
+        """
         url_tail = self._implied_role_url_tail(prior_role, implied_role)
         self.client.put("/roles" + url_tail, **kwargs)
 
     def delete_implied(self, prior_role, implied_role, **kwargs):
+        """Delete an inference rule.
+
+        :param prior_role: the role which implies ``implied_role``.
+        :type role: str or :class:`keystoneclient.v3.roles.Role`
+        :param implied_role: the role which is implied by ``prior_role``.
+        :type role: str or :class:`keystoneclient.v3.roles.Role`
+        :param kwargs: any other attribute provided will be passed to the
+                       server.
+
+        :returns: Response object with 204 status.
+        :rtype: :class:`requests.models.Response`
+
+        """
         url_tail = self._implied_role_url_tail(prior_role, implied_role)
         return super(RoleManager, self).delete(tail=url_tail, **kwargs)
 
     def get_implied(self, prior_role, implied_role, **kwargs):
+        """Retrieve an inference rule.
+
+        :param prior_role: the role which implies ``implied_role``.
+        :type role: str or :class:`keystoneclient.v3.roles.Role`
+        :param implied_role: the role which is implied by ``prior_role``.
+        :type role: str or :class:`keystoneclient.v3.roles.Role`
+        :param kwargs: any other attribute provided will be passed to the
+                       server.
+
+        :returns: the specified role inference returned from server.
+        :rtype: :class:`keystoneclient.v3.roles.InferenceRule`
+
+        """
         url_tail = self._implied_role_url_tail(prior_role, implied_role)
         return super(RoleManager, self).get(tail=url_tail, **kwargs)
 
     def check_implied(self, prior_role, implied_role, **kwargs):
+        """Check if an inference rule exists.
+
+        :param prior_role: the role which implies ``implied_role``.
+        :type role: str or :class:`keystoneclient.v3.roles.Role`
+        :param implied_role: the role which is implied by ``prior_role``.
+        :type role: str or :class:`keystoneclient.v3.roles.Role`
+        :param kwargs: any other attribute provided will be passed to the
+                       server.
+
+        :returns: response object with 200 status returned from server.
+        :rtype: :class:`requests.models.Response`
+
+        """
         url_tail = self._implied_role_url_tail(prior_role, implied_role)
         return super(RoleManager, self).head(tail=url_tail, **kwargs)
 
     def list_role_inferences(self, **kwargs):
+        """List role inferences.
+
+        :param kwargs: attributes provided will be passed to the server.
+
+        :returns: a list of roles inferences.
+        :rtype: list of :class:`keystoneclient.v3.roles.InferenceRule`
+
+        """
         resp, body = self.client.get('/role_inferences/', **kwargs)
         obj_class = InferenceRule
         return [obj_class(self, res, loaded=True)
                 for res in body['role_inferences']]
 
     def get(self, role):
-        return super(RoleManager, self).get(
-            role_id=base.getid(role))
+        """Retrieve a role.
+
+        :param role: the role to be retrieved from the server.
+        :type role: str or :class:`keystoneclient.v3.roles.Role`
+
+        :returns: the specified role returned from server.
+        :rtype: :class:`keystoneclient.v3.roles.Role`
+
+        """
+        return super(RoleManager, self).get(role_id=base.getid(role))
 
     @positional(enforcement=positional.WARN)
     def list(self, user=None, group=None, domain=None,
              project=None, os_inherit_extension_inherited=False, **kwargs):
         """List roles and role grants.
 
-        If no arguments are provided, all roles in the system will be
-        listed.
+        :param user: filter in role grants for the specified user on a
+                     resource. Domain or project must be specified.
+                     User and group are mutually exclusive.
+        :type user: str or :class:`keystoneclient.v3.users.User`
+        :param group: filter in role grants for the specified group on a
+                      resource. Domain or project must be specified.
+                      User and group are mutually exclusive.
+        :type group: str or :class:`keystoneclient.v3.groups.Group`
+        :param domain: filter in role grants on the specified domain. Either
+                       user or group must be specified. Project and domain
+                       are mutually exclusive.
+        :type domain: str or :class:`keystoneclient.v3.domains.Domain`
+        :param project: filter in role grants on the specified project. Either
+                       user or group must be specified. Project and domain
+                       are mutually exclusive.
+        :type project: str or :class:`keystoneclient.v3.projects.Project`
+        :param bool os_inherit_extension_inherited: OS-INHERIT will be used.
+                                                    It provides the ability for
+                                                    projects to inherit role
+                                                    assignments from their
+                                                    domains or from parent
+                                                    projects in the hierarchy.
+        :param kwargs: any other attribute provided will filter roles on.
 
-        If a user or group is specified, you must also specify either a
-        domain or project to list role grants on that pair. And if
-        ``**kwargs`` are provided, then also filter roles with
-        attributes matching ``**kwargs``.
+        :returns: a list of roles.
+        :rtype: list of :class:`keystoneclient.v3.roles.Role`
 
-        If 'os_inherit_extension_inherited' is passed, then OS-INHERIT will be
-        used. It provides the ability for projects to inherit role assignments
-        from their domains or from projects in the hierarchy.
         """
         if os_inherit_extension_inherited:
             kwargs['tail'] = '/inherited_to_projects'
@@ -169,12 +264,35 @@ class RoleManager(base.CrudManager):
 
     @positional(enforcement=positional.WARN)
     def update(self, role, name=None, **kwargs):
+        """Update a role.
+
+        :param role: the role to be updated on the server.
+        :type role: str or :class:`keystoneclient.v3.roles.Role`
+        :param str name: the new name of the role.
+        :param kwargs: any other attribute provided will be passed to server.
+
+        :returns: the updated role returned from server.
+        :rtype: :class:`keystoneclient.v3.roles.Role`
+
+        """
         return super(RoleManager, self).update(
             role_id=base.getid(role),
             name=name,
             **kwargs)
 
     def delete(self, role):
+        """Delete a role.
+
+        When a role is deleted all the role inferences that have deleted role
+        as prior role will be deleted as well.
+
+        :param role: the role to be deleted on the server.
+        :type role: str or :class:`keystoneclient.v3.roles.Role`
+
+        :returns: Response object with 204 status.
+        :rtype: :class:`requests.models.Response`
+
+        """
         return super(RoleManager, self).delete(
             role_id=base.getid(role))
 
@@ -183,9 +301,35 @@ class RoleManager(base.CrudManager):
               os_inherit_extension_inherited=False, **kwargs):
         """Grant a role to a user or group on a domain or project.
 
-        If 'os_inherit_extension_inherited' is passed, then OS-INHERIT will be
-        used. It provides the ability for projects to inherit role assignments
-        from their domains or from projects in the hierarchy.
+        :param role: the role to be granted on the server.
+        :type role: str or :class:`keystoneclient.v3.roles.Role`
+        :param user: the specified user to have the role granted on a resource.
+                     Domain or project must be specified. User and group are
+                     mutually exclusive.
+        :type user: str or :class:`keystoneclient.v3.users.User`
+        :param group: the specified group to have the role granted on a
+                      resource. Domain or project must be specified.
+                      User and group are mutually exclusive.
+        :type group: str or :class:`keystoneclient.v3.groups.Group`
+        :param domain: the domain in which the role will be granted. Either
+                       user or group must be specified. Project and domain
+                       are mutually exclusive.
+        :type domain: str or :class:`keystoneclient.v3.domains.Domain`
+        :param project: the project in which the role will be granted. Either
+                       user or group must be specified. Project and domain
+                       are mutually exclusive.
+        :type project: str or :class:`keystoneclient.v3.projects.Project`
+        :param bool os_inherit_extension_inherited: OS-INHERIT will be used.
+                                                    It provides the ability for
+                                                    projects to inherit role
+                                                    assignments from their
+                                                    domains or from parent
+                                                    projects in the hierarchy.
+        :param kwargs: any other attribute provided will be passed to server.
+
+        :returns: the granted role returned from server.
+        :rtype: :class:`keystoneclient.v3.roles.Role`
+
         """
         self._require_domain_xor_project(domain, project)
         self._require_user_xor_group(user, group)
@@ -204,9 +348,37 @@ class RoleManager(base.CrudManager):
               os_inherit_extension_inherited=False, **kwargs):
         """Check if a user or group has a role on a domain or project.
 
-        If 'os_inherit_extension_inherited' is passed, then OS-INHERIT will be
-        used. It provides the ability for projects to inherit role assignments
-        from their domains or from projects in the hierarchy.
+        :param user: check for role grants for the specified user on a
+                     resource. Domain or project must be specified.
+                     User and group are mutually exclusive.
+        :type user: str or :class:`keystoneclient.v3.users.User`
+        :param group: check for role grants for the specified group on a
+                      resource. Domain or project must be specified.
+                      User and group are mutually exclusive.
+        :type group: str or :class:`keystoneclient.v3.groups.Group`
+        :param domain: check for role grants on the specified domain. Either
+                       user or group must be specified. Project and domain
+                       are mutually exclusive.
+        :type domain: str or :class:`keystoneclient.v3.domains.Domain`
+        :param project: check for role grants on the specified project. Either
+                       user or group must be specified. Project and domain
+                       are mutually exclusive.
+        :type project: str or :class:`keystoneclient.v3.projects.Project`
+        :param bool os_inherit_extension_inherited: OS-INHERIT will be used.
+                                                    It provides the ability for
+                                                    projects to inherit role
+                                                    assignments from their
+                                                    domains or from parent
+                                                    projects in the hierarchy.
+        :param kwargs: any other attribute provided will be passed to server.
+
+        :returns: the specified role returned from server if it exists.
+        :rtype: :class:`keystoneclient.v3.roles.Role`
+
+        :returns: Response object with 204 status if specified role
+                  doesn't exist.
+        :rtype: :class:`requests.models.Response`
+
         """
         self._require_domain_xor_project(domain, project)
         self._require_user_xor_group(user, group)
@@ -227,9 +399,33 @@ class RoleManager(base.CrudManager):
                os_inherit_extension_inherited=False, **kwargs):
         """Revoke a role from a user or group on a domain or project.
 
-        If 'os_inherit_extension_inherited' is passed, then OS-INHERIT will be
-        used. It provides the ability for projects to inherit role assignments
-        from their domains or from projects in the hierarchy.
+        :param user: revoke role grants for the specified user on a
+                     resource. Domain or project must be specified.
+                     User and group are mutually exclusive.
+        :type user: str or :class:`keystoneclient.v3.users.User`
+        :param group: revoke role grants for the specified group on a
+                      resource. Domain or project must be specified.
+                      User and group are mutually exclusive.
+        :type group: str or :class:`keystoneclient.v3.groups.Group`
+        :param domain: revoke role grants on the specified domain. Either
+                       user or group must be specified. Project and domain
+                       are mutually exclusive.
+        :type domain: str or :class:`keystoneclient.v3.domains.Domain`
+        :param project: revoke role grants on the specified project. Either
+                       user or group must be specified. Project and domain
+                       are mutually exclusive.
+        :type project: str or :class:`keystoneclient.v3.projects.Project`
+        :param bool os_inherit_extension_inherited: OS-INHERIT will be used.
+                                                    It provides the ability for
+                                                    projects to inherit role
+                                                    assignments from their
+                                                    domains or from parent
+                                                    projects in the hierarchy.
+        :param kwargs: any other attribute provided will be passed to server.
+
+        :returns: the revoked role returned from server.
+        :rtype: list of :class:`keystoneclient.v3.roles.Role`
+
         """
         self._require_domain_xor_project(domain, project)
         self._require_user_xor_group(user, group)
