@@ -58,25 +58,37 @@ class BaseTest(utils.TestCase):
         r1 = base.Resource(None, {'id': 1, 'name': 'hi'})
         r2 = base.Resource(None, {'id': 1, 'name': 'hello'})
         self.assertNotEqual(r1, r2)
+        self.assertTrue(r1 != r2)
 
         # Two resources with same ID: equal if their info is equal
+        # The truth of r1==r2 does not imply that r1!=r2 is false in PY2.
+        # Test that inequality operator is defined and that comparing equal
+        # items returns False
         r1 = base.Resource(None, {'id': 1, 'name': 'hello'})
         r2 = base.Resource(None, {'id': 1, 'name': 'hello'})
-        self.assertEqual(r1, r2)
+        self.assertTrue(r1 == r2)
+        self.assertFalse(r1 != r2)
 
-        # Two resoruces of different types: never equal
+        # Two resources of different types: never equal
         r1 = base.Resource(None, {'id': 1})
         r2 = roles.Role(None, {'id': 1})
         self.assertNotEqual(r1, r2)
+        self.assertTrue(r1 != r2)
 
         # Two resources with no ID: equal if their info is equal
+        # The truth of r1==r2 does not imply that r1!=r2 is false in PY2.
+        # Test that inequality operator is defined and that comparing equal
+        # items returns False.
         r1 = base.Resource(None, {'name': 'joe', 'age': 12})
         r2 = base.Resource(None, {'name': 'joe', 'age': 12})
-        self.assertEqual(r1, r2)
+        self.assertTrue(r1 == r2)
+        self.assertFalse(r1 != r2)
 
         r1 = base.Resource(None, {'id': 1})
         self.assertNotEqual(r1, object())
+        self.assertTrue(r1 != object())
         self.assertNotEqual(r1, {'id': 1})
+        self.assertTrue(r1 != {'id': 1})
 
     def test_human_id(self):
         r = base.Resource(None, {"name": "1 of !"})
