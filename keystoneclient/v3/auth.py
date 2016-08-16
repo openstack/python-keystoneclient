@@ -20,14 +20,15 @@ class Project(base.Resource):
 
     Attributes:
         * id: a uuid that identifies the project
-        * name: project name
-        * description: project description
-        * enabled: boolean to indicate if project is enabled
-        * parent_id: a uuid representing this project's parent in hierarchy
-        * parents: a list or a structured dict containing the parents of this
-                   project in the hierarchy
-        * subtree: a list or a structured dict containing the subtree of this
-                   project in the hierarchy
+        * name: the name of the project
+        * description: a description of the project
+        * enabled: determines whether the project is enabled
+        * parent_id: a uuid that identifies the specified project's parent
+                     in hierarchy
+        * parents: a list or a structured dict containing the parents of the
+                   specified project in the hierarchy
+        * subtree: a list or a structured dict containing the subtree of the
+                   specified project in the hierarchy
 
     """
 
@@ -37,6 +38,9 @@ class Domain(base.Resource):
 
     Attributes:
         * id: a uuid that identifies the domain
+        * name: the name of the domain
+        * description: a description of the domain
+        * enabled: determines whether the domain is enabled
 
     """
 
@@ -46,7 +50,7 @@ class Domain(base.Resource):
 class AuthManager(base.Manager):
     """Retrieve auth context specific information.
 
-    The information returned by the /auth routes are entirely dependant on the
+    The information returned by the auth routes is entirely dependant on the
     authentication information provided by the user.
     """
 
@@ -54,7 +58,12 @@ class AuthManager(base.Manager):
     _DOMAINS_URL = '/auth/domains'
 
     def projects(self):
-        """List projects that this token can be rescoped to."""
+        """List projects that the specified token can be rescoped to.
+
+        :returns: a list of projects.
+        :rtype: list of :class:`keystoneclient.v3.projects.Project`
+
+        """
         try:
             return self._list(self._PROJECTS_URL,
                               'projects',
@@ -67,7 +76,12 @@ class AuthManager(base.Manager):
                               endpoint_filter=endpoint_filter)
 
     def domains(self):
-        """List Domains that this token can be rescoped to."""
+        """List Domains that the specified token can be rescoped to.
+
+        :returns: a list of domains.
+        :rtype: list of :class:`keystoneclient.v3.domains.Domain`.
+
+        """
         try:
             return self._list(self._DOMAINS_URL,
                               'domains',
