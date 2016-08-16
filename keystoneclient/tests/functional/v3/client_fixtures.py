@@ -176,3 +176,28 @@ class Endpoint(Base):
                     'region': self.region}
         self.entity = self.client.endpoints.create(**self.ref)
         self.addCleanup(self.client.endpoints.delete, self.entity)
+
+
+class Credential(Base):
+
+    def __init__(self, client, user, type, project=None):
+        super(Credential, self).__init__(client)
+        self.user = user
+        self.type = type
+        self.project = project
+
+        if type == 'ec2':
+            self.blob = ("{\"access\":\"" + uuid.uuid4().hex +
+                         "\",\"secret\":\"secretKey\"}")
+        else:
+            self.blob = uuid.uuid4().hex
+
+    def setUp(self):
+        super(Credential, self).setUp()
+
+        self.ref = {'user': self.user,
+                    'type': self.type,
+                    'blob': self.blob,
+                    'project': self.project}
+        self.entity = self.client.credentials.create(**self.ref)
+        self.addCleanup(self.client.credentials.delete, self.entity)
