@@ -116,7 +116,8 @@ class DomainManager(base.CrudManager):
         :param domain: the domain to be deleted on the server.
         :type domain: str or :class:`keystoneclient.v3.domains.Domain`
 
-        :returns: 204 No Content.
+        :returns: Response object with 204 status.
+        :rtype: :class:`requests.models.Response`
 
         """
         return super(DomainManager, self).delete(

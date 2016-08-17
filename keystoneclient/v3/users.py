@@ -210,7 +210,8 @@ class UserManager(base.CrudManager):
         :param str old_password: the user's old password
         :param str new_password: the user's new password
 
-        :returns: 204 No Content.
+        :returns: Response object with 204 status.
+        :rtype: :class:`requests.models.Response`
 
         """
         if not (old_password and new_password):
@@ -236,7 +237,8 @@ class UserManager(base.CrudManager):
         :param group: the group to put the user in.
         :type group: str or :class:`keystoneclient.v3.groups.Group`
 
-        :returns: 204 No Content.
+        :returns: Response object with 204 status.
+        :rtype: :class:`requests.models.Response`
 
         """
         self._require_user_and_group(user, group)
@@ -254,7 +256,8 @@ class UserManager(base.CrudManager):
         :param group: the group to check the user in.
         :type group: str or :class:`keystoneclient.v3.groups.Group`
 
-        :returns: 204 No Content.
+        :returns: Response object with 204 status.
+        :rtype: :class:`requests.models.Response`
 
         """
         self._require_user_and_group(user, group)
@@ -272,7 +275,8 @@ class UserManager(base.CrudManager):
         :param group: the group to remove the user from.
         :type group: str or :class:`keystoneclient.v3.groups.Group`
 
-        :returns: 204 No Content.
+        :returns: Response object with 204 status.
+        :rtype: :class:`requests.models.Response`
 
         """
         self._require_user_and_group(user, group)
@@ -288,7 +292,8 @@ class UserManager(base.CrudManager):
         :param user: the user to be deleted on the server.
         :type user: str or :class:`keystoneclient.v3.users.User`
 
-        :returns: 204 No Content.
+        :returns: Response object with 204 status.
+        :rtype: :class:`requests.models.Response`
 
         """
         return super(UserManager, self).delete(

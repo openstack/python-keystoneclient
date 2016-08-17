@@ -137,7 +137,8 @@ class GroupManager(base.CrudManager):
         :param group: the group to be deleted on the server.
         :type group: str or :class:`keystoneclient.v3.groups.Group`
 
-        :returns: 204 No Content.
+        :returns: Response object with 204 status.
+        :rtype: :class:`requests.models.Response`
 
         """
         return super(GroupManager, self).delete(
