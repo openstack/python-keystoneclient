@@ -20,6 +20,8 @@ class EC2(base.Resource):
         * id: a string that identifies the EC2 resource.
         * user_id: the ID field of a pre-existing user in the backend.
         * project_id: the ID field of a pre-existing project in the backend.
+        * access: a string representing access key of the access/secret pair.
+        * secret: a string representing the secret of the access/secret pair.
 
     """
 
@@ -56,9 +58,8 @@ class EC2Manager(base.ManagerWithFind):
         :param user_id: the ID of the user whose access/secret pair will be
                         retrieved from the server.
         :type user_id: str or :class:`keystoneclient.v3.users.User`
-        :param access: the access key whose access/secret pair will be
-                       retrieved from the server.
-        :type access: str or :class:`keystoneclient.v3.ec2.EC2`
+        :param str access: the access key whose access/secret pair will be
+                           retrieved from the server.
 
         :returns: the specified access/secret pair returned from server.
         :rtype: :class:`keystoneclient.v3.ec2.EC2`
@@ -86,9 +87,8 @@ class EC2Manager(base.ManagerWithFind):
         :param user_id: the ID of the user whose access/secret pair will be
                         deleted on the server.
         :type user_id: str or :class:`keystoneclient.v3.users.User`
-        :param access: the access key whose access/secret pair will be deleted
-                       on the server.
-        :type access: str or :class:`keystoneclient.v3.ec2.EC2`
+        :param str access: the access key whose access/secret pair will be
+                           deleted on the server.
 
         :returns: Response object with 204 status.
         :rtype: :class:`requests.models.Response`
