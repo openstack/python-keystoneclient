@@ -214,7 +214,8 @@ class ProjectManager(base.CrudManager):
         :param project: the project to be deleted on the server.
         :type project: str or :class:`keystoneclient.v3.projects.Project`
 
-        :returns: 204 No Content.
+        :returns: Response object with 204 status.
+        :rtype: :class:`requests.models.Response`
 
         """
         return super(ProjectManager, self).delete(
