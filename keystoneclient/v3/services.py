@@ -24,8 +24,9 @@ class Service(base.Resource):
 
     Attributes:
         * id: a uuid that identifies the service
-        * name: user-facing name of the service (e.g. Keystone)
-        * type: 'compute', 'identity', etc
+        * name: the user-facing name of the service (e.g. Keystone)
+        * description: a description of the service
+        * type: the type of the service (e.g. 'compute', 'identity')
         * enabled: determines whether the service appears in the catalog
 
     """
@@ -127,7 +128,8 @@ class ServiceManager(base.CrudManager):
         :param service: the service to be deleted on the server.
         :type service: str or :class:`keystoneclient.v3.services.Service`
 
-        :returns: Request object with 204 status and None as data.
+        :returns: Response object with 204 status.
+        :rtype: :class:`requests.models.Response`
 
         """
         if service:
