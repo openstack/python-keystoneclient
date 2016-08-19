@@ -25,7 +25,7 @@ class Policy(base.Resource):
     Attributes:
         * id: a uuid that identifies the policy
         * blob: a policy document (blob)
-        * type: the mime type of the policy blob
+        * type: the MIME type of the policy blob
 
     """
 
@@ -57,7 +57,7 @@ class PolicyManager(base.CrudManager):
         """Create a policy.
 
         :param str blob: the policy document.
-        :param str type: the mime type of the policy blob.
+        :param str type: the MIME type of the policy blob.
         :param kwargs: any other attribute provided will be passed to the
                        server.
 
@@ -102,7 +102,7 @@ class PolicyManager(base.CrudManager):
         :param policy: the policy to be updated on the server.
         :type policy: str or :class:`keystoneclient.v3.policies.Policy`
         :param str blob: the new policy document.
-        :param str type: the new mime type of the policy blob.
+        :param str type: the new MIME type of the policy blob.
         :param kwargs: any other attribute provided will be passed to the
                        server.
 
@@ -122,7 +122,8 @@ class PolicyManager(base.CrudManager):
         :param policy: the policy to be deleted on the server.
         :type policy: str or :class:`keystoneclient.v3.policies.Policy`
 
-        :returns: Request object with 204 status and None as data.
+        :returns: Response object with 204 status.
+        :rtype: :class:`requests.models.Response`
 
         """
         return super(PolicyManager, self).delete(
