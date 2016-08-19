@@ -24,6 +24,9 @@ class Domain(base.Resource):
 
     Attributes:
         * id: a uuid that identifies the domain
+        * name: the name of the domain
+        * description: a description of the domain
+        * enabled: determines whether the domain is enabled
 
     """
 
