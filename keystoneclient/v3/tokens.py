@@ -32,9 +32,9 @@ class TokenManager(object):
     def revoke_token(self, token):
         """Revoke a token.
 
-        :param token: Token to be revoked. This can be an instance of
-                      :py:class:`keystoneclient.access.AccessInfo` or a string
-                      token_id.
+        :param token: The token to be revoked.
+        :type token: str or :class:`keystoneclient.access.AccessInfo`
+
         """
         token_id = _calc_id(token)
         headers = {'X-Subject-Token': token_id}
@@ -45,11 +45,12 @@ class TokenManager(object):
         """Get revoked tokens list.
 
         :param bool audit_id_only: If true, the server is requested to not send
-            token IDs. **New in version 2.2.0.**
+                                   token IDs, but only audit IDs instead.
+                                   **New in version 2.2.0.**
         :returns: A dict containing ``signed`` which is a CMS formatted string
-            if the server signed the response. If `audit_id_only` then the
-            response may be a dict containing ``revoked`` which is the list of
-            token audit IDs and expiration times.
+                  if the server signed the response. If `audit_id_only` is true
+                  then the response may be a dict containing ``revoked`` which
+                  is the list of token audit IDs and expiration times.
         :rtype: dict
 
         """
@@ -63,11 +64,12 @@ class TokenManager(object):
     def get_token_data(self, token, include_catalog=True):
         """Fetch the data about a token from the identity server.
 
-        :param str token: The token id.
-        :param bool include_catalog: If False, the response is requested to not
-                                     include the catalog.
+        :param str token: The ID of the token to be fetched.
+        :param bool include_catalog: Whether the service catalog should be
+                                     included in the response.
 
         :rtype: dict
+
         """
         headers = {'X-Subject-Token': token}
 
@@ -82,13 +84,12 @@ class TokenManager(object):
     def validate(self, token, include_catalog=True):
         """Validate a token.
 
-        :param token: Token to be validated. This can be an instance of
-                      :py:class:`keystoneclient.access.AccessInfo` or a string
-                      token_id.
+        :param token: The token to be validated.
+        :type token: str or :class:`keystoneclient.access.AccessInfo`
         :param include_catalog: If False, the response is requested to not
                                 include the catalog.
 
-        :rtype: :py:class:`keystoneclient.access.AccessInfoV3`
+        :rtype: :class:`keystoneclient.access.AccessInfoV3`
 
         """
         token_id = _calc_id(token)
