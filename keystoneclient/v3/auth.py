@@ -13,38 +13,12 @@
 from keystoneclient import auth
 from keystoneclient import base
 from keystoneclient import exceptions
+from keystoneclient.v3 import domains
+from keystoneclient.v3 import projects
 
 
-class Project(base.Resource):
-    """Represents an Identity project.
-
-    Attributes:
-        * id: a uuid that identifies the project
-        * name: the name of the project
-        * description: a description of the project
-        * enabled: determines whether the project is enabled
-        * parent_id: a uuid that identifies the specified project's parent
-                     in hierarchy
-        * parents: a list or a structured dict containing the parents of the
-                   specified project in the hierarchy
-        * subtree: a list or a structured dict containing the subtree of the
-                   specified project in the hierarchy
-
-    """
-
-
-class Domain(base.Resource):
-    """Represents an Identity domain.
-
-    Attributes:
-        * id: a uuid that identifies the domain
-        * name: the name of the domain
-        * description: a description of the domain
-        * enabled: determines whether the domain is enabled
-
-    """
-
-    pass
+Domain = domains.Domain
+Project = projects.Project
 
 
 class AuthManager(base.Manager):
