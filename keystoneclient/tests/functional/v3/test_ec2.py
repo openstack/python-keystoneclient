@@ -56,6 +56,28 @@ class EC2TestCase(base.V3ClientTestCase):
         ec2_ret = self.client.ec2.get(user.id, ec2.access)
         self.check_ec2(ec2_ret, ec2.ref)
 
+    def test_list_ec2(self):
+        user_one = fixtures.User(self.client, self.project_domain_id)
+        self.useFixture(user_one)
+        ec2_one = fixtures.EC2(self.client, user_id=user_one.id,
+                               project_id=self.project_domain_id)
+        self.useFixture(ec2_one)
+
+        user_two = fixtures.User(self.client, self.project_domain_id)
+        self.useFixture(user_two)
+        ec2_two = fixtures.EC2(self.client, user_id=user_two.id,
+                               project_id=self.project_domain_id)
+        self.useFixture(ec2_two)
+
+        ec2_list = self.client.ec2.list(user_one.id)
+
+        # All ec2 are valid
+        for ec2 in ec2_list:
+            self.check_ec2(ec2)
+
+        self.assertIn(ec2_one.entity, ec2_list)
+        self.assertNotIn(ec2_two.entity, ec2_list)
+
     def test_delete_ec2(self):
         user = fixtures.User(self.client, self.project_domain_id)
         self.useFixture(user)
