@@ -151,13 +151,14 @@ class SessionTests(utils.TestCase):
         in order to redact secure headers while debug is true.
         """
         session = client_session.Session(verify=False)
-        headers = {'HEADERA': 'HEADERVALB'}
+        headers = {'HEADERA': 'HEADERVALB',
+                   'Content-Type': 'application/json'}
         security_headers = {'Authorization': uuid.uuid4().hex,
                             'X-Auth-Token': uuid.uuid4().hex,
                             'X-Subject-Token': uuid.uuid4().hex,
                             'X-Service-Token': uuid.uuid4().hex}
-        body = 'BODYRESPONSE'
-        data = 'BODYDATA'
+        body = '{"a": "b"}'
+        data = '{"c": "d"}'
         all_headers = dict(
             itertools.chain(headers.items(), security_headers.items()))
         self.stub_url('POST', text=body, headers=all_headers)
@@ -184,13 +185,48 @@ class SessionTests(utils.TestCase):
     def test_logs_failed_output(self):
         """Test that output is logged even for failed requests."""
         session = client_session.Session()
-        body = uuid.uuid4().hex
+        body = {uuid.uuid4().hex: uuid.uuid4().hex}
 
-        self.stub_url('GET', text=body, status_code=400)
+        self.stub_url('GET', json=body, status_code=400,
+                      headers={'Content-Type': 'application/json'})
         resp = session.get(self.TEST_URL, raise_exc=False)
 
         self.assertEqual(resp.status_code, 400)
+        self.assertIn(list(body.keys())[0], self.logger.output)
+        self.assertIn(list(body.values())[0], self.logger.output)
+
+    def test_logging_body_only_for_specified_content_types(self):
+        """Verify response body is only logged in specific content types.
+
+        Response bodies are logged only when the response's Content-Type header
+        is set to application/json. This prevents us to get an unexpected
+        MemoryError when reading arbitrary responses, such as streams.
+        """
+        OMITTED_BODY = ('Omitted, Content-Type is set to %s. Only '
+                        'application/json responses have their bodies logged.')
+        session = client_session.Session(verify=False)
+
+        # Content-Type is not set
+        body = jsonutils.dumps({'token': {'id': '...'}})
+        self.stub_url('POST', text=body)
+        session.post(self.TEST_URL)
+        self.assertNotIn(body, self.logger.output)
+        self.assertIn(OMITTED_BODY % None, self.logger.output)
+
+        # Content-Type is set to text/xml
+        body = '<token><id>...</id></token>'
+        self.stub_url('POST', text=body, headers={'Content-Type': 'text/xml'})
+        session.post(self.TEST_URL)
+        self.assertNotIn(body, self.logger.output)
+        self.assertIn(OMITTED_BODY % 'text/xml', self.logger.output)
+
+        # Content-Type is set to application/json
+        body = jsonutils.dumps({'token': {'id': '...'}})
+        self.stub_url('POST', text=body,
+                      headers={'Content-Type': 'application/json'})
+        session.post(self.TEST_URL)
         self.assertIn(body, self.logger.output)
+        self.assertNotIn(OMITTED_BODY % 'application/json', self.logger.output)
 
     def test_unicode_data_in_debug_output(self):
         """Verify that ascii-encodable data is logged without modification."""
@@ -313,7 +349,8 @@ class SessionTests(utils.TestCase):
                     "auth_username": "verybadusername",
                     "auth_method": "CHAP"}}}
         body_json = jsonutils.dumps(body)
-        response = mock.Mock(text=body_json, status_code=200, headers={})
+        response = mock.Mock(text=body_json, status_code=200,
+                             headers={'content-type': 'application/json'})
         session._http_log_response(response, logger)
         self.assertEqual(1, logger.debug.call_count)
 
@@ -766,22 +803,24 @@ class SessionAuthTests(utils.TestCase):
 
         auth = AuthPlugin()
         sess = client_session.Session(auth=auth)
-        response = uuid.uuid4().hex
+        response = {uuid.uuid4().hex: uuid.uuid4().hex}
 
         self.stub_url('GET',
-                      text=response,
-                      headers={'Content-Type': 'text/html'})
+                      json=response,
+                      headers={'Content-Type': 'application/json'})
 
         resp = sess.get(self.TEST_URL, logger=logger)
 
-        self.assertEqual(response, resp.text)
+        self.assertEqual(response, resp.json())
         output = io.getvalue()
 
         self.assertIn(self.TEST_URL, output)
-        self.assertIn(response, output)
+        self.assertIn(list(response.keys())[0], output)
+        self.assertIn(list(response.values())[0], output)
 
         self.assertNotIn(self.TEST_URL, self.logger.output)
-        self.assertNotIn(response, self.logger.output)
+        self.assertNotIn(list(response.keys())[0], self.logger.output)
+        self.assertNotIn(list(response.values())[0], self.logger.output)
 
 
 class AdapterTest(utils.TestCase):
@@ -963,21 +1002,23 @@ class AdapterTest(utils.TestCase):
         sess = client_session.Session(auth=auth)
         adpt = adapter.Adapter(sess, auth=auth, logger=logger)
 
-        response = uuid.uuid4().hex
+        response = {uuid.uuid4().hex: uuid.uuid4().hex}
 
-        self.stub_url('GET', text=response,
-                      headers={'Content-Type': 'text/html'})
+        self.stub_url('GET', json=response,
+                      headers={'Content-Type': 'application/json'})
 
         resp = adpt.get(self.TEST_URL, logger=logger)
 
-        self.assertEqual(response, resp.text)
+        self.assertEqual(response, resp.json())
         output = io.getvalue()
 
         self.assertIn(self.TEST_URL, output)
-        self.assertIn(response, output)
+        self.assertIn(list(response.keys())[0], output)
+        self.assertIn(list(response.values())[0], output)
 
         self.assertNotIn(self.TEST_URL, self.logger.output)
-        self.assertNotIn(response, self.logger.output)
+        self.assertNotIn(list(response.keys())[0], self.logger.output)
+        self.assertNotIn(list(response.values())[0], self.logger.output)
 
 
 class ConfLoadingTests(utils.TestCase):
