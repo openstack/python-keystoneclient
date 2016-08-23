@@ -166,22 +166,24 @@ class BasicRequestTests(utils.TestCase):
         self.addCleanup(self.logger.setLevel, level)
 
     def request(self, method='GET', response='Test Response', status_code=200,
-                url=None, **kwargs):
+                url=None, headers={}, **kwargs):
         if not url:
             url = self.url
 
         self.requests_mock.register_uri(method, url, text=response,
-                                        status_code=status_code)
+                                        status_code=status_code,
+                                        headers=headers)
 
         with self.deprecations.expect_deprecations_here():
-            return httpclient.request(url, method, **kwargs)
+            return httpclient.request(url, method, headers=headers, **kwargs)
 
     def test_basic_params(self):
         method = 'GET'
         response = 'Test Response'
         status = 200
 
-        self.request(method=method, status_code=status, response=response)
+        self.request(method=method, status_code=status, response=response,
+                     headers={'Content-Type': 'application/json'})
 
         self.assertEqual(self.requests_mock.last_request.method, method)
 
@@ -209,7 +211,8 @@ class BasicRequestTests(utils.TestCase):
 
     def test_body(self):
         data = "BODY DATA"
-        self.request(response=data)
+        self.request(response=data,
+                     headers={'Content-Type': 'application/json'})
         logger_message = self.logger_message.getvalue()
         self.assertThat(logger_message, matchers.Contains('BODY:'))
         self.assertThat(logger_message, matchers.Contains(data))

@@ -37,6 +37,8 @@ osprofiler_web = importutils.try_import("osprofiler.web")
 
 USER_AGENT = 'python-keystoneclient'
 
+_LOG_CONTENT_TYPES = set(['application/json', 'application/text'])
+
 _logger = logging.getLogger(__name__)
 
 
@@ -216,7 +218,18 @@ class Session(object):
         if not logger.isEnabledFor(logging.DEBUG):
             return
 
-        text = _remove_service_catalog(response.text)
+        # NOTE(samueldmq): If the response does not provide enough info about
+        # the content type to decide whether it is useful and safe to log it
+        # or not, just do not log the body. Trying to# read the response body
+        # anyways may result on reading a long stream of bytes and getting an
+        # unexpected MemoryError. See bug 1616105 for further details.
+        content_type = response.headers.get('content-type', None)
+        if content_type in _LOG_CONTENT_TYPES:
+            text = _remove_service_catalog(response.text)
+        else:
+            text = ('Omitted, Content-Type is set to %s. Only '
+                    'application/json and application/text responses '
+                    'have their bodies logged.') % content_type
 
         string_parts = [
             'RESP:',
@@ -224,9 +237,7 @@ class Session(object):
         ]
         for header in six.iteritems(response.headers):
             string_parts.append('%s: %s' % self._process_header(header))
-        if text:
-            string_parts.append('\nRESP BODY: %s\n' %
-                                strutils.mask_password(text))
+        string_parts.append('\nRESP BODY: %s\n' % strutils.mask_password(text))
 
         logger.debug(' '.join(string_parts))
 
