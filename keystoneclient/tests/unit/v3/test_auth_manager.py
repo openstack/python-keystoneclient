@@ -12,7 +12,8 @@
 
 import uuid
 
-from keystoneclient import fixture
+from keystoneauth1 import fixture
+
 from keystoneclient.tests.unit.v3 import utils
 from keystoneclient.v3 import auth
 

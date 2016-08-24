@@ -13,7 +13,7 @@
 import copy
 import uuid
 
-from keystoneauth1 import fixture as auth_fixture
+from keystoneauth1 import fixture
 from keystoneauth1.identity import v3
 from keystoneauth1 import session
 from keystoneauth1.tests.unit import k2k_fixtures
@@ -22,7 +22,6 @@ from testtools import matchers
 
 from keystoneclient import access
 from keystoneclient import exceptions
-from keystoneclient import fixture
 from keystoneclient.tests.unit.v3 import utils
 from keystoneclient.v3 import client
 from keystoneclient.v3.contrib.federation import base
@@ -385,7 +384,7 @@ class K2KFederatedProjectTests(utils.TestCase):
 
     def setUp(self):
         super(K2KFederatedProjectTests, self).setUp()
-        self.token_v3 = auth_fixture.V3Token()
+        self.token_v3 = fixture.V3Token()
         self.token_v3.add_service_provider(
             self.SP_ID, self.SP_AUTH_URL, self.SP_URL)
         self.session = session.Session()
@@ -414,7 +413,7 @@ class K2KFederatedProjectTests(utils.TestCase):
         # We need to check the auth versions available
         self.requests_mock.get(
             self.TEST_URL,
-            json={'version': auth_fixture.V3Discovery(self.TEST_URL)},
+            json={'version': fixture.V3Discovery(self.TEST_URL)},
             headers={'Content-Type': 'application/json'})
 
         # The identity provider receives a request for an ECP wrapped
@@ -455,7 +454,7 @@ class K2KFederatedProjectTests(utils.TestCase):
             self.collection_key: [self.new_ref(), self.new_ref()]
         })
         self.requests_mock.get(self.SP_ROOT_URL, json={
-            'version': auth_fixture.discovery.V3Discovery(self.SP_ROOT_URL)
+            'version': fixture.discovery.V3Discovery(self.SP_ROOT_URL)
         })
         returned_list = k2k_client.federation.projects.list()
 

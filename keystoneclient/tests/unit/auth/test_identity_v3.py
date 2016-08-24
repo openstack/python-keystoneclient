@@ -14,6 +14,7 @@ import argparse
 import copy
 import uuid
 
+from keystoneauth1 import fixture
 import mock
 
 from keystoneclient import access
@@ -21,7 +22,6 @@ from keystoneclient.auth.identity import v3
 from keystoneclient.auth.identity.v3 import base as v3_base
 from keystoneclient import client
 from keystoneclient import exceptions
-from keystoneclient import fixture
 from keystoneclient import session
 from keystoneclient.tests.unit import utils
 

@@ -10,9 +10,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from keystoneauth1 import fixture
+
 from keystoneclient import access
 from keystoneclient import exceptions
-from keystoneclient import fixture
 from keystoneclient.tests.unit.v2_0 import client_fixtures
 from keystoneclient.tests.unit.v2_0 import utils
 

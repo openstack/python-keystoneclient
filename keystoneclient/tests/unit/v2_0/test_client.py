@@ -13,11 +13,11 @@
 import json
 import uuid
 
+from keystoneauth1 import fixture
 import six
 
 from keystoneclient.auth import token_endpoint
 from keystoneclient import exceptions
-from keystoneclient import fixture
 from keystoneclient import session
 from keystoneclient.tests.unit.v2_0 import client_fixtures
 from keystoneclient.tests.unit.v2_0 import utils

@@ -13,6 +13,7 @@
 import functools
 import uuid
 
+from keystoneauth1 import fixture
 import mock
 from oslo_config import cfg
 import six
@@ -20,7 +21,6 @@ import six
 from keystoneclient import access
 from keystoneclient.auth import base
 from keystoneclient import exceptions
-from keystoneclient import fixture
 from keystoneclient import session
 from keystoneclient.tests.unit import utils
 

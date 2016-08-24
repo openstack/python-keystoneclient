@@ -12,10 +12,11 @@
 
 import uuid
 
+from keystoneauth1 import fixture
+
 from keystoneclient import access
 from keystoneclient import auth
 from keystoneclient.auth.identity import access as access_plugin
-from keystoneclient import fixture
 from keystoneclient import session
 from keystoneclient.tests.unit import utils
 
