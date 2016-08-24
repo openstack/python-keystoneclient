@@ -14,10 +14,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from keystoneauth1 import plugin
 import six
 from six.moves import urllib
 
-from keystoneclient import auth
 from keystoneclient import base
 from keystoneclient import exceptions
 
@@ -124,7 +124,7 @@ class TenantManager(base.ManagerWithFind):
         try:
             tenant_list = self._list('/tenants%s' % query, 'tenants')
         except exceptions.EndpointNotFound:
-            endpoint_filter = {'interface': auth.AUTH_INTERFACE}
+            endpoint_filter = {'interface': plugin.AUTH_INTERFACE}
             tenant_list = self._list('/tenants%s' % query, 'tenants',
                                      endpoint_filter=endpoint_filter)
 

@@ -14,11 +14,11 @@ import logging
 import warnings
 
 from debtcollector import removals
+from keystoneauth1 import plugin
 from positional import positional
 import six
 
 from keystoneclient import _discover
-from keystoneclient.auth import base
 from keystoneclient import exceptions
 from keystoneclient.i18n import _
 from keystoneclient import session as client_session
@@ -173,7 +173,7 @@ class Discover(_discover.Discover):
             url = auth_url
         elif session.auth:
             self._use_endpoint = False
-            url = session.get_endpoint(interface=base.AUTH_INTERFACE)
+            url = session.get_endpoint(interface=plugin.AUTH_INTERFACE)
 
         if not url:
             raise exceptions.DiscoveryFailure(

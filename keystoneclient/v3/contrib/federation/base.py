@@ -12,9 +12,9 @@
 
 import abc
 
+from keystoneauth1 import plugin
 import six
 
-from keystoneclient.auth import base as base_auth
 from keystoneclient import base
 from keystoneclient import exceptions
 
@@ -34,7 +34,7 @@ class EntityManager(base.Manager):
         try:
             tenant_list = self._list(url, self.object_type)
         except exceptions.EndpointException:
-            endpoint_filter = {'interface': base_auth.AUTH_INTERFACE}
+            endpoint_filter = {'interface': plugin.AUTH_INTERFACE}
             tenant_list = self._list(url, self.object_type,
                                      endpoint_filter=endpoint_filter)
         return tenant_list
