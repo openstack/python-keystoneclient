@@ -52,30 +52,6 @@ def find_resource(manager, name_or_id):
         raise exceptions.CommandError(msg)
 
 
-def unauthenticated(f):
-    """Add 'unauthenticated' attribute to decorated function.
-
-    Usage::
-
-        @unauthenticated
-        def mymethod(f):
-            ...
-    """
-    f.unauthenticated = True
-    return f
-
-
-def isunauthenticated(f):
-    """Check if function requires authentication.
-
-    Checks to see if the function is marked as not requiring authentication
-    with the @unauthenticated decorator.
-
-    Returns True if decorator is set to True, False otherwise.
-    """
-    return getattr(f, 'unauthenticated', False)
-
-
 def hash_signed_token(signed_text, mode='md5'):
     hash_ = hashlib.new(mode)
     hash_.update(signed_text)
