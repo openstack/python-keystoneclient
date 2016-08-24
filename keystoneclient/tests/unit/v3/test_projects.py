@@ -12,7 +12,9 @@
 
 import uuid
 
-from keystoneclient import exceptions
+from keystoneauth1 import exceptions as ksa_exceptions
+
+from keystoneclient import exceptions as ksc_exceptions
 from keystoneclient.tests.unit.v3 import utils
 from keystoneclient.v3 import projects
 
@@ -284,7 +286,7 @@ class ProjectTests(utils.ClientTestCase, utils.CrudTests):
     def test_get_with_invalid_parameters_combination(self):
         # subtree_as_list and subtree_as_ids can not be included at the
         # same time in the call.
-        self.assertRaises(exceptions.ValidationError,
+        self.assertRaises(ksc_exceptions.ValidationError,
                           self.manager.get,
                           project=uuid.uuid4().hex,
                           subtree_as_list=True,
@@ -292,7 +294,7 @@ class ProjectTests(utils.ClientTestCase, utils.CrudTests):
 
         # parents_as_list and parents_as_ids can not be included at the
         # same time in the call.
-        self.assertRaises(exceptions.ValidationError,
+        self.assertRaises(ksc_exceptions.ValidationError,
                           self.manager.get,
                           project=uuid.uuid4().hex,
                           parents_as_list=True,
@@ -308,5 +310,5 @@ class ProjectTests(utils.ClientTestCase, utils.CrudTests):
 
         # NOTE(rodrigods): this is the expected behaviour of the Identity
         # server, a different implementation might not fail this request.
-        self.assertRaises(exceptions.Forbidden, self.manager.update,
+        self.assertRaises(ksa_exceptions.Forbidden, self.manager.update,
                           ref['id'], **utils.parameterize(req_ref))
