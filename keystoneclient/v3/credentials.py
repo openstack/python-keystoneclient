@@ -14,11 +14,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from debtcollector import renames
 from positional import positional
 
 from keystoneclient import base
-from keystoneclient.i18n import _
 
 
 class Credential(base.Resource):
@@ -43,22 +41,8 @@ class CredentialManager(base.CrudManager):
     collection_key = 'credentials'
     key = 'credential'
 
-    def _get_data_blob(self, blob, data):
-        # Ref bug #1259461, the <= 0.4.1 keystoneclient calling convention was
-        # to pass "data", but the underlying API expects "blob", so
-        # support both in the python API for backwards compatibility
-        if blob is not None:
-            return blob
-        elif data is not None:
-            return data
-        else:
-            raise ValueError(
-                _("Credential requires blob to be specified"))
-
-    @renames.renamed_kwarg('data', 'blob', version='1.7.0',
-                           removal_version='2.0.0')
     @positional(1, enforcement=positional.WARN)
-    def create(self, user, type, blob=None, data=None, project=None, **kwargs):
+    def create(self, user, type, blob, project=None, **kwargs):
         """Create a credential.
 
         :param user: the user to which the credential belongs
@@ -67,8 +51,6 @@ class CredentialManager(base.CrudManager):
                          ``ec2``, ``cert`` or ``totp``
         :param str blob: the arbitrary blob of the credential data, to be
                          parsed according to the type
-        :param JSON data: Deprecated as of the 1.7.0 release in favor of blob
-                          and may be removed in the future release.
         :param project: the project which limits the scope of the credential,
                         this attribbute is mandatory if the credential type is
                         ec2
@@ -78,13 +60,12 @@ class CredentialManager(base.CrudManager):
 
         :returns: the created credential
         :rtype: :class:`keystoneclient.v3.credentials.Credential`
-        :raises ValueError: if one of ``blob`` or ``data`` is not specified
 
         """
         return super(CredentialManager, self).create(
             user_id=base.getid(user),
             type=type,
-            blob=self._get_data_blob(blob, data),
+            blob=blob,
             project_id=base.getid(project),
             **kwargs)
 
@@ -114,11 +95,9 @@ class CredentialManager(base.CrudManager):
         """
         return super(CredentialManager, self).list(**kwargs)
 
-    @renames.renamed_kwarg('data', 'blob', version='1.7.0',
-                           removal_version='2.0.0')
     @positional(2, enforcement=positional.WARN)
-    def update(self, credential, user, type=None, blob=None, data=None,
-               project=None, **kwargs):
+    def update(self, credential, user, type=None, blob=None, project=None,
+               **kwargs):
         """Update a credential.
 
         :param credential: the credential to be updated on the server
@@ -129,7 +108,6 @@ class CredentialManager(base.CrudManager):
         :param str type: the new type of the credential, valid values are:
                          ``ec2``, ``cert`` or ``totp``
         :param str blob: the new blob of the credential data
-        :param JSON data: Deprecated as of the 1.7.0 release in favor of blob
                           and may be removed in the future release.
         :param project: the new project which limits the scope of the
                         credential, this attribute is mandatory if the
@@ -146,7 +124,7 @@ class CredentialManager(base.CrudManager):
             credential_id=base.getid(credential),
             user_id=base.getid(user),
             type=type,
-            blob=self._get_data_blob(blob, data),
+            blob=blob,
             project_id=base.getid(project),
             **kwargs)
 

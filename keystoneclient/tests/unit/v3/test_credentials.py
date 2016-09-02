@@ -31,25 +31,3 @@ class CredentialTests(utils.ClientTestCase, utils.CrudTests):
         kwargs.setdefault('type', uuid.uuid4().hex)
         kwargs.setdefault('user_id', uuid.uuid4().hex)
         return kwargs
-
-    @staticmethod
-    def _ref_data_not_blob(ref):
-        ret_ref = ref.copy()
-        ret_ref['data'] = ref['blob']
-        del ret_ref['blob']
-        return ret_ref
-
-    def test_create_data_not_blob(self):
-        # Test create operation with previous, deprecated "data" argument,
-        # which should be translated into "blob" at the API call level
-        self.deprecations.expect_deprecations()
-        req_ref = self.new_ref()
-        api_ref = self._ref_data_not_blob(req_ref)
-        req_ref.pop('id')
-        self.test_create(api_ref, req_ref)
-
-    def test_update_data_not_blob(self):
-        # Likewise test update operation with data instead of blob argument
-        req_ref = self.new_ref()
-        api_ref = self._ref_data_not_blob(req_ref)
-        self.test_update(api_ref, req_ref)
