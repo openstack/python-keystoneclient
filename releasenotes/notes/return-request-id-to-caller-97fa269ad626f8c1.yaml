@@ -1,0 +1,7 @@
+---
+features:
+  - >
+    [`blueprint return-request-id-to-caller
+    <https://blueprints.launchpad.net/python-keystoneclient/+spec/return-request-id-to-caller>`_]
+    Added support to return "x-openstack-request-id" header in request_ids attribute
+    for better tracing.
