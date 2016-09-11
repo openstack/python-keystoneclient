@@ -136,7 +136,8 @@ class RoleManager(base.CrudManager):
 
         """
         url_tail = self._implied_role_url_tail(prior_role, implied_role)
-        self.client.put("/roles" + url_tail, **kwargs)
+        resp, body = self.client.put("/roles" + url_tail, **kwargs)
+        return self.resource_class(self, body['role_inference'])
 
     def delete_implied(self, prior_role, implied_role, **kwargs):
         """Delete an inference rule.

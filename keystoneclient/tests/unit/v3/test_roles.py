@@ -621,11 +621,34 @@ class RoleTests(utils.ClientTestCase, utils.CrudTests):
     def test_implied_role_create(self):
         prior_role_id = uuid.uuid4().hex
         implied_role_id = uuid.uuid4().hex
+        test_json = {
+            "role_inference": {
+                "prior_role": {
+                    "id": prior_role_id,
+                    "links": {},
+                    "name": "prior role name"
+                },
+                "implies": {
+                    "id": implied_role_id,
+                    "links": {},
+                    "name": "implied role name"
+                }
+            },
+            "links": {}
+        }
+
         self.stub_url('PUT',
                       ['roles', prior_role_id, 'implies', implied_role_id],
+                      json=test_json,
                       status_code=200)
 
-        self.manager.create_implied(prior_role_id, implied_role_id)
+        returned_rule = self.manager.create_implied(
+            prior_role_id, implied_role_id)
+
+        self.assertEqual(test_json['role_inference']['implies'],
+                         returned_rule.implies)
+        self.assertEqual(test_json['role_inference']['prior_role'],
+                         returned_rule.prior_role)
 
     def test_implied_role_delete(self):
         prior_role_id = uuid.uuid4().hex
