@@ -13,7 +13,7 @@
 import uuid
 
 from keystoneauth1.exceptions import http
-from keystoneclient.exceptions import ValidationError
+from keystoneclient import exceptions
 from keystoneclient.tests.functional import base
 from keystoneclient.tests.functional.v3 import client_fixtures as fixtures
 
@@ -74,11 +74,11 @@ class ProjectsTestCase(base.V3ClientTestCase):
         self.check_project(project_ret, project.ref)
 
     def test_get_project_invalid_params(self):
-        self.assertRaises(ValidationError,
+        self.assertRaises(exceptions.ValidationError,
                           self.client.projects.get,
                           self.project_id,
                           subtree_as_list=True, subtree_as_ids=True)
-        self.assertRaises(ValidationError,
+        self.assertRaises(exceptions.ValidationError,
                           self.client.projects.get,
                           self.project_id,
                           parents_as_list=True, parents_as_ids=True)
