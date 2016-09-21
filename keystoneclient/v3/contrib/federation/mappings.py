@@ -96,7 +96,7 @@ class MappingManager(base.CrudManager):
         """List all federation mappings.
 
         Utilize Identity API operation:
-        GET /OS-FEDERATION/mappings/$mapping_id
+        GET /OS-FEDERATION/mappings
 
         """
         return super(MappingManager, self).list(**kwargs)
