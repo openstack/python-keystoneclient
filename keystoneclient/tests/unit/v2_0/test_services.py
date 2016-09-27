@@ -98,7 +98,7 @@ class ServiceTests(utils.ClientTestCase):
         self.assertIsInstance(service, services.Service)
         self.assertEqual(service.id, service_id)
         self.assertEqual(service.name, req_body['OS-KSADM:service']['name'])
-        self.assertEqual(service.description, None)
+        self.assertIsNone(service.description)
         self.assertRequestBodyIs(json=req_body)
 
     def test_delete(self):
