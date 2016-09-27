@@ -33,7 +33,7 @@ def get_common_conf_options():
     or to manipulate the options before registering them yourself.
 
     The options that are set are:
-        :auth_plugin: The name of the pluign to load.
+        :auth_plugin: The name of the plugin to load.
         :auth_section: The config file section to load options from.
 
     :returns: A list of oslo_config options.

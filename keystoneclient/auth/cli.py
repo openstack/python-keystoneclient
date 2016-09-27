@@ -32,7 +32,7 @@ def register_argparse_arguments(parser, argv, default=None):
     the options required for that specific plugin if available.
 
     :param argparse.ArgumentParser: the parser to attach argparse options to.
-    :param list argv: the arguments provided to the appliation.
+    :param list argv: the arguments provided to the application.
     :param str/class default: a default plugin name or a plugin object to use
                               if one isn't specified by the CLI. default: None.
 
