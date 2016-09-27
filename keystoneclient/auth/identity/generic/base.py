@@ -84,7 +84,7 @@ class BaseGenericPlugin(base.BaseIdentityPlugin):
 
     @abc.abstractmethod
     def create_plugin(self, session, version, url, raw_status=None):
-        """Create a plugin from the given paramters.
+        """Create a plugin from the given parameters.
 
         This function will be called multiple times with the version and url
         of a potential endpoint. If a plugin can be constructed that fits the
