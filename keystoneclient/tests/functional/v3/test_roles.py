@@ -13,7 +13,7 @@
 import uuid
 
 from keystoneauth1.exceptions import http
-from keystoneclient.exceptions import ValidationError
+from keystoneclient import exceptions
 from keystoneclient.tests.functional import base
 from keystoneclient.tests.functional.v3 import client_fixtures as fixtures
 
@@ -88,7 +88,7 @@ class RolesTestCase(base.V3ClientTestCase):
 
         # Only filter in role grants for a user on a resource.
         # Domain or project should be specified.
-        self.assertRaises(ValidationError,
+        self.assertRaises(exceptions.ValidationError,
                           self.client.roles.list,
                           user=user.id)
 
@@ -97,7 +97,7 @@ class RolesTestCase(base.V3ClientTestCase):
         group = fixtures.Group(self.client, self.project_domain_id)
         self.useFixture(group)
 
-        self.assertRaises(ValidationError,
+        self.assertRaises(exceptions.ValidationError,
                           self.client.roles.list,
                           group=group.id)
 
@@ -140,7 +140,7 @@ class RolesTestCase(base.V3ClientTestCase):
 
         # Only grant role to a group on a resource.
         # Domain or project must be specified.
-        self.assertRaises(ValidationError,
+        self.assertRaises(exceptions.ValidationError,
                           self.client.roles.grant,
                           role.id,
                           user=user.id)
@@ -150,7 +150,7 @@ class RolesTestCase(base.V3ClientTestCase):
 
         # Only grant role to a group on a resource.
         # Domain or project must be specified.
-        self.assertRaises(ValidationError,
+        self.assertRaises(exceptions.ValidationError,
                           self.client.roles.grant,
                           role.id,
                           group=group.id)
