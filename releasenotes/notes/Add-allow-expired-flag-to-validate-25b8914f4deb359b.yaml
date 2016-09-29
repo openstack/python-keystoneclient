@@ -1,0 +1,5 @@
+---
+features:
+  - Added a ``allow_expired`` argument to ``validate`` and ``get_token_data``
+    in  `keystoneclient.v3.tokens`. Setting this to ``True``, allos for a token
+    validation query to fetch expired tokens.
