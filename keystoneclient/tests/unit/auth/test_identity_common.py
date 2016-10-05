@@ -14,6 +14,7 @@ import abc
 import datetime
 import uuid
 
+from keystoneauth1 import fixture
 import mock
 from oslo_utils import timeutils
 import six
@@ -22,7 +23,6 @@ from keystoneclient import access
 from keystoneclient.auth import base
 from keystoneclient.auth import identity
 from keystoneclient import exceptions
-from keystoneclient import fixture
 from keystoneclient import session
 from keystoneclient.tests.unit import utils
 

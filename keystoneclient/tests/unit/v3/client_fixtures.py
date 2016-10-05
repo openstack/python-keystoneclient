@@ -13,7 +13,7 @@
 from __future__ import unicode_literals
 import uuid
 
-from keystoneclient import fixture
+from keystoneauth1 import fixture
 
 
 def unscoped_token(**kwargs):

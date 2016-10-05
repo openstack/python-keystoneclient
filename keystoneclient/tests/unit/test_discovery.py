@@ -13,6 +13,7 @@
 import re
 import uuid
 
+from keystoneauth1 import fixture
 from oslo_serialization import jsonutils
 import six
 from testtools import matchers
@@ -22,7 +23,6 @@ from keystoneclient.auth import token_endpoint
 from keystoneclient import client
 from keystoneclient import discover
 from keystoneclient import exceptions
-from keystoneclient import fixture
 from keystoneclient import session
 from keystoneclient.tests.unit import utils
 from keystoneclient.v2_0 import client as v2_client
