@@ -10,10 +10,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from keystoneauth1 import plugin
 from positional import positional
 
 from keystoneclient import access
-from keystoneclient import auth
 from keystoneclient import base
 from keystoneclient import exceptions
 from keystoneclient.i18n import _
@@ -65,7 +65,7 @@ class TokenManager(base.Manager):
         try:
             token_ref = self._post(*args, **kwargs)
         except exceptions.EndpointNotFound:
-            kwargs['endpoint_filter'] = {'interface': auth.AUTH_INTERFACE}
+            kwargs['endpoint_filter'] = {'interface': plugin.AUTH_INTERFACE}
             token_ref = self._post(*args, **kwargs)
 
         return token_ref
