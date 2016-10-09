@@ -55,8 +55,6 @@ class AccessInfo(dict):
                 '1.7.0 release and may be removed in the 2.0.0 release.',
                 DeprecationWarning)
 
-        auth_ref = None
-
         if body is not None or len(kwargs):
             if AccessInfoV3.is_valid(body, **kwargs):
                 if resp and not auth_token:
