@@ -12,10 +12,10 @@
 
 import uuid
 
+from keystoneauth1 import exceptions
 import testresources
 
 from keystoneclient import access
-from keystoneclient import exceptions
 from keystoneclient.tests.unit import client_fixtures
 from keystoneclient.tests.unit.v3 import utils
 

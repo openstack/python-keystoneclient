@@ -10,10 +10,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from keystoneauth1 import exceptions
 from keystoneauth1 import plugin
 
 from keystoneclient import base
-from keystoneclient import exceptions
 from keystoneclient.v3 import domains
 from keystoneclient.v3 import projects
 

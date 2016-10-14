@@ -15,13 +15,14 @@ import hashlib
 import logging
 import sys
 
+from keystoneauth1 import exceptions as ksa_exceptions
 from oslo_utils import timeutils
 # NOTE(stevemar): do not remove positional. We need this to stay for a while
 # since versions of auth_token require it here.
 from positional import positional  # noqa
 import six
 
-from keystoneclient import exceptions
+from keystoneclient import exceptions as ksc_exceptions
 
 
 logger = logging.getLogger(__name__)
@@ -32,8 +33,8 @@ def find_resource(manager, name_or_id):
     # first try the entity as a string
     try:
         return manager.get(name_or_id)
-    except (exceptions.NotFound):  # nosec(cjschaef): try to find 'name_or_id'
-        # as a six.binary_type instead
+    except (ksa_exceptions.NotFound):  # nosec(cjschaef): try to find
+        # 'name_or_id' as a six.binary_type instead
         pass
 
     # finally try to find entity by name
@@ -41,15 +42,15 @@ def find_resource(manager, name_or_id):
         if isinstance(name_or_id, six.binary_type):
             name_or_id = name_or_id.decode('utf-8', 'strict')
         return manager.find(name=name_or_id)
-    except exceptions.NotFound:
+    except ksa_exceptions.NotFound:
         msg = ("No %s with a name or ID of '%s' exists." %
                (manager.resource_class.__name__.lower(), name_or_id))
-        raise exceptions.CommandError(msg)
-    except exceptions.NoUniqueMatch:
+        raise ksc_exceptions.CommandError(msg)
+    except ksc_exceptions.NoUniqueMatch:
         msg = ("Multiple %s matches found for '%s', use an ID to be more"
                " specific." % (manager.resource_class.__name__.lower(),
                                name_or_id))
-        raise exceptions.CommandError(msg)
+        raise ksc_exceptions.CommandError(msg)
 
 
 def unauthenticated(f):

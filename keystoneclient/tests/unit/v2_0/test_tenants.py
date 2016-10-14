@@ -12,9 +12,9 @@
 
 import uuid
 
+from keystoneauth1 import exceptions
 from keystoneauth1 import fixture
 
-from keystoneclient import exceptions
 from keystoneclient.tests.unit.v2_0 import utils
 from keystoneclient.v2_0 import client
 from keystoneclient.v2_0 import tenants

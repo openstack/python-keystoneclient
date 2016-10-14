@@ -22,12 +22,13 @@ import copy
 import functools
 import warnings
 
+from keystoneauth1 import exceptions as ksa_exceptions
 from keystoneauth1 import plugin
 from oslo_utils import strutils
 import six
 from six.moves import urllib
 
-from keystoneclient import exceptions
+from keystoneclient import exceptions as ksc_exceptions
 from keystoneclient.i18n import _
 
 
@@ -226,8 +227,8 @@ class Manager(object):
             resp, body = methods[method](url, body=body,
                                          **kwargs)
         except KeyError:
-            raise exceptions.ClientException(_("Invalid update method: %s")
-                                             % method)
+            raise ksc_exceptions.ClientException(_("Invalid update method: %s")
+                                                 % method)
         # PUT requests may not return a body
         if body:
             return self.resource_class(self, body[response_key])
@@ -253,9 +254,9 @@ class ManagerWithFind(Manager):
         if num == 0:
             msg = _("No %(name)s matching %(kwargs)s.") % {
                 'name': self.resource_class.__name__, 'kwargs': kwargs}
-            raise exceptions.NotFound(404, msg)
+            raise ksa_exceptions.NotFound(404, msg)
         elif num > 1:
-            raise exceptions.NoUniqueMatch
+            raise ksc_exceptions.NoUniqueMatch
         else:
             return rl[0]
 
@@ -384,7 +385,7 @@ class CrudManager(Manager):
             return self._list(
                 url_query,
                 self.collection_key)
-        except exceptions.EmptyCatalog:
+        except ksa_exceptions.EmptyCatalog:
             if fallback_to_auth:
                 return self._list(
                     url_query,
@@ -431,9 +432,9 @@ class CrudManager(Manager):
         if num == 0:
             msg = _("No %(name)s matching %(kwargs)s.") % {
                 'name': self.resource_class.__name__, 'kwargs': kwargs}
-            raise exceptions.NotFound(404, msg)
+            raise ksa_exceptions.NotFound(404, msg)
         elif num > 1:
-            raise exceptions.NoUniqueMatch
+            raise ksc_exceptions.NoUniqueMatch
         else:
             return rl[0]
 

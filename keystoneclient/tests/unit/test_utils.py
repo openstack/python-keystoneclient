@@ -10,11 +10,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from keystoneauth1 import exceptions as ksa_exceptions
 import six
 import testresources
 from testtools import matchers
 
-from keystoneclient import exceptions
+
+from keystoneclient import exceptions as ksc_exceptions
 from keystoneclient.tests.unit import client_fixtures
 from keystoneclient.tests.unit import utils as test_utils
 from keystoneclient import utils
@@ -39,16 +41,16 @@ class FakeManager(object):
         try:
             return self.resources[str(resource_id)]
         except KeyError:
-            raise exceptions.NotFound(resource_id)
+            raise ksa_exceptions.NotFound(resource_id)
 
     def find(self, name=None):
         if name == '9999':
             # NOTE(morganfainberg): special case that raises NoUniqueMatch.
-            raise exceptions.NoUniqueMatch()
+            raise ksc_exceptions.NoUniqueMatch()
         for resource_id, resource in self.resources.items():
             if resource['name'] == str(name):
                 return resource
-        raise exceptions.NotFound(name)
+        raise ksa_exceptions.NotFound(name)
 
 
 class FindResourceTestCase(test_utils.TestCase):
@@ -58,7 +60,7 @@ class FindResourceTestCase(test_utils.TestCase):
         self.manager = FakeManager()
 
     def test_find_none(self):
-        self.assertRaises(exceptions.CommandError,
+        self.assertRaises(ksc_exceptions.CommandError,
                           utils.find_resource,
                           self.manager,
                           'asdf')
@@ -90,7 +92,7 @@ class FindResourceTestCase(test_utils.TestCase):
         self.assertEqual(output, self.manager.resources['5678'])
 
     def test_find_no_unique_match(self):
-        self.assertRaises(exceptions.CommandError,
+        self.assertRaises(ksc_exceptions.CommandError,
                           utils.find_resource,
                           self.manager,
                           9999)
