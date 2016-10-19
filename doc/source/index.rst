@@ -12,7 +12,6 @@ Contents:
 
    using-api-v3
    using-sessions
-   authentication-plugins
    using-api-v2
    api/modules
 
