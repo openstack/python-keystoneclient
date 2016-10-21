@@ -230,6 +230,7 @@ class Session(object):
 
         logger.debug(' '.join(string_parts))
 
+    # NOTE(artmr): parameter 'original_ip' value is never used
     @positional(enforcement=positional.WARN)
     def request(self, url, method, json=None, original_ip=None,
                 user_agent=None, redirect=None, authenticated=None,

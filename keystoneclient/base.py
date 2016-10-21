@@ -421,22 +421,22 @@ class CrudManager(Manager):
         url = self.build_url(dict_args_in_out=kwargs)
 
         query = self._build_query(kwargs)
-        rl = self._list(
-            '%(url)s%(query)s' % {
-                'url': url,
-                'query': query,
-            },
+        url_query = '%(url)s%(query)s' % {
+            'url': url,
+            'query': query
+        }
+        elements = self._list(
+            url_query,
             self.collection_key)
-        num = len(rl)
 
-        if num == 0:
+        if not elements:
             msg = _("No %(name)s matching %(kwargs)s.") % {
                 'name': self.resource_class.__name__, 'kwargs': kwargs}
             raise ksa_exceptions.NotFound(404, msg)
-        elif num > 1:
+        elif len(elements) > 1:
             raise ksc_exceptions.NoUniqueMatch
         else:
-            return rl[0]
+            return elements[0]
 
 
 class Resource(object):

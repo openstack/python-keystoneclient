@@ -327,7 +327,7 @@ class ServiceCatalogV2(ServiceCatalog):
 
     def _normalize_endpoint_type(self, endpoint_type):
         if endpoint_type and 'URL' not in endpoint_type:
-            endpoint_type = endpoint_type + 'URL'
+            endpoint_type += 'URL'
 
         return endpoint_type
 
