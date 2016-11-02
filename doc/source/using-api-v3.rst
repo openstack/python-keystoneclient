@@ -8,6 +8,7 @@ Introduction
 The main concepts in the Identity v3 API are:
 
  * :py:mod:`~keystoneclient.v3.credentials`
+ * :py:mod:`~keystoneclient.v3.domain_configs`
  * :py:mod:`~keystoneclient.v3.domains`
  * :py:mod:`~keystoneclient.v3.endpoints`
  * :py:mod:`~keystoneclient.v3.groups`

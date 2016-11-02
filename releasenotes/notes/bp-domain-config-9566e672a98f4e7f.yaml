@@ -1,0 +1,7 @@
+---
+features:
+  - Added support for ``domain configs``. A user can now
+    upload domain specific configurations to keytone
+    using the client. See ``client.domain_configs.create``,
+    ``client.domain_configs.delete``, ``client.domain_configs.get``
+    and ``client.domain_configs.update``.

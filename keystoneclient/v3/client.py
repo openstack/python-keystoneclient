@@ -30,6 +30,7 @@ from keystoneclient.v3.contrib import oauth1
 from keystoneclient.v3.contrib import simple_cert
 from keystoneclient.v3.contrib import trusts
 from keystoneclient.v3 import credentials
+from keystoneclient.v3 import domain_configs
 from keystoneclient.v3 import domains
 from keystoneclient.v3 import ec2
 from keystoneclient.v3 import endpoints
@@ -115,6 +116,10 @@ class Client(httpclient.HTTPClient):
     .. py:attribute:: credentials
 
         :py:class:`keystoneclient.v3.credentials.CredentialManager`
+
+    .. py:attribute:: domain_configs
+
+        :py:class:`keystoneclient.v3.domain_configs.DomainConfigManager`
 
     .. py:attribute:: ec2
 
@@ -209,6 +214,7 @@ class Client(httpclient.HTTPClient):
         self.endpoint_policy = endpoint_policy.EndpointPolicyManager(
             self._adapter)
         self.endpoints = endpoints.EndpointManager(self._adapter)
+        self.domain_configs = domain_configs.DomainConfigManager(self._adapter)
         self.domains = domains.DomainManager(self._adapter)
         self.federation = federation.FederationManager(self._adapter)
         self.groups = groups.GroupManager(self._adapter)
