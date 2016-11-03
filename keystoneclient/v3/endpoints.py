@@ -51,7 +51,7 @@ class EndpointManager(base.CrudManager):
     def _validate_interface(self, interface):
         if interface is not None and interface not in VALID_INTERFACES:
             msg = _('"interface" must be one of: %s')
-            msg = msg % ', '.join(VALID_INTERFACES)
+            msg %= ', '.join(VALID_INTERFACES)
             raise exceptions.ValidationError(msg)
 
     @positional(1, enforcement=positional.WARN)
