@@ -131,7 +131,7 @@ class _KeystoneAdapter(adapter.LegacyJsonAdapter):
             # return None
             pass
 
-        # there is a case that we explicity allow (tested by our unit tests)
+        # there is a case that we explicitly allow (tested by our unit tests)
         # that says you should be able to set the user_id on a legacy client
         # and it should overwrite the one retrieved via authentication. If it's
         # a legacy then self.session.auth is a client and we retrieve user_id.
