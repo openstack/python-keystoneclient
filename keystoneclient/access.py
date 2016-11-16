@@ -599,7 +599,7 @@ class AccessInfoV2(AccessInfo):
         try:
             return self['user']['tenantId']
         except KeyError:  # nosec(cjschaef): no 'user' key or 'tenantId' in
-            # 'user', attempt to retrive from 'token' or return None
+            # 'user', attempt to retrieve from 'token' or return None
             pass
 
         # pre diablo
