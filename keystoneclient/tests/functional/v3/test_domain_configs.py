@@ -19,6 +19,11 @@ from keystoneclient.tests.functional.v3 import client_fixtures as fixtures
 
 class DomainConfigsTestCase(base.V3ClientTestCase):
 
+    def setUp(self):
+        super(DomainConfigsTestCase, self).setUp()
+        self.test_domain = fixtures.Domain(self.client)
+        self.useFixture(self.test_domain)
+
     def check_domain_config(self, config, config_ref):
         for attr in config_ref:
             self.assertEqual(
@@ -33,9 +38,9 @@ class DomainConfigsTestCase(base.V3ClientTestCase):
     def test_create_domain_config(self):
         config_ref = self._new_ref()
         config = self.client.domain_configs.create(
-            self.project_domain_id, config_ref)
+            self.test_domain.id, config_ref)
         self.addCleanup(
-            self.client.domain_configs.delete, self.project_domain_id)
+            self.client.domain_configs.delete, self.test_domain.id)
         self.check_domain_config(config, config_ref)
 
     def test_create_invalid_domain_config(self):
@@ -44,7 +49,7 @@ class DomainConfigsTestCase(base.V3ClientTestCase):
             uuid.uuid4().hex: {uuid.uuid4().hex: uuid.uuid4().hex}}
         self.assertRaises(http.Forbidden,
                           self.client.domain_configs.create,
-                          self.project_domain_id,
+                          self.test_domain.id,
                           invalid_groups_ref)
 
         invalid_options_ref = {
@@ -52,27 +57,27 @@ class DomainConfigsTestCase(base.V3ClientTestCase):
             'ldap': {uuid.uuid4().hex: uuid.uuid4().hex}}
         self.assertRaises(http.Forbidden,
                           self.client.domain_configs.create,
-                          self.project_domain_id,
+                          self.test_domain.id,
                           invalid_options_ref)
 
     def test_get_domain_config(self):
-        config = fixtures.DomainConfig(self.client, self.project_domain_id)
+        config = fixtures.DomainConfig(self.client, self.test_domain.id)
         self.useFixture(config)
 
-        config_ret = self.client.domain_configs.get(self.project_domain_id)
+        config_ret = self.client.domain_configs.get(self.test_domain.id)
         self.check_domain_config(config_ret, config.ref)
 
     def test_update_domain_config(self):
-        config = fixtures.DomainConfig(self.client, self.project_domain_id)
+        config = fixtures.DomainConfig(self.client, self.test_domain.id)
         self.useFixture(config)
 
         update_config_ref = self._new_ref()
         config_ret = self.client.domain_configs.update(
-            self.project_domain_id, update_config_ref)
+            self.test_domain.id, update_config_ref)
         self.check_domain_config(config_ret, update_config_ref)
 
     def test_update_invalid_domain_config(self):
-        config = fixtures.DomainConfig(self.client, self.project_domain_id)
+        config = fixtures.DomainConfig(self.client, self.test_domain.id)
         self.useFixture(config)
 
         invalid_groups_ref = {
@@ -80,7 +85,7 @@ class DomainConfigsTestCase(base.V3ClientTestCase):
             uuid.uuid4().hex: {uuid.uuid4().hex: uuid.uuid4().hex}}
         self.assertRaises(http.Forbidden,
                           self.client.domain_configs.update,
-                          self.project_domain_id,
+                          self.test_domain.id,
                           invalid_groups_ref)
 
         invalid_options_ref = {
@@ -88,14 +93,14 @@ class DomainConfigsTestCase(base.V3ClientTestCase):
             'ldap': {uuid.uuid4().hex: uuid.uuid4().hex}}
         self.assertRaises(http.Forbidden,
                           self.client.domain_configs.update,
-                          self.project_domain_id,
+                          self.test_domain.id,
                           invalid_options_ref)
 
     def test_domain_config_delete(self):
         config_ref = self._new_ref()
-        self.client.domain_configs.create(self.project_domain_id, config_ref)
+        self.client.domain_configs.create(self.test_domain.id, config_ref)
 
-        self.client.domain_configs.delete(self.project_domain_id)
+        self.client.domain_configs.delete(self.test_domain.id)
         self.assertRaises(http.NotFound,
                           self.client.domain_configs.get,
                           self.project_domain_id)
