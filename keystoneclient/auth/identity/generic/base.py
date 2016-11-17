@@ -44,9 +44,9 @@ def get_options():
 
 @six.add_metaclass(abc.ABCMeta)
 class BaseGenericPlugin(base.BaseIdentityPlugin):
-    """An identity plugin that is not version dependant.
+    """An identity plugin that is not version dependent.
 
-    Internally we will construct a version dependant plugin with the resolved
+    Internally we will construct a version dependent plugin with the resolved
     URL and then proxy all calls from the base plugin to the versioned one.
     """
 

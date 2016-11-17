@@ -25,7 +25,7 @@ Project = projects.Project
 class AuthManager(base.Manager):
     """Retrieve auth context specific information.
 
-    The information returned by the auth routes is entirely dependant on the
+    The information returned by the auth routes is entirely dependent on the
     authentication information provided by the user.
     """
 
