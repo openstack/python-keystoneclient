@@ -149,7 +149,7 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
                                auth_url=self.TEST_URL)
         self.assertEqual(cs.auth_token,
                          self.TEST_RESPONSE_DICT["access"]["token"]["id"])
-        self.assertFalse('serviceCatalog' in cs.service_catalog.catalog)
+        self.assertNotIn('serviceCatalog', cs.service_catalog.catalog)
         self.assertRequestBodyIs(json=self.TEST_REQUEST_BODY)
 
     def test_auth_url_token_authentication(self):
@@ -222,7 +222,7 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
                                auth_url=self.TEST_URL)
         self.assertEqual(cs.auth_token,
                          self.TEST_RESPONSE_DICT["access"]["token"]["id"])
-        self.assertFalse('serviceCatalog' in cs.service_catalog.catalog)
+        self.assertNotIn('serviceCatalog', cs.service_catalog.catalog)
         self.assertRequestBodyIs(json=self.TEST_REQUEST_BODY)
 
     def test_allow_override_of_auth_token(self):
