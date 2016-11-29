@@ -61,37 +61,51 @@ class TokenManager(object):
         return body
 
     @positional.method(1)
-    def get_token_data(self, token, include_catalog=True):
+    def get_token_data(self, token, include_catalog=True, allow_expired=False):
         """Fetch the data about a token from the identity server.
 
         :param str token: The ID of the token to be fetched.
         :param bool include_catalog: Whether the service catalog should be
                                      included in the response.
+        :param allow_expired: If True the token will be validated and returned
+                              if it has already expired.
 
         :rtype: dict
 
         """
         headers = {'X-Subject-Token': token}
+        flags = []
 
         url = '/auth/tokens'
+
         if not include_catalog:
-            url += '?nocatalog'
+            flags.append('nocatalog')
+        if allow_expired:
+            flags.append('allow_expired=1')
+
+        if flags:
+            url = '%s?%s' % (url, '&'.join(flags))
 
         resp, body = self._client.get(url, headers=headers)
         return body
 
     @positional.method(1)
-    def validate(self, token, include_catalog=True):
+    def validate(self, token, include_catalog=True, allow_expired=False):
         """Validate a token.
 
         :param token: The token to be validated.
         :type token: str or :class:`keystoneclient.access.AccessInfo`
         :param include_catalog: If False, the response is requested to not
                                 include the catalog.
+        :param allow_expired: If True the token will be validated and returned
+                              if it has already expired.
+        :type allow_expired: bool
 
         :rtype: :class:`keystoneclient.access.AccessInfoV3`
 
         """
         token_id = _calc_id(token)
-        body = self.get_token_data(token_id, include_catalog=include_catalog)
+        body = self.get_token_data(token_id,
+                                   include_catalog=include_catalog,
+                                   allow_expired=allow_expired)
         return access.AccessInfo.factory(auth_token=token_id, body=body)
