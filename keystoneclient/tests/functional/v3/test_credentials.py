@@ -20,6 +20,11 @@ from keystoneclient.tests.functional.v3 import client_fixtures as fixtures
 
 class CredentialsTestCase(base.V3ClientTestCase):
 
+    def setUp(self):
+        super(CredentialsTestCase, self).setUp()
+        self.test_domain = fixtures.Domain(self.client)
+        self.useFixture(self.test_domain)
+
     def check_credential(self, credential, credential_ref=None):
         self.assertIsNotNone(credential.id)
         self.assertIn('self', credential.links)
@@ -46,7 +51,7 @@ class CredentialsTestCase(base.V3ClientTestCase):
                 self.assertIsNotNone(credential.project_id)
 
     def test_create_credential_of_cert_type(self):
-        user = fixtures.User(self.client, self.project_domain_id)
+        user = fixtures.User(self.client, self.test_domain.id)
         self.useFixture(user)
 
         credential_ref = {'user': user.id,
@@ -58,7 +63,7 @@ class CredentialsTestCase(base.V3ClientTestCase):
         self.check_credential(credential, credential_ref)
 
     def test_create_credential_of_ec2_type(self):
-        user = fixtures.User(self.client, self.project_domain_id)
+        user = fixtures.User(self.client, self.test_domain.id)
         self.useFixture(user)
 
         # project is mandatory attribute if the credential type is ec2
@@ -70,7 +75,7 @@ class CredentialsTestCase(base.V3ClientTestCase):
                           self.client.credentials.create,
                           **credential_ref)
 
-        project = fixtures.Project(self.client, self.project_domain_id)
+        project = fixtures.Project(self.client, self.test_domain.id)
         self.useFixture(project)
 
         credential_ref = {'user': user.id,
@@ -84,7 +89,7 @@ class CredentialsTestCase(base.V3ClientTestCase):
         self.check_credential(credential, credential_ref)
 
     def test_create_credential_of_totp_type(self):
-        user = fixtures.User(self.client, self.project_domain_id)
+        user = fixtures.User(self.client, self.test_domain.id)
         self.useFixture(user)
 
         credential_ref = {'user': user.id,
@@ -96,9 +101,9 @@ class CredentialsTestCase(base.V3ClientTestCase):
         self.check_credential(credential, credential_ref)
 
     def test_get_credential(self):
-        user = fixtures.User(self.client, self.project_domain_id)
+        user = fixtures.User(self.client, self.test_domain.id)
         self.useFixture(user)
-        project = fixtures.Project(self.client, self.project_domain_id)
+        project = fixtures.Project(self.client, self.test_domain.id)
         self.useFixture(project)
 
         for credential_type in ['cert', 'ec2', 'totp']:
@@ -111,14 +116,14 @@ class CredentialsTestCase(base.V3ClientTestCase):
             self.check_credential(credential_ret, credential.ref)
 
     def test_list_credentials(self):
-        user = fixtures.User(self.client, self.project_domain_id)
+        user = fixtures.User(self.client, self.test_domain.id)
         self.useFixture(user)
 
         cert_credential = fixtures.Credential(self.client, user=user.id,
                                               type='cert')
         self.useFixture(cert_credential)
 
-        project = fixtures.Project(self.client, self.project_domain_id)
+        project = fixtures.Project(self.client, self.test_domain.id)
         self.useFixture(project)
         ec2_credential = fixtures.Credential(self.client, user=user.id,
                                              type='ec2', project=project.id)
@@ -139,12 +144,12 @@ class CredentialsTestCase(base.V3ClientTestCase):
         self.assertIn(totp_credential.entity, credentials)
 
     def test_update_credential(self):
-        user = fixtures.User(self.client, self.project_domain_id)
+        user = fixtures.User(self.client, self.test_domain.id)
         self.useFixture(user)
 
-        new_user = fixtures.User(self.client, self.project_domain_id)
+        new_user = fixtures.User(self.client, self.test_domain.id)
         self.useFixture(new_user)
-        new_project = fixtures.Project(self.client, self.project_domain_id)
+        new_project = fixtures.Project(self.client, self.test_domain.id)
         self.useFixture(new_project)
 
         credential = fixtures.Credential(self.client, user=user.id,
@@ -166,9 +171,9 @@ class CredentialsTestCase(base.V3ClientTestCase):
         self.check_credential(credential_ret, credential.ref)
 
     def test_delete_credential(self):
-        user = fixtures.User(self.client, self.project_domain_id)
+        user = fixtures.User(self.client, self.test_domain.id)
         self.useFixture(user)
-        project = fixtures.Project(self.client, self.project_domain_id)
+        project = fixtures.Project(self.client, self.test_domain.id)
         self.useFixture(project)
 
         for credential_type in ['cert', 'ec2', 'totp']:
