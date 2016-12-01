@@ -16,6 +16,7 @@ import uuid
 from keystoneauth1 import fixture
 import six
 
+from keystoneauth1 import session as auth_session
 from keystoneclient.auth import token_endpoint
 from keystoneclient import exceptions
 from keystoneclient import session
@@ -211,3 +212,10 @@ class KeystoneClientTest(utils.TestCase):
 
         self.assertEqual('identity', cl._adapter.service_type)
         self.assertEqual((2, 0), cl._adapter.version)
+
+    def test_empty_service_catalog_param(self):
+        # Client().service_catalog should return None if the client is not
+        # authenticated
+        sess = auth_session.Session()
+        cl = client.Client(session=sess)
+        self.assertEqual(None, cl.service_catalog)

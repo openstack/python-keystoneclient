@@ -442,7 +442,10 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
     @property
     def service_catalog(self):
         """Return this client's service catalog."""
-        return self.auth_ref.service_catalog
+        try:
+            return self.auth_ref.service_catalog
+        except AttributeError:
+            return None
 
     def has_service_catalog(self):
         """Return True if this client provides a service catalog."""
