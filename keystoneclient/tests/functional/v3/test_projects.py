@@ -20,6 +20,14 @@ from keystoneclient.tests.functional.v3 import client_fixtures as fixtures
 
 class ProjectsTestCase(base.V3ClientTestCase):
 
+    def setUp(self):
+        super(ProjectsTestCase, self).setUp()
+        self.test_domain = fixtures.Domain(self.client)
+        self.useFixture(self.test_domain)
+
+        self.test_project = fixtures.Project(self.client, self.test_domain.id)
+        self.useFixture(self.test_project)
+
     def check_project(self, project, project_ref=None):
         self.assertIsNotNone(project.id)
         self.assertIn('self', project.links)
@@ -46,10 +54,10 @@ class ProjectsTestCase(base.V3ClientTestCase):
     def test_create_subproject(self):
         project_ref = {
             'name': fixtures.RESOURCE_NAME_PREFIX + uuid.uuid4().hex,
-            'domain': self.project_domain_id,
+            'domain': self.test_domain.id,
             'enabled': True,
             'description': uuid.uuid4().hex,
-            'parent': self.project_id}
+            'parent': self.test_project.id}
 
         project = self.client.projects.create(**project_ref)
         self.addCleanup(self.client.projects.delete, project)
@@ -58,7 +66,7 @@ class ProjectsTestCase(base.V3ClientTestCase):
     def test_create_project(self):
         project_ref = {
             'name': fixtures.RESOURCE_NAME_PREFIX + uuid.uuid4().hex,
-            'domain': self.project_domain_id,
+            'domain': self.test_domain.id,
             'enabled': True,
             'description': uuid.uuid4().hex}
 
@@ -67,31 +75,25 @@ class ProjectsTestCase(base.V3ClientTestCase):
         self.check_project(project, project_ref)
 
     def test_get_project(self):
-        project = fixtures.Project(self.client, self.project_domain_id)
-        self.useFixture(project)
-
-        project_ret = self.client.projects.get(project.id)
-        self.check_project(project_ret, project.ref)
+        project_ret = self.client.projects.get(self.test_project.id)
+        self.check_project(project_ret, self.test_project.ref)
 
     def test_get_project_invalid_params(self):
         self.assertRaises(exceptions.ValidationError,
                           self.client.projects.get,
-                          self.project_id,
+                          self.test_project.id,
                           subtree_as_list=True, subtree_as_ids=True)
         self.assertRaises(exceptions.ValidationError,
                           self.client.projects.get,
-                          self.project_id,
+                          self.test_project.id,
                           parents_as_list=True, parents_as_ids=True)
 
     def test_get_hierarchy_as_list(self):
-        parent_project = fixtures.Project(self.client, self.project_domain_id)
-        self.useFixture(parent_project)
-
-        project = fixtures.Project(self.client, self.project_domain_id,
-                                   parent=parent_project.id)
+        project = fixtures.Project(self.client, self.test_domain.id,
+                                   parent=self.test_project.id)
         self.useFixture(project)
 
-        child_project = fixtures.Project(self.client, self.project_domain_id,
+        child_project = fixtures.Project(self.client, self.test_domain.id,
                                          parent=project.id)
         self.useFixture(child_project)
 
@@ -101,8 +103,9 @@ class ProjectsTestCase(base.V3ClientTestCase):
         role = fixtures.Role(self.client)
         self.useFixture(role)
         self.client.roles.grant(role.id, user=self.user_id,
-                                project=parent_project.id)
-        self.client.roles.grant(role.id, user=self.user_id, project=project.id)
+                                project=self.test_project.id)
+        self.client.roles.grant(role.id, user=self.user_id,
+                                project=project.id)
         self.client.roles.grant(role.id, user=self.user_id,
                                 project=child_project.id)
 
@@ -111,20 +114,19 @@ class ProjectsTestCase(base.V3ClientTestCase):
                                                parents_as_list=True)
 
         self.check_project(project_ret, project.ref)
-        self.assertItemsEqual([{'project': parent_project.entity.to_dict()}],
-                              project_ret.parents)
-        self.assertItemsEqual([{'project': child_project.entity.to_dict()}],
-                              project_ret.subtree)
+        self.assertItemsEqual(
+            [{'project': self.test_project.entity.to_dict()}],
+            project_ret.parents)
+        self.assertItemsEqual(
+            [{'project': child_project.entity.to_dict()}],
+            project_ret.subtree)
 
     def test_get_hierarchy_as_ids(self):
-        parent_project = fixtures.Project(self.client, self.project_domain_id)
-        self.useFixture(parent_project)
-
-        project = fixtures.Project(self.client, self.project_domain_id,
-                                   parent=parent_project.id)
+        project = fixtures.Project(self.client, self.test_domain.id,
+                                   parent=self.test_project.id)
         self.useFixture(project)
 
-        child_project = fixtures.Project(self.client, self.project_domain_id,
+        child_project = fixtures.Project(self.client, self.test_domain.id,
                                          parent=project.id)
         self.useFixture(child_project)
 
@@ -132,14 +134,14 @@ class ProjectsTestCase(base.V3ClientTestCase):
                                                subtree_as_ids=True,
                                                parents_as_ids=True)
 
-        self.assertItemsEqual([parent_project.id], project_ret.parents)
+        self.assertItemsEqual([self.test_project.id], project_ret.parents)
         self.assertItemsEqual([child_project.id], project_ret.subtree)
 
     def test_list_projects(self):
-        project_one = fixtures.Project(self.client, self.project_domain_id)
+        project_one = fixtures.Project(self.client, self.test_domain.id)
         self.useFixture(project_one)
 
-        project_two = fixtures.Project(self.client, self.project_domain_id)
+        project_two = fixtures.Project(self.client, self.test_domain.id)
         self.useFixture(project_two)
 
         projects = self.client.projects.list()
@@ -152,7 +154,7 @@ class ProjectsTestCase(base.V3ClientTestCase):
         self.assertIn(project_two.entity, projects)
 
     def test_update_project(self):
-        project = fixtures.Project(self.client, self.project_domain_id)
+        project = fixtures.Project(self.client, self.test_domain.id)
         self.useFixture(project)
 
         new_name = fixtures.RESOURCE_NAME_PREFIX + uuid.uuid4().hex
@@ -167,19 +169,16 @@ class ProjectsTestCase(base.V3ClientTestCase):
         self.check_project(project_ret, project.ref)
 
     def test_update_project_domain_not_allowed(self):
-        project = fixtures.Project(self.client)
-        self.useFixture(project)
-
         domain = fixtures.Domain(self.client)
         self.useFixture(domain)
         # Cannot update domain after project is created.
         self.assertRaises(http.BadRequest,
                           self.client.projects.update,
-                          project.id, domain=domain.id)
+                          self.test_project.id, domain=domain.id)
 
     def test_delete_project(self):
         project = self.client.projects.create(name=uuid.uuid4().hex,
-                                              domain=self.project_domain_id,
+                                              domain=self.test_domain.id,
                                               enabled=True)
 
         self.client.projects.delete(project.id)
