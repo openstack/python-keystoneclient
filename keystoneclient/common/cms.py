@@ -42,9 +42,10 @@ DEFAULT_TOKEN_DIGEST_ALGORITHM = 'sha256'
 
 
 # The openssl cms command exits with these status codes.
-# See https://www.openssl.org/docs/apps/cms.html#EXIT_CODES
+# See https://www.openssl.org/docs/man1.1.0/apps/cms.html#EXIT-CODES
 class OpensslCmsExitStatus(object):
     SUCCESS = 0
+    COMMAND_OPTIONS_PARSING_ERROR = 1
     INPUT_FILE_READ_ERROR = 2
     CREATE_CMS_READ_MIME_ERROR = 3
 
@@ -180,21 +181,31 @@ def cms_verify(formatted, signing_cert_file_name, ca_file_name,
     # Do not log errors, as some happen in the positive thread
     # instead, catch them in the calling code and log them there.
 
-    # When invoke the openssl with not exist file, return code 2
-    # and error msg will be returned.
+    # When invoke the openssl >= 1.1.0 with not exist file, return code should
+    # be 2 instead of 1 and error msg will be returned.
     # You can get more from
-    # http://www.openssl.org/docs/apps/cms.html#EXIT_CODES
+    # https://www.openssl.org/docs/man1.1.0/apps/cms.html#EXIT-CODES
     #
     # $ openssl cms -verify -certfile not_exist_file -CAfile
     #       not_exist_file -inform PEM -nosmimecap -nodetach
     #       -nocerts -noattr
+    # openssl < 1.1.0 returns
     # Error opening certificate file not_exist_file
+    # openssl >= 1.1.0 returns
+    # cms: Cannot open input file not_exist_file, No such file or directory
     #
     if retcode == OpensslCmsExitStatus.INPUT_FILE_READ_ERROR:
         if err.startswith('Error reading S/MIME message'):
             raise exceptions.CMSError(err)
         else:
             raise exceptions.CertificateConfigError(err)
+    # workaround for OpenSSL >= 1.1.0,
+    # should return OpensslCmsExitStatus.INPUT_FILE_READ_ERROR
+    elif retcode == OpensslCmsExitStatus.COMMAND_OPTIONS_PARSING_ERROR:
+        if err.startswith('cms: Cannot open input file'):
+            raise exceptions.CertificateConfigError(err)
+        else:
+            raise subprocess.CalledProcessError(retcode, 'openssl', output=err)
     elif retcode != OpensslCmsExitStatus.SUCCESS:
         raise subprocess.CalledProcessError(retcode, 'openssl', output=err)
     return output
