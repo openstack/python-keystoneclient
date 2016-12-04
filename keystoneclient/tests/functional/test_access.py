@@ -12,6 +12,8 @@
 
 import os
 
+import testtools
+
 from keystoneclient.auth.identity import v2
 from keystoneclient import session
 from tempest.lib import base
@@ -24,6 +26,7 @@ class TestV2AccessInfo(base.BaseTestCase):
 
         self.session = session.Session()
 
+    @testtools.skip("likely race condition, being skipped")
     def test_access_audit_id(self):
         unscoped_plugin = v2.Password(auth_url=os.environ.get('OS_AUTH_URL'),
                                       username=os.environ.get('OS_USERNAME'),
