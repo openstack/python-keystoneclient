@@ -1,0 +1,6 @@
+---
+deprecations:
+  - Deprecate the `keystoneclient.generic` client. This client used to be able
+    to determine available API versions and some basics around installed
+    extensions however the APIs were never upgraded for the v3 API. It doesn't
+    seem to be used in the openstack ecosystem.

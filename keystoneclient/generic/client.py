@@ -15,6 +15,7 @@
 
 import logging
 
+from debtcollector import removals
 from six.moves.urllib import parse as urlparse
 
 from keystoneclient import exceptions
@@ -25,6 +26,11 @@ from keystoneclient.i18n import _, _LE
 _logger = logging.getLogger(__name__)
 
 
+# NOTE(jamielennox): To be removed after Pike.
+@removals.removed_class('keystoneclient.generic.client.Client',
+                        message='Use keystoneauth discovery',
+                        version='3.9.0',
+                        removal_version='4.0.0')
 class Client(httpclient.HTTPClient):
     """Client for the OpenStack Keystone pre-version calls API.
 
