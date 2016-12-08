@@ -268,4 +268,4 @@ class KeystoneClientTest(utils.TestCase):
         # authenticated
         sess = auth_session.Session()
         cl = client.Client(session=sess)
-        self.assertEqual(None, cl.service_catalog)
+        self.assertIsNone(cl.service_catalog)
