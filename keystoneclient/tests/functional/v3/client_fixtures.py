@@ -114,8 +114,8 @@ class InferenceRule(Base):
 
         self.ref = {'prior_role': self.prior_role,
                     'implied_role': self.implied_role}
-        self.entity = self.client.roles.create_implied(**self.ref)
-        self.addCleanup(self.client.roles.delete_implied, self.prior_role,
+        self.entity = self.client.inference_rules.create(**self.ref)
+        self.addCleanup(self.client.inference_rules.delete, self.prior_role,
                         self.implied_role)
 
 

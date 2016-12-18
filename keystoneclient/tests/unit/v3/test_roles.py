@@ -599,70 +599,226 @@ class RoleTests(utils.ClientTestCase, utils.CrudTests):
             group=group_id,
             user=user_id)
 
-    def test_implied_role_check(self):
+
+class DeprecatedImpliedRoleTests(utils.ClientTestCase):
+    def setUp(self):
+        super(DeprecatedImpliedRoleTests, self).setUp()
+        self.key = 'role'
+        self.collection_key = 'roles'
+        self.model = roles.Role
+        self.manager = self.client.roles
+
+    def test_implied_create(self):
+        prior_id = uuid.uuid4().hex
+        prior_name = uuid.uuid4().hex
+        implied_id = uuid.uuid4().hex
+        implied_name = uuid.uuid4().hex
+
+        mock_response = {
+            "role_inference": {
+                "implies": {
+                    "id": implied_id,
+                    "links": {"self": "http://host/v3/roles/%s" % implied_id},
+                    "name": implied_name
+                },
+                "prior_role": {
+                    "id": prior_id,
+                    "links": {"self": "http://host/v3/roles/%s" % prior_id},
+                    "name": prior_name
+                }
+            }
+        }
+
+        self.stub_url('PUT',
+                      ['roles', prior_id, 'implies', implied_id],
+                      json=mock_response,
+                      status_code=201)
+
+        with self.deprecations.expect_deprecations_here():
+            manager_result = self.manager.create_implied(prior_id, implied_id)
+            self.assertIsInstance(manager_result, roles.InferenceRule)
+            self.assertEqual(mock_response['role_inference']['implies'],
+                             manager_result.implies)
+            self.assertEqual(mock_response['role_inference']['prior_role'],
+                             manager_result.prior_role)
+
+
+class ImpliedRoleTests(utils.ClientTestCase, utils.CrudTests):
+    def setUp(self):
+        super(ImpliedRoleTests, self).setUp()
+        self.key = 'role_inference'
+        self.collection_key = 'role_inferences'
+        self.model = roles.InferenceRule
+        self.manager = self.client.inference_rules
+
+    def test_check(self):
         prior_role_id = uuid.uuid4().hex
         implied_role_id = uuid.uuid4().hex
         self.stub_url('HEAD',
                       ['roles', prior_role_id, 'implies', implied_role_id],
                       status_code=200)
 
-        self.manager.check_implied(prior_role_id, implied_role_id)
+        result = self.manager.check(prior_role_id, implied_role_id)
+        self.assertTrue(result)
 
-    def test_implied_role_get(self):
-        prior_role_id = uuid.uuid4().hex
-        implied_role_id = uuid.uuid4().hex
-        self.stub_url('GET',
-                      ['roles', prior_role_id, 'implies', implied_role_id],
-                      json={'role': {}},
-                      status_code=204)
+    def test_get(self):
+        prior_id = uuid.uuid4().hex
+        prior_name = uuid.uuid4().hex
+        implied_id = uuid.uuid4().hex
+        implied_name = uuid.uuid4().hex
 
-        self.manager.get_implied(prior_role_id, implied_role_id)
-
-    def test_implied_role_create(self):
-        prior_role_id = uuid.uuid4().hex
-        implied_role_id = uuid.uuid4().hex
-        test_json = {
+        mock_response = {
             "role_inference": {
-                "prior_role": {
-                    "id": prior_role_id,
-                    "links": {},
-                    "name": "prior role name"
-                },
                 "implies": {
-                    "id": implied_role_id,
-                    "links": {},
-                    "name": "implied role name"
+                    "id": implied_id,
+                    "links": {"self": "http://host/v3/roles/%s" % implied_id},
+                    "name": implied_name
+                },
+                "prior_role": {
+                    "id": prior_id,
+                    "links": {"self": "http://host/v3/roles/%s" % prior_id},
+                    "name": prior_name
                 }
-            },
-            "links": {}
+            }
+        }
+
+        self.stub_url('GET',
+                      ['roles', prior_id, 'implies', implied_id],
+                      json=mock_response,
+                      status_code=200)
+
+        manager_result = self.manager.get(prior_id, implied_id)
+        self.assertIsInstance(manager_result, roles.InferenceRule)
+        self.assertEqual(mock_response['role_inference']['implies'],
+                         manager_result.implies)
+        self.assertEqual(mock_response['role_inference']['prior_role'],
+                         manager_result.prior_role)
+
+    def test_create(self):
+        prior_id = uuid.uuid4().hex
+        prior_name = uuid.uuid4().hex
+        implied_id = uuid.uuid4().hex
+        implied_name = uuid.uuid4().hex
+
+        mock_response = {
+            "role_inference": {
+                "implies": {
+                    "id": implied_id,
+                    "links": {"self": "http://host/v3/roles/%s" % implied_id},
+                    "name": implied_name
+                },
+                "prior_role": {
+                    "id": prior_id,
+                    "links": {"self": "http://host/v3/roles/%s" % prior_id},
+                    "name": prior_name
+                }
+            }
         }
 
         self.stub_url('PUT',
-                      ['roles', prior_role_id, 'implies', implied_role_id],
-                      json=test_json,
-                      status_code=200)
+                      ['roles', prior_id, 'implies', implied_id],
+                      json=mock_response,
+                      status_code=201)
 
-        returned_rule = self.manager.create_implied(
-            prior_role_id, implied_role_id)
+        manager_result = self.manager.create(prior_id, implied_id)
 
-        self.assertEqual(test_json['role_inference']['implies'],
-                         returned_rule.implies)
-        self.assertEqual(test_json['role_inference']['prior_role'],
-                         returned_rule.prior_role)
+        self.assertIsInstance(manager_result, roles.InferenceRule)
+        self.assertEqual(mock_response['role_inference']['implies'],
+                         manager_result.implies)
+        self.assertEqual(mock_response['role_inference']['prior_role'],
+                         manager_result.prior_role)
 
-    def test_implied_role_delete(self):
+    def test_delete(self):
         prior_role_id = uuid.uuid4().hex
         implied_role_id = uuid.uuid4().hex
         self.stub_url('DELETE',
                       ['roles', prior_role_id, 'implies', implied_role_id],
-                      status_code=200)
-
-        self.manager.delete_implied(prior_role_id, implied_role_id)
-
-    def test_list_role_inferences(self, **kwargs):
-        self.stub_url('GET',
-                      ['role_inferences', ''],
-                      json={'role_inferences': {}},
                       status_code=204)
 
-        self.manager.list_role_inferences()
+        status, body = self.manager.delete(prior_role_id, implied_role_id)
+        self.assertEqual(204, status.status_code)
+        self.assertIsNone(body)
+
+    def test_list_role_inferences(self):
+        prior_id = uuid.uuid4().hex
+        prior_name = uuid.uuid4().hex
+        implied_id = uuid.uuid4().hex
+        implied_name = uuid.uuid4().hex
+
+        mock_response = {
+            "role_inferences": [{
+                "implies": [{
+                    "id": implied_id,
+                    "links": {"self": "http://host/v3/roles/%s" % implied_id},
+                    "name": implied_name
+                }],
+                "prior_role": {
+                    "id": prior_id,
+                    "links": {"self": "http://host/v3/roles/%s" % prior_id},
+                    "name": prior_name
+                }
+            }]
+        }
+
+        self.stub_url('GET',
+                      ['role_inferences'],
+                      json=mock_response,
+                      status_code=200)
+        manager_result = self.manager.list_inference_roles()
+        self.assertEqual(1, len(manager_result))
+        self.assertIsInstance(manager_result[0], roles.InferenceRule)
+        self.assertEqual(mock_response['role_inferences'][0]['implies'],
+                         manager_result[0].implies)
+        self.assertEqual(mock_response['role_inferences'][0]['prior_role'],
+                         manager_result[0].prior_role)
+
+    def test_list(self):
+        prior_id = uuid.uuid4().hex
+        prior_name = uuid.uuid4().hex
+        implied_id = uuid.uuid4().hex
+        implied_name = uuid.uuid4().hex
+
+        mock_response = {
+            "role_inference": {
+                "implies": [{
+                    "id": implied_id,
+                    "links": {"self": "http://host/v3/roles/%s" % implied_id},
+                    "name": implied_name
+                }],
+                "prior_role": {
+                    "id": prior_id,
+                    "links": {"self": "http://host/v3/roles/%s" % prior_id},
+                    "name": prior_name
+                }
+            },
+            "links": {"self": "http://host/v3/roles/%s/implies" % prior_id}
+        }
+
+        self.stub_url('GET',
+                      ['roles', prior_id, 'implies'],
+                      json=mock_response,
+                      status_code=200)
+
+        manager_result = self.manager.list(prior_id)
+        self.assertIsInstance(manager_result, roles.InferenceRule)
+        self.assertEqual(1, len(manager_result.implies))
+        self.assertEqual(mock_response['role_inference']['implies'],
+                         manager_result.implies)
+        self.assertEqual(mock_response['role_inference']['prior_role'],
+                         manager_result.prior_role)
+
+    def test_update(self):
+        # Update not supported for rule inferences
+        self.assertRaises(exceptions.MethodNotImplemented, self.manager.update)
+
+    def test_find(self):
+        # Find not supported for rule inferences
+        self.assertRaises(exceptions.MethodNotImplemented, self.manager.find)
+
+    def test_put(self):
+        # Put not supported for rule inferences
+        self.assertRaises(exceptions.MethodNotImplemented, self.manager.put)
+
+    def test_list_params(self):
+        # Put not supported for rule inferences
+        self.skipTest("list params not supported by rule inferences")
