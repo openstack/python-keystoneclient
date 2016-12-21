@@ -14,6 +14,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from debtcollector import removals
 from positional import positional
 
 from keystoneclient import base
@@ -35,7 +36,7 @@ class Role(base.Resource):
 
 
 class InferenceRule(base.Resource):
-    """Represents an Rule that states one ROle implies another.
+    """Represents a rule that states one role implies another.
 
     Attributes:
         * prior_role: this role implies the other
@@ -52,6 +53,7 @@ class RoleManager(base.CrudManager):
     resource_class = Role
     collection_key = 'roles'
     key = 'role'
+    deprecation_msg = 'keystoneclient.v3.roles.InferenceRuleManager'
 
     def _role_grants_base_url(self, user, group, domain, project,
                               use_inherit_extension):
@@ -117,92 +119,6 @@ class RoleManager(base.CrudManager):
             name=name,
             domain_id=domain_id,
             **kwargs)
-
-    def _implied_role_url_tail(self, prior_role, implied_role):
-        base_url = ('/%(prior_role_id)s/implies/%(implied_role_id)s' %
-                    {'prior_role_id': base.getid(prior_role),
-                     'implied_role_id': base.getid(implied_role)})
-        return base_url
-
-    def create_implied(self, prior_role, implied_role, **kwargs):
-        """Create an inference rule.
-
-        :param prior_role: the role which implies ``implied_role``.
-        :type role: str or :class:`keystoneclient.v3.roles.Role`
-        :param implied_role: the role which is implied by ``prior_role``.
-        :type role: str or :class:`keystoneclient.v3.roles.Role`
-        :param kwargs: any other attribute provided will be passed to the
-                       server.
-
-        """
-        url_tail = self._implied_role_url_tail(prior_role, implied_role)
-        resp, body = self.client.put("/roles" + url_tail, **kwargs)
-        return self.resource_class(self, body['role_inference'])
-
-    def delete_implied(self, prior_role, implied_role, **kwargs):
-        """Delete an inference rule.
-
-        :param prior_role: the role which implies ``implied_role``.
-        :type role: str or :class:`keystoneclient.v3.roles.Role`
-        :param implied_role: the role which is implied by ``prior_role``.
-        :type role: str or :class:`keystoneclient.v3.roles.Role`
-        :param kwargs: any other attribute provided will be passed to the
-                       server.
-
-        :returns: Response object with 204 status.
-        :rtype: :class:`requests.models.Response`
-
-        """
-        url_tail = self._implied_role_url_tail(prior_role, implied_role)
-        return super(RoleManager, self).delete(tail=url_tail, **kwargs)
-
-    def get_implied(self, prior_role, implied_role, **kwargs):
-        """Retrieve an inference rule.
-
-        :param prior_role: the role which implies ``implied_role``.
-        :type role: str or :class:`keystoneclient.v3.roles.Role`
-        :param implied_role: the role which is implied by ``prior_role``.
-        :type role: str or :class:`keystoneclient.v3.roles.Role`
-        :param kwargs: any other attribute provided will be passed to the
-                       server.
-
-        :returns: the specified role inference returned from server.
-        :rtype: :class:`keystoneclient.v3.roles.InferenceRule`
-
-        """
-        url_tail = self._implied_role_url_tail(prior_role, implied_role)
-        return super(RoleManager, self).get(tail=url_tail, **kwargs)
-
-    def check_implied(self, prior_role, implied_role, **kwargs):
-        """Check if an inference rule exists.
-
-        :param prior_role: the role which implies ``implied_role``.
-        :type role: str or :class:`keystoneclient.v3.roles.Role`
-        :param implied_role: the role which is implied by ``prior_role``.
-        :type role: str or :class:`keystoneclient.v3.roles.Role`
-        :param kwargs: any other attribute provided will be passed to the
-                       server.
-
-        :returns: response object with 200 status returned from server.
-        :rtype: :class:`requests.models.Response`
-
-        """
-        url_tail = self._implied_role_url_tail(prior_role, implied_role)
-        return super(RoleManager, self).head(tail=url_tail, **kwargs)
-
-    def list_role_inferences(self, **kwargs):
-        """List role inferences.
-
-        :param kwargs: attributes provided will be passed to the server.
-
-        :returns: a list of roles inferences.
-        :rtype: list of :class:`keystoneclient.v3.roles.InferenceRule`
-
-        """
-        resp, body = self.client.get('/role_inferences/', **kwargs)
-        obj_class = InferenceRule
-        return [obj_class(self, res, loaded=True)
-                for res in body['role_inferences']]
 
     def get(self, role):
         """Retrieve a role.
@@ -440,3 +356,181 @@ class RoleManager(base.CrudManager):
             role_id=base.getid(role),
             os_inherit_extension_inherited=os_inherit_extension_inherited,
             **kwargs)
+
+    @removals.remove(message='Use %s.create instead.' % deprecation_msg,
+                     version='3.9.0', removal_version='4.0.0')
+    def create_implied(self, prior_role, implied_role, **kwargs):
+        return InferenceRuleManager(self.client).create(prior_role,
+                                                        implied_role)
+
+    @removals.remove(message='Use %s.delete instead.' % deprecation_msg,
+                     version='3.9.0', removal_version='4.0.0')
+    def delete_implied(self, prior_role, implied_role, **kwargs):
+        return InferenceRuleManager(self.client).delete(prior_role,
+                                                        implied_role)
+
+    @removals.remove(message='Use %s.get instead.' % deprecation_msg,
+                     version='3.9.0', removal_version='4.0.0')
+    def get_implied(self, prior_role, implied_role, **kwargs):
+        return InferenceRuleManager(self.client).get(prior_role,
+                                                     implied_role)
+
+    @removals.remove(message='Use %s.check instead.' % deprecation_msg,
+                     version='3.9.0', removal_version='4.0.0')
+    def check_implied(self, prior_role, implied_role, **kwargs):
+        return InferenceRuleManager(self.client).check(prior_role,
+                                                       implied_role)
+
+    @removals.remove(message='Use %s.list_inference_roles' % deprecation_msg,
+                     version='3.9.0', removal_version='4.0.0')
+    def list_role_inferences(self, **kwargs):
+        return InferenceRuleManager(self.client).list_inference_roles()
+
+
+class InferenceRuleManager(base.CrudManager):
+    """Manager class for manipulating Identity inference rules."""
+
+    resource_class = InferenceRule
+    collection_key = 'role_inferences'
+    key = 'role_inference'
+
+    def _implied_role_url_tail(self, prior_role, implied_role):
+        base_url = ('/%(prior_role_id)s/implies/%(implied_role_id)s' %
+                    {'prior_role_id': base.getid(prior_role),
+                     'implied_role_id': base.getid(implied_role)})
+        return base_url
+
+    def create(self, prior_role, implied_role):
+        """Create an inference rule.
+
+        An inference rule is comprised of two roles, a prior role and an
+        implied role. The prior role will imply the implied role.
+
+        Valid HTTP return codes:
+
+            * 201: Resource is created successfully
+            * 404: A role cannot be found
+            * 409: The inference rule already exists
+
+        :param prior_role: the role which implies ``implied_role``.
+        :type role: str or :class:`keystoneclient.v3.roles.Role`
+        :param implied_role: the role which is implied by ``prior_role``.
+        :type role: str or :class:`keystoneclient.v3.roles.Role`
+
+        :returns: a newly created role inference returned from server.
+        :rtype: :class:`keystoneclient.v3.roles.InferenceRule`
+
+        """
+        url_tail = self._implied_role_url_tail(prior_role, implied_role)
+        _resp, body = self.client.put("/roles" + url_tail)
+        return self.resource_class(self, body['role_inference'])
+
+    def delete(self, prior_role, implied_role):
+        """Delete an inference rule.
+
+        When deleting an inference rule, both roles are required. Note that
+        neither role is deleted, only the inference relationship is dissolved.
+
+        Valid HTTP return codes:
+
+            * 204: Delete request is accepted
+            * 404: A role cannot be found
+
+        :param prior_role: the role which implies ``implied_role``.
+        :type role: str or :class:`keystoneclient.v3.roles.Role`
+        :param implied_role: the role which is implied by ``prior_role``.
+        :type role: str or :class:`keystoneclient.v3.roles.Role`
+
+        :returns: Response object with 204 status.
+        :rtype: :class:`requests.models.Response`
+
+        """
+        url_tail = self._implied_role_url_tail(prior_role, implied_role)
+        return self.client.delete("/roles" + url_tail)
+
+    def get(self, prior_role, implied_role):
+        """Retrieve an inference rule.
+
+        Valid HTTP return codes:
+
+            * 200: Inference rule is returned
+            * 404: A role cannot be found
+
+        :param prior_role: the role which implies ``implied_role``.
+        :type role: str or :class:`keystoneclient.v3.roles.Role`
+        :param implied_role: the role which is implied by ``prior_role``.
+        :type role: str or :class:`keystoneclient.v3.roles.Role`
+
+        :returns: the specified role inference returned from server.
+        :rtype: :class:`keystoneclient.v3.roles.InferenceRule`
+
+        """
+        url_tail = self._implied_role_url_tail(prior_role, implied_role)
+        _resp, body = self.client.get("/roles" + url_tail)
+        return self.resource_class(self, body['role_inference'])
+
+    def list(self, prior_role):
+        """List all roles that a role may imply.
+
+        Valid HTTP return codes:
+
+            * 200: List of inference rules are returned
+            * 404: A role cannot be found
+
+        :param prior_role: the role which implies ``implied_role``.
+        :type role: str or :class:`keystoneclient.v3.roles.Role`
+
+        :returns: the specified role inference returned from server.
+        :rtype: :class:`keystoneclient.v3.roles.InferenceRule`
+
+        """
+        url_tail = ('/%s/implies' % base.getid(prior_role))
+        _resp, body = self.client.get("/roles" + url_tail)
+        return self.resource_class(self, body['role_inference'])
+
+    def check(self, prior_role, implied_role):
+        """Check if an inference rule exists.
+
+        Valid HTTP return codes:
+
+            * 204: The rule inference exists
+            * 404: A role cannot be found
+
+        :param prior_role: the role which implies ``implied_role``.
+        :type role: str or :class:`keystoneclient.v3.roles.Role`
+        :param implied_role: the role which is implied by ``prior_role``.
+        :type role: str or :class:`keystoneclient.v3.roles.Role`
+
+        :returns: response object with 204 status returned from server.
+        :rtype: :class:`requests.models.Response`
+
+        """
+        url_tail = self._implied_role_url_tail(prior_role, implied_role)
+        return self.client.head("/roles" + url_tail)
+
+    def list_inference_roles(self):
+        """List all rule inferences.
+
+        Valid HTTP return codes:
+
+            * 200: All inference rules are returned
+
+        :param kwargs: attributes provided will be passed to the server.
+
+        :returns: a list of inference rules.
+        :rtype: list of :class:`keystoneclient.v3.roles.InferenceRule`
+
+        """
+        return super(InferenceRuleManager, self).list()
+
+    def update(self, **kwargs):
+        raise exceptions.MethodNotImplemented(
+            _('Update not supported for rule inferences'))
+
+    def find(self, **kwargs):
+        raise exceptions.MethodNotImplemented(
+            _('Find not supported for rule inferences'))
+
+    def put(self, **kwargs):
+        raise exceptions.MethodNotImplemented(
+            _('Put not supported for rule inferences'))

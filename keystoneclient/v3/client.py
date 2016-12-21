@@ -225,6 +225,7 @@ class Client(httpclient.HTTPClient):
         self.role_assignments = (
             role_assignments.RoleAssignmentManager(self._adapter))
         self.roles = roles.RoleManager(self._adapter)
+        self.inference_rules = roles.InferenceRuleManager(self._adapter)
         self.services = services.ServiceManager(self._adapter)
         self.simple_cert = simple_cert.SimpleCertManager(self._adapter)
         self.tokens = tokens.TokenManager(self._adapter)
