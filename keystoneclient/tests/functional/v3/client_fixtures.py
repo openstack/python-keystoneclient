@@ -178,6 +178,18 @@ class Endpoint(Base):
         self.addCleanup(self.client.endpoints.delete, self.entity)
 
 
+class EndpointGroup(Base):
+
+    def setUp(self):
+        super(EndpointGroup, self).setUp()
+
+        self.ref = {'name': RESOURCE_NAME_PREFIX + uuid.uuid4().hex,
+                    'filters': {'interface': 'public'},
+                    'description': uuid.uuid4().hex}
+        self.entity = self.client.endpoint_groups.create(**self.ref)
+        self.addCleanup(self.client.endpoint_groups.delete, self.entity)
+
+
 class Credential(Base):
 
     def __init__(self, client, user, type, project=None):
