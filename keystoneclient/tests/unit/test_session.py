@@ -152,7 +152,8 @@ class SessionTests(utils.TestCase):
         headers = {'HEADERA': 'HEADERVALB'}
         security_headers = {'Authorization': uuid.uuid4().hex,
                             'X-Auth-Token': uuid.uuid4().hex,
-                            'X-Subject-Token': uuid.uuid4().hex, }
+                            'X-Subject-Token': uuid.uuid4().hex,
+                            'X-Service-Token': uuid.uuid4().hex}
         body = 'BODYRESPONSE'
         data = 'BODYDATA'
         all_headers = dict(

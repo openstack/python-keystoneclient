@@ -1,0 +1,5 @@
+---
+fixes:
+  - |
+    The ``X-Service-Token`` header value is now properly masked, and is
+    displayed as a hash value, in the log.
