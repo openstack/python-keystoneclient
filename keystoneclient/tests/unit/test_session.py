@@ -155,7 +155,8 @@ class SessionTests(utils.TestCase):
                    'Content-Type': 'application/json'}
         security_headers = {'Authorization': uuid.uuid4().hex,
                             'X-Auth-Token': uuid.uuid4().hex,
-                            'X-Subject-Token': uuid.uuid4().hex, }
+                            'X-Subject-Token': uuid.uuid4().hex,
+                            'X-Service-Token': uuid.uuid4().hex}
         body = 'BODYRESPONSE'
         data = 'BODYDATA'
         all_headers = dict(
