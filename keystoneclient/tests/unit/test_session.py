@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+#
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
 # a copy of the License at
@@ -195,7 +197,7 @@ class SessionTests(utils.TestCase):
         session = client_session.Session(verify=False)
 
         body = 'RESP'
-        data = u'unicode_data'
+        data = u'αβγδ'
         self.stub_url('POST', text=body)
         session.post(self.TEST_URL, data=data)
 
@@ -220,12 +222,7 @@ class SessionTests(utils.TestCase):
         # raise a UnicodeDecodeError)
         session.post(unicode(self.TEST_URL), data=data)
 
-        self.assertIn("Replaced characters that could not be decoded"
-                      " in log output", self.logger.output)
-
-        # Our data payload should have changed to
-        # include the replacement char
-        self.assertIn(u"-d 'my data\ufffd'", self.logger.output)
+        self.assertNotIn('my data', self.logger.output)
 
     def test_logging_cacerts(self):
         path_to_certs = '/path/to/certs'
