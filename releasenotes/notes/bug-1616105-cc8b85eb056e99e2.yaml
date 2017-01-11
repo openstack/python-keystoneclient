@@ -3,6 +3,6 @@ fixes:
   - >
     [`bug 1616105 <https://bugs.launchpad.net/keystoneauth/+bug/1616105>`_]
     Only log the response body when the ``Content-Type`` header is set to
-    ``application/json`` or ``application/text``. This avoids logging large
-    binary objects (such as images). Other ``Content-Type`` will not be
-    logged.
+    ``application/json``. This avoids logging large binary objects (such as
+    images). Other ``Content-Type`` will not be logged. Additional
+    ``Content-Type`` strings can be added as required.

@@ -37,7 +37,10 @@ osprofiler_web = importutils.try_import("osprofiler.web")
 
 USER_AGENT = 'python-keystoneclient'
 
-_LOG_CONTENT_TYPES = set(['application/json', 'application/text'])
+# NOTE(jamielennox): Clients will likely want to print more than json. Please
+# propose a patch if you have a content type you think is reasonable to print
+# here and we'll add it to the list as required.
+_LOG_CONTENT_TYPES = set(['application/json'])
 
 _logger = logging.getLogger(__name__)
 
@@ -233,8 +236,8 @@ class Session(object):
             text = _remove_service_catalog(response.text)
         else:
             text = ('Omitted, Content-Type is set to %s. Only '
-                    'application/json and application/text responses '
-                    'have their bodies logged.') % content_type
+                    '%s responses have their bodies logged.')
+            text = text % (content_type, ', '.join(_LOG_CONTENT_TYPES))
 
         string_parts = [
             'RESP:',
