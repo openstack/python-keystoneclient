@@ -228,6 +228,16 @@ class SessionTests(utils.TestCase):
         self.assertIn(body, self.logger.output)
         self.assertNotIn(OMITTED_BODY % 'application/json', self.logger.output)
 
+        # Content-Type is set to application/json; charset=UTF-8
+        body = jsonutils.dumps({'token': {'id': '...'}})
+        self.stub_url(
+            'POST', text=body,
+            headers={'Content-Type': 'application/json; charset=UTF-8'})
+        session.post(self.TEST_URL)
+        self.assertIn(body, self.logger.output)
+        self.assertNotIn(OMITTED_BODY % 'application/json; charset=UTF-8',
+                         self.logger.output)
+
     def test_unicode_data_in_debug_output(self):
         """Verify that ascii-encodable data is logged without modification."""
         session = client_session.Session(verify=False)

@@ -232,8 +232,14 @@ class Session(object):
         # anyways may result on reading a long stream of bytes and getting an
         # unexpected MemoryError. See bug 1616105 for further details.
         content_type = response.headers.get('content-type', None)
-        if content_type in _LOG_CONTENT_TYPES:
-            text = _remove_service_catalog(response.text)
+
+        # NOTE(lamt): Per [1], the Content-Type header can be of the form
+        # Content-Type := type "/" subtype *[";" parameter]
+        # [1] https://www.w3.org/Protocols/rfc1341/4_Content-Type.html
+        for log_type in _LOG_CONTENT_TYPES:
+            if content_type is not None and content_type.startswith(log_type):
+                text = _remove_service_catalog(response.text)
+                break
         else:
             text = ('Omitted, Content-Type is set to %s. Only '
                     '%s responses have their bodies logged.')
