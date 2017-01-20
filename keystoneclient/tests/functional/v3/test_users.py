@@ -76,6 +76,29 @@ class UsersTestCase(base.V3ClientTestCase):
         self.assertIn(user_one.entity, users)
         self.assertIn(user_two.entity, users)
 
+    def test_list_users_with_filters(self):
+        suffix = uuid.uuid4().hex
+        user1_ref = {
+            'name': 'test_user' + suffix,
+            'domain': self.project_domain_id,
+            'default_project': self.project_id,
+            'password': uuid.uuid4().hex,
+            'description': uuid.uuid4().hex}
+
+        user2_ref = {
+            'name': fixtures.RESOURCE_NAME_PREFIX + uuid.uuid4().hex,
+            'domain': self.project_domain_id,
+            'default_project': self.project_id,
+            'password': uuid.uuid4().hex,
+            'description': uuid.uuid4().hex}
+
+        user1 = self.client.users.create(**user1_ref)
+        self.client.users.create(**user2_ref)
+
+        users = self.client.users.list(name__contains=['test_user', suffix])
+        self.assertEqual(1, len(users))
+        self.assertIn(user1, users)
+
     def test_update_user(self):
         user = fixtures.User(self.client, self.project_domain_id)
         self.useFixture(user)
