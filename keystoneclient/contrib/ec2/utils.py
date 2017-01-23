@@ -225,7 +225,7 @@ class Ec2Signer(object):
             # port if we detect an old boto version.  FIXME: remove when all
             # distros package boto >= 2.9.3, this is a transitional workaround
             user_agent = headers_lower.get('user-agent', '')
-            strip_port = re.match('Boto/2.[0-9].[0-2]', user_agent)
+            strip_port = re.match('Boto/2\.[0-9]\.[0-2]', user_agent)
 
             header_list = []
             sh_str = auth_param('SignedHeaders')
