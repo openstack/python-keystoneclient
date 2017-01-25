@@ -353,7 +353,10 @@ class CrudManager(Manager):
         return self._head(self.build_url(dict_args_in_out=kwargs))
 
     def _build_query(self, params):
-        return '?%s' % urllib.parse.urlencode(params) if params else ''
+        if params is None:
+            return ''
+        else:
+            return '?%s' % urllib.parse.urlencode(params, doseq=True)
 
     def build_key_only_query(self, params_list):
         """Build a query that does not include values, just keys.
