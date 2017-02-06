@@ -2,8 +2,8 @@
 Team and repository tags
 ========================
 
-.. image:: http://governance.openstack.org/badges/python-keystoneclient.svg
-    :target: http://governance.openstack.org/reference/tags/index.html
+.. image:: https://governance.openstack.org/badges/python-keystoneclient.svg
+    :target: https://governance.openstack.org/reference/tags/index.html
 
 .. Change things from this point on
 
@@ -33,14 +33,14 @@ OpenStack's Identity Service. For command line interface support, use
 * `How to Contribute`_
 
 .. _PyPi: https://pypi.python.org/pypi/python-keystoneclient
-.. _Online Documentation: http://docs.openstack.org/developer/python-keystoneclient
+.. _Online Documentation: https://docs.openstack.org/developer/python-keystoneclient
 .. _Launchpad project: https://launchpad.net/python-keystoneclient
 .. _Blueprints: https://blueprints.launchpad.net/python-keystoneclient
 .. _Bugs: https://bugs.launchpad.net/python-keystoneclient
 .. _Source: https://git.openstack.org/cgit/openstack/python-keystoneclient
 .. _OpenStackClient: https://pypi.python.org/pypi/python-openstackclient
-.. _How to Contribute: http://docs.openstack.org/infra/manual/developers.html
-.. _Specs: http://specs.openstack.org/openstack/keystone-specs/
+.. _How to Contribute: https://docs.openstack.org/infra/manual/developers.html
+.. _Specs: https://specs.openstack.org/openstack/keystone-specs/
 
 .. contents:: Contents:
    :local:

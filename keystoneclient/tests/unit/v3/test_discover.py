@@ -27,12 +27,12 @@ class DiscoverKeystoneTests(utils.UnauthenticatedTestCase):
                                  "href": "http://127.0.0.1:5000/v3.0/", },
                                 {"rel": "describedby",
                                  "type": "text/html",
-                                 "href": "http://docs.openstack.org/api/"
+                                 "href": "https://docs.openstack.org/api/"
                                          "openstack-identity-service/3/"
                                          "content/", },
                                 {"rel": "describedby",
                                  "type": "application/pdf",
-                                 "href": "http://docs.openstack.org/api/"
+                                 "href": "https://docs.openstack.org/api/"
                                          "openstack-identity-service/3/"
                                          "identity-dev-guide-3.pdf", },
                             ]},
@@ -44,12 +44,12 @@ class DiscoverKeystoneTests(utils.UnauthenticatedTestCase):
                                  "href": "http://127.0.0.1:5000/v2.0/", },
                                 {"rel": "describedby",
                                  "type": "text/html",
-                                 "href": "http://docs.openstack.org/api/"
+                                 "href": "https://docs.openstack.org/api/"
                                          "openstack-identity-service/2.0/"
                                          "content/", },
                                 {"rel": "describedby",
                                  "type": "application/pdf",
-                                 "href": "http://docs.openstack.org/api/"
+                                 "href": "https://docs.openstack.org/api/"
                                          "openstack-identity-service/2.0/"
                                          "identity-dev-guide-2.0.pdf", }
                             ]}],

@@ -22,7 +22,8 @@ BASE_HOST = 'http://keystone.example.com'
 BASE_URL = "%s:5000/" % BASE_HOST
 V2_URL = "%sv2.0" % BASE_URL
 
-EXTENSION_NAMESPACE = "http://docs.openstack.org/identity/api/ext/OS-FAKE/v1.0"
+EXTENSION_NAMESPACE = ("https://docs.openstack.org/identity/api/ext/OS-FAKE/"
+                       "v1.0")
 EXTENSION_DESCRIBED = {"href": "https://github.com/openstack/identity-api",
                        "rel": "describedby",
                        "type": "text/html"}

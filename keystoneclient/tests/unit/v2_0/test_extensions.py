@@ -22,7 +22,7 @@ class ExtensionTests(utils.ClientTestCase):
                 "values": [
                     {
                         'name': 'OpenStack Keystone User CRUD',
-                        'namespace': 'http://docs.openstack.org/'
+                        'namespace': 'https://docs.openstack.org/'
                         'identity/api/ext/OS-KSCRUD/v1.0',
                         'updated': '2013-07-07T12:00:0-00:00',
                         'alias': 'OS-KSCRUD',
@@ -36,7 +36,7 @@ class ExtensionTests(utils.ClientTestCase):
                     },
                     {
                         'name': 'OpenStack EC2 API',
-                        'namespace': 'http://docs.openstack.org/'
+                        'namespace': 'https://docs.openstack.org/'
                         'identity/api/ext/OS-EC2/v1.0',
                         'updated': '2013-09-07T12:00:0-00:00',
                         'alias': 'OS-EC2',

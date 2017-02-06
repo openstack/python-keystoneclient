@@ -2,7 +2,7 @@ Keystone Style Commandments
 ===========================
 
 - Step 1: Read the OpenStack Style Commandments
-  http://docs.openstack.org/developer/hacking/
+  https://docs.openstack.org/developer/hacking/
 - Step 2: Read on
 
 Exceptions
@@ -17,7 +17,7 @@ Testing
 
 python-keystoneclient uses testtools and testr for its unittest suite
 and its test runner. Basic workflow around our use of tox and testr can
-be found at http://wiki.openstack.org/testr. If you'd like to learn more
+be found at https://wiki.openstack.org/testr. If you'd like to learn more
 in depth:
 
   https://testtools.readthedocs.org/

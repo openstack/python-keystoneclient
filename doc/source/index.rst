@@ -21,8 +21,8 @@ Related Identity Projects
 In addition to creating the Python client library, the Keystone team also
 provides `Identity Service`_, as well as `WSGI Middleware`_.
 
-.. _`Identity Service`: http://docs.openstack.org/developer/keystone/
-.. _`WSGI Middleware`: http://docs.openstack.org/developer/keystonemiddleware/
+.. _`Identity Service`: https://docs.openstack.org/developer/keystone/
+.. _`WSGI Middleware`: https://docs.openstack.org/developer/keystonemiddleware/
 
 Release Notes
 =============
@@ -41,7 +41,7 @@ using `Gerrit`_.
 
 .. _on GitHub: https://github.com/openstack/python-keystoneclient
 .. _Launchpad: https://launchpad.net/python-keystoneclient
-.. _Gerrit: http://docs.openstack.org/infra/manual/developers.html#development-workflow
+.. _Gerrit: https://docs.openstack.org/infra/manual/developers.html#development-workflow
 
 Run tests with ``tox``.
 
