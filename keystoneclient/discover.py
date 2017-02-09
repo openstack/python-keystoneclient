@@ -231,7 +231,7 @@ class Discover(_discover.Discover):
 
         :returns: The endpoints returned from the server that match the
                   criteria.
-        :rtype: list
+        :rtype: List
 
         Example::
 

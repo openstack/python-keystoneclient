@@ -252,7 +252,7 @@ class BaseAuthPlugin(object):
 
         :returns: A list of Param objects describing available plugin
                   parameters.
-        :rtype: list
+        :rtype: List
         """
         return []
 

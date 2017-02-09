@@ -33,7 +33,7 @@ class BaseAuth(base.BaseIdentityPlugin):
     """Identity V3 Authentication Plugin.
 
     :param string auth_url: Identity service endpoint for authentication.
-    :param list auth_methods: A collection of methods to authenticate with.
+    :param List auth_methods: A collection of methods to authenticate with.
     :param string trust_id: Trust ID for trust scoping.
     :param string domain_id: Domain ID for domain scoping.
     :param string domain_name: Domain name for domain scoping.
@@ -111,7 +111,7 @@ class Auth(BaseAuth):
     """Identity V3 Authentication Plugin.
 
     :param string auth_url: Identity service endpoint for authentication.
-    :param list auth_methods: A collection of methods to authenticate with.
+    :param List auth_methods: A collection of methods to authenticate with.
     :param string trust_id: Trust ID for trust scoping.
     :param string domain_id: Domain ID for domain scoping.
     :param string domain_name: Domain name for domain scoping.
@@ -235,7 +235,7 @@ class AuthMethod(object):
 
         :param session: The communication session.
         :type session: keystoneclient.session.Session
-        :param Auth auth: The auth plugin calling the method.
+        :param base.Auth auth: The auth plugin calling the method.
         :param dict headers: The headers that will be sent with the auth
                              request if a plugin needs to add to them.
         :return: The identifier of this plugin and a dict of authentication

@@ -79,7 +79,7 @@ class IdentityProviderManager(base.CrudManager):
         GET /OS-FEDERATION/identity_providers
 
         :returns: a list of IdentityProvider resource objects.
-        :rtype: list
+        :rtype: List
 
         """
         return super(IdentityProviderManager, self).list(**kwargs)
