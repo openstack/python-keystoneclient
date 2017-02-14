@@ -33,6 +33,7 @@ from keystoneclient.v3 import credentials
 from keystoneclient.v3 import domain_configs
 from keystoneclient.v3 import domains
 from keystoneclient.v3 import ec2
+from keystoneclient.v3 import endpoint_groups
 from keystoneclient.v3 import endpoints
 from keystoneclient.v3 import groups
 from keystoneclient.v3 import policies
@@ -130,6 +131,11 @@ class Client(httpclient.HTTPClient):
         :py:class:`keystoneclient.v3.contrib.endpoint_filter.\
         EndpointFilterManager`
 
+    .. py:attribute:: endpoint_groups
+
+        :py:class:`keystoneclient.v3.endpoint_groups.\
+        EndpointGroupManager`
+
     .. py:attribute:: endpoint_policy
 
         :py:class:`keystoneclient.v3.contrib.endpoint_policy.\
@@ -210,6 +216,8 @@ class Client(httpclient.HTTPClient):
         self.credentials = credentials.CredentialManager(self._adapter)
         self.ec2 = ec2.EC2Manager(self._adapter)
         self.endpoint_filter = endpoint_filter.EndpointFilterManager(
+            self._adapter)
+        self.endpoint_groups = endpoint_groups.EndpointGroupManager(
             self._adapter)
         self.endpoint_policy = endpoint_policy.EndpointPolicyManager(
             self._adapter)
