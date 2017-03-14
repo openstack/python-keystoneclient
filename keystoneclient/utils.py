@@ -36,6 +36,12 @@ def find_resource(manager, name_or_id):
     except (ksa_exceptions.NotFound):  # nosec(cjschaef): try to find
         # 'name_or_id' as a six.binary_type instead
         pass
+    
+    # there is a chance that the entity is an id that is not uuid
+    try:
+        return manager.get(name_or_id)
+    except (ValueError, exceptions.NotFound):
+        pass
 
     # finally try to find entity by name
     try:
