@@ -40,7 +40,7 @@ class ExceptionsArgsTest(utils.TestCase):
             method,
             url)
         self.assertIsInstance(ex, ex_cls)
-        self.assertEqual(ex.message, json_data["error"]["message"])
+        self.assertIn(json_data["error"]["message"], ex.message)
         self.assertEqual(ex.details, json_data["error"]["details"])
         self.assertEqual(ex.method, method)
         self.assertEqual(ex.url, url)

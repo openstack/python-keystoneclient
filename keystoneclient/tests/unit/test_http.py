@@ -97,7 +97,7 @@ class ClientTest(utils.TestCase):
                 cl.get('/hi')
         except exceptions.BadRequest as exc:
             exc_raised = True
-            self.assertEqual(exc.message, "Error message string")
+            self.assertEqual(exc.message, "Error message string (HTTP 400)")
         self.assertTrue(exc_raised, 'Exception not raised.')
 
     def test_post(self):
