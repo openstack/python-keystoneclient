@@ -27,7 +27,7 @@ import re
 from positional import positional
 
 from keystoneclient import exceptions
-from keystoneclient.i18n import _, _LI, _LW
+from keystoneclient.i18n import _
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -167,8 +167,8 @@ class Discover(object):
             try:
                 status = v['status']
             except KeyError:
-                _LOGGER.warning(_LW('Skipping over invalid version data. '
-                                    'No stability status in version.'))
+                _LOGGER.warning('Skipping over invalid version data. '
+                                'No stability status in version.')
                 continue
 
             status = status.lower()
@@ -210,14 +210,13 @@ class Discover(object):
             try:
                 version_str = v['id']
             except KeyError:
-                _LOGGER.info(_LI('Skipping invalid version data. Missing ID.'))
+                _LOGGER.info('Skipping invalid version data. Missing ID.')
                 continue
 
             try:
                 links = v['links']
             except KeyError:
-                _LOGGER.info(
-                    _LI('Skipping invalid version data. Missing links'))
+                _LOGGER.info('Skipping invalid version data. Missing links')
                 continue
 
             version_number = normalize_version_number(version_str)
@@ -227,15 +226,15 @@ class Discover(object):
                     rel = link['rel']
                     url = link['href']
                 except (KeyError, TypeError):
-                    _LOGGER.info(_LI('Skipping invalid version link. '
-                                     'Missing link URL or relationship.'))
+                    _LOGGER.info('Skipping invalid version link. '
+                                 'Missing link URL or relationship.')
                     continue
 
                 if rel.lower() == 'self':
                     break
             else:
-                _LOGGER.info(_LI('Skipping invalid version data. '
-                                 'Missing link to endpoint.'))
+                _LOGGER.info('Skipping invalid version data. '
+                             'Missing link to endpoint.')
                 continue
 
             versions.append({'version': version_number,

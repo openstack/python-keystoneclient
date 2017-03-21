@@ -54,7 +54,7 @@ from keystoneclient import access
 from keystoneclient.auth import base
 from keystoneclient import baseclient
 from keystoneclient import exceptions
-from keystoneclient.i18n import _, _LW
+from keystoneclient.i18n import _
 from keystoneclient import session as client_session
 
 
@@ -393,7 +393,7 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
 
         # keyring setup
         if use_keyring and keyring is None:
-            _logger.warning(_LW('Failed to load keyring modules.'))
+            _logger.warning('Failed to load keyring modules.')
         self.use_keyring = use_keyring and keyring is not None
         self.force_new_token = force_new_token
         self.stale_duration = stale_duration or access.STALE_TOKEN_DURATION
@@ -633,8 +633,7 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
                         auth_ref = None
             except Exception as e:
                 auth_ref = None
-                _logger.warning(
-                    _LW('Unable to retrieve token from keyring %s'), e)
+                _logger.warning('Unable to retrieve token from keyring %s', e)
         return (keyring_key, auth_ref)
 
     def store_auth_ref_into_keyring(self, keyring_key):
@@ -646,8 +645,7 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
                                      pickle.dumps(self.auth_ref))  # nosec
                 # (cjschaef): see bug 1534288
             except Exception as e:
-                _logger.warning(
-                    _LW("Failed to store token into keyring %s"), e)
+                _logger.warning("Failed to store token into keyring %s", e)
 
     def _process_management_url(self, region_name):
         try:

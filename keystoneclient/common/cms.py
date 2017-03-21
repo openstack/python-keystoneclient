@@ -29,7 +29,7 @@ from debtcollector import removals
 import six
 
 from keystoneclient import exceptions
-from keystoneclient.i18n import _, _LE
+from keystoneclient.i18n import _
 
 
 subprocess = None
@@ -376,11 +376,11 @@ def cms_sign_data(data_to_sign, signing_cert_file_name, signing_key_file_name,
 
     if retcode != OpensslCmsExitStatus.SUCCESS or ('Error' in err):
         if retcode == OpensslCmsExitStatus.CREATE_CMS_READ_MIME_ERROR:
-            LOG.error(_LE('Signing error: Unable to load certificate - '
-                          'ensure you have configured PKI with '
-                          '"keystone-manage pki_setup"'))
+            LOG.error('Signing error: Unable to load certificate - '
+                      'ensure you have configured PKI with '
+                      '"keystone-manage pki_setup"')
         else:
-            LOG.error(_LE('Signing error: %s'), err)
+            LOG.error('Signing error: %s', err)
         raise subprocess.CalledProcessError(retcode, 'openssl')
     if outform == PKI_ASN1_FORM:
         return output.decode('utf-8')
