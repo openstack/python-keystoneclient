@@ -2,15 +2,15 @@
 # of appearance. Changing the order has an impact on the overall integration
 # process, which may cause wedges in the gate later.
 
-pbr>=1.8 # Apache-2.0
+pbr>=2.0.0 # Apache-2.0
 
 debtcollector>=1.2.0 # Apache-2.0
 keystoneauth1>=2.18.0 # Apache-2.0
-oslo.config!=3.18.0,>=3.14.0 # Apache-2.0
+oslo.config>=3.22.0 # Apache-2.0
 oslo.i18n>=2.1.0 # Apache-2.0
 oslo.serialization>=1.10.0 # Apache-2.0
-oslo.utils>=3.18.0 # Apache-2.0
+oslo.utils>=3.20.0 # Apache-2.0
 positional>=1.1.1 # Apache-2.0
 requests!=2.12.2,!=2.13.0,>=2.10.0 # Apache-2.0
 six>=1.9.0 # MIT
-stevedore>=1.17.1 # Apache-2.0
+stevedore>=1.20.0 # Apache-2.0
