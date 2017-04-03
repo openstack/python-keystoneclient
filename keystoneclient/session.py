@@ -201,7 +201,7 @@ class Session(object):
         string_parts.append(url)
 
         if headers:
-            for header in six.iteritems(headers):
+            for header in headers.items():
                 string_parts.append('-H "%s: %s"'
                                     % self._process_header(header))
 
@@ -249,7 +249,7 @@ class Session(object):
             'RESP:',
             '[%s]' % response.status_code
         ]
-        for header in six.iteritems(response.headers):
+        for header in response.headers.items():
             string_parts.append('%s: %s' % self._process_header(header))
         string_parts.append('\nRESP BODY: %s\n' % strutils.mask_password(text))
 

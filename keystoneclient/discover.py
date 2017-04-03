@@ -16,7 +16,6 @@ import warnings
 from debtcollector import removals
 from keystoneauth1 import plugin
 from positional import positional
-import six
 
 from keystoneclient import _discover
 from keystoneclient import exceptions
@@ -300,7 +299,7 @@ class Discover(_discover.Discover):
             raise exceptions.DiscoveryFailure(msg)
 
         # kwargs should take priority over stored kwargs.
-        for k, v in six.iteritems(self._client_kwargs):
+        for k, v in self._client_kwargs.items():
             kwargs.setdefault(k, v)
 
         # restore the url to either auth_url or endpoint depending on what

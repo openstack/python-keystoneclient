@@ -52,14 +52,14 @@ def getid(obj):
 
 def filter_none(**kwargs):
     """Remove any entries from a dictionary where the value is None."""
-    return dict((k, v) for k, v in six.iteritems(kwargs) if v is not None)
+    return dict((k, v) for k, v in kwargs.items() if v is not None)
 
 
 def filter_kwargs(f):
     @functools.wraps(f)
     def func(*args, **kwargs):
         new_kwargs = {}
-        for key, ref in six.iteritems(kwargs):
+        for key, ref in kwargs.items():
             if ref is None:
                 # drop null values
                 continue
@@ -481,7 +481,7 @@ class Resource(object):
         return None
 
     def _add_details(self, info):
-        for (k, v) in six.iteritems(info):
+        for (k, v) in info.items():
             try:
                 try:
                     setattr(self, k, v)

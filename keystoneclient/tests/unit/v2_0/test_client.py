@@ -14,7 +14,6 @@ import json
 import uuid
 
 from keystoneauth1 import fixture
-import six
 
 from keystoneauth1 import session as auth_session
 from keystoneclient.auth import token_endpoint
@@ -207,7 +206,7 @@ class KeystoneClientTest(utils.TestCase):
 
         cl = client.Client(session=sess, **opts)
 
-        for k, v in six.iteritems(opts):
+        for k, v in opts.items():
             self.assertEqual(v, getattr(cl._adapter, k))
 
         self.assertEqual('identity', cl._adapter.service_type)

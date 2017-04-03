@@ -218,7 +218,7 @@ class Ec2Signer(object):
             # - the Authorization header (SignedHeaders key)
             # - the X-Amz-SignedHeaders query parameter
             headers_lower = dict((k.lower().strip(), v.strip())
-                                 for (k, v) in six.iteritems(headers))
+                                 for (k, v) in headers.items())
 
             # Boto versions < 2.9.3 strip the port component of the host:port
             # header, so detect the user-agent via the header and strip the

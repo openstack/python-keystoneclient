@@ -202,10 +202,10 @@ class BasicRequestTests(utils.TestCase):
 
         self.request(headers=headers)
 
-        for k, v in six.iteritems(headers):
+        for k, v in headers.items():
             self.assertRequestHeaderEqual(k, v)
 
-        for header in six.iteritems(headers):
+        for header in headers.items():
             self.assertThat(self.logger_message.getvalue(),
                             matchers.Contains('-H "%s: %s"' % header))
 

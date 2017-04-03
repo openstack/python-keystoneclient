@@ -16,7 +16,6 @@ import uuid
 from keystoneauth1 import fixture
 import mock
 from oslo_config import cfg
-import six
 
 from keystoneclient import access
 from keystoneclient.auth import base
@@ -88,7 +87,7 @@ class TestCase(utils.TestCase):
                  'a_bool': a_bool}
 
     def assertTestVals(self, plugin, vals=TEST_VALS):
-        for k, v in six.iteritems(vals):
+        for k, v in vals.items():
             self.assertEqual(v, plugin[k])
 
 

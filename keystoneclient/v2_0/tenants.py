@@ -15,7 +15,6 @@
 #    under the License.
 
 from keystoneauth1 import plugin
-import six
 from six.moves import urllib
 
 from keystoneclient import base
@@ -92,7 +91,7 @@ class TenantManager(base.ManagerWithFind):
                              "enabled": enabled}}
 
         # Allow Extras Passthru and ensure we don't clobber primary arguments.
-        for k, v in six.iteritems(kwargs):
+        for k, v in kwargs.items():
             if k not in params['tenant']:
                 params['tenant'][k] = v
 
@@ -142,7 +141,7 @@ class TenantManager(base.ManagerWithFind):
             body['tenant']['description'] = description
 
         # Allow Extras Passthru and ensure we don't clobber primary arguments.
-        for k, v in six.iteritems(kwargs):
+        for k, v in kwargs.items():
             if k not in body['tenant']:
                 body['tenant'][k] = v
 
