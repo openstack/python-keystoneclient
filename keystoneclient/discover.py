@@ -10,7 +10,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import logging
 import warnings
 
 from debtcollector import removals
@@ -24,9 +23,6 @@ from keystoneclient.i18n import _
 from keystoneclient import session as client_session
 from keystoneclient.v2_0 import client as v2_client
 from keystoneclient.v3 import client as v3_client
-
-
-_logger = logging.getLogger(__name__)
 
 
 _CLIENT_VERSIONS = {2: v2_client.Client,

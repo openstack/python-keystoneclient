@@ -12,7 +12,6 @@
 
 import getpass
 import hashlib
-import logging
 import sys
 
 from keystoneauth1 import exceptions as ksa_exceptions
@@ -23,9 +22,6 @@ from positional import positional  # noqa
 import six
 
 from keystoneclient import exceptions as ksc_exceptions
-
-
-logger = logging.getLogger(__name__)
 
 
 def find_resource(manager, name_or_id):
