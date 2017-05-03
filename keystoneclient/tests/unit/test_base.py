@@ -11,9 +11,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import fixtures
 from keystoneauth1.identity import v2
 from keystoneauth1 import session
-from oslotest import mockpatch
 
 from keystoneclient import base
 from keystoneclient.tests.unit import utils
@@ -44,7 +44,7 @@ class BaseTest(utils.TestCase):
         session_ = session.Session(auth=auth)
         self.client = client.Client(session=session_)
 
-        self.useFixture(mockpatch.PatchObject(
+        self.useFixture(fixtures.MockPatchObject(
             self.client._adapter, 'get', side_effect=AttributeError,
             autospec=True))
 
@@ -127,7 +127,7 @@ class ManagerTest(utils.TestCase):
             self.assertEqual(self.mgr.api, self.client)
 
     def test_get(self):
-        get_mock = self.useFixture(mockpatch.PatchObject(
+        get_mock = self.useFixture(fixtures.MockPatchObject(
             self.client, 'get', autospec=True, return_value=(None, self.body))
         ).mock
         rsrc = self.mgr._get(self.url, "hello")
@@ -135,7 +135,7 @@ class ManagerTest(utils.TestCase):
         self.assertEqual(rsrc.hi, 1)
 
     def test_post(self):
-        post_mock = self.useFixture(mockpatch.PatchObject(
+        post_mock = self.useFixture(fixtures.MockPatchObject(
             self.client, 'post', autospec=True, return_value=(None, self.body))
         ).mock
 
@@ -150,7 +150,7 @@ class ManagerTest(utils.TestCase):
         self.assertEqual(rsrc["hi"], 1)
 
     def test_put(self):
-        put_mock = self.useFixture(mockpatch.PatchObject(
+        put_mock = self.useFixture(fixtures.MockPatchObject(
             self.client, 'put', autospec=True, return_value=(None, self.body))
         ).mock
 
@@ -165,7 +165,7 @@ class ManagerTest(utils.TestCase):
         self.assertEqual(rsrc.hello["hi"], 1)
 
     def test_patch(self):
-        patch_mock = self.useFixture(mockpatch.PatchObject(
+        patch_mock = self.useFixture(fixtures.MockPatchObject(
             self.client, 'patch', autospec=True,
             return_value=(None, self.body))
         ).mock
@@ -181,12 +181,12 @@ class ManagerTest(utils.TestCase):
         self.assertEqual(rsrc.hello["hi"], 1)
 
     def test_update(self):
-        patch_mock = self.useFixture(mockpatch.PatchObject(
+        patch_mock = self.useFixture(fixtures.MockPatchObject(
             self.client, 'patch', autospec=True,
             return_value=(None, self.body))
         ).mock
 
-        put_mock = self.useFixture(mockpatch.PatchObject(
+        put_mock = self.useFixture(fixtures.MockPatchObject(
             self.client, 'put', autospec=True, return_value=(None, self.body))
         ).mock
 
