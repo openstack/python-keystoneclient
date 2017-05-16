@@ -20,7 +20,7 @@ import six.moves.urllib.parse as urlparse
 from keystoneclient import _discover
 from keystoneclient.auth.identity import base
 from keystoneclient import exceptions
-from keystoneclient.i18n import _, _LW
+from keystoneclient.i18n import _
 
 
 LOG = logging.getLogger(__name__)
@@ -140,9 +140,9 @@ class BaseGenericPlugin(base.BaseIdentityPlugin):
         except (exceptions.DiscoveryFailure,
                 exceptions.HTTPError,
                 exceptions.ConnectionError):
-            LOG.warning(_LW('Discovering versions from the identity service '
-                            'failed when creating the password plugin. '
-                            'Attempting to determine version from URL.'))
+            LOG.warning('Discovering versions from the identity service '
+                        'failed when creating the password plugin. '
+                        'Attempting to determine version from URL.')
 
             url_parts = urlparse.urlparse(self.auth_url)
             path = url_parts.path.lower()

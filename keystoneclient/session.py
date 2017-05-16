@@ -31,7 +31,7 @@ import six
 from six.moves import urllib
 
 from keystoneclient import exceptions
-from keystoneclient.i18n import _, _LI, _LW
+from keystoneclient.i18n import _
 
 osprofiler_web = importutils.try_import("osprofiler.web")
 
@@ -476,7 +476,7 @@ class Session(object):
             if connect_retries <= 0:
                 raise
 
-            logger.info(_LI('Failure: %(e)s. Retrying in %(delay).1fs.'),
+            logger.info('Failure: %(e)s. Retrying in %(delay).1fs.',
                         {'e': e, 'delay': connect_retry_delay})
             time.sleep(connect_retry_delay)
 
@@ -503,8 +503,8 @@ class Session(object):
             try:
                 location = resp.headers['location']
             except KeyError:
-                logger.warning(_LW("Failed to redirect request to %s as new "
-                                   "location was not provided."), resp.url)
+                logger.warning("Failed to redirect request to %s as new "
+                               "location was not provided.", resp.url)
             else:
                 # NOTE(jamielennox): We don't pass through connect_retry_delay.
                 # This request actually worked so we can reset the delay count.
