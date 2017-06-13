@@ -12,7 +12,6 @@
 
 import uuid
 
-import six
 from six.moves.urllib import parse as urlparse
 
 from keystoneclient.tests.unit import client_fixtures
@@ -301,7 +300,7 @@ class CrudTests(object):
 
         qs_args = self.requests_mock.last_request.qs
         qs_args_expected = expected_query or filter_kwargs
-        for key, value in six.iteritems(qs_args_expected):
+        for key, value in qs_args_expected.items():
             self.assertIn(key, qs_args)
             # The querystring value is a list. Note we convert the value to a
             # string and lower, as the query string is always a string and the

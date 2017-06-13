@@ -461,7 +461,7 @@ class GenericAuthPluginTests(utils.TestCase):
 
         self.assertEqual(text, resp.text)
 
-        for k, v in six.iteritems(self.auth.headers):
+        for k, v in self.auth.headers.items():
             self.assertRequestHeaderEqual(k, v)
 
         with self.deprecations.expect_deprecations_here():

@@ -12,7 +12,6 @@
 
 import uuid
 
-import six
 
 from keystoneclient.tests.unit.auth import utils
 
@@ -39,7 +38,7 @@ class TestOtherLoading(utils.TestCase):
 
         self.assertEqual(set(vals), set(called_opts))
 
-        for k, v in six.iteritems(vals):
+        for k, v in vals.items():
             # replace - to _ because it's the dest used to create kwargs
             self.assertEqual(v, p[k.replace('-', '_')])
 

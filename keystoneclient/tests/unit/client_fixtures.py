@@ -703,7 +703,7 @@ class Examples(fixtures.Fixture):
             self.TOKEN_RESPONSES[self.SIGNED_v3_TOKEN_SCOPED_KEY])
 
         self.JSON_TOKEN_RESPONSES = dict([(k, jsonutils.dumps(v)) for k, v in
-                                          six.iteritems(self.TOKEN_RESPONSES)])
+                                          self.TOKEN_RESPONSES.items()])
 
 
 EXAMPLES_RESOURCE = testresources.FixtureResource(Examples())

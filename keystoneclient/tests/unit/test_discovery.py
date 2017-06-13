@@ -243,7 +243,7 @@ class AvailableVersionsTests(utils.TestCase):
                     'cinder': jsonutils.dumps(CINDER_EXAMPLES),
                     'glance': jsonutils.dumps(GLANCE_EXAMPLES)}
 
-        for path, text in six.iteritems(examples):
+        for path, text in examples.items():
             url = "%s%s" % (BASE_URL, path)
 
             self.requests_mock.get(url, status_code=300, text=text)

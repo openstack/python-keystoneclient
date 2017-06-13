@@ -12,7 +12,6 @@
 
 import uuid
 
-import six
 
 from keystoneclient import fixture
 from keystoneclient.tests.unit import utils
@@ -246,7 +245,7 @@ class V3TokenTests(utils.TestCase):
             # the endpoint content below easier.
             self.assertTrue(endpoint.pop('id'))
 
-        for interface, url in six.iteritems(endpoints):
+        for interface, url in endpoints.items():
             endpoint = {'interface': interface, 'url': url,
                         'region': region, 'region_id': region}
             self.assertIn(endpoint, service['endpoints'])

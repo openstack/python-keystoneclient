@@ -171,13 +171,13 @@ class SessionTests(utils.TestCase):
         self.assertIn(body, self.logger.output)
         self.assertIn("'%s'" % data, self.logger.output)
 
-        for k, v in six.iteritems(headers):
+        for k, v in headers.items():
             self.assertIn(k, self.logger.output)
             self.assertIn(v, self.logger.output)
 
         # Assert that response headers contains actual values and
         # only debug logs has been masked
-        for k, v in six.iteritems(security_headers):
+        for k, v in security_headers.items():
             self.assertIn('%s: {SHA1}' % k, self.logger.output)
             self.assertEqual(v, resp.headers[k])
             self.assertNotIn(v, self.logger.output)
