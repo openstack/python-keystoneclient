@@ -415,7 +415,7 @@ An alias of :py:exc:`keystoneauth1.exceptions.auth_plugins.NoMatchingPlugin`
 class UnsupportedParameters(ClientException):
     """A parameter that was provided or returned is not supported.
 
-    :param list(str) names: Names of the unsupported parameters.
+    :param List(str) names: Names of the unsupported parameters.
 
     .. py:attribute:: names
 
