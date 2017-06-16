@@ -39,13 +39,14 @@ class TrustManager(base.CrudManager):
     base_url = '/OS-TRUST'
 
     def create(self, trustee_user, trustor_user, role_names=None,
-               project=None, impersonation=False, expires_at=None,
-               remaining_uses=None, **kwargs):
+               role_ids=None, project=None, impersonation=False,
+               expires_at=None, remaining_uses=None, **kwargs):
         """Create a Trust.
 
         :param string trustee_user: user who is capable of consuming the trust
         :param string trustor_user: user who's authorization is being delegated
         :param string role_names: subset of trustor's roles to be granted
+        :param string role_ids: subset of trustor's roles to be granted
         :param string project: project which the trustor is delegating
         :param boolean impersonation: enable explicit impersonation
         :param datetime.datetime expires_at: expiry time
@@ -55,9 +56,13 @@ class TrustManager(base.CrudManager):
 
         """
         # Convert role_names list into list-of-dict API format
+        roles = []
         if role_names:
-            roles = [{'name': n} for n in role_names]
-        else:
+            roles.extend([{'name': n} for n in role_names])
+        if role_ids:
+            roles.extend([{'id': i} for i in role_ids])
+
+        if not roles:
             roles = None
 
         # Convert datetime.datetime expires_at to iso format string
