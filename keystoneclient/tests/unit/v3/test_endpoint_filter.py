@@ -36,6 +36,13 @@ class EndpointTestUtils(object):
         kwargs.setdefault('url', uuid.uuid4().hex)
         return kwargs
 
+    def new_endpoint_group_ref(self, **kwargs):
+        kwargs.setdefault('id', uuid.uuid4().hex)
+        kwargs.setdefault('name', uuid.uuid4().hex)
+        kwargs.setdefault('description', uuid.uuid4().hex)
+        kwargs.setdefault('filters')
+        return kwargs
+
 
 class EndpointFilterTests(utils.ClientTestCase, EndpointTestUtils):
     """Test project-endpoint associations (a.k.a. EndpointFilter Extension).
@@ -147,3 +154,140 @@ class EndpointFilterTests(utils.ClientTestCase, EndpointTestUtils):
             project['id'] for project in projects['projects']]
         actual_project_ids = [project.id for project in projects_resp]
         self.assertEqual(expected_project_ids, actual_project_ids)
+
+    def test_list_projects_for_endpoint_group(self):
+        endpoint_group_id = uuid.uuid4().hex
+        projects = {'projects': [self.new_project_ref(),
+                                 self.new_project_ref()]}
+        self.stub_url('GET',
+                      [self.manager.OS_EP_FILTER_EXT, 'endpoint_groups',
+                       endpoint_group_id, 'projects'],
+                      json=projects,
+                      status_code=200)
+
+        projects_resp = self.manager.list_projects_for_endpoint_group(
+            endpoint_group=endpoint_group_id)
+
+        expected_project_ids = [
+            project['id'] for project in projects['projects']]
+        actual_project_ids = [project.id for project in projects_resp]
+        self.assertEqual(expected_project_ids, actual_project_ids)
+
+    def test_list_projects_for_endpoint_group_value_error(self):
+        self.assertRaises(ValueError,
+                          self.manager.list_projects_for_endpoint_group,
+                          endpoint_group='')
+        self.assertRaises(ValueError,
+                          self.manager.list_projects_for_endpoint_group,
+                          endpoint_group=None)
+
+    def test_list_endpoint_groups_for_project(self):
+        project_id = uuid.uuid4().hex
+        endpoint_groups = {
+            'endpoint_groups': [self.new_endpoint_group_ref(),
+                                self.new_endpoint_group_ref()]}
+        self.stub_url('GET',
+                      [self.manager.OS_EP_FILTER_EXT, 'projects',
+                       project_id, 'endpoint_groups'],
+                      json=endpoint_groups,
+                      status_code=200)
+
+        endpoint_groups_resp = self.manager.list_endpoint_groups_for_project(
+            project=project_id)
+
+        expected_endpoint_group_ids = [
+            endpoint_group['id'] for endpoint_group
+            in endpoint_groups['endpoint_groups']
+        ]
+        actual_endpoint_group_ids = [
+            endpoint_group.id for endpoint_group in endpoint_groups_resp
+        ]
+        self.assertEqual(expected_endpoint_group_ids,
+                         actual_endpoint_group_ids)
+
+    def test_list_endpoint_groups_for_project_value_error(self):
+        for value in ('', None):
+            self.assertRaises(ValueError,
+                              self.manager.list_endpoint_groups_for_project,
+                              project=value)
+
+    def test_add_endpoint_group_to_project(self):
+        endpoint_group_id = uuid.uuid4().hex
+        project_id = uuid.uuid4().hex
+
+        self.stub_url('PUT',
+                      [self.manager.OS_EP_FILTER_EXT, 'endpoint_groups',
+                       endpoint_group_id, 'projects', project_id],
+                      status_code=201)
+
+        self.manager.add_endpoint_group_to_project(
+            project=project_id, endpoint_group=endpoint_group_id)
+
+    def test_add_endpoint_group_to_project_value_error(self):
+        for value in ('', None):
+            self.assertRaises(ValueError,
+                              self.manager.add_endpoint_group_to_project,
+                              project=value,
+                              endpoint_group=value)
+            self.assertRaises(ValueError,
+                              self.manager.add_endpoint_group_to_project,
+                              project=uuid.uuid4().hex,
+                              endpoint_group=value)
+            self.assertRaises(ValueError,
+                              self.manager.add_endpoint_group_to_project,
+                              project=value,
+                              endpoint_group=uuid.uuid4().hex)
+
+    def test_check_endpoint_group_in_project(self):
+        endpoint_group_id = uuid.uuid4().hex
+        project_id = uuid.uuid4().hex
+
+        self.stub_url('HEAD',
+                      [self.manager.OS_EP_FILTER_EXT, 'endpoint_groups',
+                       endpoint_group_id, 'projects', project_id],
+                      status_code=201)
+
+        self.manager.check_endpoint_group_in_project(
+            project=project_id, endpoint_group=endpoint_group_id)
+
+    def test_check_endpoint_group_in_project_value_error(self):
+        for value in ('', None):
+            self.assertRaises(ValueError,
+                              self.manager.check_endpoint_group_in_project,
+                              project=value,
+                              endpoint_group=value)
+            self.assertRaises(ValueError,
+                              self.manager.check_endpoint_group_in_project,
+                              project=uuid.uuid4().hex,
+                              endpoint_group=value)
+            self.assertRaises(ValueError,
+                              self.manager.check_endpoint_group_in_project,
+                              project=value,
+                              endpoint_group=uuid.uuid4().hex)
+
+    def test_delete_endpoint_group_from_project(self):
+        endpoint_group_id = uuid.uuid4().hex
+        project_id = uuid.uuid4().hex
+
+        self.stub_url('DELETE',
+                      [self.manager.OS_EP_FILTER_EXT, 'endpoint_groups',
+                       endpoint_group_id, 'projects', project_id],
+                      status_code=201)
+
+        self.manager.delete_endpoint_group_from_project(
+            project=project_id, endpoint_group=endpoint_group_id)
+
+    def test_delete_endpoint_group_from_project_value_error(self):
+        for value in ('', None):
+            self.assertRaises(ValueError,
+                              self.manager.delete_endpoint_group_from_project,
+                              project=value,
+                              endpoint_group=value)
+            self.assertRaises(ValueError,
+                              self.manager.delete_endpoint_group_from_project,
+                              project=uuid.uuid4().hex,
+                              endpoint_group=value)
+            self.assertRaises(ValueError,
+                              self.manager.delete_endpoint_group_from_project,
+                              project=value,
+                              endpoint_group=uuid.uuid4().hex)

@@ -18,15 +18,7 @@ from keystoneclient.tests.functional import base
 from keystoneclient.tests.functional.v3 import client_fixtures as fixtures
 
 
-class ProjectsTestCase(base.V3ClientTestCase):
-
-    def setUp(self):
-        super(ProjectsTestCase, self).setUp()
-        self.test_domain = fixtures.Domain(self.client)
-        self.useFixture(self.test_domain)
-
-        self.test_project = fixtures.Project(self.client, self.test_domain.id)
-        self.useFixture(self.test_project)
+class ProjectsTestMixin(object):
 
     def check_project(self, project, project_ref=None):
         self.assertIsNotNone(project.id)
@@ -50,6 +42,17 @@ class ProjectsTestCase(base.V3ClientTestCase):
             self.assertIsNotNone(project.name)
             self.assertIsNotNone(project.domain_id)
             self.assertIsNotNone(project.enabled)
+
+
+class ProjectsTestCase(base.V3ClientTestCase, ProjectsTestMixin):
+
+    def setUp(self):
+        super(ProjectsTestCase, self).setUp()
+        self.test_domain = fixtures.Domain(self.client)
+        self.useFixture(self.test_domain)
+
+        self.test_project = fixtures.Project(self.client, self.test_domain.id)
+        self.useFixture(self.test_project)
 
     def test_create_subproject(self):
         project_ref = {

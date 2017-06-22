@@ -1,0 +1,8 @@
+---
+prelude: >
+    Keystone Client now supports endpoint group filtering.
+features:
+  - |
+    Support for handling the relationship between endpoint groups and projects
+    has been added. It is now possible to list, associate, check and
+    disassociate endpoint groups that have access to a project.
