@@ -230,6 +230,5 @@ latex_documents = [
 keystoneauth_url = 'https://docs.openstack.org/developer/keystoneauth/'
 intersphinx_mapping = {
     'python': ('https://docs.python.org/', None),
-    'osloconfig': ('https://docs.openstack.org/developer/oslo.config/', None),
-    'keystoneauth1': (keystoneauth_url, None),
+    'osloconfig': ('https://docs.openstack.org/oslo.config/latest/', None),
 }
