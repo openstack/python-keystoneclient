@@ -219,10 +219,11 @@ latex_documents = [
 # If false, no module index is generated.
 #latex_use_modindex = True
 
-keystoneauth_url = 'https://docs.openstack.org/developer/keystoneauth/'
+keystoneauth_url = 'https://docs.openstack.org/keystoneauth/latest/'
 intersphinx_mapping = {
     'python': ('https://docs.python.org/', None),
     'osloconfig': ('https://docs.openstack.org/oslo.config/latest/', None),
+    'keystoneauth1': (keystoneauth_url, None),
 }
 
 # -- Options for openstackdocstheme -------------------------------------------
