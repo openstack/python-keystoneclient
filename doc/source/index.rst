@@ -21,8 +21,8 @@ Related Identity Projects
 In addition to creating the Python client library, the Keystone team also
 provides `Identity Service`_, as well as `WSGI Middleware`_.
 
-.. _`Identity Service`: https://docs.openstack.org/developer/keystone/
-.. _`WSGI Middleware`: https://docs.openstack.org/developer/keystonemiddleware/
+.. _`Identity Service`: https://docs.openstack.org/keystone/latest/
+.. _`WSGI Middleware`: https://docs.openstack.org/keystonemiddleware/latest/
 
 Release Notes
 =============

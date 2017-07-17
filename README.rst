@@ -33,7 +33,7 @@ OpenStack's Identity Service. For command line interface support, use
 * `How to Contribute`_
 
 .. _PyPi: https://pypi.python.org/pypi/python-keystoneclient
-.. _Online Documentation: https://docs.openstack.org/developer/python-keystoneclient
+.. _Online Documentation: https://docs.openstack.org/python-keystoneclient/latest/
 .. _Launchpad project: https://launchpad.net/python-keystoneclient
 .. _Blueprints: https://blueprints.launchpad.net/python-keystoneclient
 .. _Bugs: https://bugs.launchpad.net/python-keystoneclient
