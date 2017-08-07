@@ -14,7 +14,6 @@ import warnings
 
 from debtcollector import removals
 from keystoneauth1 import plugin
-from positional import positional
 
 from keystoneclient import _discover
 from keystoneclient import exceptions
@@ -146,7 +145,6 @@ class Discover(_discover.Discover):
 
     """
 
-    @positional(2)
     def __init__(self, session=None, authenticated=None, **kwargs):
         if not session:
             warnings.warn(

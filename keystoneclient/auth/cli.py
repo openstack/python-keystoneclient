@@ -14,7 +14,6 @@ import argparse
 import os
 
 from debtcollector import removals
-from positional import positional
 
 from keystoneclient.auth import base
 
@@ -24,7 +23,6 @@ from keystoneclient.auth import base
     version='2.1.0',
     removal_version='3.0.0'
 )
-@positional()
 def register_argparse_arguments(parser, argv, default=None):
     """Register CLI options needed to create a plugin.
 

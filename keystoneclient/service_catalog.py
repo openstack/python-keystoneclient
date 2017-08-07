@@ -19,7 +19,6 @@
 import abc
 import warnings
 
-from positional import positional
 import six
 
 from keystoneclient import exceptions
@@ -209,7 +208,6 @@ class ServiceCatalog(object):
         return endpoints
 
     @abc.abstractmethod
-    @positional(enforcement=positional.WARN)
     def get_urls(self, attr=None, filter_value=None,
                  service_type='identity', endpoint_type='publicURL',
                  region_name=None, service_name=None):
@@ -233,7 +231,6 @@ class ServiceCatalog(object):
         """
         raise NotImplementedError()  # pragma: no cover
 
-    @positional(3, enforcement=positional.WARN)
     def url_for(self, attr=None, filter_value=None,
                 service_type='identity', endpoint_type='publicURL',
                 region_name=None, service_name=None):
@@ -348,7 +345,6 @@ class ServiceCatalogV2(ServiceCatalog):
             pass
         return token
 
-    @positional(enforcement=positional.WARN)
     def get_urls(self, attr=None, filter_value=None,
                  service_type='identity', endpoint_type='publicURL',
                  region_name=None, service_name=None):
@@ -415,7 +411,6 @@ class ServiceCatalogV3(ServiceCatalog):
             pass
         return token
 
-    @positional(enforcement=positional.WARN)
     def get_urls(self, attr=None, filter_value=None,
                  service_type='identity', endpoint_type='public',
                  region_name=None, service_name=None):

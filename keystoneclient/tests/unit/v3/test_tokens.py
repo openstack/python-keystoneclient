@@ -64,11 +64,6 @@ class TokenTests(utils.ClientTestCase, testresources.ResourcedTestCase):
         self.assertQueryStringIs('audit_id_only')
         self.assertEqual(sample_revoked_response, resp)
 
-    def test_get_revoked_audit_id_only_positional_exc(self):
-        # When get_revoked(True) an exception is raised because this must be
-        # called with named parameter.
-        self.assertRaises(TypeError, self.client.tokens.get_revoked, True)
-
     def test_validate_token_with_token_id(self):
         # Can validate a token passing a string token ID.
         token_id = uuid.uuid4().hex

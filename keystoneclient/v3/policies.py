@@ -14,8 +14,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from positional import positional
-
 from keystoneclient import base
 
 
@@ -29,7 +27,6 @@ class Policy(base.Resource):
 
     """
 
-    @positional(enforcement=positional.WARN)
     def update(self, blob=None, type=None):
         kwargs = {
             'blob': blob if blob is not None else self.blob,
@@ -52,7 +49,6 @@ class PolicyManager(base.CrudManager):
     collection_key = 'policies'
     key = 'policy'
 
-    @positional(1, enforcement=positional.WARN)
     def create(self, blob, type='application/json', **kwargs):
         """Create a policy.
 
@@ -95,7 +91,6 @@ class PolicyManager(base.CrudManager):
         """
         return super(PolicyManager, self).list(**kwargs)
 
-    @positional(enforcement=positional.WARN)
     def update(self, policy, blob=None, type=None, **kwargs):
         """Update a policy.
 

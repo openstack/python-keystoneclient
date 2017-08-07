@@ -14,7 +14,6 @@ import abc
 import logging
 
 from oslo_config import cfg
-from positional import positional
 import six
 
 from keystoneclient import access
@@ -49,7 +48,6 @@ class Auth(base.BaseIdentityPlugin):
 
         return options
 
-    @positional()
     def __init__(self, auth_url,
                  trust_id=None,
                  tenant_id=None,
@@ -128,7 +126,6 @@ class Password(Auth):
     :raises TypeError: if a user_id or username is not provided.
     """
 
-    @positional(4)
     def __init__(self, auth_url, username=_NOT_PASSED, password=None,
                  user_id=_NOT_PASSED, **kwargs):
         super(Password, self).__init__(auth_url, **kwargs)

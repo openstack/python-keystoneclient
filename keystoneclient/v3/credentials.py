@@ -14,8 +14,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from positional import positional
-
 from keystoneclient import base
 
 
@@ -41,7 +39,6 @@ class CredentialManager(base.CrudManager):
     collection_key = 'credentials'
     key = 'credential'
 
-    @positional(1, enforcement=positional.WARN)
     def create(self, user, type, blob, project=None, **kwargs):
         """Create a credential.
 
@@ -95,7 +92,6 @@ class CredentialManager(base.CrudManager):
         """
         return super(CredentialManager, self).list(**kwargs)
 
-    @positional(2, enforcement=positional.WARN)
     def update(self, credential, user, type=None, blob=None, project=None,
                **kwargs):
         """Update a credential.

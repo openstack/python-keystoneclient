@@ -14,8 +14,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from positional import positional
-
 from keystoneclient import base
 
 
@@ -29,7 +27,6 @@ class Group(base.Resource):
 
     """
 
-    @positional(enforcement=positional.WARN)
     def update(self, name=None, description=None):
         kwargs = {
             'name': name if name is not None else self.name,
@@ -54,7 +51,6 @@ class GroupManager(base.CrudManager):
     collection_key = 'groups'
     key = 'group'
 
-    @positional(1, enforcement=positional.WARN)
     def create(self, name, domain=None, description=None, **kwargs):
         """Create a group.
 
@@ -75,7 +71,6 @@ class GroupManager(base.CrudManager):
             description=description,
             **kwargs)
 
-    @positional(enforcement=positional.WARN)
     def list(self, user=None, domain=None, **kwargs):
         """List groups.
 
@@ -111,7 +106,6 @@ class GroupManager(base.CrudManager):
         return super(GroupManager, self).get(
             group_id=base.getid(group))
 
-    @positional(enforcement=positional.WARN)
     def update(self, group, name=None, description=None, **kwargs):
         """Update a group.
 

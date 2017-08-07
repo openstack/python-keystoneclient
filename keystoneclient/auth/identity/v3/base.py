@@ -15,7 +15,6 @@ import json
 import logging
 
 from oslo_config import cfg
-from positional import positional
 import six
 
 from keystoneclient import access
@@ -47,7 +46,6 @@ class BaseAuth(base.BaseIdentityPlugin):
                                  token. (optional) default True.
     """
 
-    @positional()
     def __init__(self, auth_url,
                  trust_id=None,
                  domain_id=None,

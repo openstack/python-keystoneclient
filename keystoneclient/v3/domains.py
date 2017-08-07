@@ -14,8 +14,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from positional import positional
-
 from keystoneclient import base
 
 
@@ -40,7 +38,6 @@ class DomainManager(base.CrudManager):
     collection_key = 'domains'
     key = 'domain'
 
-    @positional(1, enforcement=positional.WARN)
     def create(self, name, description=None, enabled=True, **kwargs):
         """Create a domain.
 
@@ -89,7 +86,6 @@ class DomainManager(base.CrudManager):
             kwargs['enabled'] = 0
         return super(DomainManager, self).list(**kwargs)
 
-    @positional(enforcement=positional.WARN)
     def update(self, domain, name=None,
                description=None, enabled=None, **kwargs):
         """Update a domain.

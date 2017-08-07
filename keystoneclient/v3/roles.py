@@ -15,7 +15,6 @@
 #    under the License.
 
 from debtcollector import removals
-from positional import positional
 
 from keystoneclient import base
 from keystoneclient import exceptions
@@ -96,7 +95,6 @@ class RoleManager(base.CrudManager):
             msg = _('Must specify either a user or group')
             raise exceptions.ValidationError(msg)
 
-    @positional(1, enforcement=positional.WARN)
     def create(self, name, domain=None, **kwargs):
         """Create a role.
 
@@ -132,7 +130,6 @@ class RoleManager(base.CrudManager):
         """
         return super(RoleManager, self).get(role_id=base.getid(role))
 
-    @positional(enforcement=positional.WARN)
     def list(self, user=None, group=None, domain=None,
              project=None, os_inherit_extension_inherited=False, **kwargs):
         """List roles and role grants.
@@ -178,7 +175,6 @@ class RoleManager(base.CrudManager):
 
         return super(RoleManager, self).list(**kwargs)
 
-    @positional(enforcement=positional.WARN)
     def update(self, role, name=None, **kwargs):
         """Update a role.
 
@@ -212,7 +208,6 @@ class RoleManager(base.CrudManager):
         return super(RoleManager, self).delete(
             role_id=base.getid(role))
 
-    @positional(enforcement=positional.WARN)
     def grant(self, role, user=None, group=None, domain=None, project=None,
               os_inherit_extension_inherited=False, **kwargs):
         """Grant a role to a user or group on a domain or project.
@@ -259,7 +254,6 @@ class RoleManager(base.CrudManager):
                                             role_id=base.getid(role),
                                             **kwargs)
 
-    @positional(enforcement=positional.WARN)
     def check(self, role, user=None, group=None, domain=None, project=None,
               os_inherit_extension_inherited=False, **kwargs):
         """Check if a user or group has a role on a domain or project.
@@ -310,7 +304,6 @@ class RoleManager(base.CrudManager):
             os_inherit_extension_inherited=os_inherit_extension_inherited,
             **kwargs)
 
-    @positional(enforcement=positional.WARN)
     def revoke(self, role, user=None, group=None, domain=None, project=None,
                os_inherit_extension_inherited=False, **kwargs):
         """Revoke a role from a user or group on a domain or project.

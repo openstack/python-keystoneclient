@@ -12,7 +12,6 @@
 
 from keystoneauth1 import exceptions
 from keystoneauth1 import plugin
-from positional import positional
 
 from keystoneclient import access
 from keystoneclient import base
@@ -40,7 +39,6 @@ class Token(base.Resource):
 class TokenManager(base.Manager):
     resource_class = Token
 
-    @positional(enforcement=positional.WARN)
     def authenticate(self, username=None, tenant_id=None, tenant_name=None,
                      password=None, token=None, return_raw=False):
         if token:

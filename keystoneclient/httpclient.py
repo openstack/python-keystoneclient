@@ -25,7 +25,6 @@ from debtcollector import renames
 from keystoneauth1 import adapter
 from oslo_serialization import jsonutils
 import pkg_resources
-from positional import positional
 import requests
 
 try:
@@ -241,7 +240,6 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
                            removal_version='2.0.0')
     @renames.renamed_kwarg('tenant_id', 'project_id', version='1.7.0',
                            removal_version='2.0.0')
-    @positional(enforcement=positional.WARN)
     def __init__(self, username=None, tenant_id=None, tenant_name=None,
                  password=None, auth_url=None, region_name=None, endpoint=None,
                  token=None, auth_ref=None, use_keyring=False,
@@ -483,7 +481,6 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
 
         return self.project_name
 
-    @positional(enforcement=positional.WARN)
     def authenticate(self, username=None, password=None, tenant_name=None,
                      tenant_id=None, auth_url=None, token=None,
                      user_id=None, domain_name=None, domain_id=None,
@@ -693,7 +690,6 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         # permanently setting _endpoint would better match that behaviour.
         self._endpoint = value
 
-    @positional(enforcement=positional.WARN)
     def get_raw_token_from_identity_service(self, auth_url, username=None,
                                             password=None, tenant_name=None,
                                             tenant_id=None, token=None,

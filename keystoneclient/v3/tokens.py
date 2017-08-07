@@ -10,8 +10,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from positional import positional
-
 from keystoneclient import access
 from keystoneclient import base
 
@@ -40,7 +38,6 @@ class TokenManager(object):
         headers = {'X-Subject-Token': token_id}
         return self._client.delete('/auth/tokens', headers=headers)
 
-    @positional.method(0)
     def get_revoked(self, audit_id_only=False):
         """Get revoked tokens list.
 
@@ -60,7 +57,6 @@ class TokenManager(object):
         resp, body = self._client.get(path)
         return body
 
-    @positional.method(1)
     def get_token_data(self, token, include_catalog=True, allow_expired=False):
         """Fetch the data about a token from the identity server.
 
@@ -89,7 +85,6 @@ class TokenManager(object):
         resp, body = self._client.get(url, headers=headers)
         return body
 
-    @positional.method(1)
     def validate(self, token, include_catalog=True, allow_expired=False):
         """Validate a token.
 

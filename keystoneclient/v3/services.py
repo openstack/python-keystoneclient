@@ -14,8 +14,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from positional import positional
-
 from keystoneclient import base
 
 
@@ -41,7 +39,6 @@ class ServiceManager(base.CrudManager):
     collection_key = 'services'
     key = 'service'
 
-    @positional(1, enforcement=positional.WARN)
     def create(self, name, type=None,
                enabled=True, description=None, **kwargs):
         """Create a service.
@@ -78,7 +75,6 @@ class ServiceManager(base.CrudManager):
         return super(ServiceManager, self).get(
             service_id=base.getid(service))
 
-    @positional(enforcement=positional.WARN)
     def list(self, name=None, type=None, **kwargs):
         """List services.
 
@@ -96,7 +92,6 @@ class ServiceManager(base.CrudManager):
             type=type_arg,
             **kwargs)
 
-    @positional(enforcement=positional.WARN)
     def update(self, service, name=None, type=None, enabled=None,
                description=None, **kwargs):
         """Update a service.

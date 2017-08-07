@@ -15,7 +15,6 @@
 #    under the License.
 
 from debtcollector import renames
-from positional import positional
 
 from keystoneclient import base
 from keystoneclient import exceptions
@@ -47,7 +46,6 @@ class UserManager(base.CrudManager):
 
     @renames.renamed_kwarg('project', 'default_project', version='1.7.0',
                            removal_version='2.0.0')
-    @positional(1, enforcement=positional.WARN)
     def create(self, name, domain=None, project=None, password=None,
                email=None, description=None, enabled=True,
                default_project=None, **kwargs):
@@ -96,7 +94,6 @@ class UserManager(base.CrudManager):
 
     @renames.renamed_kwarg('project', 'default_project', version='1.7.0',
                            removal_version='2.0.0')
-    @positional(enforcement=positional.WARN)
     def list(self, project=None, domain=None, group=None, default_project=None,
              **kwargs):
         """List users.
@@ -153,7 +150,6 @@ class UserManager(base.CrudManager):
 
     @renames.renamed_kwarg('project', 'default_project', version='1.7.0',
                            removal_version='2.0.0')
-    @positional(enforcement=positional.WARN)
     def update(self, user, name=None, domain=None, project=None, password=None,
                email=None, description=None, enabled=None,
                default_project=None, **kwargs):

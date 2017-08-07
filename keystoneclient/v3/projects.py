@@ -14,8 +14,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from positional import positional
-
 from keystoneclient import base
 from keystoneclient import exceptions
 from keystoneclient.i18n import _
@@ -37,7 +35,6 @@ class Project(base.Resource):
 
     """
 
-    @positional(enforcement=positional.WARN)
     def update(self, name=None, description=None, enabled=None):
         kwargs = {
             'name': name if name is not None else self.name,
@@ -63,7 +60,6 @@ class ProjectManager(base.CrudManager):
     collection_key = 'projects'
     key = 'project'
 
-    @positional(3, enforcement=positional.WARN)
     def create(self, name, domain, description=None,
                enabled=True, parent=None, **kwargs):
         """Create a project.
@@ -96,7 +92,6 @@ class ProjectManager(base.CrudManager):
             enabled=enabled,
             **kwargs)
 
-    @positional(enforcement=positional.WARN)
     def list(self, domain=None, user=None, **kwargs):
         """List projects.
 
@@ -132,7 +127,6 @@ class ProjectManager(base.CrudManager):
                     'parameters, not both')
             raise exceptions.ValidationError(msg)
 
-    @positional()
     def get(self, project, subtree_as_list=False, parents_as_list=False,
             subtree_as_ids=False, parents_as_ids=False):
         """Retrieve a project.
@@ -182,7 +176,6 @@ class ProjectManager(base.CrudManager):
         url = self.build_url(dict_args_in_out=dict_args)
         return self._get(url + query, self.key)
 
-    @positional(enforcement=positional.WARN)
     def update(self, project, name=None, domain=None, description=None,
                enabled=None, **kwargs):
         """Update a project.

@@ -16,9 +16,6 @@ import sys
 
 from keystoneauth1 import exceptions as ksa_exceptions
 from oslo_utils import timeutils
-# NOTE(stevemar): do not remove positional. We need this to stay for a while
-# since versions of auth_token require it here.
-from positional import positional  # noqa
 import six
 
 from keystoneclient import exceptions as ksc_exceptions
