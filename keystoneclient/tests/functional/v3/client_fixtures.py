@@ -71,9 +71,10 @@ class Domain(Base):
 
 class Project(Base):
 
-    def __init__(self, client, domain_id=None, parent=None):
+    def __init__(self, client, domain_id=None, parent=None, tags=None):
         super(Project, self).__init__(client, domain_id)
         self.parent = parent
+        self.tags = tags if tags else []
 
     def setUp(self):
         super(Project, self).setUp()
@@ -81,7 +82,8 @@ class Project(Base):
         self.ref = {'name': RESOURCE_NAME_PREFIX + uuid.uuid4().hex,
                     'domain': self.domain_id,
                     'enabled': True,
-                    'parent': self.parent}
+                    'parent': self.parent,
+                    'tags': self.tags}
         self.entity = self.client.projects.create(**self.ref)
         self.addCleanup(self.client.projects.delete, self.entity)
 

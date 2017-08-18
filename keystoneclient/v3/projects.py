@@ -14,6 +14,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import six.moves.urllib as urllib
+
 from keystoneclient import base
 from keystoneclient import exceptions
 from keystoneclient.i18n import _
@@ -51,6 +53,24 @@ class Project(base.Resource):
             retval = None
 
         return retval
+
+    def add_tag(self, tag):
+        self.manager.add_tag(self, tag)
+
+    def update_tags(self, tags):
+        return self.manager.update_tags(self, tags)
+
+    def delete_tag(self, tag):
+        self.manager.delete_tag(self, tag)
+
+    def delete_all_tags(self):
+        return self.manager.update_tags(self, [])
+
+    def list_tags(self):
+        return self.manager.list_tags(self)
+
+    def check_tag(self, tag):
+        return self.manager.check_tag(self, tag)
 
 
 class ProjectManager(base.CrudManager):
@@ -101,17 +121,24 @@ class ProjectManager(base.CrudManager):
                      assignments on.
         :type user: str or :class:`keystoneclient.v3.users.User`
         :param kwargs: any other attribute provided will filter projects on.
+                       Project tags filter keyword: ``tags``, ``tags_any``,
+                       ``not_tags``, and ``not_tags_any``. tag attribute type
+                       string. Pass in a comma separated string to filter
+                       with multiple tags.
 
         :returns: a list of projects.
         :rtype: list of :class:`keystoneclient.v3.projects.Project`
 
         """
         base_url = '/users/%s' % base.getid(user) if user else None
-        return super(ProjectManager, self).list(
+        projects = super(ProjectManager, self).list(
             base_url=base_url,
             domain_id=base.getid(domain),
             fallback_to_auth=True,
             **kwargs)
+        for p in projects:
+            p.tags = self._encode_tags(getattr(p, 'tags', []))
+        return projects
 
     def _check_not_parents_as_ids_and_parents_as_list(self, parents_as_ids,
                                                       parents_as_list):
@@ -174,7 +201,9 @@ class ProjectManager(base.CrudManager):
         query = self.build_key_only_query(query_params)
         dict_args = {'project_id': base.getid(project)}
         url = self.build_url(dict_args_in_out=dict_args)
-        return self._get(url + query, self.key)
+        p = self._get(url + query, self.key)
+        p.tags = self._encode_tags(getattr(p, 'tags', []))
+        return p
 
     def update(self, project, name=None, domain=None, description=None,
                enabled=None, **kwargs):
@@ -213,3 +242,82 @@ class ProjectManager(base.CrudManager):
         """
         return super(ProjectManager, self).delete(
             project_id=base.getid(project))
+
+    def _encode_tags(self, tags):
+        """Encode tags to non-unicode string in python2.
+
+        :param tags: list of unicode tags
+
+        :returns: List of strings
+        """
+        return [str(t) for t in tags]
+
+    def add_tag(self, project, tag):
+        """Add a tag to a project.
+
+        :param project: project to add a tag to.
+        :param tag: str name of tag.
+
+        """
+        url = "/projects/%s/tags/%s" % (base.getid(project),
+                                        urllib.parse.quote(tag))
+        self.client.put(url)
+
+    def update_tags(self, project, tags):
+        """Update tag list of a project.
+
+        Replaces current tag list with list specified in tags parameter.
+
+        :param project: project to update.
+        :param tags: list of str tag names to add to the project
+
+        :returns: list of tags
+
+        """
+        url = "/projects/%s/tags" % base.getid(project)
+        for tag in tags:
+            tag = urllib.parse.quote(tag)
+        resp, body = self.client.put(url, body={"tags": tags})
+        return body['tags']
+
+    def delete_tag(self, project, tag):
+        """Remove tag from project.
+
+        :param projectd: project to remove tag from.
+        :param tag: str name of tag to remove from project
+
+        """
+        self._delete(
+            "/projects/%s/tags/%s" % (base.getid(project),
+                                      urllib.parse.quote(tag)))
+
+    def list_tags(self, project):
+        """List tags associated with project.
+
+        :param project: project to list tags for.
+
+        :returns: list of str tag names
+
+        """
+        url = "/projects/%s/tags" % base.getid(project)
+        resp, body = self.client.get(url)
+        return self._encode_tags(body['tags'])
+
+    def check_tag(self, project, tag):
+        """Check if tag is associated with project.
+
+        :param project: project to check tags for.
+        :param tag: str name of tag
+
+        :returns: true if tag is associated, false otherwise
+
+        """
+        url = "/projects/%s/tags/%s" % (base.getid(project),
+                                        urllib.parse.quote(tag))
+        try:
+            self.client.head(url)
+            # no errors means found the tag
+            return True
+        except exceptions.NotFound:
+            # 404 means tag not in project
+            return False

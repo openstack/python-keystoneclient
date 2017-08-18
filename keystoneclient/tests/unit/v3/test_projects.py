@@ -312,3 +312,86 @@ class ProjectTests(utils.ClientTestCase, utils.CrudTests):
         # server, a different implementation might not fail this request.
         self.assertRaises(ksa_exceptions.Forbidden, self.manager.update,
                           ref['id'], **utils.parameterize(req_ref))
+
+    def test_add_tag(self):
+        ref = self.new_ref()
+        tag_name = "blue"
+
+        self.stub_url("PUT",
+                      parts=[self.collection_key, ref['id'], "tags", tag_name],
+                      status_code=201)
+        self.manager.add_tag(ref['id'], tag_name)
+
+    def test_update_tags(self):
+        new_tags = ["blue", "orange"]
+        ref = self.new_ref()
+
+        self.stub_url("PUT",
+                      parts=[self.collection_key, ref['id'], "tags"],
+                      json={"tags": new_tags},
+                      status_code=200)
+
+        ret = self.manager.update_tags(ref['id'], new_tags)
+        self.assertEqual(ret, new_tags)
+
+    def test_delete_tag(self):
+        ref = self.new_ref()
+        tag_name = "blue"
+
+        self.stub_url("DELETE",
+                      parts=[self.collection_key, ref['id'], "tags", tag_name],
+                      status_code=204)
+
+        self.manager.delete_tag(ref['id'], tag_name)
+
+    def test_delete_all_tags(self):
+        ref = self.new_ref()
+
+        self.stub_url("PUT",
+                      parts=[self.collection_key, ref['id'], "tags"],
+                      json={"tags": []},
+                      status_code=200)
+
+        ret = self.manager.update_tags(ref['id'], [])
+        self.assertEqual([], ret)
+
+    def test_list_tags(self):
+        ref = self.new_ref()
+        tags = ["blue", "orange", "green"]
+
+        self.stub_url("GET",
+                      parts=[self.collection_key, ref['id'], "tags"],
+                      json={"tags": tags},
+                      status_code=200)
+
+        ret_tags = self.manager.list_tags(ref['id'])
+        self.assertEqual(tags, ret_tags)
+
+    def test_check_tag(self):
+        ref = self.new_ref()
+
+        tag_name = "blue"
+        self.stub_url("HEAD",
+                      parts=[self.collection_key, ref['id'], "tags", tag_name],
+                      status_code=204)
+        self.assertTrue(self.manager.check_tag(ref['id'], tag_name))
+
+        no_tag = "orange"
+        self.stub_url("HEAD",
+                      parts=[self.collection_key, ref['id'], "tags", no_tag],
+                      status_code=404)
+        self.assertFalse(self.manager.check_tag(ref['id'], no_tag))
+
+    def _build_project_response(self, tags):
+        project_id = uuid.uuid4().hex
+        ret = {"projects": [
+            {"is_domain": False,
+             "description": "",
+             "tags": tags,
+             "enabled": True,
+             "id": project_id,
+             "parent_id": "default",
+             "domain_id": "default",
+             "name": project_id}
+        ]}
+        return ret
