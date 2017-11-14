@@ -83,7 +83,3 @@ class ClientTestCase(testtools.TestCase):
 
 class V3ClientTestCase(ClientTestCase):
     version = '3'
-
-
-class V2ClientTestCase(ClientTestCase):
-    version = '2.0'
