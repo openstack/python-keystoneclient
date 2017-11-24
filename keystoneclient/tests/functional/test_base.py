@@ -19,10 +19,3 @@ class V3ClientVersionTestCase(base.V3ClientTestCase):
     def test_version(self):
         self.assertIsInstance(self.client,
                               keystoneclient.v3.client.Client)
-
-
-class V2ClientVersionTestCase(base.V2ClientTestCase):
-
-    def test_version(self):
-        self.assertIsInstance(self.client,
-                              keystoneclient.v2_0.client.Client)
