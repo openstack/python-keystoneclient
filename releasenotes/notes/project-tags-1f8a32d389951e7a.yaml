@@ -1,0 +1,8 @@
+---
+features:
+  - |
+    [`blueprint project-tags <https://blueprints.launchpad.net/keystone/+spec/project-tags>`_]
+    The keystoneclient now supports project tags feature in keystone.  This
+    allows operators to use the client to associate tags to a project,
+    retrieve tags associated with a project, delete tags associated with a
+    project, and filter projects based on tags.

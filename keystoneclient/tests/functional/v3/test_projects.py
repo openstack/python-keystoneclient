@@ -53,6 +53,7 @@ class ProjectsTestCase(base.V3ClientTestCase, ProjectsTestMixin):
 
         self.test_project = fixtures.Project(self.client, self.test_domain.id)
         self.useFixture(self.test_project)
+        self.special_tag = '~`!@#$%^&*()-_+=<>.? \'"'
 
     def test_create_subproject(self):
         project_ref = {
@@ -188,3 +189,257 @@ class ProjectsTestCase(base.V3ClientTestCase, ProjectsTestMixin):
         self.assertRaises(http.NotFound,
                           self.client.projects.get,
                           project.id)
+
+    def test_list_projects_with_tag_filters(self):
+        project_one = fixtures.Project(
+            self.client, self.test_domain.id,
+            tags=['tag1'])
+        project_two = fixtures.Project(
+            self.client, self.test_domain.id,
+            tags=['tag1', 'tag2'])
+        project_three = fixtures.Project(
+            self.client, self.test_domain.id,
+            tags=['tag2', 'tag3'])
+
+        self.useFixture(project_one)
+        self.useFixture(project_two)
+        self.useFixture(project_three)
+
+        projects = self.client.projects.list(tags='tag1')
+        project_ids = []
+        for project in projects:
+            project_ids.append(project.id)
+        self.assertIn(project_one.id, project_ids)
+
+        projects = self.client.projects.list(tags_any='tag1')
+        project_ids = []
+        for project in projects:
+            project_ids.append(project.id)
+        self.assertIn(project_one.id, project_ids)
+        self.assertIn(project_two.id, project_ids)
+
+        projects = self.client.projects.list(not_tags='tag1')
+        project_ids = []
+        for project in projects:
+            project_ids.append(project.id)
+        self.assertNotIn(project_one.id, project_ids)
+
+        projects = self.client.projects.list(not_tags_any='tag1,tag2')
+        project_ids = []
+        for project in projects:
+            project_ids.append(project.id)
+        self.assertNotIn(project_one.id, project_ids)
+        self.assertNotIn(project_two.id, project_ids)
+        self.assertNotIn(project_three.id, project_ids)
+
+        projects = self.client.projects.list(tags='tag1,tag2')
+        project_ids = []
+        for project in projects:
+            project_ids.append(project.id)
+        self.assertNotIn(project_one.id, project_ids)
+        self.assertIn(project_two.id, project_ids)
+        self.assertNotIn(project_three.id, project_ids)
+
+    def test_add_tag(self):
+        project = fixtures.Project(self.client, self.test_domain.id)
+        self.useFixture(project)
+
+        tags = self.client.projects.get(project.id).tags
+        self.assertEqual([], tags)
+
+        project.add_tag('tag1')
+        tags = self.client.projects.get(project.id).tags
+        self.assertEqual(['tag1'], tags)
+
+        # verify there is an error when you try to add the same tag
+        self.assertRaises(http.BadRequest,
+                          project.add_tag,
+                          'tag1')
+
+    def test_update_tags(self):
+        project = fixtures.Project(self.client, self.test_domain.id)
+        self.useFixture(project)
+
+        tags = self.client.projects.get(project.id).tags
+        self.assertEqual([], tags)
+
+        project.update_tags(['tag1', 'tag2', self.special_tag])
+        tags = self.client.projects.get(project.id).tags
+        self.assertIn('tag1', tags)
+        self.assertIn('tag2', tags)
+        self.assertIn(self.special_tag, tags)
+        self.assertEqual(3, len(tags))
+
+        project.update_tags([])
+        tags = self.client.projects.get(project.id).tags
+        self.assertEqual([], tags)
+
+        # cannot have duplicate tags in update
+        self.assertRaises(http.BadRequest,
+                          project.update_tags,
+                          ['tag1', 'tag1'])
+
+    def test_delete_tag(self):
+        project = fixtures.Project(
+            self.client, self.test_domain.id,
+            tags=['tag1', self.special_tag])
+        self.useFixture(project)
+
+        project.delete_tag('tag1')
+        tags = self.client.projects.get(project.id).tags
+        self.assertEqual([self.special_tag], tags)
+
+        project.delete_tag(self.special_tag)
+        tags = self.client.projects.get(project.id).tags
+        self.assertEqual([], tags)
+
+    def test_delete_all_tags(self):
+        project_one = fixtures.Project(
+            self.client, self.test_domain.id,
+            tags=['tag1'])
+
+        project_two = fixtures.Project(
+            self.client, self.test_domain.id,
+            tags=['tag1', 'tag2', self.special_tag])
+
+        project_three = fixtures.Project(
+            self.client, self.test_domain.id,
+            tags=[])
+
+        self.useFixture(project_one)
+        self.useFixture(project_two)
+        self.useFixture(project_three)
+
+        result_one = project_one.delete_all_tags()
+        tags_one = self.client.projects.get(project_one.id).tags
+        tags_two = self.client.projects.get(project_two.id).tags
+        self.assertEqual([], result_one)
+        self.assertEqual([], tags_one)
+        self.assertIn('tag1', tags_two)
+
+        result_two = project_two.delete_all_tags()
+        tags_two = self.client.projects.get(project_two.id).tags
+        self.assertEqual([], result_two)
+        self.assertEqual([], tags_two)
+
+        result_three = project_three.delete_all_tags()
+        tags_three = self.client.projects.get(project_three.id).tags
+        self.assertEqual([], result_three)
+        self.assertEqual([], tags_three)
+
+    def test_list_tags(self):
+        tags_one = ['tag1']
+        project_one = fixtures.Project(
+            self.client, self.test_domain.id,
+            tags=tags_one)
+
+        tags_two = ['tag1', 'tag2']
+        project_two = fixtures.Project(
+            self.client, self.test_domain.id,
+            tags=tags_two)
+
+        tags_three = []
+        project_three = fixtures.Project(
+            self.client, self.test_domain.id,
+            tags=tags_three)
+
+        self.useFixture(project_one)
+        self.useFixture(project_two)
+        self.useFixture(project_three)
+
+        result_one = project_one.list_tags()
+        result_two = project_two.list_tags()
+        result_three = project_three.list_tags()
+
+        for tag in tags_one:
+            self.assertIn(tag, result_one)
+        self.assertEqual(1, len(result_one))
+
+        for tag in tags_two:
+            self.assertIn(tag, result_two)
+        self.assertEqual(2, len(result_two))
+
+        for tag in tags_three:
+            self.assertIn(tag, result_three)
+        self.assertEqual(0, len(result_three))
+
+    def test_check_tag(self):
+        project = fixtures.Project(
+            self.client, self.test_domain.id,
+            tags=['tag1'])
+        self.useFixture(project)
+
+        tags = self.client.projects.get(project.id).tags
+        self.assertEqual(['tag1'], tags)
+        self.assertTrue(project.check_tag('tag1'))
+        self.assertFalse(project.check_tag('tag2'))
+        self.assertFalse(project.check_tag(self.special_tag))
+
+    def test_add_invalid_tags(self):
+        project_one = fixtures.Project(
+            self.client, self.test_domain.id)
+
+        self.useFixture(project_one)
+
+        self.assertRaises(exceptions.BadRequest,
+                          project_one.add_tag,
+                          ',')
+        self.assertRaises(exceptions.BadRequest,
+                          project_one.add_tag,
+                          '/')
+        self.assertRaises(exceptions.BadRequest,
+                          project_one.add_tag,
+                          '')
+
+    def test_update_invalid_tags(self):
+        tags_comma = ['tag1', ',']
+        tags_slash = ['tag1', '/']
+        tags_blank = ['tag1', '']
+        project_one = fixtures.Project(
+            self.client, self.test_domain.id)
+
+        self.useFixture(project_one)
+
+        self.assertRaises(exceptions.BadRequest,
+                          project_one.update_tags,
+                          tags_comma)
+        self.assertRaises(exceptions.BadRequest,
+                          project_one.update_tags,
+                          tags_slash)
+        self.assertRaises(exceptions.BadRequest,
+                          project_one.update_tags,
+                          tags_blank)
+
+    def test_create_project_invalid_tags(self):
+        project_ref = {
+            'name': fixtures.RESOURCE_NAME_PREFIX + uuid.uuid4().hex,
+            'domain': self.test_domain.id,
+            'enabled': True,
+            'description': uuid.uuid4().hex,
+            'tags': ','}
+
+        self.assertRaises(exceptions.BadRequest,
+                          self.client.projects.create,
+                          **project_ref)
+
+        project_ref = {
+            'name': fixtures.RESOURCE_NAME_PREFIX + uuid.uuid4().hex,
+            'domain': self.test_domain.id,
+            'enabled': True,
+            'description': uuid.uuid4().hex,
+            'tags': '/'}
+
+        self.assertRaises(exceptions.BadRequest,
+                          self.client.projects.create,
+                          **project_ref)
+
+        project_ref = {
+            'name': fixtures.RESOURCE_NAME_PREFIX + uuid.uuid4().hex,
+            'domain': self.test_domain.id,
+            'enabled': True,
+            'description': uuid.uuid4().hex,
+            'tags': ''}
+
+        self.assertRaises(exceptions.BadRequest,
+                          self.client.projects.create,
+                          **project_ref)
