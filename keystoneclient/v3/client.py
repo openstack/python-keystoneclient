@@ -22,6 +22,7 @@ from keystoneclient.auth.identity import v3 as v3_auth
 from keystoneclient import exceptions
 from keystoneclient import httpclient
 from keystoneclient.i18n import _
+from keystoneclient.v3 import application_credentials
 from keystoneclient.v3 import auth
 from keystoneclient.v3.contrib import endpoint_filter
 from keystoneclient.v3.contrib import endpoint_policy
@@ -212,6 +213,9 @@ class Client(httpclient.HTTPClient):
                 'deprecated as of the 1.7.0 release and may be removed in '
                 'the 2.0.0 release.', DeprecationWarning)
 
+        self.application_credentials = (
+            application_credentials.ApplicationCredentialManager(self._adapter)
+        )
         self.auth = auth.AuthManager(self._adapter)
         self.credentials = credentials.CredentialManager(self._adapter)
         self.ec2 = ec2.EC2Manager(self._adapter)
