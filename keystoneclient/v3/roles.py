@@ -54,7 +54,7 @@ class RoleManager(base.CrudManager):
     key = 'role'
     deprecation_msg = 'keystoneclient.v3.roles.InferenceRuleManager'
 
-    def _role_grants_base_url(self, user, group, domain, project,
+    def _role_grants_base_url(self, user, group, system, domain, project,
                               use_inherit_extension):
         # When called, we have already checked that only one of user & group
         # and one of domain & project have been specified
@@ -66,6 +66,18 @@ class RoleManager(base.CrudManager):
         elif domain:
             params['domain_id'] = base.getid(domain)
             base_url = '/domains/%(domain_id)s'
+        elif system:
+            if system == 'all':
+                base_url = '/system'
+            else:
+                # NOTE(lbragstad): If we've made it this far, a user is
+                # attempting to do something with system scope that isn't
+                # supported yet (e.g. 'all' is currently the only supported
+                # system scope). In the future that may change but until then
+                # we should fail like we would if a user provided a bogus
+                # project name or domain ID.
+                msg = _("Only a system scope of 'all' is currently supported")
+                raise exceptions.ValidationError(msg)
 
         if use_inherit_extension:
             base_url = '/OS-INHERIT' + base_url
@@ -79,13 +91,26 @@ class RoleManager(base.CrudManager):
 
         return base_url % params
 
-    def _require_domain_xor_project(self, domain, project):
-        if domain and project:
-            msg = _('Specify either a domain or project, not both')
-            raise exceptions.ValidationError(msg)
-        elif not (domain or project):
-            msg = _('Must specify either a domain or project')
-            raise exceptions.ValidationError(msg)
+    def _enforce_mutually_exclusive_group(self, system, domain, project):
+        if not system:
+            if domain and project:
+                msg = _('Specify either a domain or project, not both')
+                raise exceptions.ValidationError(msg)
+            elif not (domain or project):
+                msg = _('Must specify either system, domain, or project')
+                raise exceptions.ValidationError(msg)
+        elif system:
+            if domain and project:
+                msg = _(
+                    'Specify either system, domain, or project, not all three.'
+                )
+                raise exceptions.ValidationError(msg)
+            if domain:
+                msg = _('Specify either system or a domain, not both')
+                raise exceptions.ValidationError(msg)
+            if project:
+                msg = _('Specify either a system or project, not both')
+                raise exceptions.ValidationError(msg)
 
     def _require_user_xor_group(self, user, group):
         if user and group:
@@ -130,7 +155,7 @@ class RoleManager(base.CrudManager):
         """
         return super(RoleManager, self).get(role_id=base.getid(role))
 
-    def list(self, user=None, group=None, domain=None,
+    def list(self, user=None, group=None, system=None, domain=None,
              project=None, os_inherit_extension_inherited=False, **kwargs):
         """List roles and role grants.
 
@@ -143,12 +168,12 @@ class RoleManager(base.CrudManager):
                       User and group are mutually exclusive.
         :type group: str or :class:`keystoneclient.v3.groups.Group`
         :param domain: filter in role grants on the specified domain. Either
-                       user or group must be specified. Project and domain
-                       are mutually exclusive.
+                       user or group must be specified. Project, domain, and
+                       system are mutually exclusive.
         :type domain: str or :class:`keystoneclient.v3.domains.Domain`
         :param project: filter in role grants on the specified project. Either
-                       user or group must be specified. Project and domain
-                       are mutually exclusive.
+                       user or group must be specified. Project, domain and
+                       system are mutually exclusive.
         :type project: str or :class:`keystoneclient.v3.projects.Project`
         :param bool os_inherit_extension_inherited: OS-INHERIT will be used.
                                                     It provides the ability for
@@ -166,10 +191,12 @@ class RoleManager(base.CrudManager):
             kwargs['tail'] = '/inherited_to_projects'
         if user or group:
             self._require_user_xor_group(user, group)
-            self._require_domain_xor_project(domain, project)
+            self._enforce_mutually_exclusive_group(system, domain, project)
 
             base_url = self._role_grants_base_url(
-                user, group, domain, project, os_inherit_extension_inherited)
+                user, group, system, domain, project,
+                os_inherit_extension_inherited
+            )
             return super(RoleManager, self).list(base_url=base_url,
                                                  **kwargs)
 
@@ -208,8 +235,8 @@ class RoleManager(base.CrudManager):
         return super(RoleManager, self).delete(
             role_id=base.getid(role))
 
-    def grant(self, role, user=None, group=None, domain=None, project=None,
-              os_inherit_extension_inherited=False, **kwargs):
+    def grant(self, role, user=None, group=None, system=None, domain=None,
+              project=None, os_inherit_extension_inherited=False, **kwargs):
         """Grant a role to a user or group on a domain or project.
 
         :param role: the role to be granted on the server.
@@ -222,13 +249,16 @@ class RoleManager(base.CrudManager):
                       resource. Domain or project must be specified.
                       User and group are mutually exclusive.
         :type group: str or :class:`keystoneclient.v3.groups.Group`
+        :param system: system information to grant the role on. Project,
+                       domain, and system are mutually exclusive.
+        :type system: str
         :param domain: the domain in which the role will be granted. Either
-                       user or group must be specified. Project and domain
-                       are mutually exclusive.
+                       user or group must be specified. Project, domain, and
+                       system are mutually exclusive.
         :type domain: str or :class:`keystoneclient.v3.domains.Domain`
         :param project: the project in which the role will be granted. Either
-                       user or group must be specified. Project and domain
-                       are mutually exclusive.
+                       user or group must be specified. Project, domain, and
+                       system are mutually exclusive.
         :type project: str or :class:`keystoneclient.v3.projects.Project`
         :param bool os_inherit_extension_inherited: OS-INHERIT will be used.
                                                     It provides the ability for
@@ -242,20 +272,21 @@ class RoleManager(base.CrudManager):
         :rtype: :class:`keystoneclient.v3.roles.Role`
 
         """
-        self._require_domain_xor_project(domain, project)
+        self._enforce_mutually_exclusive_group(system, domain, project)
         self._require_user_xor_group(user, group)
 
         if os_inherit_extension_inherited:
             kwargs['tail'] = '/inherited_to_projects'
 
         base_url = self._role_grants_base_url(
-            user, group, domain, project, os_inherit_extension_inherited)
+            user, group, system, domain, project,
+            os_inherit_extension_inherited)
         return super(RoleManager, self).put(base_url=base_url,
                                             role_id=base.getid(role),
                                             **kwargs)
 
-    def check(self, role, user=None, group=None, domain=None, project=None,
-              os_inherit_extension_inherited=False, **kwargs):
+    def check(self, role, user=None, group=None, system=None, domain=None,
+              project=None, os_inherit_extension_inherited=False, **kwargs):
         """Check if a user or group has a role on a domain or project.
 
         :param user: check for role grants for the specified user on a
@@ -266,13 +297,16 @@ class RoleManager(base.CrudManager):
                       resource. Domain or project must be specified.
                       User and group are mutually exclusive.
         :type group: str or :class:`keystoneclient.v3.groups.Group`
+        :param system: check for role  grants on the system. Project, domain,
+                       and system are mutually exclusive.
+        :type system: str
         :param domain: check for role grants on the specified domain. Either
-                       user or group must be specified. Project and domain
-                       are mutually exclusive.
+                       user or group must be specified. Project, domain, and
+                       system are mutually exclusive.
         :type domain: str or :class:`keystoneclient.v3.domains.Domain`
         :param project: check for role grants on the specified project. Either
-                       user or group must be specified. Project and domain
-                       are mutually exclusive.
+                       user or group must be specified. Project, domain, and
+                       system are mutually exclusive.
         :type project: str or :class:`keystoneclient.v3.projects.Project`
         :param bool os_inherit_extension_inherited: OS-INHERIT will be used.
                                                     It provides the ability for
@@ -290,22 +324,23 @@ class RoleManager(base.CrudManager):
         :rtype: :class:`requests.models.Response`
 
         """
-        self._require_domain_xor_project(domain, project)
+        self._enforce_mutually_exclusive_group(system, domain, project)
         self._require_user_xor_group(user, group)
 
         if os_inherit_extension_inherited:
             kwargs['tail'] = '/inherited_to_projects'
 
         base_url = self._role_grants_base_url(
-            user, group, domain, project, os_inherit_extension_inherited)
+            user, group, system, domain, project,
+            os_inherit_extension_inherited)
         return super(RoleManager, self).head(
             base_url=base_url,
             role_id=base.getid(role),
             os_inherit_extension_inherited=os_inherit_extension_inherited,
             **kwargs)
 
-    def revoke(self, role, user=None, group=None, domain=None, project=None,
-               os_inherit_extension_inherited=False, **kwargs):
+    def revoke(self, role, user=None, group=None, system=None, domain=None,
+               project=None, os_inherit_extension_inherited=False, **kwargs):
         """Revoke a role from a user or group on a domain or project.
 
         :param user: revoke role grants for the specified user on a
@@ -316,13 +351,16 @@ class RoleManager(base.CrudManager):
                       resource. Domain or project must be specified.
                       User and group are mutually exclusive.
         :type group: str or :class:`keystoneclient.v3.groups.Group`
+        :param system: revoke role grants on the system. Project, domain, and
+                       system are mutually exclusive.
+        :type system: str
         :param domain: revoke role grants on the specified domain. Either
-                       user or group must be specified. Project and domain
-                       are mutually exclusive.
+                       user or group must be specified. Project, domain, and
+                       system are mutually exclusive.
         :type domain: str or :class:`keystoneclient.v3.domains.Domain`
         :param project: revoke role grants on the specified project. Either
-                       user or group must be specified. Project and domain
-                       are mutually exclusive.
+                       user or group must be specified. Project, domain, and
+                       system are mutually exclusive.
         :type project: str or :class:`keystoneclient.v3.projects.Project`
         :param bool os_inherit_extension_inherited: OS-INHERIT will be used.
                                                     It provides the ability for
@@ -336,14 +374,15 @@ class RoleManager(base.CrudManager):
         :rtype: list of :class:`keystoneclient.v3.roles.Role`
 
         """
-        self._require_domain_xor_project(domain, project)
+        self._enforce_mutually_exclusive_group(system, domain, project)
         self._require_user_xor_group(user, group)
 
         if os_inherit_extension_inherited:
             kwargs['tail'] = '/inherited_to_projects'
 
         base_url = self._role_grants_base_url(
-            user, group, domain, project, os_inherit_extension_inherited)
+            user, group, system, domain, project,
+            os_inherit_extension_inherited)
         return super(RoleManager, self).delete(
             base_url=base_url,
             role_id=base.getid(role),

@@ -46,9 +46,25 @@ class RoleAssignmentManager(base.CrudManager):
             msg = _('Specify either a domain or project, not both')
             raise exceptions.ValidationError(msg)
 
-    def list(self, user=None, group=None, project=None, domain=None, role=None,
-             effective=False, os_inherit_extension_inherited_to=None,
-             include_subtree=False, include_names=False):
+    def _check_not_system_and_domain(self, system, domain):
+        if system and domain:
+            msg = _('Specify either system or domain, not both')
+            raise exceptions.ValidationError(msg)
+
+    def _check_not_system_and_project(self, system, project):
+        if system and project:
+            msg = _('Specify either system or project, not both')
+            raise exceptions.ValidationError(msg)
+
+    def _check_system_value(self, system):
+        if system and system != 'all':
+            msg = _("Only a system scope of 'all' is currently supported")
+            raise exceptions.ValidationError(msg)
+
+    def list(self, user=None, group=None, project=None, domain=None,
+             system=False, role=None, effective=False,
+             os_inherit_extension_inherited_to=None, include_subtree=False,
+             include_names=False):
         """List role assignments.
 
         If no arguments are provided, all role assignments in the
@@ -64,6 +80,8 @@ class RoleAssignmentManager(base.CrudManager):
                         (optional)
         :param domain: Domain to be used as query
                        filter. (optional)
+        :param system: Boolean to be used to filter system assignments.
+                       (optional)
         :param role: Role to be used as query filter. (optional)
         :param boolean effective: return effective role
                                   assignments. (optional)
@@ -76,6 +94,9 @@ class RoleAssignmentManager(base.CrudManager):
         """
         self._check_not_user_and_group(user, group)
         self._check_not_domain_and_project(domain, project)
+        self._check_not_system_and_domain(system, domain)
+        self._check_not_system_and_project(system, project)
+        self._check_system_value(system)
 
         query_params = {}
         if user:
@@ -86,6 +107,8 @@ class RoleAssignmentManager(base.CrudManager):
             query_params['scope.project.id'] = base.getid(project)
         if domain:
             query_params['scope.domain.id'] = base.getid(domain)
+        if system:
+            query_params['scope.system'] = system
         if role:
             query_params['role.id'] = base.getid(role)
         if effective:
