@@ -23,6 +23,32 @@ class RoleAssignmentsTests(utils.ClientTestCase, utils.CrudTests):
         self.collection_key = 'role_assignments'
         self.model = role_assignments.RoleAssignment
         self.manager = self.client.role_assignments
+        self.TEST_USER_SYSTEM_LIST = [{
+            'role': {
+                'id': self.TEST_ROLE_ID
+            },
+            'scope': {
+                'system': {
+                    'all': True
+                }
+            },
+            'user': {
+                'id': self.TEST_USER_ID
+            }
+        }]
+        self.TEST_GROUP_SYSTEM_LIST = [{
+            'role': {
+                'id': self.TEST_ROLE_ID
+            },
+            'scope': {
+                'system': {
+                    'all': True
+                }
+            },
+            'group': {
+                'id': self.TEST_GROUP_ID
+            }
+        }]
         self.TEST_USER_DOMAIN_LIST = [{
             'role': {
                 'id': self.TEST_ROLE_ID
@@ -65,7 +91,9 @@ class RoleAssignmentsTests(utils.ClientTestCase, utils.CrudTests):
 
         self.TEST_ALL_RESPONSE_LIST = (self.TEST_USER_PROJECT_LIST +
                                        self.TEST_GROUP_PROJECT_LIST +
-                                       self.TEST_USER_DOMAIN_LIST)
+                                       self.TEST_USER_DOMAIN_LIST +
+                                       self.TEST_USER_SYSTEM_LIST +
+                                       self.TEST_GROUP_SYSTEM_LIST)
 
     def _assert_returned_list(self, ref_list, returned_list):
         self.assertEqual(len(ref_list), len(returned_list))
@@ -148,6 +176,50 @@ class RoleAssignmentsTests(utils.ClientTestCase, utils.CrudTests):
         self._assert_returned_list(ref_list, returned_list)
 
         kwargs = {'scope.domain.id': self.TEST_DOMAIN_ID}
+        self.assertQueryStringContains(**kwargs)
+
+    def test_system_assignment_list(self):
+        ref_list = self.TEST_USER_SYSTEM_LIST + self.TEST_GROUP_SYSTEM_LIST
+
+        self.stub_entity('GET',
+                         [self.collection_key, '?scope.system=all'],
+                         entity=ref_list)
+
+        returned_list = self.manager.list(system='all')
+        self._assert_returned_list(ref_list, returned_list)
+
+        kwargs = {'scope.system': 'all'}
+        self.assertQueryStringContains(**kwargs)
+
+    def test_system_assignment_list_for_user(self):
+        ref_list = self.TEST_USER_SYSTEM_LIST
+
+        self.stub_entity('GET',
+                         [self.collection_key,
+                          '?user.id=%s&scope.system=all' % self.TEST_USER_ID],
+                         entity=ref_list)
+
+        returned_list = self.manager.list(system='all', user=self.TEST_USER_ID)
+        self._assert_returned_list(ref_list, returned_list)
+
+        kwargs = {'scope.system': 'all', 'user.id': self.TEST_USER_ID}
+        self.assertQueryStringContains(**kwargs)
+
+    def test_system_assignment_list_for_group(self):
+        ref_list = self.TEST_GROUP_SYSTEM_LIST
+
+        self.stub_entity(
+            'GET',
+            [self.collection_key,
+             '?group.id=%s&scope.system=all' % self.TEST_GROUP_ID],
+            entity=ref_list)
+
+        returned_list = self.manager.list(
+            system='all', group=self.TEST_GROUP_ID
+        )
+        self._assert_returned_list(ref_list, returned_list)
+
+        kwargs = {'scope.system': 'all', 'group.id': self.TEST_GROUP_ID}
         self.assertQueryStringContains(**kwargs)
 
     def test_group_assignments_list(self):
