@@ -205,6 +205,11 @@ class ProjectManager(base.CrudManager):
         p.tags = self._encode_tags(getattr(p, 'tags', []))
         return p
 
+    def find(self, **kwargs):
+        p = super(ProjectManager, self).find(**kwargs)
+        p.tags = self._encode_tags(getattr(p, 'tags', []))
+        return p
+
     def update(self, project, name=None, domain=None, description=None,
                enabled=None, **kwargs):
         """Update a project.
