@@ -11,11 +11,11 @@ Python bindings to the OpenStack Identity API (Keystone)
 ========================================================
 
 .. image:: https://img.shields.io/pypi/v/python-keystoneclient.svg
-    :target: https://pypi.python.org/pypi/python-keystoneclient/
+    :target: https://pypi.org/project/python-keystoneclient/
     :alt: Latest Version
 
 .. image:: https://img.shields.io/pypi/dm/python-keystoneclient.svg
-    :target: https://pypi.python.org/pypi/python-keystoneclient/
+    :target: https://pypi.org/project/python-keystoneclient/
     :alt: Downloads
 
 This is a client for the OpenStack Identity API, implemented by the Keystone
@@ -32,13 +32,13 @@ OpenStack's Identity Service. For command line interface support, use
 * `Specs`_
 * `How to Contribute`_
 
-.. _PyPi: https://pypi.python.org/pypi/python-keystoneclient
+.. _PyPi: https://pypi.org/project/python-keystoneclient
 .. _Online Documentation: https://docs.openstack.org/python-keystoneclient/latest/
 .. _Launchpad project: https://launchpad.net/python-keystoneclient
 .. _Blueprints: https://blueprints.launchpad.net/python-keystoneclient
 .. _Bugs: https://bugs.launchpad.net/python-keystoneclient
 .. _Source: https://git.openstack.org/cgit/openstack/python-keystoneclient
-.. _OpenStackClient: https://pypi.python.org/pypi/python-openstackclient
+.. _OpenStackClient: https://pypi.org/project/python-openstackclient
 .. _How to Contribute: https://docs.openstack.org/infra/manual/developers.html
 .. _Specs: https://specs.openstack.org/openstack/keystone-specs/
 
