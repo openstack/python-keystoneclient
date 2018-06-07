@@ -327,7 +327,7 @@ class Saml2UnscopedToken(_BaseSAMLPlugin):
         authenticated user. This function directs the HTTP request to SP
         managed URL, for instance: ``https://<host>:<port>/Shibboleth.sso/
         SAML2/ECP``.
-        Upon success the there's a session created and access to the protected
+        Upon success there's a session created and access to the protected
         resource is granted. Many implementations of the SP return HTTP 302/303
         status code pointing to the protected URL (``https://<host>:<port>/v3/
         OS-FEDERATION/identity_providers/{identity_provider}/protocols/
