@@ -1,0 +1,7 @@
+---
+features:
+  - |
+    Added support for managing registered limits. The ``POST`` API for
+    registered limits in keystone supports batch creation, but the client
+    implementation does not. Creation of registered limits using the client
+    must be done one at a time.
