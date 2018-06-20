@@ -45,8 +45,8 @@ class IdentityProviderManager(base.CrudManager):
         PUT /OS-FEDERATION/identity_providers/$identity_provider
 
         :param id: unique id of the identity provider.
-        :param kwargs: optional attributes: description (str), enabled
-                       (boolean) and remote_ids (list).
+        :param kwargs: optional attributes: description (str), domain_id (str),
+                       enabled (boolean) and remote_ids (list).
         :returns: an IdentityProvider resource object.
         :rtype: :py:class:`keystoneclient.v3.federation.IdentityProvider`
 
