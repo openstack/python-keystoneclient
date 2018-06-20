@@ -37,6 +37,7 @@ from keystoneclient.v3 import ec2
 from keystoneclient.v3 import endpoint_groups
 from keystoneclient.v3 import endpoints
 from keystoneclient.v3 import groups
+from keystoneclient.v3 import limits
 from keystoneclient.v3 import policies
 from keystoneclient.v3 import projects
 from keystoneclient.v3 import regions
@@ -159,6 +160,10 @@ class Client(httpclient.HTTPClient):
 
         :py:class:`keystoneclient.v3.groups.GroupManager`
 
+    .. py:attribute:: limits
+
+        :py:class:`keystoneclient.v3.limits.LimitManager`
+
     .. py:attribute:: oauth1
 
         :py:class:`keystoneclient.v3.contrib.oauth1.core.OAuthManager`
@@ -235,6 +240,7 @@ class Client(httpclient.HTTPClient):
         self.domains = domains.DomainManager(self._adapter)
         self.federation = federation.FederationManager(self._adapter)
         self.groups = groups.GroupManager(self._adapter)
+        self.limits = limits.LimitManager(self._adapter)
         self.oauth1 = oauth1.create_oauth_manager(self._adapter)
         self.policies = policies.PolicyManager(self._adapter)
         self.projects = projects.ProjectManager(self._adapter)

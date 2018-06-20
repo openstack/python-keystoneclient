@@ -1,0 +1,6 @@
+---
+features:
+  - |
+    Added support for managing project-specific limits. The ``POST`` API for
+    limits in keystone supports batch creation, but the client implementation
+    does not. Creation for limits using the client must be done one at a time.
