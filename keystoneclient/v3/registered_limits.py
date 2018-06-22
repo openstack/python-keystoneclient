@@ -84,7 +84,7 @@ class RegisteredLimitManager(base.CrudManager):
         :param resource_name: the name of the resource to limit.
         :type resource_name: str
         :param default_limit: the default limit for projects to assume.
-        :type defaut slt_limit: int
+        :type default_limit: int
         :param description: a string that describes the limit
         :type description: str
         :param region: a UUID that identifies the region for the limit.
