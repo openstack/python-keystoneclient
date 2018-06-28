@@ -27,6 +27,7 @@ OpenStack's Identity Service. For command line interface support, use
 * `Source`_
 * `Specs`_
 * `How to Contribute`_
+* `Release Notes`_
 
 .. _PyPi: https://pypi.org/project/python-keystoneclient
 .. _Online Documentation: https://docs.openstack.org/python-keystoneclient/latest/
@@ -37,6 +38,7 @@ OpenStack's Identity Service. For command line interface support, use
 .. _OpenStackClient: https://pypi.org/project/python-openstackclient
 .. _How to Contribute: https://docs.openstack.org/infra/manual/developers.html
 .. _Specs: https://specs.openstack.org/openstack/keystone-specs/
+.. _Release Notes: https://docs.openstack.org/releasenotes/python-keystoneclient
 
 .. contents:: Contents:
    :local:
