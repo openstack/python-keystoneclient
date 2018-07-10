@@ -1,5 +1,5 @@
 .coverage
-.testrepository
+.stestr/
 subunit.log
 .venv
 *,cover
