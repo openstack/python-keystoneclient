@@ -10,6 +10,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from debtcollector import removals
 from keystoneclient import base
 
 
@@ -34,6 +35,11 @@ class RegionManager(base.CrudManager):
     collection_key = 'regions'
     key = 'region'
 
+    @removals.removed_kwarg(
+        'enabled',
+        message='The enabled parameter is deprecated.',
+        version='3.18.0',
+        removal_version='4.0.0')
     def create(self, id=None, description=None, enabled=True,
                parent_region=None, **kwargs):
         """Create a region.
@@ -81,6 +87,11 @@ class RegionManager(base.CrudManager):
         return super(RegionManager, self).list(
             **kwargs)
 
+    @removals.removed_kwarg(
+        'enabled',
+        message='The enabled parameter is deprecated.',
+        version='3.18.0',
+        removal_version='4.0.0')
     def update(self, region, description=None, enabled=None,
                parent_region=None, **kwargs):
         """Update a region.

@@ -1,0 +1,5 @@
+---
+deprecations:
+  - |
+    The region resource in Keystone never support or contain "enabled" property.
+    Thus the property is deprecated and will be removed in future versions.
