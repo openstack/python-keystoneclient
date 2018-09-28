@@ -221,6 +221,8 @@ class CrudTests(object):
         self.assertRequestBodyIs(json=self.encode(entity))
 
     def test_create(self, ref=None, req_ref=None):
+        deprecations = self.useFixture(client_fixtures.Deprecations())
+        deprecations.expect_deprecations()
         ref = ref or self.new_ref()
         manager_ref = ref.copy()
         manager_ref.pop('id')
@@ -343,6 +345,8 @@ class CrudTests(object):
             self.assertQueryStringIs('')
 
     def test_update(self, ref=None, req_ref=None):
+        deprecations = self.useFixture(client_fixtures.Deprecations())
+        deprecations.expect_deprecations()
         ref = ref or self.new_ref()
 
         self.stub_entity('PATCH', id=ref['id'], entity=ref)
