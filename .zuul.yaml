@@ -1,3 +1,14 @@
+- job:
+    name: keystoneclient-devstack-functional
+    parent: legacy-dsvm-base
+    run: playbooks/keystoneclient-dsvm-functional/run.yaml
+    post-run: playbooks/keystoneclient-dsvm-functional/post.yaml
+    timeout: 4200
+    required-projects:
+      - openstack-infra/devstack-gate
+      - openstack/keystone
+      - openstack/python-keystoneclient
+
 - project:
     templates:
       - openstack-cover-jobs
@@ -12,5 +23,5 @@
       - release-notes-jobs-python3
     check:
       jobs:
-        - legacy-keystoneclient-dsvm-functional:
+        - keystoneclient-devstack-functional:
             voting: false
