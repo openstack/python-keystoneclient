@@ -136,9 +136,21 @@ class ProjectManager(base.CrudManager):
             domain_id=base.getid(domain),
             fallback_to_auth=True,
             **kwargs)
-        for p in projects:
+
+        base_response = None
+        list_data = projects
+        if self.client.include_metadata:
+            base_response = projects
+            list_data = projects.data
+            base_response.data = list_data
+
+        for p in list_data:
             p.tags = self._encode_tags(getattr(p, 'tags', []))
-        return projects
+
+        if self.client.include_metadata:
+            base_response.data = list_data
+
+        return base_response if self.client.include_metadata else list_data
 
     def _check_not_parents_as_ids_and_parents_as_list(self, parents_as_ids,
                                                       parents_as_list):
