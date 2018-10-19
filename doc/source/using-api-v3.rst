@@ -102,6 +102,31 @@ For more information on Sessions refer to: `Using Sessions`_.
 
 .. _`Using Sessions`: using-sessions.html
 
+Getting Metadata Responses
+==========================
+
+Instantiating :py:class:`keystoneclient.v3.client.Client` using
+`include_metadata=True` will cause manager response to return
+:py:class:`keystoneclient.base.Response` instead of just the data.
+The metadata property will be available directly to the
+:py:class:`keystoneclient.base.Response` and the response data will
+be available as property `data` to it.
+
+    >>> from keystoneauth1.identity import v3
+    >>> from keystoneauth1 import session
+    >>> from keystoneclient.v3 import client
+    >>> auth = v3.Password(auth_url='https://my.keystone.com:5000/v3',
+    ...                    user_id='myuserid',
+    ...                    password='mypassword',
+    ...                    project_id='myprojectid')
+    >>> sess = session.Session(auth=auth)
+    >>> keystone = client.Client(session=sess, include_metadata=True)
+    >>> resp = keystone.projects.list()
+    >>> resp.request_ids[0]
+    req-1234-5678-...
+    >>> resp.data
+    [<Project ...>, <Project ...>, ...]
+
 Non-Session Authentication (deprecated)
 =======================================
 
