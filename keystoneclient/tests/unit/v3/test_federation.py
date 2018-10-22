@@ -11,6 +11,7 @@
 # under the License.
 
 import copy
+import fixtures
 import uuid
 
 from keystoneauth1 import exceptions
@@ -582,3 +583,244 @@ class ServiceProviderTests(utils.ClientTestCase, utils.CrudTests):
                 req_ref[attr],
                 'Expected different %s' % attr)
         self.assertEntityRequestBodyIs(req_ref)
+
+
+class IdentityProviderRequestIdTests(utils.TestRequestId):
+
+    def setUp(self):
+        super(IdentityProviderRequestIdTests, self).setUp()
+        self.mgr = identity_providers.IdentityProviderManager(self.client)
+
+    def _mock_request_method(self, method=None, body=None):
+        return self.useFixture(fixtures.MockPatchObject(
+            self.client, method, autospec=True,
+            return_value=(self.resp, body))
+        ).mock
+
+    def test_get_identity_provider(self):
+        body = {"identity_provider": {"name": "admin"}}
+        get_mock = self._mock_request_method(method='get', body=body)
+
+        response = self.mgr.get("admin")
+        self.assertEqual(response.request_ids[0], self.TEST_REQUEST_ID)
+        get_mock.assert_called_once_with(
+            'OS-FEDERATION/identity_providers/admin')
+
+    def test_list_identity_provider(self):
+        body = {"identity_providers": [{"name": "admin"}]}
+        get_mock = self._mock_request_method(method='get', body=body)
+
+        response = self.mgr.list()
+        self.assertEqual(response.request_ids[0], self.TEST_REQUEST_ID)
+        get_mock.assert_called_once_with('OS-FEDERATION/identity_providers?')
+
+    def test_create_identity_provider(self):
+        body = {"identity_provider": {"name": "admin"}}
+        self._mock_request_method(method='post', body=body)
+        put_mock = self._mock_request_method(method='put', body=body)
+
+        response = self.mgr.create(id="admin", description='fake')
+        self.assertEqual(response.request_ids[0], self.TEST_REQUEST_ID)
+        put_mock.assert_called_once_with(
+            'OS-FEDERATION/identity_providers/admin',
+            body={'identity_provider': {'description': 'fake'}})
+
+    def test_update_identity_provider(self):
+        body = {"identity_provider": {"name": "admin"}}
+        patch_mock = self._mock_request_method(method='patch', body=body)
+        self._mock_request_method(method='post', body=body)
+
+        response = self.mgr.update("admin")
+        self.assertEqual(response.request_ids[0], self.TEST_REQUEST_ID)
+        patch_mock.assert_called_once_with(
+            'OS-FEDERATION/identity_providers/admin', body={
+                'identity_provider': {}})
+
+    def test_delete_identity_provider(self):
+        get_mock = self._mock_request_method(method='delete')
+
+        _, resp = self.mgr.delete("admin")
+        self.assertEqual(resp.request_ids[0], self.TEST_REQUEST_ID)
+        get_mock.assert_called_once_with(
+            'OS-FEDERATION/identity_providers/admin')
+
+
+class MappingRequestIdTests(utils.TestRequestId):
+
+    def setUp(self):
+        super(MappingRequestIdTests, self).setUp()
+        self.mgr = mappings.MappingManager(self.client)
+
+    def _mock_request_method(self, method=None, body=None):
+        return self.useFixture(fixtures.MockPatchObject(
+            self.client, method, autospec=True,
+            return_value=(self.resp, body))
+        ).mock
+
+    def test_get_mapping(self):
+        body = {"mapping": {"name": "admin"}}
+        get_mock = self._mock_request_method(method='get', body=body)
+
+        response = self.mgr.get("admin")
+        self.assertEqual(response.request_ids[0], self.TEST_REQUEST_ID)
+        get_mock.assert_called_once_with('OS-FEDERATION/mappings/admin')
+
+    def test_list_mapping(self):
+        body = {"mappings": [{"name": "admin"}]}
+        get_mock = self._mock_request_method(method='get', body=body)
+
+        response = self.mgr.list()
+        self.assertEqual(response.request_ids[0], self.TEST_REQUEST_ID)
+        get_mock.assert_called_once_with('OS-FEDERATION/mappings?')
+
+    def test_create_mapping(self):
+        body = {"mapping": {"name": "admin"}}
+        self._mock_request_method(method='post', body=body)
+        put_mock = self._mock_request_method(method='put', body=body)
+
+        response = self.mgr.create(mapping_id="admin", description='fake')
+        self.assertEqual(response.request_ids[0], self.TEST_REQUEST_ID)
+        put_mock.assert_called_once_with(
+            'OS-FEDERATION/mappings/admin', body={
+                'mapping': {'description': 'fake'}})
+
+    def test_update_mapping(self):
+        body = {"mapping": {"name": "admin"}}
+        patch_mock = self._mock_request_method(method='patch', body=body)
+        self._mock_request_method(method='post', body=body)
+
+        response = self.mgr.update("admin")
+        self.assertEqual(response.request_ids[0], self.TEST_REQUEST_ID)
+        patch_mock.assert_called_once_with(
+            'OS-FEDERATION/mappings/admin', body={'mapping': {}})
+
+    def test_delete_mapping(self):
+        get_mock = self._mock_request_method(method='delete')
+
+        _, resp = self.mgr.delete("admin")
+        self.assertEqual(resp.request_ids[0], self.TEST_REQUEST_ID)
+        get_mock.assert_called_once_with('OS-FEDERATION/mappings/admin')
+
+
+class ProtocolRequestIdTests(utils.TestRequestId):
+
+    def setUp(self):
+        super(ProtocolRequestIdTests, self).setUp()
+        self.mgr = protocols.ProtocolManager(self.client)
+
+    def _mock_request_method(self, method=None, body=None):
+        return self.useFixture(fixtures.MockPatchObject(
+            self.client, method, autospec=True,
+            return_value=(self.resp, body))
+        ).mock
+
+    def test_get_protocol(self):
+        body = {"protocol": {"name": "admin"}}
+        get_mock = self._mock_request_method(method='get', body=body)
+
+        response = self.mgr.get("admin", "protocol")
+        self.assertEqual(response.request_ids[0], self.TEST_REQUEST_ID)
+        get_mock.assert_called_once_with(
+            'OS-FEDERATION/identity_providers/admin/protocols/protocol')
+
+    def test_list_protocol(self):
+        body = {"protocols": [{"name": "admin"}]}
+        get_mock = self._mock_request_method(method='get', body=body)
+
+        response = self.mgr.list("identity_provider")
+        self.assertEqual(response.request_ids[0], self.TEST_REQUEST_ID)
+        get_mock.assert_called_once_with(
+            'OS-FEDERATION/identity_providers/identity_provider/protocols?')
+
+    def test_create_protocol(self):
+        body = {"protocol": {"name": "admin"}}
+        self._mock_request_method(method='post', body=body)
+        put_mock = self._mock_request_method(method='put', body=body)
+
+        response = self.mgr.create(
+            protocol_id="admin", identity_provider='fake', mapping='fake')
+        self.assertEqual(response.request_ids[0], self.TEST_REQUEST_ID)
+        put_mock.assert_called_once_with(
+            'OS-FEDERATION/identity_providers/fake/protocols/admin', body={
+                'protocol': {'mapping_id': 'fake'}})
+
+    def test_update_protocol(self):
+        body = {"protocol": {"name": "admin"}}
+        patch_mock = self._mock_request_method(method='patch', body=body)
+        self._mock_request_method(method='post', body=body)
+
+        response = self.mgr.update(protocol="admin", identity_provider='fake',
+                                   mapping='fake')
+        self.assertEqual(response.request_ids[0], self.TEST_REQUEST_ID)
+        patch_mock.assert_called_once_with(
+            'OS-FEDERATION/identity_providers/fake/protocols/admin', body={
+                'protocol': {'mapping_id': 'fake'}})
+
+    def test_delete_protocol(self):
+        get_mock = self._mock_request_method(method='delete')
+
+        _, resp = self.mgr.delete("identity_provider", "protocol")
+        self.assertEqual(resp.request_ids[0], self.TEST_REQUEST_ID)
+        get_mock.assert_called_once_with(
+            'OS-FEDERATION/identity_providers/'
+            'identity_provider/protocols/protocol')
+
+
+class ServiceProviderRequestIdTests(utils.TestRequestId):
+
+    def setUp(self):
+        super(ServiceProviderRequestIdTests, self).setUp()
+        self.mgr = service_providers.ServiceProviderManager(self.client)
+
+    def _mock_request_method(self, method=None, body=None):
+        return self.useFixture(fixtures.MockPatchObject(
+            self.client, method, autospec=True,
+            return_value=(self.resp, body))
+        ).mock
+
+    def test_get_service_provider(self):
+        body = {"service_provider": {"name": "admin"}}
+        get_mock = self._mock_request_method(method='get', body=body)
+
+        response = self.mgr.get("provider")
+        self.assertEqual(response.request_ids[0], self.TEST_REQUEST_ID)
+        get_mock.assert_called_once_with(
+            'OS-FEDERATION/service_providers/provider')
+
+    def test_list_service_provider(self):
+        body = {"service_providers": [{"name": "admin"}]}
+        get_mock = self._mock_request_method(method='get', body=body)
+
+        response = self.mgr.list()
+        self.assertEqual(response.request_ids[0], self.TEST_REQUEST_ID)
+        get_mock.assert_called_once_with('OS-FEDERATION/service_providers?')
+
+    def test_create_service_provider(self):
+        body = {"service_provider": {"name": "admin"}}
+        self._mock_request_method(method='post', body=body)
+        put_mock = self._mock_request_method(method='put', body=body)
+
+        response = self.mgr.create(id='provider')
+        self.assertEqual(response.request_ids[0], self.TEST_REQUEST_ID)
+        put_mock.assert_called_once_with(
+            'OS-FEDERATION/service_providers/provider', body={
+                'service_provider': {}})
+
+    def test_update_service_provider(self):
+        body = {"service_provider": {"name": "admin"}}
+        patch_mock = self._mock_request_method(method='patch', body=body)
+        self._mock_request_method(method='post', body=body)
+
+        response = self.mgr.update("provider")
+        self.assertEqual(response.request_ids[0], self.TEST_REQUEST_ID)
+        patch_mock.assert_called_once_with(
+            'OS-FEDERATION/service_providers/provider', body={
+                'service_provider': {}})
+
+    def test_delete_service_provider(self):
+        get_mock = self._mock_request_method(method='delete')
+
+        _, resp = self.mgr.delete("provider")
+        self.assertEqual(resp.request_ids[0], self.TEST_REQUEST_ID)
+        get_mock.assert_called_once_with(
+            'OS-FEDERATION/service_providers/provider')

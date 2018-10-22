@@ -70,4 +70,5 @@ class RequestTokenManager(base.CrudManager):
                                                headers=headers)
         resp, body = self.client.post(endpoint, headers=headers)
         token = utils.get_oauth_token_from_body(resp.content)
-        return self.resource_class(self, token)
+        return self._prepare_return_value(resp,
+                                          self.resource_class(self, token))

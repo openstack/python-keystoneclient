@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import fixtures
 import uuid
 
 import mock
@@ -275,6 +276,53 @@ class AuthenticateWithOAuthTests(utils.TestCase, TokenTests):
                                      signature_method=oauth1.SIGNATURE_HMAC)
         self._validate_oauth_headers(req_headers['Authorization'],
                                      oauth_client)
+
+
+class OauthRequestIdTests(utils.TestRequestId, TokenTests):
+
+    def setUp(self):
+        super(OauthRequestIdTests, self).setUp()
+        self.mgr = consumers.ConsumerManager(self.client)
+
+    def _mock_request_method(self, method=None, body=None):
+        return self.useFixture(fixtures.MockPatchObject(
+            self.client, method, autospec=True,
+            return_value=(self.resp, body))
+        ).mock
+
+    def test_get_consumers(self):
+        body = {"consumer": {"name": "admin"}}
+        get_mock = self._mock_request_method(method='get', body=body)
+
+        response = self.mgr.get("admin")
+        self.assertEqual(response.request_ids[0], self.TEST_REQUEST_ID)
+        get_mock.assert_called_once_with('/OS-OAUTH1/consumers/admin')
+
+    def test_create_consumers(self):
+        body = {"consumer": {"name": "admin"}}
+        post_mock = self._mock_request_method(method='post', body=body)
+
+        response = self.mgr.create(name="admin", description="fake")
+        self.assertEqual(response.request_ids[0], self.TEST_REQUEST_ID)
+        post_mock.assert_called_once_with('/OS-OAUTH1/consumers', body={
+            'consumer': {'name': 'admin', 'description': 'fake'}})
+
+    def test_update_consumers(self):
+        body = {"consumer": {"name": "admin"}}
+        patch_mock = self._mock_request_method(method='patch', body=body)
+        self._mock_request_method(method='post', body=body)
+
+        response = self.mgr.update("admin", "demo")
+        self.assertEqual(response.request_ids[0], self.TEST_REQUEST_ID)
+        patch_mock.assert_called_once_with('/OS-OAUTH1/consumers/admin', body={
+            'consumer': {'description': 'demo'}})
+
+    def test_delete_consumers(self):
+        get_mock = self._mock_request_method(method='delete')
+
+        _, resp = self.mgr.delete("admin")
+        self.assertEqual(resp.request_ids[0], self.TEST_REQUEST_ID)
+        get_mock.assert_called_once_with('/OS-OAUTH1/consumers/admin')
 
 
 class TestOAuthLibModule(utils.TestCase):
