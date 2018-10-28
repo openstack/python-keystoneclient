@@ -22,5 +22,7 @@
       - release-notes-jobs-python3
     check:
       jobs:
-        - keystoneclient-devstack-functional:
-            voting: false
+        - keystoneclient-devstack-functional
+    gate:
+      jobs:
+        - keystoneclient-devstack-functional
