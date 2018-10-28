@@ -7,6 +7,8 @@
       - openstack/python-keystoneclient
     vars:
       tox_envlist: functional
+      devstack_localrc:
+        USE_PYTHON3: True
 
 - project:
     templates:
