@@ -1,14 +1,19 @@
 - job:
     name: keystoneclient-devstack-functional
-    parent: devstack-tox-functional-consumer
+    parent: devstack-minimal
     timeout: 4200
     required-projects:
       - openstack/keystone
       - openstack/python-keystoneclient
+    run: playbooks/run-ds-tox.yaml
+    post-run: playbooks/tox-post.yaml
     vars:
-      tox_envlist: functional
       devstack_localrc:
         USE_PYTHON3: True
+      devstack_services:
+        key: true
+      tox_envlist: functional
+      zuul_work_dir: src/git.openstack.org/openstack/python-keystoneclient
 
 - project:
     templates:
