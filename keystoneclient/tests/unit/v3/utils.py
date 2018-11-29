@@ -10,12 +10,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import requests
 import uuid
 
 from six.moves.urllib import parse as urlparse
 
+from keystoneauth1.identity import v3
+from keystoneauth1 import session
 from keystoneclient.tests.unit import client_fixtures
 from keystoneclient.tests.unit import utils
+from keystoneclient.v3 import client
 
 
 def parameterize(ref):
@@ -375,3 +379,17 @@ class CrudTests(object):
 
         self.stub_entity('DELETE', id=ref['id'], status_code=204)
         self.manager.delete(ref['id'])
+
+
+class TestRequestId(TestCase):
+    resp = requests.Response()
+    TEST_REQUEST_ID = uuid.uuid4().hex
+    resp.headers['x-openstack-request-id'] = TEST_REQUEST_ID
+
+    def setUp(self):
+        super(TestRequestId, self).setUp()
+        auth = v3.Token(auth_url='http://127.0.0.1:5000',
+                        token=self.TEST_TOKEN)
+        session_ = session.Session(auth=auth)
+        self.client = client.Client(session=session_,
+                                    include_metadata='True')._adapter

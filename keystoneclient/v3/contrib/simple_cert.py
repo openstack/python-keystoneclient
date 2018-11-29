@@ -11,12 +11,15 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from keystoneclient import base
+
 
 class SimpleCertManager(object):
     """Manager for the OS-SIMPLE-CERT extension."""
 
     def __init__(self, client):
         self._client = client
+        self.mgr = base.Manager(self._client)
 
     def get_ca_certificates(self):
         """Get CA certificates.
@@ -27,7 +30,7 @@ class SimpleCertManager(object):
         """
         resp, body = self._client.get('/OS-SIMPLE-CERT/ca',
                                       authenticated=False)
-        return resp.text
+        return self.mgr._prepare_return_value(resp, resp.text)
 
     def get_certificates(self):
         """Get signing certificates.
@@ -38,4 +41,4 @@ class SimpleCertManager(object):
         """
         resp, body = self._client.get('/OS-SIMPLE-CERT/certificates',
                                       authenticated=False)
-        return resp.text
+        return self.mgr._prepare_return_value(resp, resp.text)

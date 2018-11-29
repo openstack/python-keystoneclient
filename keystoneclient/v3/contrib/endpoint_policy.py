@@ -39,17 +39,17 @@ class EndpointPolicyManager(base.Manager):
 
     def create_policy_association_for_endpoint(self, policy, endpoint):
         """Create an association between a policy and an endpoint."""
-        self._act_on_policy_association_for_endpoint(
+        return self._act_on_policy_association_for_endpoint(
             policy, endpoint, self._put)
 
     def check_policy_association_for_endpoint(self, policy, endpoint):
         """Check an association between a policy and an endpoint."""
-        self._act_on_policy_association_for_endpoint(
+        return self._act_on_policy_association_for_endpoint(
             policy, endpoint, self._head)
 
     def delete_policy_association_for_endpoint(self, policy, endpoint):
         """Delete an association between a policy and an endpoint."""
-        self._act_on_policy_association_for_endpoint(
+        return self._act_on_policy_association_for_endpoint(
             policy, endpoint, self._delete)
 
     def _act_on_policy_association_for_service(self, policy, service, action):
@@ -67,17 +67,17 @@ class EndpointPolicyManager(base.Manager):
 
     def create_policy_association_for_service(self, policy, service):
         """Create an association between a policy and a service."""
-        self._act_on_policy_association_for_service(
+        return self._act_on_policy_association_for_service(
             policy, service, self._put)
 
     def check_policy_association_for_service(self, policy, service):
         """Check an association between a policy and a service."""
-        self._act_on_policy_association_for_service(
+        return self._act_on_policy_association_for_service(
             policy, service, self._head)
 
     def delete_policy_association_for_service(self, policy, service):
         """Delete an association between a policy and a service."""
-        self._act_on_policy_association_for_service(
+        return self._act_on_policy_association_for_service(
             policy, service, self._delete)
 
     def _act_on_policy_association_for_region_and_service(
@@ -99,19 +99,19 @@ class EndpointPolicyManager(base.Manager):
     def create_policy_association_for_region_and_service(
             self, policy, region, service):
         """Create an association between a policy and a service in a region."""
-        self._act_on_policy_association_for_region_and_service(
+        return self._act_on_policy_association_for_region_and_service(
             policy, region, service, self._put)
 
     def check_policy_association_for_region_and_service(
             self, policy, region, service):
         """Check an association between a policy and a service in a region."""
-        self._act_on_policy_association_for_region_and_service(
+        return self._act_on_policy_association_for_region_and_service(
             policy, region, service, self._head)
 
     def delete_policy_association_for_region_and_service(
             self, policy, region, service):
         """Delete an association between a policy and a service in a region."""
-        self._act_on_policy_association_for_region_and_service(
+        return self._act_on_policy_association_for_region_and_service(
             policy, region, service, self._delete)
 
     def get_policy_for_endpoint(self, endpoint):
@@ -130,9 +130,10 @@ class EndpointPolicyManager(base.Manager):
             'endpoint_id': endpoint_id,
             'ext_name': self.OS_EP_POLICY_EXT}
 
-        _resp, body = self.client.get(url)
-        return policies.Policy(
-            self, body[policies.PolicyManager.key], loaded=True)
+        resp, body = self.client.get(url)
+        return self._prepare_return_value(
+            resp, policies.Policy(self, body[policies.PolicyManager.key],
+                                  loaded=True))
 
     def list_endpoints_for_policy(self, policy):
         """List endpoints with the effective association to a policy.

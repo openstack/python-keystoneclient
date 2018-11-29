@@ -11,16 +11,12 @@
 # under the License.
 
 import fixtures
-import requests
 import uuid
 
 from keystoneauth1 import exceptions as ksa_exceptions
-from keystoneauth1.identity import v3
-from keystoneauth1 import session
 
 from keystoneclient import exceptions as ksc_exceptions
 from keystoneclient.tests.unit.v3 import utils
-from keystoneclient.v3 import client
 from keystoneclient.v3 import projects
 
 
@@ -402,20 +398,12 @@ class ProjectTests(utils.ClientTestCase, utils.CrudTests):
         return ret
 
 
-class ProjectsRequestIdTests(utils.TestCase):
+class ProjectsRequestIdTests(utils.TestRequestId):
 
     url = "/projects"
-    resp = requests.Response()
-    TEST_REQUEST_ID = uuid.uuid4().hex
-    resp.headers['x-openstack-request-id'] = TEST_REQUEST_ID
 
     def setUp(self):
         super(ProjectsRequestIdTests, self).setUp()
-        auth = v3.Token(auth_url='http://127.0.0.1:5000',
-                        token=self.TEST_TOKEN)
-        session_ = session.Session(auth=auth)
-        self.client = client.Client(session=session_,
-                                    include_metadata='True')._adapter
         self.mgr = projects.ProjectManager(self.client)
         self.mgr.resource_class = projects.Project
 
