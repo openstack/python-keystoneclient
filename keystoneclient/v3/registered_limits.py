@@ -69,7 +69,9 @@ class RegisteredLimitManager(base.CrudManager):
         body = {self.collection_key: [limit_data]}
         resp, body = self.client.post('/registered_limits', body=body)
         registered_limit = body[self.collection_key].pop()
-        return self.resource_class(self, registered_limit)
+        return self._prepare_return_value(resp,
+                                          self.resource_class(
+                                              self, registered_limit))
 
     def update(self, registered_limit, service=None, resource_name=None,
                default_limit=None, description=None, region=None, **kwargs):

@@ -3,5 +3,11 @@ features:
   - >
     [`blueprint return-request-id-to-caller
     <https://blueprints.launchpad.net/python-keystoneclient/+spec/return-request-id-to-caller>`_]
-    Added support to return "x-openstack-request-id" header in request_ids attribute
-    for better tracing.
+    Instantiating client with ``include_metadata=True`` will cause manager response to return data
+    along with request_ids for better tracing. Refer [`using-api-v3
+    <https://docs.openstack.org/python-keystoneclient/latest/using-api-v3.html#getting-metadata-responses>`_]
+
+
+    Added support to return "x-openstack-request-id" header in request_ids attribute if
+    ``include_metadata=True``. Also, for APIs which return response as None, client will return request_ids
+    as well if ``include_metadata`` is True.

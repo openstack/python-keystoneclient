@@ -455,7 +455,8 @@ class InferenceRuleManager(base.CrudManager):
         """
         url_tail = self._implied_role_url_tail(prior_role, implied_role)
         _resp, body = self.client.put("/roles" + url_tail)
-        return self.resource_class(self, body['role_inference'])
+        return self._prepare_return_value(
+            _resp, self.resource_class(self, body['role_inference']))
 
     def delete(self, prior_role, implied_role):
         """Delete an inference rule.
@@ -478,7 +479,7 @@ class InferenceRuleManager(base.CrudManager):
 
         """
         url_tail = self._implied_role_url_tail(prior_role, implied_role)
-        return self.client.delete("/roles" + url_tail)
+        return self._delete("/roles" + url_tail)
 
     def get(self, prior_role, implied_role):
         """Retrieve an inference rule.
@@ -499,7 +500,8 @@ class InferenceRuleManager(base.CrudManager):
         """
         url_tail = self._implied_role_url_tail(prior_role, implied_role)
         _resp, body = self.client.get("/roles" + url_tail)
-        return self.resource_class(self, body['role_inference'])
+        return self._prepare_return_value(
+            _resp, self.resource_class(self, body['role_inference']))
 
     def list(self, prior_role):
         """List all roles that a role may imply.
@@ -518,7 +520,8 @@ class InferenceRuleManager(base.CrudManager):
         """
         url_tail = ('/%s/implies' % base.getid(prior_role))
         _resp, body = self.client.get("/roles" + url_tail)
-        return self.resource_class(self, body['role_inference'])
+        return self._prepare_return_value(
+            _resp, self.resource_class(self, body['role_inference']))
 
     def check(self, prior_role, implied_role):
         """Check if an inference rule exists.
@@ -538,7 +541,7 @@ class InferenceRuleManager(base.CrudManager):
 
         """
         url_tail = self._implied_role_url_tail(prior_role, implied_role)
-        return self.client.head("/roles" + url_tail)
+        return self._head("/roles" + url_tail)
 
     def list_inference_roles(self):
         """List all rule inferences.
