@@ -70,7 +70,9 @@ class LimitManager(base.CrudManager):
         body = {self.collection_key: [limit_data]}
         resp, body = self.client.post('/limits', body=body)
         limit = body[self.collection_key].pop()
-        return self.resource_class(self, limit)
+        return self._prepare_return_value(resp,
+                                          self.resource_class(
+                                              self, limit))
 
     def update(self, limit, project=None, service=None, resource_name=None,
                resource_limit=None, description=None, **kwargs):

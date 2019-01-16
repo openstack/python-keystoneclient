@@ -37,7 +37,7 @@ class SamlManager(base.Manager):
         headers, body = self._create_common_request(service_provider, token_id)
         resp, body = self.client.post(SAML2_ENDPOINT, json=body,
                                       headers=headers)
-        return resp.text
+        return self._prepare_return_value(resp, resp.text)
 
     def create_ecp_assertion(self, service_provider, token_id):
         """Create an ECP wrapped SAML assertion from a token.
@@ -56,7 +56,7 @@ class SamlManager(base.Manager):
         headers, body = self._create_common_request(service_provider, token_id)
         resp, body = self.client.post(ECP_ENDPOINT, json=body,
                                       headers=headers)
-        return resp.text
+        return self._prepare_return_value(resp, resp.text)
 
     def _create_common_request(self, service_provider, token_id):
         headers = {'Content-Type': 'application/json'}

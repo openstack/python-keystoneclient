@@ -656,7 +656,7 @@ class ImpliedRoleTests(utils.ClientTestCase, utils.CrudTests):
         implied_role_id = uuid.uuid4().hex
         self.stub_url('HEAD',
                       ['roles', prior_role_id, 'implies', implied_role_id],
-                      status_code=200)
+                      status_code=204)
 
         result = self.manager.check(prior_role_id, implied_role_id)
         self.assertTrue(result)

@@ -214,6 +214,10 @@ class Manager(object):
             else:
                 return self._prepare_return_value(
                     resp, self.resource_class(self, body))
+        # In some cases (e.g. 'add_endpoint_to_project' from endpoint_filters
+        # resource), PUT request may not return a body so return None as
+        # response along with request_id if include_metadata is True.
+        return self._prepare_return_value(resp, body)
 
     def _patch(self, url, body=None, response_key=None, **kwargs):
         """Update an object with PATCH method.

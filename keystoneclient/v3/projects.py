@@ -278,7 +278,7 @@ class ProjectManager(base.CrudManager):
         """
         url = "/projects/%s/tags/%s" % (base.getid(project),
                                         urllib.parse.quote(tag))
-        self.client.put(url)
+        return self._put(url)
 
     def update_tags(self, project, tags):
         """Update tag list of a project.
@@ -295,7 +295,7 @@ class ProjectManager(base.CrudManager):
         for tag in tags:
             tag = urllib.parse.quote(tag)
         resp, body = self.client.put(url, body={"tags": tags})
-        return body['tags']
+        return self._prepare_return_value(resp, body['tags'])
 
     def delete_tag(self, project, tag):
         """Remove tag from project.
@@ -304,7 +304,7 @@ class ProjectManager(base.CrudManager):
         :param tag: str name of tag to remove from project
 
         """
-        self._delete(
+        return self._delete(
             "/projects/%s/tags/%s" % (base.getid(project),
                                       urllib.parse.quote(tag)))
 
@@ -318,7 +318,8 @@ class ProjectManager(base.CrudManager):
         """
         url = "/projects/%s/tags" % base.getid(project)
         resp, body = self.client.get(url)
-        return self._encode_tags(body['tags'])
+        body['tags'] = self._encode_tags(body['tags'])
+        return self._prepare_return_value(resp, body['tags'])
 
     def check_tag(self, project, tag):
         """Check if tag is associated with project.
@@ -332,9 +333,9 @@ class ProjectManager(base.CrudManager):
         url = "/projects/%s/tags/%s" % (base.getid(project),
                                         urllib.parse.quote(tag))
         try:
-            self.client.head(url)
+            resp, body = self.client.head(url)
             # no errors means found the tag
-            return True
-        except exceptions.NotFound:
-            # 404 means tag not in project
-            return False
+            return self._prepare_return_value(resp, True)
+        except exceptions.HttpError as ex:
+            # return false with request_id if include_metadata=True
+            return self._prepare_return_value(ex.response, False)
