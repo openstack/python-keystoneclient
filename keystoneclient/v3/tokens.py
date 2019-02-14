@@ -57,7 +57,8 @@ class TokenManager(object):
         resp, body = self._client.get(path)
         return body
 
-    def get_token_data(self, token, include_catalog=True, allow_expired=False):
+    def get_token_data(self, token, include_catalog=True, allow_expired=False,
+                       access_rules_support=None):
         """Fetch the data about a token from the identity server.
 
         :param str token: The ID of the token to be fetched.
@@ -65,11 +66,18 @@ class TokenManager(object):
                                      included in the response.
         :param allow_expired: If True the token will be validated and returned
                               if it has already expired.
+        :param access_rules_support: Version number indicating that the client
+                                     is capable of enforcing keystone
+                                     access rules, if unset this client
+                                     does not support access rules.
+        :type access_rules_support: float
 
         :rtype: dict
 
         """
         headers = {'X-Subject-Token': token}
+        if access_rules_support:
+            headers['OpenStack-Identity-Access-Rules'] = access_rules_support
         flags = []
 
         url = '/auth/tokens'
@@ -85,7 +93,8 @@ class TokenManager(object):
         resp, body = self._client.get(url, headers=headers)
         return body
 
-    def validate(self, token, include_catalog=True, allow_expired=False):
+    def validate(self, token, include_catalog=True, allow_expired=False,
+                 access_rules_support=None):
         """Validate a token.
 
         :param token: The token to be validated.
@@ -95,6 +104,11 @@ class TokenManager(object):
         :param allow_expired: If True the token will be validated and returned
                               if it has already expired.
         :type allow_expired: bool
+        :param access_rules_support: Version number indicating that the client
+                                     is capable of enforcing keystone
+                                     access rules, if unset this client
+                                     does not support access rules.
+        :type access_rules_support: float
 
         :rtype: :class:`keystoneclient.access.AccessInfoV3`
 
@@ -102,5 +116,6 @@ class TokenManager(object):
         token_id = _calc_id(token)
         body = self.get_token_data(token_id,
                                    include_catalog=include_catalog,
-                                   allow_expired=allow_expired)
+                                   allow_expired=allow_expired,
+                                   access_rules_support=access_rules_support)
         return access.AccessInfo.factory(auth_token=token_id, body=body)
