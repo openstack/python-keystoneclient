@@ -11,10 +11,10 @@
 # under the License.
 
 import abc
-import json
 import logging
 
 from oslo_config import cfg
+from oslo_serialization import jsonutils
 import six
 
 from keystoneclient import access
@@ -189,7 +189,7 @@ class Auth(BaseAuth):
                             authenticated=False, log=False, **rkwargs)
 
         try:
-            _logger.debug(json.dumps(resp.json()))
+            _logger.debug(jsonutils.dumps(resp.json()))
             resp_data = resp.json()['token']
         except (KeyError, ValueError):
             raise exceptions.InvalidResponse(response=resp)

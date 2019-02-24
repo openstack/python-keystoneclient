@@ -10,8 +10,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import json
 import uuid
+
+from oslo_serialization import jsonutils
 
 from keystoneauth1 import fixture
 
@@ -75,10 +76,10 @@ class KeystoneClientTest(utils.TestCase):
                                password='password',
                                project_name='exampleproject',
                                auth_url=self.TEST_URL)
-        cache = json.dumps(cl.auth_ref)
+        cache = jsonutils.dumps(cl.auth_ref)
         # Creating a HTTPClient not using session is deprecated.
         with self.deprecations.expect_deprecations_here():
-            new_client = client.Client(auth_ref=json.loads(cache))
+            new_client = client.Client(auth_ref=jsonutils.loads(cache))
         self.assertIsNotNone(new_client.auth_ref)
         with self.deprecations.expect_deprecations_here():
             self.assertTrue(new_client.auth_ref.scoped)
@@ -100,11 +101,11 @@ class KeystoneClientTest(utils.TestCase):
                                password='password',
                                project_name='exampleproject',
                                auth_url=self.TEST_URL)
-        cache = json.dumps(cl.auth_ref)
+        cache = jsonutils.dumps(cl.auth_ref)
         new_auth_url = "http://new-public:5000/v2.0"
         # Creating a HTTPClient not using session is deprecated.
         with self.deprecations.expect_deprecations_here():
-            new_client = client.Client(auth_ref=json.loads(cache),
+            new_client = client.Client(auth_ref=jsonutils.loads(cache),
                                        auth_url=new_auth_url)
         self.assertIsNotNone(new_client.auth_ref)
         with self.deprecations.expect_deprecations_here():
