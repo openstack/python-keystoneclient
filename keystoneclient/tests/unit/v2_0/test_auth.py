@@ -28,7 +28,7 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
         self.TEST_RESPONSE_DICT = {
             "access": {
                 "token": {
-                    "expires": "2020-01-01T00:00:10.000123Z",
+                    "expires": "2999-01-01T00:00:10.000123Z",
                     "id": self.TEST_TOKEN,
                     "tenant": {
                         "id": self.TEST_TENANT_ID
@@ -61,7 +61,7 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
 
         # Build a new response
         TEST_TOKEN = "abcdef"
-        resp_b['access']['token']['expires'] = '2020-01-01T00:00:10.000123Z'
+        resp_b['access']['token']['expires'] = '2999-01-01T00:00:10.000123Z'
         resp_b['access']['token']['id'] = TEST_TOKEN
 
         # return expired first, and then the new response
