@@ -87,7 +87,7 @@ V2_VERSION.updated_str = UPDATED
 V2_AUTH_RESPONSE = jsonutils.dumps({
     "access": {
         "token": {
-            "expires": "2020-01-01T00:00:10.000123Z",
+            "expires": "2999-01-01T00:00:10.000123Z",
             "id": 'fakeToken',
             "tenant": {
                 "id": '1'
@@ -113,7 +113,7 @@ V3_AUTH_RESPONSE = jsonutils.dumps({
             "password"
         ],
 
-        "expires_at": "2020-01-01T00:00:10.000123Z",
+        "expires_at": "2999-01-01T00:00:10.000123Z",
         "project": {
             "domain": {
                 "id": '1',

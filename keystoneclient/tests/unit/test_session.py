@@ -266,7 +266,7 @@ class SessionTests(utils.TestCase):
         # elements to make sure that all joins are appropriately
         # handled (any join of unicode and byte strings should
         # raise a UnicodeDecodeError)
-        session.post(unicode(self.TEST_URL), data=data)
+        session.post(six.text_type(self.TEST_URL), data=data)
 
         self.assertNotIn('my data', self.logger.output)
 
