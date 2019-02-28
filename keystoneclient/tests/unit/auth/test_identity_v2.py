@@ -84,7 +84,7 @@ class V2IdentityPlugin(utils.TestCase):
         self.TEST_RESPONSE_DICT = {
             "access": {
                 "token": {
-                    "expires": "2020-01-01T00:00:10.000123Z",
+                    "expires": "2999-01-01T00:00:10.000123Z",
                     "id": self.TEST_TOKEN,
                     "tenant": {
                         "id": self.TEST_TENANT_ID

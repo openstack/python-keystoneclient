@@ -28,7 +28,7 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
                     "password"
                 ],
 
-                "expires_at": "2020-01-01T00:00:10.000123Z",
+                "expires_at": "2999-01-01T00:00:10.000123Z",
                 "project": {
                     "domain": {
                         "id": self.TEST_DOMAIN_ID,
