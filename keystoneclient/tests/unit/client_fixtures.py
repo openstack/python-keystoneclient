@@ -399,7 +399,7 @@ class Examples(fixtures.Fixture):
                 'access': {
                     'token': {
                         'id': self.UUID_TOKEN_DEFAULT,
-                        'expires': '2020-01-01T00:00:10.000123Z',
+                        'expires': '2999-01-01T00:00:10.000123Z',
                         'tenant': {
                             'id': 'tenant_id1',
                             'name': 'tenant_name1',
@@ -420,7 +420,7 @@ class Examples(fixtures.Fixture):
                 'access': {
                     'token': {
                         'id': self.VALID_DIABLO_TOKEN,
-                        'expires': '2020-01-01T00:00:10.000123Z',
+                        'expires': '2999-01-01T00:00:10.000123Z',
                         'tenantId': 'tenant_id1',
                     },
                     'user': {
@@ -437,7 +437,7 @@ class Examples(fixtures.Fixture):
                 'access': {
                     'token': {
                         'id': self.UUID_TOKEN_UNSCOPED,
-                        'expires': '2020-01-01T00:00:10.000123Z',
+                        'expires': '2999-01-01T00:00:10.000123Z',
                     },
                     'user': {
                         'id': 'user_id1',
@@ -453,7 +453,7 @@ class Examples(fixtures.Fixture):
                 'access': {
                     'token': {
                         'id': 'valid-token',
-                        'expires': '2020-01-01T00:00:10.000123Z',
+                        'expires': '2999-01-01T00:00:10.000123Z',
                         'tenant': {
                             'id': 'tenant_id1',
                             'name': 'tenant_name1',
@@ -474,7 +474,7 @@ class Examples(fixtures.Fixture):
                     'token': {
                         'bind': {'kerberos': self.KERBEROS_BIND},
                         'id': self.UUID_TOKEN_BIND,
-                        'expires': '2020-01-01T00:00:10.000123Z',
+                        'expires': '2999-01-01T00:00:10.000123Z',
                         'tenant': {
                             'id': 'tenant_id1',
                             'name': 'tenant_name1',
@@ -496,7 +496,7 @@ class Examples(fixtures.Fixture):
                     'token': {
                         'bind': {'FOO': 'BAR'},
                         'id': self.UUID_TOKEN_UNKNOWN_BIND,
-                        'expires': '2020-01-01T00:00:10.000123Z',
+                        'expires': '2999-01-01T00:00:10.000123Z',
                         'tenant': {
                             'id': 'tenant_id1',
                             'name': 'tenant_name1',
@@ -515,7 +515,7 @@ class Examples(fixtures.Fixture):
             },
             self.v3_UUID_TOKEN_DEFAULT: {
                 'token': {
-                    'expires_at': '2020-01-01T00:00:10.000123Z',
+                    'expires_at': '2999-01-01T00:00:10.000123Z',
                     'methods': ['password'],
                     'user': {
                         'id': 'user_id1',
@@ -542,7 +542,7 @@ class Examples(fixtures.Fixture):
             },
             self.v3_UUID_TOKEN_UNSCOPED: {
                 'token': {
-                    'expires_at': '2020-01-01T00:00:10.000123Z',
+                    'expires_at': '2999-01-01T00:00:10.000123Z',
                     'methods': ['password'],
                     'user': {
                         'id': 'user_id1',
@@ -556,7 +556,7 @@ class Examples(fixtures.Fixture):
             },
             self.v3_UUID_TOKEN_DOMAIN_SCOPED: {
                 'token': {
-                    'expires_at': '2020-01-01T00:00:10.000123Z',
+                    'expires_at': '2999-01-01T00:00:10.000123Z',
                     'methods': ['password'],
                     'user': {
                         'id': 'user_id1',
@@ -581,7 +581,7 @@ class Examples(fixtures.Fixture):
                 'access': {
                     'token': {
                         'id': self.SIGNED_TOKEN_SCOPED_KEY,
-                        'expires': '2020-01-01T00:00:10.000123Z',
+                        'expires': '2999-01-01T00:00:10.000123Z',
                     },
                     'user': {
                         'id': 'user_id1',
@@ -599,7 +599,7 @@ class Examples(fixtures.Fixture):
                 'access': {
                     'token': {
                         'id': self.SIGNED_TOKEN_UNSCOPED_KEY,
-                        'expires': '2020-01-01T00:00:10.000123Z',
+                        'expires': '2999-01-01T00:00:10.000123Z',
                     },
                     'user': {
                         'id': 'user_id1',
@@ -613,7 +613,7 @@ class Examples(fixtures.Fixture):
             },
             self.SIGNED_v3_TOKEN_SCOPED_KEY: {
                 'token': {
-                    'expires_at': '2020-01-01T00:00:10.000123Z',
+                    'expires_at': '2999-01-01T00:00:10.000123Z',
                     'methods': ['password'],
                     'user': {
                         'id': 'user_id1',
@@ -642,7 +642,7 @@ class Examples(fixtures.Fixture):
                 'token': {
                     'bind': {'kerberos': self.KERBEROS_BIND},
                     'methods': ['password'],
-                    'expires_at': '2020-01-01T00:00:10.000123Z',
+                    'expires_at': '2999-01-01T00:00:10.000123Z',
                     'user': {
                         'id': 'user_id1',
                         'name': 'user_name1',
@@ -669,7 +669,7 @@ class Examples(fixtures.Fixture):
             self.v3_UUID_TOKEN_UNKNOWN_BIND: {
                 'token': {
                     'bind': {'FOO': 'BAR'},
-                    'expires_at': '2020-01-01T00:00:10.000123Z',
+                    'expires_at': '2999-01-01T00:00:10.000123Z',
                     'methods': ['password'],
                     'user': {
                         'id': 'user_id1',
