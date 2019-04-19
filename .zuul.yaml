@@ -13,7 +13,7 @@
       devstack_services:
         key: true
       tox_envlist: functional
-      zuul_work_dir: src/git.openstack.org/openstack/python-keystoneclient
+      zuul_work_dir: src/opendev.org/openstack/python-keystoneclient
 
 - project:
     templates:
