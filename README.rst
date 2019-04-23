@@ -34,7 +34,7 @@ OpenStack's Identity Service. For command line interface support, use
 .. _Launchpad project: https://launchpad.net/python-keystoneclient
 .. _Blueprints: https://blueprints.launchpad.net/python-keystoneclient
 .. _Bugs: https://bugs.launchpad.net/python-keystoneclient
-.. _Source: https://git.openstack.org/cgit/openstack/python-keystoneclient
+.. _Source: https://opendev.org/openstack/python-keystoneclient
 .. _OpenStackClient: https://pypi.org/project/python-openstackclient
 .. _How to Contribute: https://docs.openstack.org/infra/manual/developers.html
 .. _Specs: https://specs.openstack.org/openstack/keystone-specs/
