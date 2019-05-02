@@ -12,8 +12,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import json
 import os
+
+from oslo_serialization import jsonutils
 
 from keystoneclient.common import cms
 from keystoneclient import utils
@@ -44,7 +45,7 @@ def generate_revocation_list():
                 'id': id,
                 "expires": "2112-08-14T17:58:48Z"
             })
-    revoked_json = json.dumps({"revoked": revoked_list})
+    revoked_json = jsonutils.dumps({"revoked": revoked_list})
     with open(make_filename('cms', 'revocation_list.json'), 'w') as f:
         f.write(revoked_json)
     encoded = cms.pkiz_sign(revoked_json,
@@ -91,12 +92,12 @@ for name in EXAMPLE_TOKENS:
 
     # validate the JSON
     try:
-        token_data = json.loads(string_data)
+        token_data = jsonutils.loads(string_data)
     except ValueError as v:
         raise SystemExit('%s while processing token data from %s: %s' %
                          (v, json_file, string_data))
 
-    text = json.dumps(token_data).encode('utf-8')
+    text = jsonutils.dumps(token_data).encode('utf-8')
 
     # Uncomment to record the token uncompressed,
     # useful for debugging

@@ -11,9 +11,9 @@
 #    under the License.
 
 import copy
-import json
 import uuid
 
+from oslo_serialization import jsonutils
 
 from keystoneauth1 import session as auth_session
 from keystoneclient.auth import token_endpoint
@@ -90,10 +90,10 @@ class KeystoneClientTest(utils.TestCase):
                               password='password',
                               project_id=token.project_id,
                               auth_url=self.TEST_URL)
-        cache = json.dumps(c.auth_ref)
+        cache = jsonutils.dumps(c.auth_ref)
         # Creating a HTTPClient not using session is deprecated.
         with self.deprecations.expect_deprecations_here():
-            new_client = client.Client(auth_ref=json.loads(cache))
+            new_client = client.Client(auth_ref=jsonutils.loads(cache))
         self.assertIsNotNone(new_client.auth_ref)
         self.assertFalse(new_client.auth_ref.domain_scoped)
         self.assertTrue(new_client.auth_ref.project_scoped)
@@ -124,10 +124,10 @@ class KeystoneClientTest(utils.TestCase):
                               password='password',
                               project_id=project_id,
                               auth_url=self.TEST_URL)
-        cache = json.dumps(c.auth_ref)
+        cache = jsonutils.dumps(c.auth_ref)
         # Creating a HTTPClient not using session is deprecated.
         with self.deprecations.expect_deprecations_here():
-            new_client = client.Client(auth_ref=json.loads(cache),
+            new_client = client.Client(auth_ref=jsonutils.loads(cache),
                                        auth_url=new_auth_url)
         self.assertIsNotNone(new_client.auth_ref)
         self.assertFalse(new_client.auth_ref.domain_scoped)
