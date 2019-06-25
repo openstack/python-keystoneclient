@@ -38,7 +38,8 @@ PKI_ASN1_PREFIX = 'MII'
 PKIZ_PREFIX = 'PKIZ_'
 PKIZ_CMS_FORM = 'DER'
 PKI_ASN1_FORM = 'PEM'
-DEFAULT_TOKEN_DIGEST_ALGORITHM = 'sha256'
+# Adding nosec since this fails bandit B105, 'Possible hardcoded password'.
+DEFAULT_TOKEN_DIGEST_ALGORITHM = 'sha256'  # nosec
 
 
 # The openssl cms command exits with these status codes.
