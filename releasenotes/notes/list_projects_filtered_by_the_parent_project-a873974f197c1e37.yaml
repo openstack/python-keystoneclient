@@ -1,0 +1,5 @@
+---
+features:
+  - |
+    Now keystone client supports to list projects which belongs to the given
+    parent project.

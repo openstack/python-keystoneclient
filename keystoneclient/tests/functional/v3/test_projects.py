@@ -157,6 +157,30 @@ class ProjectsTestCase(base.V3ClientTestCase, ProjectsTestMixin):
         self.assertIn(project_one.entity, projects)
         self.assertIn(project_two.entity, projects)
 
+    def test_list_subprojects(self):
+        parent_project = fixtures.Project(self.client, self.test_domain.id)
+        self.useFixture(parent_project)
+
+        child_project_one = fixtures.Project(self.client, self.test_domain.id,
+                                             parent=parent_project.id)
+        self.useFixture(child_project_one)
+
+        child_project_two = fixtures.Project(self.client, self.test_domain.id,
+                                             parent=parent_project.id)
+        self.useFixture(child_project_two)
+
+        projects = self.client.projects.list(parent=parent_project.id)
+
+        # All projects are valid
+        for project in projects:
+            self.check_project(project)
+
+        self.assertIn(child_project_one.entity, projects)
+        self.assertIn(child_project_two.entity, projects)
+
+        # Parent project should not be included in the result
+        self.assertNotIn(parent_project.entity, projects)
+
     def test_update_project(self):
         project = fixtures.Project(self.client, self.test_domain.id)
         self.useFixture(project)
