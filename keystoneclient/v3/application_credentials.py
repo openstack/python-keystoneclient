@@ -33,6 +33,8 @@ class ApplicationCredential(base.Resource):
         * roles: role assignments on the project
         * unrestricted: whether the application credential has restrictions
             applied
+        * access_rules: a list of access rules defining what API requests the
+            application credential may be used for
 
     """
 
@@ -48,7 +50,7 @@ class ApplicationCredentialManager(base.CrudManager):
 
     def create(self, name, user=None, secret=None, description=None,
                expires_at=None, roles=None,
-               unrestricted=False, **kwargs):
+               unrestricted=False, access_rules=None, **kwargs):
         """Create a credential.
 
         :param string name: application credential name
@@ -60,6 +62,7 @@ class ApplicationCredentialManager(base.CrudManager):
             or a list of dicts specifying role name and domain
         :param bool unrestricted: whether the application credential has
             restrictions applied
+        :param List access_rules: a list of dicts representing access rules
 
         :returns: the created application credential
         :rtype:
@@ -99,6 +102,7 @@ class ApplicationCredentialManager(base.CrudManager):
             expires_at=expires_str,
             roles=role_list,
             unrestricted=unrestricted,
+            access_rules=access_rules,
             **kwargs)
 
     def get(self, application_credential, user=None):
