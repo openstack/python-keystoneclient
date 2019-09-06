@@ -265,7 +265,7 @@ class RoleAssignmentsTests(utils.ClientTestCase, utils.CrudTests):
         ref_list = self.TEST_ALL_RESPONSE_LIST
         self.stub_entity('GET',
                          [self.collection_key,
-                          '?include_names'],
+                          '?include_names=True'],
                          entity=ref_list)
 
         returned_list = self.manager.list(include_names=True)
