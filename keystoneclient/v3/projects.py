@@ -112,7 +112,7 @@ class ProjectManager(base.CrudManager):
             enabled=enabled,
             **kwargs)
 
-    def list(self, domain=None, user=None, **kwargs):
+    def list(self, domain=None, user=None, parent=None, **kwargs):
         """List projects.
 
         :param domain: the domain of the projects to be filtered on.
@@ -120,6 +120,9 @@ class ProjectManager(base.CrudManager):
         :param user: filter in projects the specified user has role
                      assignments on.
         :type user: str or :class:`keystoneclient.v3.users.User`
+        :param parent: filter in projects the specified project is a parent
+                       for
+        :type parent: str or :class:`keystoneclient.v3.projects.Project`
         :param kwargs: any other attribute provided will filter projects on.
                        Project tags filter keyword: ``tags``, ``tags_any``,
                        ``not_tags``, and ``not_tags_any``. tag attribute type
@@ -134,6 +137,7 @@ class ProjectManager(base.CrudManager):
         projects = super(ProjectManager, self).list(
             base_url=base_url,
             domain_id=base.getid(domain),
+            parent_id=base.getid(parent),
             fallback_to_auth=True,
             **kwargs)
 

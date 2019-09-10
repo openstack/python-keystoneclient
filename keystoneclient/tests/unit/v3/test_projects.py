@@ -55,14 +55,25 @@ class ProjectTests(utils.ClientTestCase, utils.CrudTests):
         ref_list = [self.new_ref(), self.new_ref()]
         domain_id = uuid.uuid4().hex
 
-        self.stub_entity('GET', [self.collection_key],
-                         entity=ref_list)
+        self.stub_entity('GET', [self.collection_key], entity=ref_list)
 
         returned_list = self.manager.list(domain=domain_id)
         self.assertEqual(len(ref_list), len(returned_list))
         [self.assertIsInstance(r, self.model) for r in returned_list]
 
         self.assertQueryStringIs('domain_id=%s' % domain_id)
+
+    def test_list_projects_for_parent(self):
+        ref_list = [self.new_ref(), self.new_ref()]
+        parent_id = uuid.uuid4().hex
+
+        self.stub_entity('GET', [self.collection_key], entity=ref_list)
+
+        returned_list = self.manager.list(parent=parent_id)
+        self.assertEqual(len(ref_list), len(returned_list))
+        [self.assertIsInstance(r, self.model) for r in returned_list]
+
+        self.assertQueryStringIs('parent_id=%s' % parent_id)
 
     def test_create_with_parent(self):
         parent_ref = self.new_ref()
