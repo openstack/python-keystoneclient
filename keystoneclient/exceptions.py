@@ -376,6 +376,7 @@ class CMSError(Exception):
         msg = _('Unable to sign or verify data.')
         super(CMSError, self).__init__(msg)
 
+
 EmptyCatalog = _exc.EmptyCatalog
 """The service catalog is empty.
 
@@ -397,6 +398,7 @@ An alias of :py:exc:`keystoneauth1.exceptions.discovery.VersionNotAvailable`
 
 class MethodNotImplemented(ClientException):
     """Method not implemented by the keystoneclient API."""
+
 
 MissingAuthPlugin = _exc.MissingAuthPlugin
 """An authenticated request is required but no plugin available.

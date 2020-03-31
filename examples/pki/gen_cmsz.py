@@ -84,6 +84,7 @@ def generate_der_form(name):
                                     SIGNING_KEY_FILE_NAME, cms.PKIZ_CMS_FORM)
         f.write(derform)
 
+
 for name in EXAMPLE_TOKENS:
     json_file = make_filename('cms', name + '.json')
     pkiz_file = make_filename('cms', name + '.pkiz')

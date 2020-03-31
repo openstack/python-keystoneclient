@@ -10,6 +10,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+# flake8: noqa: F405
 
 from keystoneclient.auth.base import *  # noqa
 from keystoneclient.auth.cli import *  # noqa

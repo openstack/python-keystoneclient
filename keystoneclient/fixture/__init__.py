@@ -28,6 +28,8 @@ testing.
 
 """
 
+# flake8: noqa: F405
+
 import warnings
 
 from keystoneclient.fixture.discovery import *  # noqa
