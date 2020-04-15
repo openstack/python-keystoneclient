@@ -28,11 +28,7 @@ role_defs = ["test_admin",
              "test_project_observer",
              "test_member"]
 
-inference_rules = {"test_admin": "test_id_manager",
-                   "test_admin": "test_resource_manager",
-                   "test_admin": "test_role_manager",
-                   "test_admin": "test_catalog_manager",
-                   "test_admin": "test_policy_manager",
+inference_rules = {"test_admin": "test_policy_manager",
                    "test_id_manager": "test_project_observer",
                    "test_resource_manager": "test_project_observer",
                    "test_role_manager": "test_project_observer",
