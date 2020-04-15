@@ -27,7 +27,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__),
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc',
+extensions = ['sphinxcontrib.apidoc',
               'sphinx.ext.todo',
               'sphinx.ext.coverage',
               'sphinx.ext.intersphinx',
@@ -165,6 +165,13 @@ html_theme = 'openstackdocs'
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'python-keystoneclientdoc'
 
+# -- sphinxcontrib.apidoc configuration --------------------------------------
+
+apidoc_module_dir = '../../keystoneclient'
+apidoc_output_dir = 'api'
+apidoc_excluded_paths = [
+    'tests',
+]
 
 # -- Options for LaTeX output -------------------------------------------------
 

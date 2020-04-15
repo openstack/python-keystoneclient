@@ -1,3 +1,4 @@
+========================================================
 Python bindings to the OpenStack Identity API (Keystone)
 ========================================================
 
@@ -27,19 +28,19 @@ provides `Identity Service`_, as well as `WSGI Middleware`_.
 Release Notes
 =============
 
-.. toctree::
-   :maxdepth: 1
 
-   history
+Read also the `Keystoneclient Release Notes
+<https://docs.openstack.org/releasenotes/python-keystoneclient/>`_.
+
 
 Contributing
 ============
 
-Code is hosted `on GitHub`_. Submit bugs to the Keystone project on
+Code is hosted `on OpenDev`_. Submit bugs to the Keystone project on
 `Launchpad`_. Submit code to the ``openstack/python-keystoneclient`` project
 using `Gerrit`_.
 
-.. _on GitHub: https://github.com/openstack/python-keystoneclient
+.. _on OpenDev: https://opendev.org/openstack/python-keystoneclient
 .. _Launchpad: https://launchpad.net/python-keystoneclient
 .. _Gerrit: https://docs.openstack.org/infra/manual/developers.html#development-workflow
 
