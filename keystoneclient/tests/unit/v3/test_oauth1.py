@@ -11,10 +11,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from unittest import mock
+
 import fixtures
 import uuid
 
-import mock
 import six
 from six.moves.urllib import parse as urlparse
 from testtools import matchers

@@ -13,8 +13,8 @@
 import errno
 import os
 import subprocess
+from unittest import mock
 
-import mock
 import testresources
 from testtools import matchers
 

@@ -11,9 +11,9 @@
 # under the License.
 
 import argparse
+from unittest import mock
 import uuid
 
-import mock
 
 from keystoneclient.auth.identity.generic import cli
 from keystoneclient import exceptions

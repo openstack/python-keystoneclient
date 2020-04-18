@@ -12,11 +12,11 @@
 
 import abc
 import datetime
+from unittest import mock
 import uuid
 
 from keystoneauth1 import fixture
 from keystoneauth1 import plugin
-import mock
 from oslo_utils import timeutils
 import six
 

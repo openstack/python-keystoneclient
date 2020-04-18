@@ -11,10 +11,10 @@
 # under the License.
 
 import argparse
+from unittest import mock
 import uuid
 
 import fixtures
-import mock
 from oslo_config import cfg
 
 from keystoneclient.auth import base

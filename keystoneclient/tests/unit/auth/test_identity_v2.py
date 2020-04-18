@@ -12,9 +12,9 @@
 
 import argparse
 import copy
+from unittest import mock
 import uuid
 
-import mock
 
 from keystoneclient.auth.identity import v2
 from keystoneclient import exceptions
