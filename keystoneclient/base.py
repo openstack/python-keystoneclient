@@ -555,7 +555,7 @@ class Resource(object):
                 except UnicodeEncodeError:
                     # This happens when we're running with Python version that
                     # does not support Unicode identifiers (e.g. Python 2.7).
-                    # In that case we can't help but not set this attrubute;
+                    # In that case we can't help but not set this attribute;
                     # it'll be available in a dict representation though
                     pass
                 self._info[k] = v
@@ -564,7 +564,7 @@ class Resource(object):
                 pass
 
     def __getattr__(self, k):
-        """Checking attrbiute existence."""
+        """Checking attribute existence."""
         if k not in self.__dict__:
             # NOTE(bcwaldon): disallow lazy-loading if already loaded once
             if not self.is_loaded():
