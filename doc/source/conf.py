@@ -84,7 +84,7 @@ add_module_names = True
 #show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'native'
 
 # A list of ignored prefixes for module index sorting.
 modindex_common_prefix = ['keystoneclient.']
@@ -227,6 +227,7 @@ intersphinx_mapping = {
 }
 
 # -- Options for openstackdocstheme -------------------------------------------
-repository_name = 'openstack/python-keystoneclient'
-bug_project = 'python-keystoneclient'
-bug_tag = ''
+openstackdocs_repo_name = 'openstack/python-keystoneclient'
+openstackdocs_bug_project = 'python-keystoneclient'
+openstackdocs_bug_tag = ''
+openstackdocs_pdf_link = True
