@@ -11,10 +11,10 @@
 # under the License.
 
 import functools
+from unittest import mock
 import uuid
 
 from keystoneauth1 import fixture
-import mock
 from oslo_config import cfg
 
 from keystoneclient import access

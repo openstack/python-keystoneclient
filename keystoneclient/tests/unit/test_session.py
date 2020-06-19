@@ -15,9 +15,9 @@
 import argparse
 import itertools
 import logging
+from unittest import mock
 import uuid
 
-import mock
 from oslo_config import cfg
 from oslo_config import fixture as config
 from oslo_serialization import jsonutils

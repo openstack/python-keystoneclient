@@ -12,10 +12,10 @@
 
 import argparse
 import copy
+from unittest import mock
 import uuid
 
 from keystoneauth1 import fixture
-import mock
 
 from keystoneclient import access
 from keystoneclient.auth.identity import v3

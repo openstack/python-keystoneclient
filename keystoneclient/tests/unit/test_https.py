@@ -10,8 +10,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import mock
 import requests
+from unittest import mock
 
 from keystoneclient import httpclient
 from keystoneclient.tests.unit import utils
