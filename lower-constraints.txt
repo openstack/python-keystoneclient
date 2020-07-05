@@ -16,6 +16,7 @@ future==0.16.0
 gitdb==0.6.4
 GitPython==1.0.1
 idna==2.6
+importlib_metadata==1.7.0
 iso8601==0.1.11
 jsonschema==2.6.0
 keyring==5.5.1
@@ -40,6 +41,7 @@ oslo.log==3.36.0
 oslo.serialization==2.18.0
 oslo.utils==3.33.0
 oslotest==3.2.0
+packaging==20.4
 paramiko==2.0.0
 pbr==2.0.0
 pep257==0.7.0
