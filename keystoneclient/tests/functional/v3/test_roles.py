@@ -168,7 +168,7 @@ class RolesTestCase(base.V3ClientTestCase):
         self.client.roles.grant(role, user=user.id, domain=domain.id)
         roles_after_grant = self.client.roles.list(user=user.id,
                                                    domain=domain.id)
-        self.assertItemsEqual(roles_after_grant, [role.entity])
+        self.assertCountEqual(roles_after_grant, [role.entity])
 
         self.client.roles.revoke(role, user=user.id, domain=domain.id)
         roles_after_revoke = self.client.roles.list(user=user.id,
@@ -188,7 +188,7 @@ class RolesTestCase(base.V3ClientTestCase):
         self.client.roles.grant(role, user=user.id, project=project.id)
         roles_after_grant = self.client.roles.list(user=user.id,
                                                    project=project.id)
-        self.assertItemsEqual(roles_after_grant, [role.entity])
+        self.assertCountEqual(roles_after_grant, [role.entity])
 
         self.client.roles.revoke(role, user=user.id, project=project.id)
         roles_after_revoke = self.client.roles.list(user=user.id,
@@ -208,7 +208,7 @@ class RolesTestCase(base.V3ClientTestCase):
         self.client.roles.grant(role, group=group.id, domain=domain.id)
         roles_after_grant = self.client.roles.list(group=group.id,
                                                    domain=domain.id)
-        self.assertItemsEqual(roles_after_grant, [role.entity])
+        self.assertCountEqual(roles_after_grant, [role.entity])
 
         self.client.roles.revoke(role, group=group.id, domain=domain.id)
         roles_after_revoke = self.client.roles.list(group=group.id,
@@ -228,7 +228,7 @@ class RolesTestCase(base.V3ClientTestCase):
         self.client.roles.grant(role, group=group.id, project=project.id)
         roles_after_grant = self.client.roles.list(group=group.id,
                                                    project=project.id)
-        self.assertItemsEqual(roles_after_grant, [role.entity])
+        self.assertCountEqual(roles_after_grant, [role.entity])
 
         self.client.roles.revoke(role, group=group.id, project=project.id)
         roles_after_revoke = self.client.roles.list(group=group.id,
