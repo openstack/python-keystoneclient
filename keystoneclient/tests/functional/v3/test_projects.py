@@ -118,10 +118,10 @@ class ProjectsTestCase(base.V3ClientTestCase, ProjectsTestMixin):
                                                parents_as_list=True)
 
         self.check_project(project_ret, project.ref)
-        self.assertItemsEqual(
+        self.assertCountEqual(
             [{'project': self.test_project.entity.to_dict()}],
             project_ret.parents)
-        self.assertItemsEqual(
+        self.assertCountEqual(
             [{'project': child_project.entity.to_dict()}],
             project_ret.subtree)
 
@@ -138,8 +138,8 @@ class ProjectsTestCase(base.V3ClientTestCase, ProjectsTestMixin):
                                                subtree_as_ids=True,
                                                parents_as_ids=True)
 
-        self.assertItemsEqual([self.test_project.id], project_ret.parents)
-        self.assertItemsEqual([child_project.id], project_ret.subtree)
+        self.assertCountEqual([self.test_project.id], project_ret.parents)
+        self.assertCountEqual([child_project.id], project_ret.subtree)
 
     def test_list_projects(self):
         project_one = fixtures.Project(self.client, self.test_domain.id)
