@@ -33,7 +33,7 @@ class FakeManager(object):
     resources = {
         '1234': {'name': 'entity_one'},
         '8e8ec658-c7b0-4243-bdf8-6f7f2952c0d0': {'name': 'entity_two'},
-        '\xe3\x82\xbdtest': {'name': u'\u30bdtest'},
+        '\xe3\x82\xbdtest': {'name': '\u30bdtest'},
         '5678': {'name': '9876'}
     }
 

@@ -54,7 +54,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-copyright = u'2015, Keystone Developers'
+copyright = '2015, Keystone Developers'
 
 # Release notes are version independent.
 # The full version, including alpha/beta/rc tags.
@@ -189,8 +189,8 @@ htmlhelp_basename = 'KeystoneClientReleaseNotesdoc'
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     ('index', 'keystoneclientReleaseNotes.tex',
-     u'keystoneclient Release Notes Documentation',
-     u'Keystone Developers', 'manual'),
+     'keystoneclient Release Notes Documentation',
+     'Keystone Developers', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -220,8 +220,8 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'keystoneclientreleasenotes',
-     u'keystoneclient Release Notes Documentation',
-     [u'Keystone Developers'], 1)
+     'keystoneclient Release Notes Documentation',
+     ['Keystone Developers'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -235,8 +235,8 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     ('index', 'keystoneclientReleaseNotes',
-     u'keystoneclient Release Notes Documentation',
-     u'Keystone Developers', 'keystoneclientReleaseNotes',
+     'keystoneclient Release Notes Documentation',
+     'Keystone Developers', 'keystoneclientReleaseNotes',
      'Python bindings for the OpenStack Identity service.',
      'Miscellaneous'),
 ]

@@ -232,8 +232,8 @@ class Discover(_discover.Discover):
             >>> disc = discover.Discovery(auth_url='http://localhost:5000')
             >>> disc.raw_version_data()
                 [{'id': 'v3.0',
-                    'links': [{'href': u'http://127.0.0.1:5000/v3/',
-                               'rel': u'self'}],
+                    'links': [{'href': 'http://127.0.0.1:5000/v3/',
+                               'rel': 'self'}],
                   'media-types': [
                       {'base': 'application/json',
                        'type': 'application/vnd.openstack.identity-v3+json'},
@@ -242,11 +242,11 @@ class Discover(_discover.Discover):
                   'status': 'stable',
                   'updated': '2013-03-06T00:00:00Z'},
                  {'id': 'v2.0',
-                  'links': [{'href': u'http://127.0.0.1:5000/v2.0/',
-                             'rel': u'self'},
-                            {'href': u'...',
-                             'rel': u'describedby',
-                             'type': u'application/pdf'}],
+                  'links': [{'href': 'http://127.0.0.1:5000/v2.0/',
+                             'rel': 'self'},
+                            {'href': '...',
+                             'rel': 'describedby',
+                             'type': 'application/pdf'}],
                   'media-types': [
                       {'base': 'application/json',
                        'type': 'application/vnd.openstack.identity-v2.0+json'},

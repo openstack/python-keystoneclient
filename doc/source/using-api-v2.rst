@@ -79,7 +79,7 @@ This example will create a tenant named *openstackDemo*::
     >>> keystone = client.Client(...)
     >>> keystone.tenants.create(tenant_name="openstackDemo",
     ...                         description="Default Tenant", enabled=True)
-    <Tenant {u'id': u'9b7962da6eb04745b477ae920ad55939', u'enabled': True, u'description': u'Default Tenant', u'name': u'openstackDemo'}>
+    <Tenant {'id': '9b7962da6eb04745b477ae920ad55939', 'enabled': True, 'description': 'Default Tenant', 'name': 'openstackDemo'}>
 
 Creating users
 ==============
