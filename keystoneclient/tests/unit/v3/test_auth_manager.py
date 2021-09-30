@@ -62,3 +62,17 @@ class AuthProjectsTest(utils.ClientTestCase):
 
         for d in domains:
             self.assertIsInstance(d, auth.Domain)
+
+    def test_get_systems(self):
+        body = {'system': [{
+            'all': True,
+        }]}
+
+        self.stub_url('GET', ['auth', 'system'], json=body)
+
+        systems = self.client.auth.systems()
+        system = systems[0]
+
+        self.assertEqual(1, len(systems))
+        self.assertIsInstance(system, auth.System)
+        self.assertTrue(system.all)
