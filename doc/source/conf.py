@@ -170,6 +170,7 @@ htmlhelp_basename = 'python-keystoneclientdoc'
 apidoc_module_dir = '../../keystoneclient'
 apidoc_output_dir = 'api'
 apidoc_excluded_paths = [
+    'fixture',
     'tests',
 ]
 
