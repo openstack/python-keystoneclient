@@ -16,10 +16,12 @@ from keystoneauth1 import plugin
 from keystoneclient import base
 from keystoneclient.v3 import domains
 from keystoneclient.v3 import projects
+from keystoneclient.v3 import system
 
 
 Domain = domains.Domain
 Project = projects.Project
+System = system.System
 
 
 class AuthManager(base.Manager):
@@ -31,6 +33,7 @@ class AuthManager(base.Manager):
 
     _PROJECTS_URL = '/auth/projects'
     _DOMAINS_URL = '/auth/domains'
+    _SYSTEM_URL = '/auth/system'
 
     def projects(self):
         """List projects that the specified token can be rescoped to.
@@ -66,4 +69,24 @@ class AuthManager(base.Manager):
             return self._list(self._DOMAINS_URL,
                               'domains',
                               obj_class=Domain,
+                              endpoint_filter=endpoint_filter)
+
+    def systems(self):
+        """List Systems that the specified token can be rescoped to.
+
+        At the moment this is either empty or "all".
+
+        :returns: a list of systems.
+        :rtype: list of :class:`keystoneclient.v3.systems.System`.
+
+        """
+        try:
+            return self._list(self._SYSTEM_URL,
+                              'system',
+                              obj_class=System)
+        except exceptions.EndpointNotFound:
+            endpoint_filter = {'interface': plugin.AUTH_INTERFACE}
+            return self._list(self._SYSTEM_URL,
+                              'system',
+                              obj_class=System,
                               endpoint_filter=endpoint_filter)
