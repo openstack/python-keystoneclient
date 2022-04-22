@@ -187,8 +187,8 @@ apidoc_excluded_paths = [
 # .
 latex_documents = [
     ('index', 'doc-python-keystoneclient.tex',
-     u'python-keystoneclient Documentation',
-     u'OpenStack', 'manual'),
+     'python-keystoneclient Documentation',
+     'OpenStack', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

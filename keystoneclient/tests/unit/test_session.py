@@ -243,7 +243,7 @@ class SessionTests(utils.TestCase):
         session = client_session.Session(verify=False)
 
         body = 'RESP'
-        data = u'αβγδ'
+        data = 'αβγδ'
         self.stub_url('POST', text=body)
         session.post(self.TEST_URL, data=data)
 
