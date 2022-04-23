@@ -232,7 +232,7 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
 
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
         self.stub_url('GET', [fake_url], json=fake_resp,
-                      base_url=self.TEST_ADMIN_IDENTITY_ENDPOINT)
+                      base_url=self.TEST_PUBLIC_IDENTITY_ENDPOINT)
 
         # Creating a HTTPClient not using session is deprecated.
         with self.deprecations.expect_deprecations_here():
@@ -335,7 +335,7 @@ class AuthenticateAgainstKeystoneTests(utils.TestCase):
 
         self.stub_auth(json=self.TEST_RESPONSE_DICT)
         self.stub_url('GET', [fake_url], json=fake_resp,
-                      base_url=self.TEST_ADMIN_IDENTITY_ENDPOINT)
+                      base_url=self.TEST_PUBLIC_IDENTITY_ENDPOINT)
 
         # Creating a HTTPClient not using session is deprecated.
         with self.deprecations.expect_deprecations_here():

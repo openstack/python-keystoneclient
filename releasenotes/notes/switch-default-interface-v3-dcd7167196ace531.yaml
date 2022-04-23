@@ -1,0 +1,7 @@
+---
+features:
+  - |
+    For sessions using the v3 Identity API, the default interface has been
+    switched from ``admin`` to ``public``. This allows deployments to get rid
+    of the admin endpoint, which functionally is no longer necessary with the
+    v3 API.

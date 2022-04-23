@@ -221,7 +221,7 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
     :param string service_name: The default service_name for URL discovery.
                                 default: None (optional)
     :param string interface: The default interface for URL discovery.
-                             default: admin (optional)
+                             default: admin (v2), public (v3). (optional)
     :param string endpoint_override: Always use this endpoint URL for requests
                                      for this client. (optional)
     :param auth: An auth plugin to use instead of the session one. (optional)
@@ -248,7 +248,7 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
                  domain_name=None, project_id=None, project_name=None,
                  project_domain_id=None, project_domain_name=None,
                  trust_id=None, session=None, service_name=None,
-                 interface='admin', endpoint_override=None, auth=None,
+                 interface='default', endpoint_override=None, auth=None,
                  user_agent=USER_AGENT, connect_retries=None, **kwargs):
         # set baseline defaults
         self.user_id = None
@@ -372,12 +372,21 @@ class HTTPClient(baseclient.Client, base.BaseAuthPlugin):
         self.session = session
         self.domain = ''
 
-        # NOTE(jamielennox): unfortunately we can't just use **kwargs here as
-        # it would incompatibly limit the kwargs that can be passed to __init__
-        # try and keep this list in sync with adapter.Adapter.__init__
         version = (
             _discover.normalize_version_number(self.version) if self.version
             else None)
+
+        # NOTE(frickler): If we know we have v3, use the public interface as
+        # default, otherwise keep the historic default of admin
+        if interface == 'default':
+            if version == (3, 0):
+                interface = 'public'
+            else:
+                interface = 'admin'
+
+        # NOTE(jamielennox): unfortunately we can't just use **kwargs here as
+        # it would incompatibly limit the kwargs that can be passed to __init__
+        # try and keep this list in sync with adapter.Adapter.__init__
         self._adapter = _KeystoneAdapter(session,
                                          service_type='identity',
                                          service_name=service_name,
