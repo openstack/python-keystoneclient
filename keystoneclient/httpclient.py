@@ -20,11 +20,18 @@
 import logging
 import warnings
 
+try:
+    # For Python 3.8 and later
+    import importlib.metadata as importlib_metadata
+except ImportError:
+    # For everyone else
+    import importlib_metadata
+
 from debtcollector import removals
 from debtcollector import renames
 from keystoneauth1 import adapter
 from oslo_serialization import jsonutils
-import pkg_resources
+import packaging.version
 import requests
 
 try:
@@ -33,9 +40,10 @@ try:
     # NOTE(sdague): The conditional keyring import needs to only
     # trigger if it's a version of keyring that's supported in global
     # requirements. Update _min and _bad when that changes.
-    keyring_v = pkg_resources.parse_version(
-        pkg_resources.get_distribution("keyring").version)
-    keyring_min = pkg_resources.parse_version('5.5.1')
+    keyring_v = packaging.version.Version(
+        importlib_metadata.version('keyring')
+    )
+    keyring_min = packaging.version.Version('5.5.1')
     # This is a list of versions, e.g., pkg_resources.parse_version('3.3')
     keyring_bad = []
 
@@ -43,7 +51,7 @@ try:
         import keyring
     else:
         keyring = None
-except (ImportError, pkg_resources.DistributionNotFound):
+except (ImportError, importlib_metadata.PackageNotFoundError):
     keyring = None
     pickle = None
 
