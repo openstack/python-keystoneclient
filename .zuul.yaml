@@ -18,7 +18,7 @@
 - project:
     templates:
       - openstack-cover-jobs
-      - openstack-python3-victoria-jobs
+      - openstack-python3-zed-jobs
       - publish-openstack-docs-pti
       - check-requirements
       - lib-forward-testing-python3
