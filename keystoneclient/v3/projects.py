@@ -149,7 +149,7 @@ class ProjectManager(base.CrudManager):
             base_response.data = list_data
 
         for p in list_data:
-            p.tags = self._encode_tags(getattr(p, 'tags', []))
+            p.tags = getattr(p, 'tags', [])
 
         if self.client.include_metadata:
             base_response.data = list_data
@@ -218,12 +218,12 @@ class ProjectManager(base.CrudManager):
         dict_args = {'project_id': base.getid(project)}
         url = self.build_url(dict_args_in_out=dict_args)
         p = self._get(url + query, self.key)
-        p.tags = self._encode_tags(getattr(p, 'tags', []))
+        p.tags = getattr(p, 'tags', [])
         return p
 
     def find(self, **kwargs):
         p = super(ProjectManager, self).find(**kwargs)
-        p.tags = self._encode_tags(getattr(p, 'tags', []))
+        p.tags = getattr(p, 'tags', [])
         return p
 
     def update(self, project, name=None, domain=None, description=None,
@@ -263,15 +263,6 @@ class ProjectManager(base.CrudManager):
         """
         return super(ProjectManager, self).delete(
             project_id=base.getid(project))
-
-    def _encode_tags(self, tags):
-        """Encode tags to non-unicode string in python2.
-
-        :param tags: list of unicode tags
-
-        :returns: List of strings
-        """
-        return [str(t) for t in tags]
 
     def add_tag(self, project, tag):
         """Add a tag to a project.
@@ -322,7 +313,6 @@ class ProjectManager(base.CrudManager):
         """
         url = "/projects/%s/tags" % base.getid(project)
         resp, body = self.client.get(url)
-        body['tags'] = self._encode_tags(body['tags'])
         return self._prepare_return_value(resp, body['tags'])
 
     def check_tag(self, project, tag):
