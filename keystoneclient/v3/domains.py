@@ -110,7 +110,7 @@ class DomainManager(base.CrudManager):
             **kwargs)
 
     def delete(self, domain):
-        """"Delete a domain.
+        """Delete a domain.
 
         :param domain: the domain to be deleted on the server.
         :type domain: str or :class:`keystoneclient.v3.domains.Domain`
