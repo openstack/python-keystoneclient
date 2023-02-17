@@ -112,7 +112,7 @@ class PolicyManager(base.CrudManager):
             **kwargs)
 
     def delete(self, policy):
-        """"Delete a policy.
+        """Delete a policy.
 
         :param policy: the policy to be deleted on the server.
         :type policy: str or :class:`keystoneclient.v3.policies.Policy`
