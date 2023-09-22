@@ -79,7 +79,8 @@ class CommonIdentityTests(object):
 
         self.stub_auth(json=token)
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def version(self):
         """The API version being tested."""
 

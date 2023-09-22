@@ -25,7 +25,8 @@ class EntityManager(base.Manager):
 
     resource_class = None
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def object_type(self):
         raise exceptions.MethodNotImplemented
 
