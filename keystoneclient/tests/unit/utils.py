@@ -12,6 +12,7 @@
 
 import logging
 import sys
+import urllib.parse as urlparse
 import uuid
 
 import fixtures
@@ -19,7 +20,6 @@ from oslo_serialization import jsonutils
 import requests
 import requests_mock
 from requests_mock.contrib import fixture
-from six.moves.urllib import parse as urlparse
 import testscenarios
 import testtools
 

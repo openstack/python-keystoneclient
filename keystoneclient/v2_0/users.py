@@ -14,9 +14,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from six.moves import urllib
-
 from keystoneclient import base
+import urllib.parse
 
 
 class User(base.Resource):

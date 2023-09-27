@@ -13,6 +13,7 @@
 # under the License.
 
 import argparse
+from io import StringIO
 import itertools
 import logging
 from unittest import mock
@@ -22,7 +23,6 @@ from oslo_config import cfg
 from oslo_config import fixture as config
 from oslo_serialization import jsonutils
 import requests
-import six
 from testtools import matchers
 
 from keystoneclient import adapter
@@ -249,27 +249,6 @@ class SessionTests(utils.TestCase):
 
         self.assertIn("'%s'" % data, self.logger.output)
 
-    def test_binary_data_not_in_debug_output(self):
-        """Verify that non-ascii-encodable data causes replacement."""
-        if six.PY2:
-            data = "my data" + chr(255)
-        else:
-            # Python 3 logging handles binary data well.
-            return
-
-        session = client_session.Session(verify=False)
-
-        body = 'RESP'
-        self.stub_url('POST', text=body)
-
-        # Forced mixed unicode and byte strings in request
-        # elements to make sure that all joins are appropriately
-        # handled (any join of unicode and byte strings should
-        # raise a UnicodeDecodeError)
-        session.post(six.text_type(self.TEST_URL), data=data)
-
-        self.assertNotIn('my data', self.logger.output)
-
     def test_logging_cacerts(self):
         path_to_certs = '/path/to/certs'
         session = client_session.Session(verify=path_to_certs)
@@ -328,11 +307,12 @@ class SessionTests(utils.TestCase):
         # The exception should contain the URL and details about the SSL error
         msg = _('SSL exception connecting to %(url)s: %(error)s') % {
             'url': self.TEST_URL, 'error': error}
-        six.assertRaisesRegex(self,
-                              exceptions.SSLError,
-                              msg,
-                              session.get,
-                              self.TEST_URL)
+        self.assertRaisesRegex(
+            exceptions.SSLError,
+            msg,
+            session.get,
+            self.TEST_URL,
+        )
 
     def test_mask_password_in_http_log_response(self):
         session = client_session.Session()
@@ -807,7 +787,7 @@ class SessionAuthTests(utils.TestCase):
         logger.setLevel(logging.DEBUG)
         logger.propagate = False
 
-        io = six.StringIO()
+        io = StringIO()
         handler = logging.StreamHandler(io)
         logger.addHandler(handler)
 
@@ -1003,7 +983,7 @@ class AdapterTest(utils.TestCase):
         logger.setLevel(logging.DEBUG)
         logger.propagate = False
 
-        io = six.StringIO()
+        io = StringIO()
         handler = logging.StreamHandler(io)
         logger.addHandler(handler)
 

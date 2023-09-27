@@ -14,7 +14,6 @@ import os
 
 from debtcollector import removals
 from keystoneauth1 import plugin
-import six
 import stevedore
 
 from keystoneclient import exceptions
@@ -292,7 +291,7 @@ class BaseAuthPlugin(object):
 
             # select the first ENV that is not false-y or return None
             env_vars = (os.environ.get(e) for e in envs)
-            default = six.next(six.moves.filter(None, env_vars), None)
+            default = next(filter(None, env_vars), None)
 
             parser.add_argument(*args,
                                 default=default or opt.default,

@@ -15,7 +15,6 @@ import logging
 
 from oslo_config import cfg
 from oslo_serialization import jsonutils
-import six
 
 from keystoneclient import access
 from keystoneclient.auth.identity import base
@@ -27,8 +26,7 @@ _logger = logging.getLogger(__name__)
 __all__ = ('Auth', 'AuthMethod', 'AuthConstructor', 'BaseAuth')
 
 
-@six.add_metaclass(abc.ABCMeta)
-class BaseAuth(base.BaseIdentityPlugin):
+class BaseAuth(base.BaseIdentityPlugin, metaclass=abc.ABCMeta):
     """Identity V3 Authentication Plugin.
 
     :param string auth_url: Identity service endpoint for authentication.
@@ -198,8 +196,7 @@ class Auth(BaseAuth):
                                    **resp_data)
 
 
-@six.add_metaclass(abc.ABCMeta)
-class AuthMethod(object):
+class AuthMethod(object, metaclass=abc.ABCMeta):
     """One part of a V3 Authentication strategy.
 
     V3 Tokens allow multiple methods to be presented when authentication
@@ -243,8 +240,7 @@ class AuthMethod(object):
         pass  # pragma: no cover
 
 
-@six.add_metaclass(abc.ABCMeta)
-class AuthConstructor(Auth):
+class AuthConstructor(Auth, metaclass=abc.ABCMeta):
     """Abstract base class for creating an Auth Plugin.
 
     The Auth Plugin created contains only one authentication method. This

@@ -14,10 +14,9 @@
 from unittest import mock
 
 import fixtures
+from urllib import parse as urlparse
 import uuid
 
-import six
-from six.moves.urllib import parse as urlparse
 from testtools import matchers
 
 from keystoneclient import session
@@ -106,7 +105,7 @@ class TokenTests(object):
 
         self.assertEqual('HMAC-SHA1', parameters['oauth_signature_method'])
         self.assertEqual('1.0', parameters['oauth_version'])
-        self.assertIsInstance(parameters['oauth_nonce'], six.string_types)
+        self.assertIsInstance(parameters['oauth_nonce'], str)
         self.assertEqual(oauth_client.client_key,
                          parameters['oauth_consumer_key'])
         if oauth_client.resource_owner_key:

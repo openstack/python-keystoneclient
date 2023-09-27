@@ -12,10 +12,9 @@
 
 import abc
 import logging
+import urllib.parse as urlparse
 
 from oslo_config import cfg
-import six
-import six.moves.urllib.parse as urlparse
 
 from keystoneclient import _discover
 from keystoneclient.auth.identity import base
@@ -42,8 +41,7 @@ def get_options():
     ]
 
 
-@six.add_metaclass(abc.ABCMeta)
-class BaseGenericPlugin(base.BaseIdentityPlugin):
+class BaseGenericPlugin(base.BaseIdentityPlugin, metaclass=abc.ABCMeta):
     """An identity plugin that is not version dependent.
 
     Internally we will construct a version dependent plugin with the resolved

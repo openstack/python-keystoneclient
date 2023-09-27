@@ -26,7 +26,6 @@ import logging
 import zlib
 
 from debtcollector import removals
-import six
 
 from keystoneclient import exceptions
 from keystoneclient.i18n import _
@@ -116,7 +115,7 @@ def _process_communicate_handle_oserror(process, data, files):
         retcode, err = _check_files_accessible(files)
         if process.stderr:
             msg = process.stderr.read()
-            if isinstance(msg, six.binary_type):
+            if isinstance(msg, bytes):
                 msg = msg.decode('utf-8')
             if err:
                 err = (_('Hit OSError in '
@@ -133,7 +132,7 @@ def _process_communicate_handle_oserror(process, data, files):
     else:
         retcode = process.poll()
         if err is not None:
-            if isinstance(err, six.binary_type):
+            if isinstance(err, bytes):
                 err = err.decode('utf-8')
 
     return output, err, retcode
@@ -162,8 +161,8 @@ def cms_verify(formatted, signing_cert_file_name, ca_file_name,
                                                               properly.
     """
     _ensure_subprocess()
-    if isinstance(formatted, six.string_types):
-        data = bytearray(formatted, _encoding_for_form(inform))
+    if isinstance(formatted, str):
+        data = bytes(formatted, _encoding_for_form(inform))
     else:
         data = formatted
     process = subprocess.Popen(['openssl', 'cms', '-verify',
@@ -356,8 +355,8 @@ def cms_sign_data(data_to_sign, signing_cert_file_name, signing_key_file_name,
 
     """
     _ensure_subprocess()
-    if isinstance(data_to_sign, six.string_types):
-        data = bytearray(data_to_sign, encoding='utf-8')
+    if isinstance(data_to_sign, str):
+        data = bytes(data_to_sign, encoding='utf-8')
     else:
         data = data_to_sign
     process = subprocess.Popen(['openssl', 'cms', '-sign',
@@ -437,7 +436,7 @@ def cms_hash_token(token_id, mode='md5'):
         return None
     if is_asn1_token(token_id) or is_pkiz(token_id):
         hasher = hashlib.new(mode)
-        if isinstance(token_id, six.text_type):
+        if isinstance(token_id, str):
             token_id = token_id.encode('utf-8')
         hasher.update(token_id)
         return hasher.hexdigest()

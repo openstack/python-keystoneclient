@@ -20,9 +20,7 @@ import base64
 import hashlib
 import hmac
 import re
-
-import six
-from six.moves import urllib
+import urllib.parse
 
 from keystoneclient.i18n import _
 
@@ -106,9 +104,9 @@ class Ec2Signer(object):
     @staticmethod
     def _get_utf8_value(value):
         """Get the UTF8-encoded version of a value."""
-        if not isinstance(value, (six.binary_type, six.text_type)):
+        if not isinstance(value, (str, bytes)):
             value = str(value)
-        if isinstance(value, six.text_type):
+        if isinstance(value, str):
             return value.encode('utf-8')
         else:
             return value
@@ -121,9 +119,7 @@ class Ec2Signer(object):
 
     def _calc_signature_1(self, params):
         """Generate AWS signature version 1 string."""
-        keys = list(params)
-        keys.sort(key=six.text_type.lower)
-        for key in keys:
+        for key in sorted(params, key=str.lower):
             self.hmac.update(key.encode('utf-8'))
             val = self._get_utf8_value(params[key])
             self.hmac.update(val)

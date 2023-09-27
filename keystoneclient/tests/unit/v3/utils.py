@@ -13,7 +13,7 @@
 import requests
 import uuid
 
-from six.moves.urllib import parse as urlparse
+from urllib import parse as urlparse
 
 from keystoneauth1.identity import v3
 from keystoneauth1 import session

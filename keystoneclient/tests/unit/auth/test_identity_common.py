@@ -18,7 +18,6 @@ import uuid
 from keystoneauth1 import fixture
 from keystoneauth1 import plugin
 from oslo_utils import timeutils
-import six
 
 from keystoneclient import access
 from keystoneclient.auth import base
@@ -28,8 +27,7 @@ from keystoneclient import session
 from keystoneclient.tests.unit import utils
 
 
-@six.add_metaclass(abc.ABCMeta)
-class CommonIdentityTests(object):
+class CommonIdentityTests(object, metaclass=abc.ABCMeta):
 
     TEST_ROOT_URL = 'http://127.0.0.1:5000/'
     TEST_ROOT_ADMIN_URL = 'http://127.0.0.1:35357/'

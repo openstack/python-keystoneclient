@@ -16,7 +16,6 @@ import sys
 
 from keystoneauth1 import exceptions as ksa_exceptions
 from oslo_utils import timeutils
-import six
 
 from keystoneclient import exceptions as ksc_exceptions
 
@@ -27,12 +26,12 @@ def find_resource(manager, name_or_id):
     try:
         return manager.get(name_or_id)
     except (ksa_exceptions.NotFound):  # nosec(cjschaef): try to find
-        # 'name_or_id' as a six.binary_type instead
+        # 'name_or_id' as a bytes instead
         pass
 
     # finally try to find entity by name
     try:
-        if isinstance(name_or_id, six.binary_type):
+        if isinstance(name_or_id, bytes):
             name_or_id = name_or_id.decode('utf-8', 'strict')
         return manager.find(name=name_or_id)
     except ksa_exceptions.NotFound:

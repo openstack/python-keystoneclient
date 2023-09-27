@@ -13,7 +13,6 @@
 import abc
 
 from oslo_config import cfg
-import six
 
 from keystoneclient.auth.identity.v3 import base
 from keystoneclient.auth.identity.v3 import token
@@ -21,8 +20,7 @@ from keystoneclient.auth.identity.v3 import token
 __all__ = ('FederatedBaseAuth',)
 
 
-@six.add_metaclass(abc.ABCMeta)
-class FederatedBaseAuth(base.BaseAuth):
+class FederatedBaseAuth(base.BaseAuth, metaclass=abc.ABCMeta):
 
     rescoping_plugin = token.Token
 

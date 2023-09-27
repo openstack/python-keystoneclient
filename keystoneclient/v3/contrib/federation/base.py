@@ -14,13 +14,11 @@ import abc
 
 from keystoneauth1 import exceptions
 from keystoneauth1 import plugin
-import six
 
 from keystoneclient import base
 
 
-@six.add_metaclass(abc.ABCMeta)
-class EntityManager(base.Manager):
+class EntityManager(base.Manager, metaclass=abc.ABCMeta):
     """Manager class for listing federated accessible objects."""
 
     resource_class = None

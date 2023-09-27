@@ -11,12 +11,12 @@
 #    under the License.
 
 import os
+import urllib.parse
 import uuid
 
 from lxml import etree
 from oslo_config import fixture as config
 import requests
-from six.moves import urllib
 
 from keystoneclient.auth import conf
 from keystoneclient.contrib.auth.v3 import saml2

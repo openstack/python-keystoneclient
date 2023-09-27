@@ -15,7 +15,7 @@
 #    under the License.
 
 from keystoneauth1 import plugin
-from six.moves import urllib
+import urllib.parse
 
 from keystoneclient import base
 from keystoneclient import exceptions

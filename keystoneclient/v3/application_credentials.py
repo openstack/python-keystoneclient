@@ -12,8 +12,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import six
-
 from keystoneclient import base
 from keystoneclient import exceptions
 from keystoneclient.i18n import _
@@ -78,7 +76,7 @@ class ApplicationCredentialManager(base.CrudManager):
             if not isinstance(roles, list):
                 roles = [roles]
             for role in roles:
-                if isinstance(role, six.string_types):
+                if isinstance(role, str):
                     role_list.extend([{'id': role}])
                 elif isinstance(role, dict):
                     role_list.extend([role])

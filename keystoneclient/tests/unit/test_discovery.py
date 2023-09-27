@@ -15,7 +15,6 @@ import uuid
 
 from keystoneauth1 import fixture
 from oslo_serialization import jsonutils
-import six
 from testtools import matchers
 
 from keystoneclient import _discover
@@ -105,7 +104,7 @@ V3_VERSION = fixture.V3Discovery(V3_URL)
 V3_MEDIA_TYPES = V3_VERSION.media_types
 V3_VERSION.updated_str = UPDATED
 
-V3_TOKEN = six.u('3e2813b7ba0b4006840c3825860b86ed'),
+V3_TOKEN = ('3e2813b7ba0b4006840c3825860b86ed',)
 V3_AUTH_RESPONSE = jsonutils.dumps({
     "token": {
         "methods": [
