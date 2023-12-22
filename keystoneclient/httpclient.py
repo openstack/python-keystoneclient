@@ -17,15 +17,9 @@
 #    under the License.
 """OpenStack Client interface. Handles the REST calls and responses."""
 
+import importlib.metadata
 import logging
 import warnings
-
-try:
-    # For Python 3.8 and later
-    import importlib.metadata as importlib_metadata
-except ImportError:
-    # For everyone else
-    import importlib_metadata
 
 from debtcollector import removals
 from debtcollector import renames
@@ -41,7 +35,7 @@ try:
     # trigger if it's a version of keyring that's supported in global
     # requirements. Update _min and _bad when that changes.
     keyring_v = packaging.version.Version(
-        importlib_metadata.version('keyring')
+        importlib.metadata.version('keyring')
     )
     keyring_min = packaging.version.Version('5.5.1')
     # This is a list of versions, e.g., pkg_resources.parse_version('3.3')
@@ -51,7 +45,7 @@ try:
         import keyring
     else:
         keyring = None
-except (ImportError, importlib_metadata.PackageNotFoundError):
+except (ImportError, importlib.metadata.PackageNotFoundError):
     keyring = None
     pickle = None
 
