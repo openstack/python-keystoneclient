@@ -10,10 +10,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import urllib.parse
 import uuid
 
 from oslo_config import fixture as config
-from six.moves import urllib
+
 import testtools
 
 from keystoneclient.auth import conf

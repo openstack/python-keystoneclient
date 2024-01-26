@@ -20,13 +20,12 @@
 import abc
 import copy
 import functools
+import urllib
 import warnings
 
 from keystoneauth1 import exceptions as ksa_exceptions
 from keystoneauth1 import plugin
 from oslo_utils import strutils
-import six
-from six.moves import urllib
 
 from keystoneclient import exceptions as ksc_exceptions
 from keystoneclient.i18n import _
@@ -265,8 +264,7 @@ class Manager(object):
             return self._prepare_return_value(resp, body)
 
 
-@six.add_metaclass(abc.ABCMeta)
-class ManagerWithFind(Manager):
+class ManagerWithFind(Manager, metaclass=abc.ABCMeta):
     """Manager with additional `find()`/`findall()` methods."""
 
     @abc.abstractmethod

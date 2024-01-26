@@ -16,7 +16,6 @@ import threading
 import warnings
 
 from oslo_config import cfg
-import six
 
 from keystoneclient import _discover
 from keystoneclient.auth import base
@@ -31,8 +30,7 @@ def get_options():
     ]
 
 
-@six.add_metaclass(abc.ABCMeta)
-class BaseIdentityPlugin(base.BaseAuthPlugin):
+class BaseIdentityPlugin(base.BaseAuthPlugin, metaclass=abc.ABCMeta):
 
     # we count a token as valid (not needing refreshing) if it is valid for at
     # least this many seconds before the token expiry time

@@ -12,9 +12,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import io
 import logging
 
-import six
 from testtools import matchers
 
 from keystoneclient import exceptions
@@ -153,7 +153,7 @@ class BasicRequestTests(utils.TestCase):
 
     def setUp(self):
         super(BasicRequestTests, self).setUp()
-        self.logger_message = six.moves.cStringIO()
+        self.logger_message = io.StringIO()
         handler = logging.StreamHandler(self.logger_message)
         handler.setLevel(logging.DEBUG)
 

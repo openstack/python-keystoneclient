@@ -19,14 +19,11 @@
 import abc
 import warnings
 
-import six
-
 from keystoneclient import exceptions
 from keystoneclient.i18n import _
 
 
-@six.add_metaclass(abc.ABCMeta)
-class ServiceCatalog(object):
+class ServiceCatalog(object, metaclass=abc.ABCMeta):
     """Helper methods for dealing with a Keystone Service Catalog.
 
     .. warning::

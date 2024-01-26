@@ -14,7 +14,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import six.moves.urllib as urllib
+import urllib.parse
 
 from keystoneclient import base
 from keystoneclient import exceptions

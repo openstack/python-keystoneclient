@@ -11,7 +11,6 @@
 #    under the License.
 
 from keystoneauth1 import exceptions as ksa_exceptions
-import six
 import testresources
 from testtools import matchers
 
@@ -112,8 +111,7 @@ class HashSignedTokenTestCase(test_utils.TestCase,
     def test_default_md5(self):
         """The default hash method is md5."""
         token = self.examples.SIGNED_TOKEN_SCOPED
-        if six.PY3:
-            token = token.encode('utf-8')
+        token = token.encode('utf-8')
         token_id_default = utils.hash_signed_token(token)
         token_id_md5 = utils.hash_signed_token(token, mode='md5')
         self.assertThat(token_id_default, matchers.Equals(token_id_md5))
@@ -123,8 +121,7 @@ class HashSignedTokenTestCase(test_utils.TestCase,
     def test_sha256(self):
         """Can also hash with sha256."""
         token = self.examples.SIGNED_TOKEN_SCOPED
-        if six.PY3:
-            token = token.encode('utf-8')
+        token = token.encode('utf-8')
         token_id = utils.hash_signed_token(token, mode='sha256')
         # sha256 hash is 64 chars.
         self.assertThat(token_id, matchers.HasLength(64))

@@ -14,7 +14,6 @@ import abc
 import logging
 
 from oslo_config import cfg
-import six
 
 from keystoneclient import access
 from keystoneclient.auth.identity import base
@@ -24,8 +23,7 @@ from keystoneclient import utils
 _logger = logging.getLogger(__name__)
 
 
-@six.add_metaclass(abc.ABCMeta)
-class Auth(base.BaseIdentityPlugin):
+class Auth(base.BaseIdentityPlugin, metaclass=abc.ABCMeta):
     """Identity V2 Authentication Plugin.
 
     :param string auth_url: Identity service endpoint for authorization.

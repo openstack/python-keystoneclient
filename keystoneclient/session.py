@@ -17,6 +17,7 @@ import logging
 import os
 import socket
 import time
+import urllib.parse
 import warnings
 
 from debtcollector import removals
@@ -26,8 +27,6 @@ from oslo_utils import encodeutils
 from oslo_utils import importutils
 from oslo_utils import strutils
 import requests
-import six
-from six.moves import urllib
 
 from keystoneclient import exceptions
 from keystoneclient.i18n import _
@@ -191,7 +190,7 @@ class Session(object):
         # so we need to actually check that this is False.
         if self.verify is False:
             string_parts.append('--insecure')
-        elif isinstance(self.verify, six.string_types):
+        elif isinstance(self.verify, str):
             string_parts.append('--cacert "%s"' % self.verify)
 
         if method:
@@ -205,7 +204,7 @@ class Session(object):
                                     % self._process_header(header))
 
         if data:
-            if isinstance(data, six.binary_type):
+            if isinstance(data, bytes):
                 try:
                     data = data.decode("ascii")
                 except UnicodeDecodeError:

@@ -19,7 +19,6 @@ from keystoneauth1 import fixture
 from keystoneauth1.identity import v3
 from keystoneauth1 import session
 from keystoneauth1.tests.unit import k2k_fixtures
-import six
 from testtools import matchers
 
 from keystoneclient import access
@@ -423,7 +422,7 @@ class K2KFederatedProjectTests(utils.TestCase):
         self.requests_mock.register_uri(
             'POST',
             self.REQUEST_ECP_URL,
-            content=six.b(k2k_fixtures.ECP_ENVELOPE),
+            content=k2k_fixtures.ECP_ENVELOPE.encode(),
             headers={'Content-Type': 'application/vnd.paos+xml'},
             status_code=200)
 
@@ -433,7 +432,7 @@ class K2KFederatedProjectTests(utils.TestCase):
         self.requests_mock.register_uri(
             'POST',
             self.SP_URL,
-            content=six.b(k2k_fixtures.TOKEN_BASED_ECP),
+            content=k2k_fixtures.TOKEN_BASED_ECP.encode(),
             headers={'Content-Type': 'application/vnd.paos+xml'},
             status_code=302)
 

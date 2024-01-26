@@ -14,9 +14,9 @@
 #    under the License.
 
 import logging
+import urllib.parse as urlparse
 
 from debtcollector import removals
-from six.moves.urllib import parse as urlparse
 
 from keystoneclient import exceptions
 from keystoneclient import httpclient

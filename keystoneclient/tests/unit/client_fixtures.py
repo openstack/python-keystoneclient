@@ -23,7 +23,6 @@ from keystoneauth1 import identity as ksa_identity
 from keystoneauth1 import session as ksa_session
 from oslo_serialization import jsonutils
 from oslo_utils import timeutils
-import six
 import testresources
 
 from keystoneclient.auth import identity as ksc_identity
@@ -204,7 +203,7 @@ class KsaSessionV3(BaseV3):
 
 
 def _hash_signed_token_safe(signed_text, **kwargs):
-    if isinstance(signed_text, six.text_type):
+    if isinstance(signed_text, str):
         signed_text = signed_text.encode('utf-8')
     return utils.hash_signed_token(signed_text, **kwargs)
 
@@ -299,7 +298,7 @@ class Examples(fixtures.Fixture):
         self.v3_UUID_TOKEN_UNKNOWN_BIND = '7ed9781b62cd4880b8d8c6788ab1d1e2'
 
         revoked_token = self.REVOKED_TOKEN
-        if isinstance(revoked_token, six.text_type):
+        if isinstance(revoked_token, str):
             revoked_token = revoked_token.encode('utf-8')
         self.REVOKED_TOKEN_HASH = utils.hash_signed_token(revoked_token)
         self.REVOKED_TOKEN_HASH_SHA256 = utils.hash_signed_token(revoked_token,
@@ -310,7 +309,7 @@ class Examples(fixtures.Fixture):
         self.REVOKED_TOKEN_LIST_JSON = jsonutils.dumps(self.REVOKED_TOKEN_LIST)
 
         revoked_v3_token = self.REVOKED_v3_TOKEN
-        if isinstance(revoked_v3_token, six.text_type):
+        if isinstance(revoked_v3_token, str):
             revoked_v3_token = revoked_v3_token.encode('utf-8')
         self.REVOKED_v3_TOKEN_HASH = utils.hash_signed_token(revoked_v3_token)
         hash = utils.hash_signed_token(revoked_v3_token, mode='sha256')
@@ -322,12 +321,12 @@ class Examples(fixtures.Fixture):
             self.REVOKED_v3_TOKEN_LIST)
 
         revoked_token_pkiz = self.REVOKED_TOKEN_PKIZ
-        if isinstance(revoked_token_pkiz, six.text_type):
+        if isinstance(revoked_token_pkiz, str):
             revoked_token_pkiz = revoked_token_pkiz.encode('utf-8')
         self.REVOKED_TOKEN_PKIZ_HASH = utils.hash_signed_token(
             revoked_token_pkiz)
         revoked_v3_token_pkiz = self.REVOKED_v3_TOKEN_PKIZ
-        if isinstance(revoked_v3_token_pkiz, six.text_type):
+        if isinstance(revoked_v3_token_pkiz, str):
             revoked_v3_token_pkiz = revoked_v3_token_pkiz.encode('utf-8')
         self.REVOKED_v3_PKIZ_TOKEN_HASH = utils.hash_signed_token(
             revoked_v3_token_pkiz)

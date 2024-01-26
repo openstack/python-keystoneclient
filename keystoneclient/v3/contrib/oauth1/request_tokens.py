@@ -11,8 +11,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import urllib.parse as urlparse
+
 from keystoneauth1 import plugin
-from six.moves.urllib import parse as urlparse
 
 from keystoneclient import base
 from keystoneclient.v3.contrib.oauth1 import utils

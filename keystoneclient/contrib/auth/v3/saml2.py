@@ -11,11 +11,11 @@
 # under the License.
 
 import datetime
+import urllib.parse
 import uuid
 
 from lxml import etree  # nosec(cjschaef): used to create xml, not parse it
 from oslo_config import cfg
-from six.moves import urllib
 
 from keystoneclient import access
 from keystoneclient.auth.identity import v3
