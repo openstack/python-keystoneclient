@@ -280,7 +280,7 @@ class CrudTests(object):
         return expected_path
 
     def test_list_by_id(self, ref=None, **filter_kwargs):
-        """Test ``entities.list(id=x)`` being rewritten as ``GET /v3/entities/x``.
+        """Test ``entities.list(id=x)`` being rewritten as ``GET /v3/entities/x``.  # noqa
 
         This tests an edge case of each manager's list() implementation, to
         ensure that it "does the right thing" when users call ``.list()``

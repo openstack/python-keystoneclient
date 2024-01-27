@@ -137,7 +137,7 @@ class ApplicationCredentialManager(base.CrudManager):
         return super(ApplicationCredentialManager, self).list(**kwargs)
 
     def find(self, user=None, **kwargs):
-        """Find an application credential with attributes matching ``**kwargs``.
+        """Find an application credential with attributes matching ``**kwargs``.  # noqa
 
         :param string user: User ID
 
