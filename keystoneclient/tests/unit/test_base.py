@@ -319,7 +319,7 @@ class ManagerRequestIdTest(utils.TestCase):
         delete_mock.assert_called_once_with('/test-url', name='hello')
         self.assertEqual(base_resp.request_ids[0], TEST_REQUEST_ID)
         self.assertEqual(base_resp.data, None)
-        self.assertTrue(isinstance(resp, requests.Response))
+        self.assertIsInstance(resp, requests.Response)
 
     def test_patch(self):
         body = {"hello": {"hi": 1}}
