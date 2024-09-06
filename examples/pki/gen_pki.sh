@@ -42,7 +42,7 @@ function generate_ca_conf {
 [ req ]
 default_bits            = 2048
 default_keyfile         = cakey.pem
-default_md              = default
+default_md              = sha256
 
 prompt                  = no
 distinguished_name      = ca_distinguished_name
@@ -69,7 +69,7 @@ function generate_ssl_req_conf {
 [ req ]
 default_bits            = 2048
 default_keyfile         = keystonekey.pem
-default_md              = default
+default_md              = sha256
 
 prompt                  = no
 distinguished_name      = distinguished_name
@@ -90,7 +90,7 @@ function generate_cms_signing_req_conf {
 [ req ]
 default_bits            = 2048
 default_keyfile         = keystonekey.pem
-default_md              = default
+default_md              = sha256
 
 prompt                  = no
 distinguished_name      = distinguished_name
@@ -122,7 +122,7 @@ private_key     = $dir/private/cakey.pem
 
 default_days            = 21360
 default_crl_days        = 30
-default_md              = default
+default_md              = sha256
 
 policy                  = policy_any
 
@@ -157,14 +157,14 @@ function check_error {
 
 function generate_ca {
   echo 'Generating New CA Certificate ...'
-  openssl req -x509 -newkey rsa:2048 -days 21360 -out $CERTS_DIR/cacert.pem -keyout $PRIVATE_DIR/cakey.pem -outform PEM -config ca.conf -nodes
+  openssl req -x509 -newkey rsa:2048 -sha256 -days 21360 -out $CERTS_DIR/cacert.pem -keyout $PRIVATE_DIR/cakey.pem -outform PEM -config ca.conf -nodes
   check_error $?
 }
 
 function ssl_cert_req {
   echo 'Generating SSL Certificate Request ...'
   generate_ssl_req_conf
-  openssl req -newkey rsa:2048 -keyout $PRIVATE_DIR/ssl_key.pem -keyform PEM -out ssl_req.pem -outform PEM -config ssl_req.conf -nodes
+  openssl req -newkey rsa:2048 -sha256 -keyout $PRIVATE_DIR/ssl_key.pem -keyform PEM -out ssl_req.pem -outform PEM -config ssl_req.conf -nodes
   check_error $?
   #openssl req -in req.pem -text -noout
 }
@@ -172,7 +172,7 @@ function ssl_cert_req {
 function cms_signing_cert_req {
   echo 'Generating CMS Signing Certificate Request ...'
   generate_cms_signing_req_conf
-  openssl req -newkey rsa:2048 -keyout $PRIVATE_DIR/signing_key.pem -keyform PEM -out cms_signing_req.pem -outform PEM -config cms_signing_req.conf -nodes
+  openssl req -newkey rsa:2048 -sha256 -keyout $PRIVATE_DIR/signing_key.pem -keyform PEM -out cms_signing_req.pem -outform PEM -config cms_signing_req.conf -nodes
   check_error $?
   #openssl req -in req.pem -text -noout
 }
