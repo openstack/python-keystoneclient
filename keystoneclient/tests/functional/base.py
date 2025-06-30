@@ -10,10 +10,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from openstack import config as occ
+import openstack.exceptions
 import testtools
 
 from keystoneclient import client
-import os_client_config
 
 IDENTITY_CLIENT = 'identity'
 OPENSTACK_CLOUDS = ('functional_admin', 'devstack-admin', 'envvars')
@@ -22,8 +23,8 @@ OPENSTACK_CLOUDS = ('functional_admin', 'devstack-admin', 'envvars')
 def get_client(version):
     """Create a keystoneclient instance to run functional tests.
 
-    The client is instantiated via os-client-config either based on a
-    clouds.yaml config file or from the environment variables.
+    The client is instantiated either based on a clouds.yaml config file or
+    from the environment variables.
 
     First, look for a 'functional_admin' cloud, as this is a cloud that the
     user may have defined for functional testing with admin credentials. If
@@ -33,12 +34,14 @@ def get_client(version):
     """
     for cloud in OPENSTACK_CLOUDS:
         try:
-            cloud_config = os_client_config.get_config(
+            cloud_config = occ.OpenStackConfig().get_one(
                 cloud=cloud, identity_api_version=version)
-            return cloud_config.get_legacy_client(service_key=IDENTITY_CLIENT,
-                                                  constructor=client.Client)
-
-        except os_client_config.exceptions.OpenStackConfigException:
+            endpoint = cloud_config.get_session_endpoint(IDENTITY_CLIENT)
+            return client.Client(
+                version=version,
+                session=cloud_config.get_session(),
+                endpoint=endpoint)
+        except openstack.exceptions.ConfigException:
             pass
 
     raise Exception("Could not find any cloud definition for clouds named"
