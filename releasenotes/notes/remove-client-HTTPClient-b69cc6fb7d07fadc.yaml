@@ -1,0 +1,4 @@
+---
+upgrade:
+  - |
+    The deprecated ``keystoneclient.client.HTTPClient`` class has been removed.
