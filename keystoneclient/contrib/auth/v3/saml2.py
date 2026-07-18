@@ -16,6 +16,7 @@ import uuid
 
 from lxml import etree  # nosec(cjschaef): used to create xml, not parse it
 from oslo_config import cfg
+from oslo_utils import timeutils
 
 from keystoneclient import access
 from keystoneclient.auth.identity import v3
@@ -580,7 +581,7 @@ class ADFSUnscopedToken(_BaseSAMLPlugin):
         :type fmt: string
 
         """
-        date_created = datetime.datetime.utcnow()
+        date_created = timeutils.utcnow()
         date_expires = date_created + datetime.timedelta(
             seconds=self.DEFAULT_ADFS_TOKEN_EXPIRATION)
         return [_time.strftime(fmt) for _time in (date_created, date_expires)]
