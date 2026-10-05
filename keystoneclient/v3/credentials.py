@@ -92,22 +92,25 @@ class CredentialManager(base.CrudManager):
         """
         return super(CredentialManager, self).list(**kwargs)
 
-    def update(self, credential, user, type=None, blob=None, project=None,
+    def update(self, credential, user=None, type=None, blob=None, project=None,
                **kwargs):
         """Update a credential.
 
         :param credential: the credential to be updated on the server
         :type credential: str or
                          :class:`keystoneclient.v3.credentials.Credential`
-        :param user: the new user to which the credential belongs
+        :param user: (deprecated) the user to which the credential belongs.
+                     This is immutable on the server and should no longer be
+                     supplied.
         :type user: str or :class:`keystoneclient.v3.users.User`
-        :param str type: the new type of the credential, valid values are:
-                         ``ec2``, ``cert`` or ``totp``
+        :param str type: (deprecated) the type of the credential. This is
+                         immutable on the server and should no longer be
+                         supplied.
         :param str blob: the new blob of the credential data
                           and may be removed in the future release.
-        :param project: the new project which limits the scope of the
-                        credential, this attribute is mandatory if the
-                        credential type is ec2
+        :param project: (deprecated) the project which limits the scope of
+                        the credential. This is immutable on the server and
+                        should no longer be supplied.
         :type project: str or :class:`keystoneclient.v3.projects.Project`
         :param kwargs: any other attribute provided will be passed to the
                        server
@@ -116,13 +119,15 @@ class CredentialManager(base.CrudManager):
         :rtype: :class:`keystoneclient.v3.credentials.Credential`
 
         """
-        return super(CredentialManager, self).update(
-            credential_id=base.getid(credential),
+        credential_data = base.filter_none(
             user_id=base.getid(user),
             type=type,
             blob=blob,
             project_id=base.getid(project),
             **kwargs)
+        return super(CredentialManager, self).update(
+            credential_id=base.getid(credential),
+            **credential_data)
 
     def delete(self, credential):
         """Delete a credential.

@@ -147,27 +147,17 @@ class CredentialsTestCase(base.V3ClientTestCase):
         user = fixtures.User(self.client, self.test_domain.id)
         self.useFixture(user)
 
-        new_user = fixtures.User(self.client, self.test_domain.id)
-        self.useFixture(new_user)
-        new_project = fixtures.Project(self.client, self.test_domain.id)
-        self.useFixture(new_project)
-
         credential = fixtures.Credential(self.client, user=user.id,
                                          type='cert')
         self.useFixture(credential)
 
-        new_type = 'ec2'
         new_blob = ("{\"access\":\"" + uuid.uuid4().hex +
                     "\",\"secret\":\"secretKey\"}")
 
         credential_ret = self.client.credentials.update(credential.id,
-                                                        user=new_user.id,
-                                                        type=new_type,
-                                                        blob=new_blob,
-                                                        project=new_project.id)
+                                                        blob=new_blob)
 
-        credential.ref.update({'user': new_user.id, 'type': new_type,
-                               'blob': new_blob, 'project': new_project.id})
+        credential.ref.update({'blob': new_blob})
         self.check_credential(credential_ret, credential.ref)
 
     def test_delete_credential(self):
