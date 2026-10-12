@@ -69,8 +69,8 @@ class CredentialsTestCase(base.V3ClientTestCase):
         # project is mandatory attribute if the credential type is ec2
         credential_ref = {'user': user.id,
                           'type': 'ec2',
-                          'blob': ("{\"access\":\"" + uuid.uuid4().hex +
-                                   "\",\"secret\":\"secretKey\"}")}
+                          'blob': ("{\"access\": \"" + uuid.uuid4().hex +
+                                   "\", \"secret\": \"secretKey\"}")}
         self.assertRaises(http.BadRequest,
                           self.client.credentials.create,
                           **credential_ref)
@@ -80,8 +80,8 @@ class CredentialsTestCase(base.V3ClientTestCase):
 
         credential_ref = {'user': user.id,
                           'type': 'ec2',
-                          'blob': ("{\"access\":\"" + uuid.uuid4().hex +
-                                   "\",\"secret\":\"secretKey\"}"),
+                          'blob': ("{\"access\": \"" + uuid.uuid4().hex +
+                                   "\", \"secret\": \"secretKey\"}"),
                           'project': project.id}
         credential = self.client.credentials.create(**credential_ref)
 
