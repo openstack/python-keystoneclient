@@ -201,8 +201,8 @@ class Credential(Base):
         self.project = project
 
         if type == 'ec2':
-            self.blob = ("{\"access\":\"" + uuid.uuid4().hex +
-                         "\",\"secret\":\"secretKey\"}")
+            self.blob = ("{\"access\": \"" + uuid.uuid4().hex +
+                         "\", \"secret\": \"secretKey\"}")
         else:
             self.blob = uuid.uuid4().hex
 
