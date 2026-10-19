@@ -162,7 +162,7 @@ class RolesTestCase(base.V3ClientTestCase):
         domain = fixtures.Domain(self.client)
         self.useFixture(domain)
 
-        role = fixtures.Role(self.client, domain=self.project_domain_id)
+        role = fixtures.Role(self.client, domain=domain.id)
         self.useFixture(role)
 
         self.client.roles.grant(role, user=user.id, domain=domain.id)
@@ -202,7 +202,7 @@ class RolesTestCase(base.V3ClientTestCase):
         domain = fixtures.Domain(self.client)
         self.useFixture(domain)
 
-        role = fixtures.Role(self.client, domain=self.project_domain_id)
+        role = fixtures.Role(self.client, domain=domain.id)
         self.useFixture(role)
 
         self.client.roles.grant(role, group=group.id, domain=domain.id)
